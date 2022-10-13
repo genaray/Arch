@@ -36,10 +36,9 @@ public class World {
     public World(int Id) {
 
         this.Id = Id;
-        Entities = new Entity[256];
         RecycledIds = new Queue<int>(256);
         GroupToArchetype = new Dictionary<Type[], Archetype>(8);
-        EntityToArchetype = new Dictionary<int, Archetype>(256);
+        EntityToArchetype = new Dictionary<int, Archetype>(0);
         Archetypes = new List<Archetype>(8);
     }
 
@@ -82,25 +81,25 @@ public class World {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(Type[] types) {
 
-        // Increase size
-        if (Size >= Capacity) {
-
-            var entities = Entities;
-            Array.Resize(ref entities, Size * 2);
-            Entities = entities;
-        }
-
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
         var id = recycle ? recycledId : Size;
         
         // Create new entity and put it to the back of the array
         var entity = new Entity(id,Id,0);
-        Entities[Size] = entity;
         
         // Add to archetype & mapping
         var archetype = GetOrCreate(types);
-        archetype.Add(in entity);
+        var createdChunk = archetype.Add(in entity);
+
+        // Resize map & Array to fit all potential new entities
+        if (createdChunk) {
+            var requiredCapacity = Capacity + archetype.EntitiesPerChunk;
+            EntityToArchetype.EnsureCapacity(requiredCapacity);
+            Capacity = requiredCapacity;
+        }
+
+        // Map
         EntityToArchetype[id] = archetype;
 
         Size++;
@@ -117,17 +116,19 @@ public class World {
 
         // Remove from archetype
         var archetype = entity.GetArchetype();
-        archetype.Remove(in entity);
-
-        // Swap last entity and destroyed one
-        var lastIndex = Size - 1;
-        var lastEntity = Entities[lastIndex];
-        Entities[lastIndex] = entity;
-        Entities[entity.EntityId] = lastEntity;
+        var destroyedChunk = archetype.Remove(in entity);
 
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(entity.EntityId);
         EntityToArchetype.Remove(entity.EntityId);
+        
+        // Resizing and releasing memory 
+        if (destroyedChunk) {
+            var requiredCapacity = Capacity - archetype.EntitiesPerChunk;
+            EntityToArchetype.TrimExcess(requiredCapacity);
+            Capacity = requiredCapacity;
+        }
+
         Size--;
     }
 
@@ -215,21 +216,16 @@ public class World {
     /// The world id
     /// </summary>
     public int Id { get; }
-    
-    /// <summary>
-    /// A array of all entities within this world. 
-    /// </summary>
-    public Entity[] Entities { get; private set; }
-    
-    /// <summary>
-    /// The current world capacity in terms of entities.
-    /// </summary>
-    public int Capacity => Entities.Length;
-    
+
     /// <summary>
     /// The size of the world, the amount of <see cref="Entities"/>.
     /// </summary>
     public int Size { get; private set; }
+    
+    /// <summary>
+    /// The total capacity for entities and their components. 
+    /// </summary>
+    public int Capacity { get; private set; }
     
     /// <summary>
     /// A map which assigns a archetype to each group for fast acess. 

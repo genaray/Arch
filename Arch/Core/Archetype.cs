@@ -264,8 +264,10 @@ public sealed unsafe class Archetype {
     /// Increases the <see cref="Size"/>. 
     /// </summary>
     /// <param name="entity"></param>
-    public void Add(in Entity entity) {
-
+    /// <returns>True if a new chunk was created</returns>
+    public bool Add(in Entity entity) {
+            
+        // Put into the last partial empty chunk 
         if (Size > 0) {
             
             ref var lastChunk = ref LastChunk;
@@ -273,7 +275,7 @@ public sealed unsafe class Archetype {
 
                 lastChunk.Add(in entity);
                 EntityIdToChunkIndex[entity.EntityId] = Size - 1;
-                return;
+                return false;
             }
         }
 
@@ -289,8 +291,12 @@ public sealed unsafe class Archetype {
         Chunks = chunks;
         Chunks[Size-1] = newChunk;
 
+        // Resize & Map entity
+        EntityIdToChunkIndex.EnsureCapacity(Size * EntitiesPerChunk);
         EntityIdToChunkIndex[entity.EntityId] = Size - 1;
-        }
+
+        return true;
+    }
     
     /// <summary>
     /// Sets an component into the fitting component array at an index.
@@ -333,7 +339,8 @@ public sealed unsafe class Archetype {
     /// Removes an <see cref="Entity"/> from this chunk and all its components. 
     /// </summary>
     /// <param name="entity"></param>
-    public void Remove(in Entity entity) {
+    /// <returns>True if a chunk was destroyed</returns>
+    public bool Remove(in Entity entity) {
         
         var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
         ref var chunk = ref Chunks[chunkIndex];
@@ -342,19 +349,23 @@ public sealed unsafe class Archetype {
         if (chunkIndex == Size - 1) {
             chunk.Remove(entity);
             EntityIdToChunkIndex.Remove(entity.EntityId);
-            return;
+            return false;
         }
         
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(entity.EntityId, ref LastChunk);
         EntityIdToChunkIndex.Remove(entity.EntityId);
         EntityIdToChunkIndex[movedEntityId] = chunkIndex;
-
-        // Remove last unused chunk 
-        if (LastChunk.Size != 0) return;
+        
+        if (LastChunk.Size != 0) return false;
+        
+        // Remove last unused chunk & resize to free memory
         var chunks = Chunks;
         Array.Resize(ref chunks, chunks.Length - 1);
         Chunks = chunks;
+        EntityIdToChunkIndex.TrimExcess(Size*EntitiesPerChunk);
+
+        return true;
     }
     
     /// <summary>

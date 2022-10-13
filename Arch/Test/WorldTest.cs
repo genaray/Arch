@@ -24,7 +24,7 @@ public class WorldTest {
 
     [Test]
     public void Create() {
-        
+
         world = World.Create();
         var entity = world.Create(group);
         Assert.AreEqual(1, world.Size);
@@ -44,6 +44,21 @@ public class WorldTest {
         Assert.AreEqual(worldSizeBefore, world.Size);
         Assert.Less(worldSizeBefore, worldSizeAfter);
         Assert.False(entity.IsAlive());
+    }
+    
+    [Test]
+    public void CapacityTest() {
+
+        world = World.Create();
+        
+        for (var index = 0; index < 500; index++)
+            world.Create(group);
+            
+        for (var index = 0; index < 500; index++)
+            world.Destroy(new Entity(index, world.Id,0));
+
+        Assert.AreEqual(world.Size, 0);
+        Assert.AreEqual(world.Capacity, world.Archetypes[0].EntitiesPerChunk);
     }
 
     [Test]
