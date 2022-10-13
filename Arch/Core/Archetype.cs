@@ -73,7 +73,8 @@ public struct Chunk{
     public void Set<T>(in int index, in T cmp) {
 
         var array = GetArray<T>();
-        array[index] = cmp;
+        var entityIndex = EntityIdToIndex[index];
+        array[entityIndex] = cmp;
     }
 
     /// <summary>
@@ -108,7 +109,8 @@ public struct Chunk{
     public ref T Get<T>(in int index) {
 
         var array = GetArray<T>();
-        return ref array[index];
+        var entityIndex = EntityIdToIndex[index];
+        return ref array[entityIndex];
     }
     
     /// <summary>
@@ -203,7 +205,7 @@ public struct Chunk{
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<T> GetSpan<T>() {
+    public Span<T> GetSpan<T>() {
             
         var index = Index<T>();
         if (index < 0) return null;
