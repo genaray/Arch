@@ -17,8 +17,7 @@ public class WorldTest {
         
     [OneTimeSetUp]
     public void Setup() {
-
-        world = World.Create();
+        
         group = new []{ typeof(Transform), typeof(Rotation) };
         otherGroup = new[] { typeof(Transform), typeof(Rotation), typeof(AI) };
     }
@@ -26,6 +25,7 @@ public class WorldTest {
     [Test]
     public void Create() {
         
+        world = World.Create();
         var entity = world.Create(group);
         Assert.AreEqual(1, world.Size);
         Assert.AreEqual(0, entity.EntityId);
@@ -35,6 +35,7 @@ public class WorldTest {
     [Test]
     public void Destroy() {
 
+        world = World.Create();
         var worldSizeBefore = world.Size;
         var entity = world.Create(group);
         var worldSizeAfter = world.Size;
@@ -48,6 +49,7 @@ public class WorldTest {
     [Test]
     public void RecycleId() {
         
+        world = World.Create();
         var entity = world.Create(group);
         world.Destroy(in entity);
         var recycledEntity = world.Create(group);
@@ -64,13 +66,12 @@ public class WorldTest {
             All = new []{ typeof(Transform) }
         };
 
+        world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => {
-            count++;
-        });
+        world.Query(query, entity => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -81,13 +82,12 @@ public class WorldTest {
             Any = new []{ typeof(Transform) }
         };
 
+        world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => {
-            count++;
-        });
+        world.Query(query, entity => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -98,13 +98,12 @@ public class WorldTest {
             None = new []{ typeof(Transform) }
         };
 
+        world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => {
-            count++;
-        });
+        world.Query(query, entity => { count++; });
         Assert.AreEqual(count,0);
     }
     
@@ -117,13 +116,12 @@ public class WorldTest {
             None = new []{ typeof(AI) }
         };
 
+        world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => {
-            count++;
-        });
+        world.Query(query, entity => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -142,6 +140,7 @@ public class WorldTest {
         };
 
 
+        world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
         
