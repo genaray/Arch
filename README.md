@@ -1,11 +1,42 @@
 # Arch
 A C# &amp; .NET 6.0 based Archetype Entity Component System ( ECS ).  
-Each Archetype stores their entities within 16KB sized chunks for maximum iteration performance. 
+Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance. 
 
-`CODE`
+Since its still work in progress it is not yet finished and there still a lot of features missing. 
+
+# Example
+## Creating Entities
+
+```csharp
+var archetype = new []{ typeof(Transform), typeof(Rotation) };
+
+var world = World.Create();
+for (var index = 0; index < 100; index++)
+    world.Create(archetype);
+```
+
+## Querying Entities
+
+```csharp
+var query = new QueryDescription {
+    All = new []{ typeof(Transform) },
+    Any = new []{ typeof(Rotation) },
+    None = new []{ typeof(AI) }
+};
+
+world.Query(query, entity => { /* Do something */ });
+```
+
+## Modifying Entities
+
+```csharp
+var entity = world.Create(archetype);
+entity.Set(new Transform());
+ref var transform = entity.Get<Transform(); 
+```
 
 # Benchmark
-The current Benchmark only tests it Archetype iteration performance.
+The current Benchmark only tests it Archetype/Chunk iteration performance.
 
 BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622 <br>
 AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
@@ -32,7 +63,7 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
 |  IterationManualRangeCheck | 1000000 | 3,014.951 μs |  8.9813 μs |  7.0120 μs | 3,013.975 μs |      10 B |
 |     IterationMultipleLoops | 1000000 | 3,557.774 μs | 27.5206 μs | 22.9810 μs | 3,547.122 μs |      10 B |
 
-// * Legends *  
+Legends
 - amount    : Value of the 'amount' parameter  
 - Mean      : Arithmetic mean of all measurements  
 - Error     : Half of 99.9% confidence interval  
