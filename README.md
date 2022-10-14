@@ -1,5 +1,8 @@
 # Arch
-A C# &amp; .NET 6.0 based Archetype Entity Component System ( ECS ).
+A C# &amp; .NET 6.0 based Archetype Entity Component System ( ECS ).  
+Each Archetype stores their entities within 16KB sized chunks for maximum iteration performance. 
+
+`CODE`
 
 # Benchmark
 The current Benchmark only tests it Archetype iteration performance.
@@ -30,10 +33,10 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
 |     IterationMultipleLoops | 1000000 | 3,557.774 μs | 27.5206 μs | 22.9810 μs | 3,547.122 μs |      10 B |
 
 // * Legends *  
-  amount    : Value of the 'amount' parameter  
-  Mean      : Arithmetic mean of all measurements  
-  Error     : Half of 99.9% confidence interval  
-  StdDev    : Standard deviation of all measurements  
-  Median    : Value separating the higher half of all measurements (50th percentile)  
-  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)  
-  1 μs      : 1 Microsecond (0.000001 sec)  
+- amount    : Value of the 'amount' parameter  
+- Mean      : Arithmetic mean of all measurements  
+- Error     : Half of 99.9% confidence interval  
+- StdDev    : Standard deviation of all measurements  
+- Median    : Value separating the higher half of all measurements (50th percentile)  
+- Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)  
+- 1 μs      : 1 Microsecond (0.000001 sec)  
