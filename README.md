@@ -4,11 +4,11 @@ A C# &amp; .NET 6.0 based Archetype Entity Component System ( ECS ).
 # Benchmark
 The current Benchmark only tests it Archetype iteration performance.
 
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622
-AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
-.NET SDK=6.0.202
-  [Host]     : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT
-  DefaultJob : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622 <br>
+AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
+.NET SDK=6.0.202 <br>
+  [Host]     : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
+  DefaultJob : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
 
 
 |                     Method |  amount |         Mean |      Error |     StdDev |       Median | Allocated |
@@ -29,13 +29,11 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
 |  IterationManualRangeCheck | 1000000 | 3,014.951 μs |  8.9813 μs |  7.0120 μs | 3,013.975 μs |      10 B |
 |     IterationMultipleLoops | 1000000 | 3,557.774 μs | 27.5206 μs | 22.9810 μs | 3,547.122 μs |      10 B |
 
-// * Legends *
-  amount    : Value of the 'amount' parameter
-  Mean      : Arithmetic mean of all measurements
-  Error     : Half of 99.9% confidence interval
-  StdDev    : Standard deviation of all measurements
-  Median    : Value separating the higher half of all measurements (50th percentile)
-  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)
-  1 μs      : 1 Microsecond (0.000001 sec)
-
-// * Diagnostic Output - MemoryDiagnoser *
+// * Legends *  
+  amount    : Value of the 'amount' parameter  
+  Mean      : Arithmetic mean of all measurements  
+  Error     : Half of 99.9% confidence interval  
+  StdDev    : Standard deviation of all measurements  
+  Median    : Value separating the higher half of all measurements (50th percentile)  
+  Allocated : Allocated memory per single operation (managed only, inclusive, 1KB = 1024B)  
+  1 μs      : 1 Microsecond (0.000001 sec)  
