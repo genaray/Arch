@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+using Collections.Pooled;
 
 namespace Arch.Core;
 
@@ -18,28 +19,50 @@ public readonly struct Entity {
     public readonly int WorldId;
     public readonly int Version;
 
+    public static Entity Null => new (-1, -1, -1);
+    
     public Entity(int entityId, int worldId, int version) {
         EntityId = entityId;
         WorldId = worldId;
         Version = version;
     }
-    
-    public static Entity Null => new (-1, -1, -1);
+
+    public bool Equals(Entity other) {
+        return EntityId == other.EntityId && WorldId == other.WorldId && Version == other.Version;
+    }
+
+    public override bool Equals(object obj) {
+        return obj is Entity other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        
+        unchecked{ // Overflow is fine, just wrap{
+            int hash = 17;
+            // Suitable nullity checks etc, of course :)
+            hash = hash * 23 + EntityId;
+            hash = hash * 23 + WorldId;
+            hash = hash * 23 + Version;
+            return hash;
+        }
+    }
+
+    public override string ToString() { return $"{nameof(EntityId)}: {EntityId}, {nameof(WorldId)}: {WorldId}, {nameof(Version)}: {Version}"; }
 }
 
 /// <summary>
 /// A world contains multiple <see cref="Archetypes"/>, <see cref="Entity"/>'s and their components.
 /// It is used to manage the <see cref="Entity"/>'s and query for them. 
 /// </summary>
-public class World {
+public partial class World {
 
     public World(int Id) {
 
         this.Id = Id;
-        RecycledIds = new Queue<int>(256);
-        GroupToArchetype = new Dictionary<Type[], Archetype>(8);
-        EntityToArchetype = new Dictionary<int, Archetype>(0);
-        Archetypes = new List<Archetype>(8);
+        RecycledIds = new PooledQueue<int>(256);
+        GroupToArchetype = new PooledDictionary<Type[], Archetype>(8);
+        EntityToArchetype = new PooledDictionary<int, Archetype>(0);
+        Archetypes = new PooledList<Archetype>(8);
     }
 
     /// <summary>
@@ -150,12 +173,15 @@ public class World {
             // Only process archetypes within the query decribtion
             if (!query.Valid(bitset)) continue;
 
+            var chunks = archetype.Chunks;
             for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
 
-                ref var chunk = ref archetype.Chunks[chunkIndex];
+                ref var chunk = ref chunks[chunkIndex];
+                var entities = chunk.Entities;
+                
                 for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {
 
-                    ref var entity = ref chunk.Entities[entityIndex];
+                    ref var entity = ref entities[entityIndex];
                     forEntity(entity);
                 }
             }
@@ -167,7 +193,7 @@ public class World {
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetArchetypes(in QueryDescription queryDescription, List<Archetype> archetypes = default) {
+    public void GetArchetypes(in QueryDescription queryDescription, List<Archetype> archetypes) {
 
         // Looping over all archetypes, their chunks and their entities. 
         var query = new Query(queryDescription);
@@ -187,7 +213,7 @@ public class World {
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetChunks(in QueryDescription queryDescription, List<Chunk> chunks = default) {
+    public void GetChunks(in QueryDescription queryDescription, List<Chunk> chunks) {
 
         // Looping over all archetypes, their chunks and their entities. 
         var query = new Query(queryDescription);
@@ -207,6 +233,7 @@ public class World {
         }
     }
 
+    
     /// <summary>
     /// All active <see cref="World"/>'s.
     /// </summary>
@@ -228,22 +255,23 @@ public class World {
     public int Capacity { get; private set; }
     
     /// <summary>
+    /// All registered <see cref="Archetypes"/> in this world.
+    /// Should not be modified.
+    /// </summary>
+    public PooledList<Archetype> Archetypes { get; }
+    
+    /// <summary>
     /// A map which assigns a archetype to each group for fast acess. 
     /// </summary>
-    internal Dictionary<Type[], Archetype> GroupToArchetype { get; set; }
+    internal PooledDictionary<Type[], Archetype> GroupToArchetype { get; set; }
     
     /// <summary>
     /// A map which maps each entity to its archetype for fast acess of its components
     /// </summary>
-    internal Dictionary<int, Archetype> EntityToArchetype { get; set; }
-    
-    /// <summary>
-    /// All registered <see cref="Archetypes"/> in this world. 
-    /// </summary>
-    internal List<Archetype> Archetypes { get; }
+    internal PooledDictionary<int, Archetype> EntityToArchetype { get; set; }
 
     /// <summary>
     /// Recycled entity ids. 
     /// </summary>
-    internal Queue<int> RecycledIds { get; set; }
+    internal PooledQueue<int> RecycledIds { get; set; }
 }

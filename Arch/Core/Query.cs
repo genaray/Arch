@@ -20,7 +20,7 @@ public struct QueryDescription {
 /// <summary>
 /// A constructed query used for translating the <see cref="QueryDescription"/> and validating <see cref="BitSet"/>'s to find the right chunks. 
 /// </summary>
-public readonly struct Query {
+internal readonly struct Query {
     
     private readonly BitSet Any;
     private readonly BitSet All;

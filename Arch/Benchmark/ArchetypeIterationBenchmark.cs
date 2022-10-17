@@ -1,25 +1,34 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.Test;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Engines;
+using Microsoft.Diagnostics.Tracing.Analysis;
 
 namespace Arch.Benchmark; 
 
 
 [HtmlExporter]
 [MemoryDiagnoser(true)]
-public class ArchetypeIterationBenchmark {
+[HardwareCounters(HardwareCounter.CacheMisses)]
+public unsafe class ArchetypeIterationBenchmark {
 
-    [Params( 10000, 100000)]
+    [Params( 10000, 100000, 1000000, 10000000)]
     public int amount;
     private Archetype archetype;
-        
+    private Consumer consumer;
+
     [GlobalSetup]
-    public void Setup(){
-            
+    public void Setup() {
+
+        consumer = new Consumer();
         archetype = new Archetype(typeof(Transform), typeof(Rotation));
+        archetype.AllocateFor(amount);
         for (var index = 0; index < amount; index++) {
 
             var entity = new Entity(index, 0, 0);
@@ -31,24 +40,17 @@ public class ArchetypeIterationBenchmark {
             archetype.Set(entity.EntityId, r);
         }
     }
-      
-    
-    [Benchmark]
-    public void IterationNormalFast() {
 
-        for (var index = 0; index < amount; index++) {
-            int i = 0;
-        }
-    }
-    
+
     [Benchmark]
     public void IterationNormal() {
 
-        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+        var chunks = archetype.Chunks;
+        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
 
-            ref var chunk = ref archetype.Chunks[chunkIndex];
-            var transforms = chunk.GetSpan<Transform>();
-            var rotations = chunk.GetSpan<Rotation>();
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetArray<Transform>();
+            var rotations = chunk.GetArray<Rotation>();
 
             for (var index = 0; index < chunk.Capacity; index++) {
 
@@ -64,11 +66,12 @@ public class ArchetypeIterationBenchmark {
     [Benchmark]
     public void IterationUnsafeAdd() {
 
-        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
-
-            ref var chunk = ref archetype.Chunks[chunkIndex];
-            var transforms = chunk.GetSpan<Transform>();
-            var rotations = chunk.GetSpan<Rotation>();
+        var chunks = archetype.Chunks;
+        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+            
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetArray<Transform>();
+            var rotations = chunk.GetArray<Rotation>();
             
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
@@ -83,74 +86,55 @@ public class ArchetypeIterationBenchmark {
             }
         }
     }
-        
+    
     [Benchmark]
-    public unsafe void IterationFixedPtrIteration() {
-        
-        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+    public void IterationNormalWithEntity() {
 
-            ref var chunk = ref archetype.Chunks[chunkIndex];
-            var transforms = chunk.GetSpan<Transform>();
-            var rotations = chunk.GetSpan<Rotation>();
+        var chunks = archetype.Chunks;
+        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
 
-            fixed (Transform* tPtr = &transforms[0]) {
-                fixed (Rotation* rPtr = &rotations[0]) {
-                
-                    for (var index = 0; index < chunk.Capacity; index++) {
+            ref var chunk = ref chunks[chunkIndex];
+            var entities = chunk.Entities;
+            var transforms = chunk.GetArray<Transform>();
+            var rotations = chunk.GetArray<Rotation>();
 
-                        var currenTransform = &tPtr[index];
-                        var currenRotation = &rPtr[index];
-                
-                        currenTransform->x++;
-                        currenRotation->w++;
-                    }
-                }
-            }
-        }
-    }
-        
-    [Benchmark]
-    public void IterationManualRangeCheck() {
-            
-        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+            for (var index = 0; index < chunk.Capacity; index++) {
 
-            ref var chunk = ref archetype.Chunks[chunkIndex];
-            var transforms = chunk.GetSpan<Transform>();
-            var rotations = chunk.GetSpan<Rotation>();
-
-            if (transforms.Length == rotations.Length) {
-
-                for (var index = 0; index < chunk.Capacity; index++) {
-
-                    ref var transform = ref transforms[index];
-                    ref var rotation = ref rotations[index];
-
-                    transform.x++;
-                    rotation.w++;
-                }
-            }
-        }
-    }
-        
-    [Benchmark]
-    public void IterationMultipleLoops() {
-            
-        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
-
-            ref var chunk = ref archetype.Chunks[chunkIndex];
-            var transforms = chunk.GetSpan<Transform>();
-            var rotations = chunk.GetSpan<Rotation>();
-
-            for (var index = 0; index < transforms.Length; index++) {
-
+                ref var entity = ref entities[index];
                 ref var transform = ref transforms[index];
-                transform.x++;
-            }
-            
-            for (var index = 0; index < rotations.Length; index++) {
-                
                 ref var rotation = ref rotations[index];
+                
+                consumer.Consume(entity);
+                transform.x++;
                 rotation.w++;
+            }
+        }
+    }
+        
+    [Benchmark]
+    public void IterationUnsafeAddWithEntity() {
+
+        var chunks = archetype.Chunks;
+        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+            
+            ref var chunk = ref chunks[chunkIndex];
+            var entities = chunk.Entities;
+            var transforms = chunk.GetArray<Transform>();
+            var rotations = chunk.GetArray<Rotation>();
+
+            ref var entity = ref entities[0];
+            ref var transform = ref transforms[0];
+            ref var rotation = ref rotations[0];
+
+            for (var index = 0; index < chunk.Capacity; index++) {
+
+                ref var currentEntity = ref Unsafe.Add(ref entity, index);
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
+                
+                consumer.Consume(currentEntity);
+                currentTransform.x++;
+                currentRotation.w++;
             }
         }
     }

@@ -1,17 +1,24 @@
 using System;
+using System.Data.SqlTypes;
+using System.Diagnostics;
+using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.Test;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Validators;
+using CommandLine.Text;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Diagnostics.Tracing.Parsers.FrameworkEventSource;
 
 namespace Arch.Benchmark; 
-    
-class Benchmark {
-    
+
+public class Benchmark {
+
     static void Main(string[] args) {
-        
+
         var config = new ManualConfig()
             .WithOptions(ConfigOptions.DisableOptimizationsValidator)
             .AddValidator(JitOptimizationsValidator.DontFailOnError)
@@ -19,10 +26,5 @@ class Benchmark {
             .AddColumnProvider(DefaultColumnProviders.Instance);
         
         BenchmarkRunner.Run<ArchetypeIterationBenchmark>(config);
-        /*var b = new ArchetypeIterationBenchmark { amount = 1000000 };
-        b.Setup();
-        
-        for(var index = 0; index < 100; index++)
-            b.IterationNormal();*/
     }
 }

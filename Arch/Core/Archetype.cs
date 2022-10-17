@@ -1,247 +1,14 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
-using Arch.Test;
+using Collections.Pooled;
 
 namespace Arch.Core;
-
-/// <summary>
-/// Represents a chunk which stores <see cref="Entities"/> and their Components.
-/// Has a size of <see cref="TOTAL_CAPACITY"/>, about 16KB memory and uses multiple arrays since low level memory allocation doesnt allow managed structs.
-/// Should nevertheless be cache friendly since the arrays fit perfectly into the cache upon iteration.
-/// /// <example>
-/// [
-///     [Health, Health, Health]
-///     [Transform, Transform, Transform]
-///     ...
-/// ]
-/// </example>
-/// </summary>
-public struct Chunk{
-
-    public Chunk(int capacity, params Type[] types) {
-
-        // Calculate capacity & init arrays
-        Capacity = capacity;
-        Entities = new Entity[Capacity];     
-        Components = new Array[types.Length];
-        
-        // Init mapping
-        ComponentIdToArrayIndex = new Dictionary<int, int>(types.Length);
-        EntityIdToIndex = new Dictionary<int, int>(Capacity);
-
-        // Allocate arrays and map 
-        for (var index = 0; index < types.Length; index++) {
-
-            var type = types[index];
-            var componentId = Component.Id(type);
-            
-            ComponentIdToArrayIndex[componentId] = index;
-            Components[index] = Array.CreateInstance(type, Capacity);
-        }
-        
-        Size = 0;
-    }
-
-    /// <summary>
-    /// Adds an <see cref="Entity"/> to this chunk.
-    /// Increases the <see cref="Size"/>. 
-    /// </summary>
-    /// <param name="entity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(in Entity entity) {
-
-        if(Size >= Capacity)
-            return;
-
-        EntityIdToIndex[entity.EntityId] = Size;
-        Entities[Size] = entity;
-        Size++;
-    }
-    
-    /// <summary>
-    /// Sets an component into the fitting component array at an index.
-    /// </summary>
-    /// <param name="index">The index</param>
-    /// <param name="cmp">The component</param>
-    /// <typeparam name="T">The type</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in int index, in T cmp) {
-
-        var array = GetArray<T>();
-        var entityIndex = EntityIdToIndex[index];
-        array[entityIndex] = cmp;
-    }
-
-    /// <summary>
-    /// Checks wether this chunk contains an array of the type.
-    /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has<T>() {
-        
-        var id = Component<T>.Id;
-        return ComponentIdToArrayIndex.ContainsKey(id);
-    }
-    
-    /// <summary>
-    /// Checks wether this chunk contains an certain entity.
-    /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has(in Entity entity) {
-        return EntityIdToIndex.ContainsKey(entity.EntityId);
-    }
-    
-    /// <summary>
-    /// Returns an component from the fitting component array by its index.
-    /// </summary>
-    /// <param name="index">The index</param>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>The component</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Get<T>(in int index) {
-
-        var array = GetArray<T>();
-        var entityIndex = EntityIdToIndex[index];
-        return ref array[entityIndex];
-    }
-    
-    /// <summary>
-    /// Removes an <see cref="Entity"/> from this chunk and all its components. 
-    /// </summary>
-    /// <param name="entity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove(in Entity entity) {
-
-        // Current entity
-        var entityID = entity.EntityId;
-        var index = EntityIdToIndex[entityID];
-            
-        // Last entity in archetype. 
-        var lastIndex = Size-1;
-        var lastEntity = Entities[lastIndex];
-        var lastEntityId =  lastEntity.EntityId;
-            
-        // Copy last entity to replace the removed one
-        Entities[index] = lastEntity;
-        for (var i = 0; i < Components.Length; i++) {
-
-            var array = Components[i];
-            Array.Copy(array, lastIndex, array, index, 1);
-        }
-            
-        // Update the mapping
-        EntityIdToIndex[lastEntityId] = index;
-        EntityIdToIndex.Remove(entityID);
-        Size--;
-    }
-    
-    /// <summary>
-    /// Moves the last entity from the chunk into the current chunk and fills/replaces an index. 
-    /// </summary>
-    /// <param name="chunk"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int ReplaceIndexWithLastEntityFrom(int index, ref Chunk chunk) {
-
-        // Get last entity
-        var lastIndex = chunk.Size-1;
-        var lastEntity = chunk.Entities[lastIndex];
-
-        // Replace index entity with the last entity from 
-        Entities[index] = lastEntity;
-        EntityIdToIndex[lastEntity.EntityId] = index;
-
-        // Move/Copy components to the new chunk
-        for (var i = 0; i < Components.Length; i++) {
-
-            var sourceArray = chunk.Components[i];
-            var desArray = Components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
-        }
-        
-        // Remove last entity from this chunk
-        chunk.Remove(lastEntity);
-        return lastEntity.EntityId;
-    }
-    
-    /// <summary>
-    /// Returns the index of the component array inside the structure of arrays. 
-    /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int Index<T>() {
-
-        var id = Component<T>.Id;
-        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
-            return index;
-        
-        return -1;
-    }
-    
-    /// <summary>
-    /// Returns the internal array for the passed component
-    /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T[] GetArray<T>() {
-
-        var index = Index<T>();
-        if (index < 0) return null;
-        return (T[])Components[index];
-    }
-        
-    /// <summary>
-    /// Returns a span pointing to the internal stored array 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> GetSpan<T>() {
-            
-        var index = Index<T>();
-        if (index < 0) return null;
-        return (T[])Components[index];
-    }
-
-    /// <summary>
-    /// The entities in this chunk.
-    /// </summary>
-    public Entity[] Entities { get; set; }
-    
-    /// <summary>
-    /// The entity components in this chunk.
-    /// </summary>
-    public Array[] Components { get; set; }
-    
-    /// <summary>
-    /// A map to get the index of a component array inside <see cref="Components"/>.
-    /// </summary>
-    public Dictionary<int, int> ComponentIdToArrayIndex { get; set; }
-    
-    /// <summary>
-    /// A map used to get the array indexes of a certain <see cref="Entity"/>.
-    /// </summary>
-    public Dictionary<int, int> EntityIdToIndex { get; set; }
-    
-    /// <summary>
-    /// The current size/occupation of this chunk.
-    /// </summary>
-    public int Size { get; private set; }
-    
-    /// <summary>
-    /// The total capacity, how many entities fit in here.
-    /// </summary>
-    public int Capacity { get; private set; }
-}
 
 /// <summary>
 /// An archetype, stores entities with the same components, tightly packed in <see cref="Chunks"/>
@@ -257,47 +24,123 @@ public sealed unsafe class Archetype {
         
         // The bitmask/set 
         BitSet = BitSetExtensions.From(types);
-        EntityIdToChunkIndex = new Dictionary<int, int>(EntitiesPerChunk);
+        EntityIdToChunkIndex = new PooledDictionary<int, int>(EntitiesPerChunk);
         Chunks = Array.Empty<Chunk>();
     }
 
-        /// <summary>
+    /// <summary>
+    /// Sets the capacity and either makes the internal <see cref="Chunks"/> and <see cref="EntityIdToChunkIndex"/> arrays bigger or smaller. 
+    /// </summary>
+    /// <param name="newCapacity"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetCapacity(int newCapacity) {
+
+        // More size needed
+        if (newCapacity > Capacity) {
+            
+            // Increase chunk array size
+            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
+            Array.Copy(Chunks, newChunks, Size);
+            ArrayPool<Chunk>.Shared.Return(Chunks);
+            Chunks = newChunks;   
+            
+            // Increase mapping
+            EntityIdToChunkIndex.EnsureCapacity(newCapacity * EntitiesPerChunk);
+        }
+        else {
+            
+            // Decrease chunk size
+            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
+            Array.Copy(Chunks, newChunks, Size-1);
+            ArrayPool<Chunk>.Shared.Return(Chunks);
+            Chunks = newChunks;  
+
+            // Decrease mapping 
+            EntityIdToChunkIndex.TrimExcess(newCapacity*EntitiesPerChunk);
+        }
+    }
+    
+    /// <summary>
     /// Adds an <see cref="Entity"/> to this chunk.
     /// Increases the <see cref="Size"/>. 
     /// </summary>
     /// <param name="entity"></param>
     /// <returns>True if a new chunk was created</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(in Entity entity) {
-            
-        // Put into the last partial empty chunk 
-        if (Size > 0) {
-            
+
+        // If there reserved chunks, but no used yet... fill them 
+        if (Size < Capacity) {
+
             ref var lastChunk = ref LastChunk;
             if (lastChunk.Size < lastChunk.Capacity) {
 
                 lastChunk.Add(in entity);
-                EntityIdToChunkIndex[entity.EntityId] = Size - 1;
-                return false;
+                EntityIdToChunkIndex[entity.EntityId] = Size;
             }
-        }
 
+            // Chunk is full now
+            if (lastChunk.Size == lastChunk.Capacity)
+                Size++;
+
+            return false;
+        }
+        
         // Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, Types);
         newChunk.Add(in entity);
             
         // Resize chunks
-        var chunks = Chunks;
-        Array.Resize(ref chunks, Size+1);
+        SetCapacity(Size+1);
         
-        // Add new chunk
-        Chunks = chunks;
-        Chunks[Size-1] = newChunk;
-
-        // Resize & Map entity
-        EntityIdToChunkIndex.EnsureCapacity(Size * EntitiesPerChunk);
-        EntityIdToChunkIndex[entity.EntityId] = Size - 1;
+        // Add chunk & map entity
+        Chunks[Size] = newChunk;
+        EntityIdToChunkIndex[entity.EntityId] = Size;
+        Capacity++;
 
         return true;
+    }
+    
+    /// <summary>
+    /// Reserves memory for a specific amount of <see cref="Entity"/>'s.
+    /// Highly efficient bulk adding. Once allocated, you can traverse over the arch to fill it.
+    /// Allocates on top of the existing <see cref="Capacity"/>.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns>True if a new chunk was created</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AllocateFor(in int amount) {
+            
+        // Put into the last partial empty chunk 
+        if (Size > 0) {
+            
+            // Calculate amount of required chunks
+            ref var lastChunk = ref LastChunk;
+            var freeSpots = lastChunk.Capacity - lastChunk.Size;
+            var neededSpots = amount - freeSpots;
+            var neededChunks = neededSpots / EntitiesPerChunk;
+            
+            // Set capacity and insert new empty chunks
+            SetCapacity(Capacity+neededChunks);
+            for (var index = 0; index < neededChunks; index++) {
+                
+                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                Chunks[Capacity+index] = newChunk;
+            }
+            Capacity += neededChunks;
+        }
+        else {
+            
+            // Allocate new chunks in one go
+            var neededChunks = (int)Math.Ceiling(((float)amount / EntitiesPerChunk));
+            SetCapacity(Capacity+neededChunks);
+            for (var index = 0; index < neededChunks; index++) {
+                
+                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                Chunks[Capacity+index] = newChunk;
+            } 
+            Capacity += neededChunks; // So many chunks are allocated
+        }
     }
     
     /// <summary>
@@ -306,6 +149,7 @@ public sealed unsafe class Archetype {
     /// <param name="index">The index</param>
     /// <param name="cmp">The component</param>
     /// <typeparam name="T">The type</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in int index, in T cmp) {
 
         var chunkIndex = EntityIdToChunkIndex[index];
@@ -318,6 +162,7 @@ public sealed unsafe class Archetype {
     /// </summary>
     /// <typeparam name="T">The type</typeparam>
     /// <returns>True if it does, false if it doesnt</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>() {
 
         var id = Component<T>.Id;
@@ -330,6 +175,7 @@ public sealed unsafe class Archetype {
     /// <param name="index">The index</param>
     /// <typeparam name="T">The type</typeparam>
     /// <returns>The component</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(in int index) {
         
         var chunkIndex = EntityIdToChunkIndex[index];
@@ -342,6 +188,7 @@ public sealed unsafe class Archetype {
     /// </summary>
     /// <param name="entity"></param>
     /// <returns>True if a chunk was destroyed</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(in Entity entity) {
         
         var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
@@ -362,11 +209,8 @@ public sealed unsafe class Archetype {
         if (LastChunk.Size != 0) return false;
         
         // Remove last unused chunk & resize to free memory
-        var chunks = Chunks;
-        Array.Resize(ref chunks, chunks.Length - 1);
-        Chunks = chunks;
-        EntityIdToChunkIndex.TrimExcess(Size*EntitiesPerChunk);
-
+        SetCapacity(Size-1);
+        Size--;
         return true;
     }
     
@@ -383,7 +227,7 @@ public sealed unsafe class Archetype {
     /// <summary>
     /// For mapping the entity id to the chunk it is in. 
     /// </summary>
-    public Dictionary<int, int> EntityIdToChunkIndex { get; set; }
+    public PooledDictionary<int, int> EntityIdToChunkIndex { get; set; }
     
     /// <summary>
     /// A array of active chunks within this archetype. 
@@ -393,13 +237,19 @@ public sealed unsafe class Archetype {
     /// <summary>
     /// Returns the last chunk from the <see cref="Chunks"/>
     /// </summary>
-    public ref Chunk LastChunk => ref Chunks[Size - 1];
+    public ref Chunk LastChunk => ref Chunks[Size];
  
     /// <summary>
-    /// The chunk size. 
+    /// The chunk capacity, how many chunks are there in total. 
     /// </summary>
-    public int Size => Chunks.Length;
+    public int Capacity { get; private set; }
     
+    /// <summary>
+    /// Indicates how many full chunks are currently being used.
+    /// Partial empty chunks do not count. 
+    /// </summary>
+    public int Size { get; private set; }
+
     /// <summary>
     /// The amount of entities fitting in each chunk. 
     /// </summary>
