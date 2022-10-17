@@ -48,14 +48,17 @@ public sealed unsafe class Archetype {
             EntityIdToChunkIndex.EnsureCapacity(newCapacity * EntitiesPerChunk);
         }
         else {
-            
+
+            // Always keep capacity for atleast one chunk
+            if (newCapacity <= 0) newCapacity = 1;
+
             // Decrease chunk size
             var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
             Array.Copy(Chunks, newChunks, Size-1);
             ArrayPool<Chunk>.Shared.Return(Chunks);
             Chunks = newChunks;  
 
-            // Decrease mapping 
+            // Decrease mapping
             EntityIdToChunkIndex.TrimExcess(newCapacity*EntitiesPerChunk);
         }
     }
@@ -70,20 +73,22 @@ public sealed unsafe class Archetype {
     public bool Add(in Entity entity) {
 
         // If there reserved chunks, but no used yet... fill them 
-        if (Size < Capacity) {
-
+        if (Capacity > 0 && Capacity >= Size) {
+            
             ref var lastChunk = ref LastChunk;
             if (lastChunk.Size < lastChunk.Capacity) {
 
                 lastChunk.Add(in entity);
-                EntityIdToChunkIndex[entity.EntityId] = Size;
+                EntityIdToChunkIndex[entity.EntityId] = Size-1;
+                
+                // Last chunk was filled, still capacity, increase size to make next entity fill reserved chunk 
+                if (lastChunk.Size == EntitiesPerChunk && Capacity >= Size + 1) {
+                    Size++;
+                    return false;
+                }
+                
+                return false;
             }
-
-            // Chunk is full now
-            if (lastChunk.Size == lastChunk.Capacity)
-                Size++;
-
-            return false;
         }
         
         // Create new chunk
@@ -97,6 +102,7 @@ public sealed unsafe class Archetype {
         Chunks[Size] = newChunk;
         EntityIdToChunkIndex[entity.EntityId] = Size;
         Capacity++;
+        Size++;
 
         return true;
     }
@@ -140,6 +146,7 @@ public sealed unsafe class Archetype {
                 Chunks[Capacity+index] = newChunk;
             } 
             Capacity += neededChunks; // So many chunks are allocated
+            Size = 1; // Since no other chunks are allocated... 
         }
     }
     
@@ -195,14 +202,15 @@ public sealed unsafe class Archetype {
         ref var chunk = ref Chunks[chunkIndex];
         
         // If its the last chunk, simply remove the entity
-        if (chunkIndex == Size - 1) {
+        if (chunkIndex == Size-1) {
             chunk.Remove(entity);
             EntityIdToChunkIndex.Remove(entity.EntityId);
             return false;
         }
         
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
-        var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(entity.EntityId, ref LastChunk);
+        var index = chunk.EntityIdToIndex[entity.EntityId];
+        var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(index, ref LastChunk);
         EntityIdToChunkIndex.Remove(entity.EntityId);
         EntityIdToChunkIndex[movedEntityId] = chunkIndex;
         
@@ -210,6 +218,7 @@ public sealed unsafe class Archetype {
         
         // Remove last unused chunk & resize to free memory
         SetCapacity(Size-1);
+        Capacity--;
         Size--;
         return true;
     }
@@ -237,7 +246,7 @@ public sealed unsafe class Archetype {
     /// <summary>
     /// Returns the last chunk from the <see cref="Chunks"/>
     /// </summary>
-    public ref Chunk LastChunk => ref Chunks[Size];
+    public ref Chunk LastChunk => ref Chunks[Size-1];
  
     /// <summary>
     /// The chunk capacity, how many chunks are there in total. 

@@ -24,7 +24,7 @@ public class Benchmark {
             .AddValidator(JitOptimizationsValidator.DontFailOnError)
             .AddLogger(ConsoleLogger.Default)
             .AddColumnProvider(DefaultColumnProviders.Instance);
-        
+
         BenchmarkRunner.Run<ArchetypeIterationBenchmark>(config);
     }
 }

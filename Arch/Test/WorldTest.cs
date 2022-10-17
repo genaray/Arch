@@ -26,21 +26,6 @@ public class WorldTest {
     [Test]
     public void Create() {
 
-        /*
-        var world = World.Create();
-            
-        var first = world.Create(new[] { typeof(Transform), typeof(Rotation) });
-        var second = world.Create(new[] { typeof(Transform), typeof(Rotation) });
-        var third = world.Create(new[] { typeof(Transform), typeof(Rotation) });
-
-        first.Set(new Transform{ x = 10 });
-            
-        var query = new QueryDescription { All = new []{typeof(Transform)}};
-        world.Query(query, (in Entity entity, ref Transform t0) => {
-                
-            Console.WriteLine("TEST : "+t0.x);
-        });*/
-        
         world = World.Create();
         
         var entity = world.Create(group);

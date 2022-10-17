@@ -46,7 +46,7 @@ public unsafe class ArchetypeIterationBenchmark {
     public void IterationNormal() {
 
         var chunks = archetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
 
             ref var chunk = ref chunks[chunkIndex];
             var transforms = chunk.GetArray<Transform>();
@@ -67,7 +67,7 @@ public unsafe class ArchetypeIterationBenchmark {
     public void IterationUnsafeAdd() {
 
         var chunks = archetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
             
             ref var chunk = ref chunks[chunkIndex];
             var transforms = chunk.GetArray<Transform>();
@@ -91,7 +91,7 @@ public unsafe class ArchetypeIterationBenchmark {
     public void IterationNormalWithEntity() {
 
         var chunks = archetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
 
             ref var chunk = ref chunks[chunkIndex];
             var entities = chunk.Entities;
@@ -115,7 +115,7 @@ public unsafe class ArchetypeIterationBenchmark {
     public void IterationUnsafeAddWithEntity() {
 
         var chunks = archetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex <= archetype.Size; chunkIndex++) {
+        for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
             
             ref var chunk = ref chunks[chunkIndex];
             var entities = chunk.Entities;
