@@ -18,13 +18,22 @@ for (var index = 0; index < 100; index++)
 ## Querying Entities
 
 ```csharp
+
+// Define a description of which entities you want to query
 var query = new QueryDescription {
     All = new []{ typeof(Transform) },
     Any = new []{ typeof(Rotation) },
     None = new []{ typeof(AI) }
 };
 
+// Execute the query
 world.Query(query, entity => { /* Do something */ });
+
+// Execute the query and modify components in the same step, up to 10 generic components at the same time. 
+world.Query(query, (in Entity entity, ref Transform transform) => {
+    transform.x++;
+    transform.y++;
+});
 ```
 
 ## Modifying Entities
