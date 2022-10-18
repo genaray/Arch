@@ -53,24 +53,24 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
   [Host]     : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
   DefaultJob : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
 
-
-|                     Method |  amount |         Mean |      Error |     StdDev |       Median | Allocated |
-|--------------------------- |-------- |-------------:|-----------:|-----------:|-------------:|----------:|
-|            IterationNormal |   10000 |     9.400 μs |  0.0120 μs |  0.0100 μs |     9.396 μs |         - |
-|         IterationUnsafeAdd |   10000 |     9.016 μs |  0.1538 μs |  0.1831 μs |     8.919 μs |         - |
-| IterationFixedPtrIteration |   10000 |     8.946 μs |  0.0631 μs |  0.0493 μs |     8.931 μs |         - |
-|  IterationManualRangeCheck |   10000 |     8.910 μs |  0.0865 μs |  0.0676 μs |     8.902 μs |         - |
-|     IterationMultipleLoops |   10000 |    11.065 μs |  0.0360 μs |  0.0319 μs |    11.051 μs |         - |
-|            IterationNormal |  100000 |    99.432 μs |  1.5136 μs |  1.5544 μs |    98.825 μs |         - |
-|         IterationUnsafeAdd |  100000 |    94.850 μs |  1.8829 μs |  4.4013 μs |    91.300 μs |         - |
-| IterationFixedPtrIteration |  100000 |    92.077 μs |  1.6391 μs |  1.4530 μs |    91.408 μs |         - |
-|  IterationManualRangeCheck |  100000 |    92.334 μs |  0.0598 μs |  0.0499 μs |    92.324 μs |         - |
-|     IterationMultipleLoops |  100000 |   112.009 μs |  0.1135 μs |  0.0886 μs |   111.984 μs |         - |
-|            IterationNormal | 1000000 | 3,077.169 μs | 14.2575 μs | 12.6389 μs | 3,076.809 μs |      10 B |
-|         IterationUnsafeAdd | 1000000 | 2,984.150 μs | 14.0571 μs | 13.1490 μs | 2,987.090 μs |      10 B |
-| IterationFixedPtrIteration | 1000000 | 3,039.060 μs | 34.9704 μs | 31.0003 μs | 3,038.806 μs |      10 B |
-|  IterationManualRangeCheck | 1000000 | 3,014.951 μs |  8.9813 μs |  7.0120 μs | 3,013.975 μs |      10 B |
-|     IterationMultipleLoops | 1000000 | 3,557.774 μs | 27.5206 μs | 22.9810 μs | 3,547.122 μs |      10 B |
+|                       Method |   amount |         Mean |      Error |     StdDev | CacheMisses/Op |
+|----------------------------- |--------- |-------------:|-----------:|-----------:|---------------:|
+|              IterationNormal |    10000 |     30.62 us |   0.519 us |   0.656 us |             49 |
+|           IterationUnsafeAdd |    10000 |     30.15 us |   0.112 us |   0.105 us |             28 |
+|    IterationNormalWithEntity |    10000 |     42.61 us |   0.144 us |   0.135 us |             49 | 
+| IterationUnsafeAddWithEntity |    10000 |     44.92 us |   0.200 us |   0.177 us |             28 |
+|              IterationNormal |   100000 |    298.32 us |   2.185 us |   2.044 us |            641 |
+|           IterationUnsafeAdd |   100000 |    297.39 us |   1.587 us |   1.484 us |            611 |    
+|    IterationNormalWithEntity |   100000 |    421.69 us |   2.129 us |   1.991 us |          1,041 |     
+| IterationUnsafeAddWithEntity |   100000 |    442.95 us |   1.749 us |   1.551 us |            946 |    
+|              IterationNormal |  1000000 |  3,044.35 us |  38.524 us |  34.151 us |         25,502 |  
+|           IterationUnsafeAdd |  1000000 |  3,017.99 us |  13.019 us |  12.178 us |         24,087 |    
+|    IterationNormalWithEntity |  1000000 |  4,246.82 us |  22.290 us |  20.850 us |         26,561 |    
+| IterationUnsafeAddWithEntity |  1000000 |  4,490.07 us |  23.775 us |  22.239 us |         28,689 |    
+|              IterationNormal | 10000000 | 39,867.92 us | 221.959 us | 207.621 us |        275,041 |    
+|           IterationUnsafeAdd | 10000000 | 35,501.86 us | 177.274 us | 148.032 us |        251,094 |   
+|    IterationNormalWithEntity | 10000000 | 47,379.65 us | 223.633 us | 198.244 us |        305,686 |   
+| IterationUnsafeAddWithEntity | 10000000 | 47,517.72 us | 444.653 us | 394.173 us |        321,151 |  
 
 Legends
 - amount    : Value of the 'amount' parameter  
