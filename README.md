@@ -1,9 +1,10 @@
 # Arch
 A C# &amp; .NET 6.0 & .NET 7.0 based Archetype Entity Component System ( ECS ).  
-Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance. 
+Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance.   
 Its incredible fast, especially for well architectured component structures. 
 
 Since its still work in progress it is not yet finished and there still a lot of features missing. 
+It can not be used with Unity unfortunately yet, but its great for pure c# console apps, gameservers and standalone games. 
 
 # Example
 ## Creating Entities
@@ -46,6 +47,7 @@ var entity = world.Create(archetype);
 entity.Set(new Transform());
 ref var transform = entity.Get<Transform(); 
 ```
+> ! Structural changes are not added yet, but can be simulated by yourself by giving each removeable component an flag !
 
 # Performance
 Well... its fast, like REALLY fast.  
