@@ -49,7 +49,14 @@ ref var transform = entity.Get<Transform();
 
 # Benchmark
 The current Benchmark only tests it Archetype/Chunk iteration performance.  
-Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification.   
+Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification. 
+
+```CSHARP
+public struct Transform{ float x; float y; float z; }
+public struct Rotation{ float x; float y; float z; float w; }
+```
+
+The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
 
 ## NET.6
 
