@@ -6,6 +6,8 @@ Its incredible fast, especially for well architectured component structures.
 Since its still work in progress it is not yet finished and there still a lot of features missing. 
 It can not be used with Unity unfortunately yet, but its great for pure c# console apps, gameservers and standalone games. 
 
+> First version as a nugget package is coming soon. 
+
 # Example
 ## Creating Entities
 
