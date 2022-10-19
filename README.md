@@ -45,8 +45,8 @@ ref var transform = entity.Get<Transform();
 ```
 
 # Benchmark
-The current Benchmark only tests it Archetype/Chunk iteration performance.
-Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification.  
+The current Benchmark only tests it Archetype/Chunk iteration performance.  
+Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification.   
 
 ## NET.6
 
