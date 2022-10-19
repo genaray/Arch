@@ -1,5 +1,5 @@
 # Arch
-A C# &amp; .NET 6.0 based Archetype Entity Component System ( ECS ).  
+A C# &amp; .NET 6.0 & .NET 7.0 based Archetype Entity Component System ( ECS ).  
 Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance. 
 Its incredible fast, especially for well architectured component structures. 
 
