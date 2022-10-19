@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Arch.Core.Utils;
 
@@ -13,6 +14,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Add<T>() {
         return Add(typeof(T));
     }
@@ -22,6 +24,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Add(Type type) {
 
         if (Has(type)) return Get(type);
@@ -39,6 +42,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>() {
         return Has(typeof(T));
     }
@@ -48,6 +52,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has(Type type) {
         return TypeIds.ContainsKey(type);
     }
@@ -57,6 +62,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Get<T>() {
         return Get(typeof(T));
     }
@@ -66,6 +72,7 @@ public static class ComponentRegistry {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Get(Type type) {
         return TypeIds[type];
     }
@@ -86,12 +93,12 @@ public static class ComponentRegistry {
 /// Gets created once during its first use and than provides informations like a compile static class. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public static partial class Component<T> {
+public static partial class ComponentMeta<T> {
     
     public static readonly int Id;
 
     //FNV-1 64 bit hash
-    static Component() {
+    static ComponentMeta() {
         Id = ComponentRegistry.Add<T>();
     }
 }
@@ -101,13 +108,10 @@ public static partial class Component<T> {
 /// Gets created once during its first use and than provides informations like a compile static class. 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public static partial class Component {
+public static partial class ComponentMeta {
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Id(Type type) {
-
-        if (ComponentRegistry.Has(type))
-            return ComponentRegistry.Get(type);
-
-        return ComponentRegistry.Add(type);
+        return ComponentRegistry.Has(type) ? ComponentRegistry.Get(type) : ComponentRegistry.Add(type);
     }
 }

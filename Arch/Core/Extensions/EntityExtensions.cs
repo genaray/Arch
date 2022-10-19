@@ -52,7 +52,7 @@ public static class EntityExtensions {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>(this in Entity entity) {
 
-        var componentId = Component<T>.Id;
+        var componentId = ComponentMeta<T>.Id;
         var archetype = entity.GetArchetype();
         return archetype.Has<T>();
     }

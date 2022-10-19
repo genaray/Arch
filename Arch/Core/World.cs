@@ -21,7 +21,7 @@ public readonly struct Entity {
 
     public static Entity Null => new (-1, -1, -1);
     
-    public Entity(int entityId, int worldId, int version) {
+    internal Entity(int entityId, int worldId, int version) {
         EntityId = entityId;
         WorldId = worldId;
         Version = version;
@@ -56,7 +56,7 @@ public readonly struct Entity {
 /// </summary>
 public partial class World {
 
-    public World(int Id) {
+    internal World(int Id) {
 
         this.Id = Id;
         RecycledIds = new PooledQueue<int>(256);
@@ -193,7 +193,7 @@ public partial class World {
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetArchetypes(in QueryDescription queryDescription, List<Archetype> archetypes) {
+    public void GetArchetypes(in QueryDescription queryDescription, IList<Archetype> archetypes) {
 
         // Looping over all archetypes, their chunks and their entities. 
         var query = new Query(queryDescription);
@@ -213,7 +213,7 @@ public partial class World {
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetChunks(in QueryDescription queryDescription, List<Chunk> chunks) {
+    public void GetChunks(in QueryDescription queryDescription, IList<Chunk> chunks) {
 
         // Looping over all archetypes, their chunks and their entities. 
         var query = new Query(queryDescription);

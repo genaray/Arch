@@ -28,11 +28,11 @@ internal readonly struct Query {
     
     private QueryDescription QueryDescription { get; }
 
-    public Query(QueryDescription description) : this() {
+    internal Query(QueryDescription description) : this() {
         
-        All = BitSetExtensions.From(description.All);
-        Any = BitSetExtensions.From(description.Any);
-        None = BitSetExtensions.From(description.None);
+        All = description.All.ToBitSet();
+        Any = description.Any.ToBitSet();
+        None = description.None.ToBitSet();
         QueryDescription = description;
         
         // Otherwhise a any value of 0 always returns false somehow

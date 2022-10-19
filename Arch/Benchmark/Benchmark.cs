@@ -24,7 +24,8 @@ public class Benchmark {
             .AddValidator(JitOptimizationsValidator.DontFailOnError)
             .AddLogger(ConsoleLogger.Default)
             .AddColumnProvider(DefaultColumnProviders.Instance);
-
-        BenchmarkRunner.Run<ArchetypeIterationBenchmark>(config);
+        
+        // Use : dotnet run -c Release --framework net7.0 -- --job short --filter *IterationBenchmark*
+        BenchmarkSwitcher.FromAssembly(typeof(Benchmark).Assembly).Run(args, config);
     }
 }

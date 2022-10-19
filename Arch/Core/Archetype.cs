@@ -11,63 +11,28 @@ using Collections.Pooled;
 namespace Arch.Core;
 
 /// <summary>
-/// An archetype, stores entities with the same components, tightly packed in <see cref="Chunks"/>
+/// An archetype, stores all <see cref="Entity"/>'s with the same set of components, tightly packed in <see cref="Chunks"/>
 /// </summary>
-public sealed unsafe class Archetype {
+public sealed unsafe partial class Archetype {
     
     public const int TOTAL_CAPACITY = 16000; // 16KB, fits perfectly into one L1 Cache
     
-    public Archetype(params Type[] types) {
+    internal Archetype(params Type[] types) {
 
         Types = types;
         EntitiesPerChunk = CalculateEntitiesPerChunk(types);
         
         // The bitmask/set 
-        BitSet = BitSetExtensions.From(types);
+        BitSet = types.ToBitSet();
         EntityIdToChunkIndex = new PooledDictionary<int, int>(EntitiesPerChunk);
         Chunks = Array.Empty<Chunk>();
     }
 
     /// <summary>
-    /// Sets the capacity and either makes the internal <see cref="Chunks"/> and <see cref="EntityIdToChunkIndex"/> arrays bigger or smaller. 
-    /// </summary>
-    /// <param name="newCapacity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void SetCapacity(int newCapacity) {
-
-        // More size needed
-        if (newCapacity > Capacity) {
-            
-            // Increase chunk array size
-            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-            Array.Copy(Chunks, newChunks, Size);
-            ArrayPool<Chunk>.Shared.Return(Chunks);
-            Chunks = newChunks;   
-            
-            // Increase mapping
-            EntityIdToChunkIndex.EnsureCapacity(newCapacity * EntitiesPerChunk);
-        }
-        else {
-
-            // Always keep capacity for atleast one chunk
-            if (newCapacity <= 0) newCapacity = 1;
-
-            // Decrease chunk size
-            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-            Array.Copy(Chunks, newChunks, Size-1);
-            ArrayPool<Chunk>.Shared.Return(Chunks);
-            Chunks = newChunks;  
-
-            // Decrease mapping
-            EntityIdToChunkIndex.TrimExcess(newCapacity*EntitiesPerChunk);
-        }
-    }
-    
-    /// <summary>
     /// Adds an <see cref="Entity"/> to this chunk.
-    /// Increases the <see cref="Size"/>. 
+    /// Will fill existing allocated <see cref="Chunk"/>'s till all of them are full, then it will start to allocate a new chunk and fill that one again. 
     /// </summary>
-    /// <param name="entity"></param>
+    /// <param name="entity">The entity to add to this archetype</param>
     /// <returns>True if a new chunk was created</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(in Entity entity) {
@@ -82,11 +47,9 @@ public sealed unsafe class Archetype {
                 EntityIdToChunkIndex[entity.EntityId] = Size-1;
                 
                 // Last chunk was filled, still capacity, increase size to make next entity fill reserved chunk 
-                if (lastChunk.Size == EntitiesPerChunk && Capacity >= Size + 1) {
-                    Size++;
-                    return false;
-                }
+                if (lastChunk.Size != EntitiesPerChunk || Capacity < Size + 1) return false;
                 
+                Size++;
                 return false;
             }
         }
@@ -106,50 +69,7 @@ public sealed unsafe class Archetype {
 
         return true;
     }
-    
-    /// <summary>
-    /// Reserves memory for a specific amount of <see cref="Entity"/>'s.
-    /// Highly efficient bulk adding. Once allocated, you can traverse over the arch to fill it.
-    /// Allocates on top of the existing <see cref="Capacity"/>.
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns>True if a new chunk was created</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AllocateFor(in int amount) {
-            
-        // Put into the last partial empty chunk 
-        if (Size > 0) {
-            
-            // Calculate amount of required chunks
-            ref var lastChunk = ref LastChunk;
-            var freeSpots = lastChunk.Capacity - lastChunk.Size;
-            var neededSpots = amount - freeSpots;
-            var neededChunks = neededSpots / EntitiesPerChunk;
-            
-            // Set capacity and insert new empty chunks
-            SetCapacity(Capacity+neededChunks);
-            for (var index = 0; index < neededChunks; index++) {
-                
-                var newChunk = new Chunk(EntitiesPerChunk, Types);
-                Chunks[Capacity+index] = newChunk;
-            }
-            Capacity += neededChunks;
-        }
-        else {
-            
-            // Allocate new chunks in one go
-            var neededChunks = (int)Math.Ceiling(((float)amount / EntitiesPerChunk));
-            SetCapacity(Capacity+neededChunks);
-            for (var index = 0; index < neededChunks; index++) {
-                
-                var newChunk = new Chunk(EntitiesPerChunk, Types);
-                Chunks[Capacity+index] = newChunk;
-            } 
-            Capacity += neededChunks; // So many chunks are allocated
-            Size = 1; // Since no other chunks are allocated... 
-        }
-    }
-    
+
     /// <summary>
     /// Sets an component into the fitting component array at an index.
     /// </summary>
@@ -172,7 +92,7 @@ public sealed unsafe class Archetype {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>() {
 
-        var id = Component<T>.Id;
+        var id = ComponentMeta<T>.Id;
         return BitSet.IsSet(id);
     }
     
@@ -262,7 +182,7 @@ public sealed unsafe class Archetype {
     /// <summary>
     /// The amount of entities fitting in each chunk. 
     /// </summary>
-    public int EntitiesPerChunk { get; private set; }
+    public int EntitiesPerChunk { get; }
 
     /// <summary>
     /// Calculates how many entities with the types fit into one chunk. 
@@ -271,5 +191,89 @@ public sealed unsafe class Archetype {
     /// <returns></returns>
     public static int CalculateEntitiesPerChunk(Type[] types) {
         return TOTAL_CAPACITY/(sizeof(Entity)+types.ToByteSize());
+    }
+}
+
+/// <summary>
+/// Adds capacity related methods. 
+/// </summary>
+public sealed unsafe partial class Archetype {
+
+        /// <summary>
+    /// Sets the capacity and either makes the internal <see cref="Chunks"/> and <see cref="EntityIdToChunkIndex"/> arrays bigger or smaller. 
+    /// </summary>
+    /// <param name="newCapacity"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetCapacity(int newCapacity) {
+
+        // More size needed
+        if (newCapacity > Capacity) {
+            
+            // Increase chunk array size
+            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
+            Array.Copy(Chunks, newChunks, Size);
+            ArrayPool<Chunk>.Shared.Return(Chunks);
+            Chunks = newChunks;   
+            
+            // Increase mapping
+            EntityIdToChunkIndex.EnsureCapacity(newCapacity * EntitiesPerChunk);
+        }
+        else {
+
+            // Always keep capacity for atleast one chunk
+            if (newCapacity <= 0) newCapacity = 1;
+
+            // Decrease chunk size
+            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
+            Array.Copy(Chunks, newChunks, Size-1);
+            ArrayPool<Chunk>.Shared.Return(Chunks);
+            Chunks = newChunks;  
+
+            // Decrease mapping
+            EntityIdToChunkIndex.TrimExcess(newCapacity*EntitiesPerChunk);
+        }
+    }
+    
+    /// <summary>
+    /// Reserves memory for a specific amount of <see cref="Entity"/>'s.
+    /// Highly efficient bulk adding. Once allocated, you can traverse over the arch to fill it.
+    /// Allocates on top of the existing <see cref="Capacity"/>.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns>True if a new chunk was created</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AllocateFor(in int amount) {
+            
+        // Put into the last partial empty chunk 
+        if (Size > 0) {
+            
+            // Calculate amount of required chunks
+            ref var lastChunk = ref LastChunk;
+            var freeSpots = lastChunk.Capacity - lastChunk.Size;
+            var neededSpots = amount - freeSpots;
+            var neededChunks = neededSpots / EntitiesPerChunk;
+            
+            // Set capacity and insert new empty chunks
+            SetCapacity(Capacity+neededChunks);
+            for (var index = 0; index < neededChunks; index++) {
+                
+                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                Chunks[Capacity+index] = newChunk;
+            }
+            Capacity += neededChunks;
+        }
+        else {
+            
+            // Allocate new chunks in one go
+            var neededChunks = (int)Math.Ceiling(((float)amount / EntitiesPerChunk));
+            SetCapacity(Capacity+neededChunks);
+            for (var index = 0; index < neededChunks; index++) {
+                
+                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                Chunks[Capacity+index] = newChunk;
+            } 
+            Capacity += neededChunks; // So many chunks are allocated
+            Size = 1; // Since no other chunks are allocated... 
+        }
     }
 }

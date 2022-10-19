@@ -1,6 +1,8 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Arch.Core.Utils;
 
 namespace Arch.Core; 
@@ -17,9 +19,14 @@ namespace Arch.Core;
 /// ]
 /// </example>
 /// </summary>
-public struct Chunk{
+public partial struct Chunk{
 
-    public Chunk(int capacity, params Type[] types) {
+    /// <summary>
+    /// Allocates enough space for the passed amount of entities with all its components. 
+    /// </summary>
+    /// <param name="capacity"></param>
+    /// <param name="types"></param>
+    internal Chunk(int capacity, params Type[] types) {
 
         // Calculate capacity & init arrays
         Capacity = capacity;
@@ -34,7 +41,7 @@ public struct Chunk{
         for (var index = 0; index < types.Length; index++) {
 
             var type = types[index];
-            var componentId = Component.Id(type);
+            var componentId = ComponentMeta.Id(type);
             
             ComponentIdToArrayIndex[componentId] = index;
             Components[index] = Array.CreateInstance(type, Capacity);
@@ -81,7 +88,7 @@ public struct Chunk{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>() {
         
-        var id = Component<T>.Id;
+        var id = ComponentMeta<T>.Id;
         return ComponentIdToArrayIndex.ContainsKey(id);
     }
     
@@ -138,6 +145,125 @@ public struct Chunk{
         EntityIdToIndex.Remove(entityID);
         Size--;
     }
+
+    /// <summary>
+    /// The entities in this chunk.
+    /// </summary>
+    public readonly Entity[] Entities { get; }
+    
+    /// <summary>
+    /// The entity components in this chunk.
+    /// </summary>
+    public readonly Array[] Components { get; }
+    
+    /// <summary>
+    /// A map to get the index of a component array inside <see cref="Components"/>.
+    /// </summary>
+    public readonly Dictionary<int, int> ComponentIdToArrayIndex { get;}
+    
+    /// <summary>
+    /// A map used to get the array indexes of a certain <see cref="Entity"/>.
+    /// </summary>
+    public readonly Dictionary<int, int> EntityIdToIndex { get; }
+    
+    /// <summary>
+    /// The current size/occupation of this chunk.
+    /// </summary>
+    public int Size { get; private set; }
+    
+    /// <summary>
+    /// The total capacity, how many entities fit in here.
+    /// </summary>
+    public int Capacity { get; }
+}
+
+/// <summary>
+/// Adds various utility methods to the chunk. 
+/// </summary>
+public partial struct Chunk {
+
+    /// <summary>
+    /// Returns the index of the component array inside the structure of arrays. 
+    /// </summary>
+    /// <typeparam name="T">The component</typeparam>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int Index<T>() {
+
+        var id = ComponentMeta<T>.Id;
+        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
+            return index;
+        
+        return -1;
+    }
+    
+    /// <summary>
+    /// Returns the internal array for the passed component
+    /// </summary>
+    /// <typeparam name="T">The component</typeparam>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T[] GetArray<T>() {
+
+        var index = Index<T>();
+        return Components[index] as T[];
+    }
+    
+    /// <summary>
+    /// Returns an span of the internal array for the passed component
+    /// </summary>
+    /// <typeparam name="T">The component</typeparam>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<T> GetSpan<T>() {
+        return new Span<T>(GetArray<T>());
+    }
+
+    /// <summary>
+    /// Returns a ref to the first element of the component array in an safe way.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T GetFirst<T>() {
+        return ref GetSpan<T>()[0];  // Span to avoid bound checking for the [] operation
+    }
+    
+    /// <summary>
+    /// Returns an the internal array for the passed component.
+    /// Uses unsafe operations to avoid bound checks. 
+    /// </summary>
+    /// <typeparam name="T">The component</typeparam>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T[] GetArrayUnsafe<T>() {
+      
+        var index = Index<T>();
+        ref var first = ref MemoryMarshal.GetArrayDataReference(Components);
+        ref var current = ref Unsafe.Add(ref first, index);
+        return Unsafe.As<T[]>(current);
+    }
+    
+    /// <summary>
+    /// Returns an span to the internal array for the passed component.
+    /// Uses unsafe operations to avoid bound checks. 
+    /// </summary>
+    /// <typeparam name="T">The component</typeparam>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span<T> GetSpanUnsafe<T>() {
+        return new Span<T>(GetArrayUnsafe<T>());
+    }
+    
+    /// <summary>
+    /// Returns a ref to the first element of the component array in an sunsafe way.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T GetFirstUnsafe<T>() {
+        return ref MemoryMarshal.GetArrayDataReference(GetArrayUnsafe<T>());
+    }
     
     /// <summary>
     /// Moves the last entity from the chunk into the current chunk and fills/replaces an index. 
@@ -166,61 +292,4 @@ public struct Chunk{
         chunk.Remove(lastEntity);
         return lastEntity.EntityId;
     }
-    
-    /// <summary>
-    /// Returns the index of the component array inside the structure of arrays. 
-    /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int Index<T>() {
-
-        var id = Component<T>.Id;
-        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
-            return index;
-        
-        return -1;
-    }
-    
-    /// <summary>
-    /// Returns the internal array for the passed component
-    /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T[] GetArray<T>() {
-
-        var index = Index<T>();
-        return Components[index] as T[];
-    }
-
-    /// <summary>
-    /// The entities in this chunk.
-    /// </summary>
-    public Entity[] Entities { get; set; }
-    
-    /// <summary>
-    /// The entity components in this chunk.
-    /// </summary>
-    public Array[] Components { get; set; }
-    
-    /// <summary>
-    /// A map to get the index of a component array inside <see cref="Components"/>.
-    /// </summary>
-    public Dictionary<int, int> ComponentIdToArrayIndex { get; set; }
-    
-    /// <summary>
-    /// A map used to get the array indexes of a certain <see cref="Entity"/>.
-    /// </summary>
-    public Dictionary<int, int> EntityIdToIndex { get; set; }
-    
-    /// <summary>
-    /// The current size/occupation of this chunk.
-    /// </summary>
-    public int Size { get; private set; }
-    
-    /// <summary>
-    /// The total capacity, how many entities fit in here.
-    /// </summary>
-    public int Capacity { get; private set; }
 }

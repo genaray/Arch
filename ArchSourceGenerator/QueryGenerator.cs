@@ -16,10 +16,8 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ArchSourceGenerator {
     
-    
     [Generator]
     public class QueryGenerator : IIncrementalGenerator {
-        
         
         public void Initialize(IncrementalGeneratorInitializationContext context) {
             

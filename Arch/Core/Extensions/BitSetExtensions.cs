@@ -10,7 +10,7 @@ public static class BitSetExtensions {
     /// </summary>
     /// <param name="types"></param>
     /// <returns></returns>
-    public static BitSet From(Type[] types) {
+    public static BitSet ToBitSet(this Type[] types) {
 
         if (types.Length == 0)
             return new BitSet();
@@ -29,7 +29,7 @@ public static class BitSetExtensions {
     public static void SetBits(this BitSet bitSet, Type[] types) {
 
         foreach (var type in types) {
-            var id = Component.Id(type);
+            var id = ComponentMeta.Id(type);
             bitSet.SetBit(id);
         }
     }
