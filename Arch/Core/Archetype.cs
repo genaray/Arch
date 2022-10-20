@@ -157,7 +157,7 @@ public sealed unsafe partial class Archetype {
     /// For mapping the entity id to the chunk it is in. 
     /// </summary>
     public PooledDictionary<int, int> EntityIdToChunkIndex { get; set; }
-    
+
     /// <summary>
     /// A array of active chunks within this archetype. 
     /// </summary>
@@ -172,7 +172,7 @@ public sealed unsafe partial class Archetype {
     /// The chunk capacity, how many chunks are there in total. 
     /// </summary>
     public int Capacity { get; private set; }
-    
+
     /// <summary>
     /// Indicates how many full chunks are currently being used.
     /// Partial empty chunks do not count. 

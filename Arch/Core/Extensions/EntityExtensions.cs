@@ -23,6 +23,7 @@ public static class EntityExtensions {
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAlive(this in Entity entity) {
         
         var world = World.Worlds[entity.WorldId];
@@ -51,8 +52,7 @@ public static class EntityExtensions {
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>(this in Entity entity) {
-
-        var componentId = ComponentMeta<T>.Id;
+        
         var archetype = entity.GetArchetype();
         return archetype.Has<T>();
     }

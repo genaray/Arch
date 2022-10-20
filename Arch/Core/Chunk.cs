@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 
 namespace Arch.Core; 
@@ -196,7 +197,7 @@ public partial struct Chunk {
         
         return -1;
     }
-    
+
     /// <summary>
     /// Returns the internal array for the passed component
     /// </summary>
