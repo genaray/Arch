@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
@@ -16,12 +17,12 @@ public readonly struct Entity {
         
     // The id of this entity in the world, not in the archetype
     public readonly int EntityId; 
-    public readonly int WorldId;
-    public readonly int Version;
+    public readonly byte WorldId;
+    public readonly ushort Version;
 
-    public static Entity Null => new (-1, -1, -1);
+    public static Entity Null => new (-1, 0, 0);
     
-    internal Entity(int entityId, int worldId, int version) {
+    internal Entity(int entityId, byte worldId, ushort version) {
         EntityId = entityId;
         WorldId = worldId;
         Version = version;
@@ -56,7 +57,7 @@ public readonly struct Entity {
 /// </summary>
 public partial class World {
 
-    internal World(int Id) {
+    internal World(byte Id) {
 
         this.Id = Id;
         RecycledIds = new PooledQueue<int>(256);
@@ -68,14 +69,32 @@ public partial class World {
     /// <summary>
     /// Creates a <see cref="World"/> and adds it to the <see cref="Worlds"/> list. 
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The newly created <see cref="World"/></returns>
     public static World Create() {
 
         var worldSize = Worlds.Count;
-        var world = new World(worldSize);
+        if (worldSize >= byte.MaxValue)
+            throw new Exception("Can not create world, there can only be 255 existing worlds.");
+            
+        var world = new World((byte)worldSize);
         Worlds.Add(world);
 
         return world;
+    }
+
+    /// <summary>
+    /// Destroys an existing <see cref="World"/> and releases its entities and instances. 
+    /// </summary>
+    /// <param name="world">The world to destroy</param>
+    public static void Destroy(World world) {
+
+        Worlds.Remove(world);
+        world.Capacity = 0;
+        world.Size = 0;
+        world.RecycledIds.Clear();
+        world.Archetypes.Clear();
+        world.EntityToArchetype.Clear();
+        world.GroupToArchetype.Clear();
     }
 
     /// <summary>
@@ -109,7 +128,7 @@ public partial class World {
         var id = recycle ? recycledId : Size;
         
         // Create new entity and put it to the back of the array
-        var entity = new Entity(id,Id,0);
+        var entity = new Entity(id, Id,0);
         
         // Add to archetype & mapping
         var archetype = GetOrCreate(types);
@@ -242,7 +261,7 @@ public partial class World {
     /// <summary>
     /// The world id
     /// </summary>
-    public int Id { get; }
+    public byte Id { get; }
 
     /// <summary>
     /// The size of the world, the amount of <see cref="Entities"/>.
