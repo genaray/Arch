@@ -108,9 +108,13 @@ public static class StringBuilderExtensions {
                 for (var localIndex = 0; localIndex <= index1; localIndex++)
                     getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
                 
+                var getFirstElement = new StringBuilder();
+                for (var localIndex = 0; localIndex <= index1; localIndex++)
+                    getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref t{localIndex}Array[0];");
+                
                 var getComponents = new StringBuilder();
                 for (var localIndex = 0; localIndex <= index1; localIndex++)
-                    getComponents.AppendLine($"ref var t{localIndex}Component = ref t{localIndex}Array[entityIndex];");
+                    getComponents.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
                 
                 var insertParams = new StringBuilder();
                 for (var localIndex = 0; localIndex <= index1; localIndex++)
@@ -131,11 +135,13 @@ for (var index = 0; index < Archetypes.Count; index++) {{
 
     if (!query.Valid(bitset)) continue;
 
-    var chunks = archetype.Chunks;
+    ref var chunkFirstElement = ref archetype.Chunks[0];
     for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {{
 
-        ref var chunk = ref chunks[chunkIndex];
+        ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
         {getArrays}
+        
+        {getFirstElement}
 
         for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {{
 
@@ -170,10 +176,14 @@ for (var index = 0; index < Archetypes.Count; index++) {{
                 var getArrays = new StringBuilder();
                 for (var localIndex = 0; localIndex <= index1; localIndex++)
                     getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
+
+                var getFirstElement = new StringBuilder();
+                for (var localIndex = 0; localIndex <= index1; localIndex++)
+                    getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref t{localIndex}Array[0];");
                 
                 var getComponents = new StringBuilder();
                 for (var localIndex = 0; localIndex <= index1; localIndex++)
-                    getComponents.AppendLine($"ref var t{localIndex}Component = ref t{localIndex}Array[entityIndex];");
+                    getComponents.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
                 
                 var insertParams = new StringBuilder();
                 insertParams.Append("in entity,");
@@ -195,16 +205,18 @@ for (var index = 0; index < Archetypes.Count; index++) {{
 
     if (!query.Valid(bitset)) continue;
 
-    var chunks = archetype.Chunks;
+    ref var chunkFirstElement = ref archetype.Chunks[0];
     for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {{
 
-        ref var chunk = ref chunks[chunkIndex];
-        var entities = chunk.Entities;
+        ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
         {getArrays}
+
+        ref var entityFirstElement = ref chunk.Entities[0];
+        {getFirstElement}
 
         for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {{
 
-            ref var entity = ref entities[entityIndex];
+            ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             {getComponents}
             forEach({insertParams});
         }}
