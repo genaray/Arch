@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
-using Arch.Test;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Loggers;

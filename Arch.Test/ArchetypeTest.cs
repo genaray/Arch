@@ -74,7 +74,7 @@ public class ArchetypeTest {
         Assert.AreEqual(2, archetype.Capacity);
         Assert.AreEqual(entities-50, archetype.Chunks[0].Size);
         Assert.AreEqual(49, archetype.Chunks[1].Size);
-        Assert.AreEqual(493, archetype.Chunks[0].Entities[0].EntityId);    // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        Assert.AreEqual(Archetype.CalculateEntitiesPerChunk(group)+50-1, archetype.Chunks[0].Entities[0].EntityId);    // Last entity from second chunk now replaced the removed entity and is in the first chunk
         Assert.AreEqual(0, archetype.EntityIdToChunkIndex[493]);  // Archetype knows that the moved entity is not in a different chunk 
     }
     
@@ -95,6 +95,6 @@ public class ArchetypeTest {
         Assert.AreEqual(1, archetype.Size);
         Assert.AreEqual(1, archetype.Capacity);
         Assert.AreEqual(entities-1, archetype.Chunks[0].Size);
-        Assert.AreEqual(444, archetype.Chunks[0].Entities[0].EntityId);    // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        Assert.AreEqual( Archetype.CalculateEntitiesPerChunk(group), archetype.Chunks[0].Entities[0].EntityId);    // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 }

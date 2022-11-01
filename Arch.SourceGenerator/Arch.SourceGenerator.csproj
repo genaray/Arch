@@ -5,6 +5,7 @@
         <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>ArchSourceGenerator</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

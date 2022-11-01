@@ -2,7 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch", "Arch\Arch.csproj", "{9A954222-825D-4D9D-86BE-0937699BFE55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchSourceGenerator", "ArchSourceGenerator\ArchSourceGenerator.csproj", "{CD93B5FB-B37B-4E0C-B0B6-8BF7B47776DF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.SourceGenerator", "Arch.SourceGenerator\Arch.SourceGenerator.csproj", "{CD93B5FB-B37B-4E0C-B0B6-8BF7B47776DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Test", "Arch.Test\Arch.Test.csproj", "{437BCD38-FBCF-4955-8561-FF37766FE5E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arch.Benchmark", "Arch.Benchmark\Arch.Benchmark.csproj", "{2DC5850D-ED5C-485A-A671-3BAFE1806C6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +22,13 @@ Global
 		{CD93B5FB-B37B-4E0C-B0B6-8BF7B47776DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD93B5FB-B37B-4E0C-B0B6-8BF7B47776DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD93B5FB-B37B-4E0C-B0B6-8BF7B47776DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{437BCD38-FBCF-4955-8561-FF37766FE5E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{437BCD38-FBCF-4955-8561-FF37766FE5E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{437BCD38-FBCF-4955-8561-FF37766FE5E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{437BCD38-FBCF-4955-8561-FF37766FE5E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DC5850D-ED5C-485A-A671-3BAFE1806C6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DC5850D-ED5C-485A-A671-3BAFE1806C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DC5850D-ED5C-485A-A671-3BAFE1806C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DC5850D-ED5C-485A-A671-3BAFE1806C6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

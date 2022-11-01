@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using Arch.Core;
-using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
+using Arch.Test;
 
 namespace Arch.Benchmark; 
 

@@ -8,6 +8,8 @@ using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
+[assembly: InternalsVisibleTo("Arch.Test")]
+[assembly: InternalsVisibleTo("Arch.Benchmark")]
 namespace Arch.Core;
 
 /// <summary>

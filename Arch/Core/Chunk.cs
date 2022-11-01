@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+using ArrayExtensions = Microsoft.Toolkit.HighPerformance.ArrayExtensions;
 
 namespace Arch.Core; 
 
@@ -240,7 +241,7 @@ public partial struct Chunk {
     public T[] GetArrayUnsafe<T>() {
       
         var index = Index<T>();
-        ref var first = ref MemoryMarshal.GetArrayDataReference(Components);
+        ref var first = ref ArrayExtensions.DangerousGetReference(Components);
         ref var current = ref Unsafe.Add(ref first, index);
         return Unsafe.As<T[]>(current);
     }
@@ -263,7 +264,7 @@ public partial struct Chunk {
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFirstUnsafe<T>() {
-        return ref MemoryMarshal.GetArrayDataReference(GetArrayUnsafe<T>());
+        return ref ArrayExtensions.DangerousGetReference(GetArrayUnsafe<T>());
     }
     
     /// <summary>

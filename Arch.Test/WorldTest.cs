@@ -86,7 +86,7 @@ public class WorldTest {
             world.Create(group);
         
         Assert.AreEqual(10000, world.Size);
-        Assert.AreNotEqual(10000, world.Capacity);
+        Assert.AreEqual(10000, world.Capacity);
     }
     
     [Test]

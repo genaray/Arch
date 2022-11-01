@@ -3,8 +3,8 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.Test;
+using Arch.Core.Extensions;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
@@ -19,7 +19,7 @@ namespace Arch.Benchmark;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 //[DisassemblyDiagnoser(printSource: true)]
 //[RyuJitX64Job]
-public unsafe class ArchetypeIterationTechniquesBenchmark {
+public class ArchetypeIterationTechniquesBenchmark {
 
     [Params( 10000, 100000, 1000000, 10000000)]
     public int amount;
