@@ -55,10 +55,15 @@ ref var transform = entity.Get<Transform();
 ## Utility methods
 
 ```csharp
+
 // To provide flexibility and user support
-world.GetEntities(query, myList);
-world.GetArchetypes(query, myList);
-world.GetChunks(query, myList);
+var filteredEntities = new List<Entity>();
+var filteredArchetypes = new List<Archetype>();
+var filteredChunks = new List<Chunk>();
+
+world.GetEntities(query, filteredEntities);
+world.GetArchetypes(query, filteredArchetypes);
+world.GetChunks(query, filteredChunks);
 ```
 
 # Performance
