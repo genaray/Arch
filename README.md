@@ -1,10 +1,11 @@
 # Arch
-A C# &amp; .NET 6.0 & .NET 7.0 based Archetype Entity Component System ( ECS ).  
+A C# based Archetype Entity Component System ( ECS ).  
 Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance.   
 Its incredible fast, especially for well architectured component structures. 
 
 Since its still work in progress it is not yet finished and there still a lot of features missing. 
 It can not be used with Unity unfortunately yet, but its great for pure c# console apps, gameservers and standalone games. 
+Supports .NetStandard 2.1 and .Net Core 6 and 7.
 
 > First version as a nugget package is coming soon. 
 
