@@ -15,6 +15,7 @@ It can not be used with Unity unfortunately yet, but its great for pure c# conso
 var archetype = new []{ typeof(Transform), typeof(Rotation) };
 
 var world = World.Create();
+world.Reserve(archetype, 100000); // Optional, provides bulk adding of entities
 for (var index = 0; index < 100; index++)
     world.Create(archetype);
 ```
@@ -50,6 +51,15 @@ entity.Set(new Transform());
 ref var transform = entity.Get<Transform(); 
 ```
 > ! Structural changes are not added yet, but can be simulated by yourself by giving each removeable component an flag !
+
+## Utility methods
+
+```csharp
+// To provide flexibility and user support
+world.GetEntities(query, myList);
+world.GetArchetypes(query, myList);
+world.GetChunks(query, myList);
+```
 
 # Performance
 Well... its fast, like REALLY fast.  
