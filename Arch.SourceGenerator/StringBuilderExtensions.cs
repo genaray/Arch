@@ -93,7 +93,8 @@ public static class StringBuilderExtensions {
 
             var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
             methodBuilder.AddParameter("QueryDescription", "description");
-
+            methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
+            
             var generics = new StringBuilder().Generic(index).ToString();
             methodBuilder.AddParameter($"ForEach{generics}", "forEach");
 
@@ -155,6 +156,7 @@ for (var index = 0; index < Archetypes.Count; index++) {{
 
             var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
             methodBuilder.AddParameter("QueryDescription", "description");
+            methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
 
             var generics = new StringBuilder().Generic(index).ToString();
             methodBuilder.AddParameter($"ForEachWithEntity{generics}", "forEach");
