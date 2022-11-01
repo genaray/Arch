@@ -71,7 +71,7 @@ Well... its fast, like REALLY fast.
 However the iteration speed depends, the lessy you query, the faster it is.  
 This rule targets the amount of queried components aswell as their size. To showcase this, i tested this with several benchmarks.
 
-# Unrealistic Benchmark
+## Unrealistic Benchmark
 
 In this benchmark we quired 10k to 10M entities for two components : `byte` and `int`.
 Which results in an incredible performance. This however is not that realistic since most game entities will have more data.  
@@ -101,7 +101,7 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
 |    IterationNormalEntityTwoComponents | 10000000 | 28,470.720 us |  4,323.3409 us |   236.9769 us |        310,827 |   
 | IterationUnsafeAddEntityTwoComponents | 10000000 | 24,914.991 us |    333.4365 us |    18.2768 us |        288,271 |   
 
-# Benchmark
+## Benchmark
 The current Benchmark only tests it Archetype/Chunk iteration performance.  
 Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification. 
 
@@ -112,7 +112,7 @@ public struct Rotation{ float x; float y; float z; float w; }
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
 
-## NET.6
+### NET.6
 
 BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622 <br>
 AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
@@ -139,7 +139,7 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
 |    IterationNormalWithEntity | 10000000 | 47,379.65 us | 223.633 us | 198.244 us |        305,686 |   
 | IterationUnsafeAddWithEntity | 10000000 | 47,517.72 us | 444.653 us | 394.173 us |        321,151 |  
 
-## NET.7
+### NET.7
 
 |                                Method |   amount |         Mean |      Error |     StdDev | CacheMisses/Op |
 |-------------------------------------- |--------- |-------------:|-----------:|-----------:|---------------:|
@@ -160,7 +160,7 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
 |    IterationNormalEntityTwoComponents | 10000000 | 45,073.30 us | 365.498 us | 341.887 us |        323,789 | 
 | IterationUnsafeAddEntityTwoComponents | 10000000 | 43,000.07 us | 205.964 us | 192.659 us |        304,333 |
 
-## Different Iteration & Acess Techniques
+### Different Iteration & Acess Techniques
 
 We have been testing different strategies and techniques to iterate over the archetype itself and all its chunks for providing the best overall performance.
 Suprisingly all of them are great but especially the Unsafe.Add Iterations were quite faster. Thats why we picked the techniques of `IterationUnsafeAddTwoComponents` and `IterationUnsafeAddTwoComponentsUnsafeArray` and decided that `IterationUnsafeAddTwoComponents` is the best overall since it comes along the least CacheMisses. We will run this benchmark regulary in the future to adjust the ECS performance based on new .NET improvements. 
@@ -205,7 +205,7 @@ Suprisingly all of them are great but especially the Unsafe.Add Iterations were 
 |     IterationUnsafeAddTwoComponentsUnsafeSpan | 10000000 | 30,214.06 us | 151.878 us | 142.067 us | 30,254.44 us |        246,144 |   
 | IterationUnsafeAddTwoComponentsCompleteUnsafe | 10000000 | 30,420.64 us | 307.392 us | 272.495 us | 30,429.62 us |        253,005 |     
 
-## Legend
+### Legend
 
 Legends
 - amount    : Value of the 'amount' parameter  
