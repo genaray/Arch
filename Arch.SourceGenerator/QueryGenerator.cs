@@ -35,7 +35,7 @@ namespace ArchSourceGenerator {
                 template.AppendForEachDelegates(10);
                 template.AppendForEachEntityDelegates(10);
 
-                var builder = CodeBuilder.Create("Arch.Core").AddClass("World").MakePublicClass();
+                var builder = CodeBuilder.Create("Arch.Core").AddNamespaceImport("System.Runtime.CompilerServices").AddClass("World").MakePublicClass();
                 builder.AppendQueryMethods(10);
                 builder.AppendEntityQueryMethods(10);
                 
