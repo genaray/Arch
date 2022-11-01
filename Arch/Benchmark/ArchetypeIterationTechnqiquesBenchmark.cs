@@ -35,7 +35,7 @@ public unsafe class ArchetypeIterationTechniquesBenchmark {
         consumer = new Consumer();
         
         globalArchetype = new Archetype(group);
-        globalArchetype.AllocateFor(amount);
+        globalArchetype.Reserve(amount);
         for (var index = 0; index < amount; index++) {
 
             var entity = new Entity(index, 0, 0);

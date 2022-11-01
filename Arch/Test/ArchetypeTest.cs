@@ -44,7 +44,7 @@ public class ArchetypeTest {
 
         var archetype = new Archetype(group);
         var entities = Archetype.CalculateEntitiesPerChunk(group) * 10;
-        archetype.AllocateFor(entities);
+        archetype.Reserve(entities);
         
         for (var index = 0; index < entities; index++) {
 

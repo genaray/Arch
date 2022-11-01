@@ -177,7 +177,11 @@ for (var index = 0; index < Archetypes.Count; index++) {{
                 
                 var template = 
                     $@"
-var query = new Query(description);
+if (!QueryCache.TryGetValue(description, out var query)) {{
+    query = new Query(description);
+    QueryCache[description] = query;
+}}
+
 for (var index = 0; index < Archetypes.Count; index++) {{
 
     var archetype = Archetypes[index];

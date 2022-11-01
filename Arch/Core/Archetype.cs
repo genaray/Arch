@@ -242,7 +242,7 @@ public sealed unsafe partial class Archetype {
     /// <param name="entity"></param>
     /// <returns>True if a new chunk was created</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AllocateFor(in int amount) {
+    public void Reserve(in int amount) {
             
         // Put into the last partial empty chunk 
         if (Size > 0) {

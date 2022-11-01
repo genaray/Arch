@@ -13,7 +13,7 @@ namespace Arch.Core;
 /// <summary>
 /// Represents an entity in our world. 
 /// </summary>
-public readonly struct Entity {
+public readonly struct Entity : IEquatable<Entity> {
         
     // The id of this entity in the world, not in the archetype
     public readonly int EntityId; 
@@ -38,15 +38,17 @@ public readonly struct Entity {
 
     public override int GetHashCode() {
         
-        unchecked{ // Overflow is fine, just wrap{
+        unchecked{ // Overflow is fine, just wrap
             int hash = 17;
-            // Suitable nullity checks etc, of course :)
             hash = hash * 23 + EntityId;
             hash = hash * 23 + WorldId;
             hash = hash * 23 + Version;
             return hash;
         }
     }
+
+    public static bool operator ==(Entity left, Entity right) { return left.Equals(right); }
+    public static bool operator !=(Entity left, Entity right) { return !left.Equals(right); }
 
     public override string ToString() { return $"{nameof(EntityId)}: {EntityId}, {nameof(WorldId)}: {WorldId}, {nameof(Version)}: {Version}"; }
 }
@@ -60,10 +62,13 @@ public partial class World {
     internal World(byte Id) {
 
         this.Id = Id;
-        RecycledIds = new PooledQueue<int>(256);
+        
         GroupToArchetype = new PooledDictionary<Type[], Archetype>(8);
         EntityToArchetype = new PooledDictionary<int, Archetype>(0);
         Archetypes = new PooledList<Archetype>(8);
+        
+        RecycledIds = new PooledQueue<int>(256);
+        QueryCache = new PooledDictionary<QueryDescription, Query>(8);
     }
 
     /// <summary>
@@ -112,6 +117,22 @@ public partial class World {
         GroupToArchetype[types] = archetype;
         Archetypes.Add(archetype);
         return archetype;
+    }
+
+    /// <summary>
+    /// Reserves space for the passed amount of entities upon the already existing amount. It allocates space for additional entities. 
+    /// </summary>
+    /// <param name="types">The archetype, the entities components</param>
+    /// <param name="amount">The amount of entities we wanna allocate in one go</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reserve(Type[] types, int amount) {
+
+        var archetype = GetOrCreate(types);
+        archetype.Reserve(amount);
+        
+        var requiredCapacity = Capacity + amount;
+        EntityToArchetype.EnsureCapacity(requiredCapacity);
+        Capacity = requiredCapacity;
     }
     
     /// <summary>
@@ -183,7 +204,12 @@ public partial class World {
     public void Query(in QueryDescription queryDescription, Action<Entity> forEntity) {
 
         // Looping over all archetypes, their chunks and their entities. 
-        var query = new Query(queryDescription);
+        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
+            query = new Query(queryDescription);
+            QueryCache[queryDescription] = query;
+        }
+
+        // Iterate over all archetypes
         for (var index = 0; index < Archetypes.Count; index++) {
 
             var archetype = Archetypes[index];
@@ -208,14 +234,57 @@ public partial class World {
     }
     
     /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and copies all fitting entities into a list. 
+    /// </summary>
+    /// <param name="queryDescription"></param>
+    /// <param name="forEntity"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetEntities(in QueryDescription queryDescription, IList<Entity> list) {
+
+        // Looping over all archetypes, their chunks and their entities. 
+        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
+            query = new Query(queryDescription);
+            QueryCache[queryDescription] = query;
+        }
+
+        // Iterate over all archetypes
+        for (var index = 0; index < Archetypes.Count; index++) {
+
+            var archetype = Archetypes[index];
+            var bitset = archetype.BitSet;
+
+            // Only process archetypes within the query decribtion
+            if (!query.Valid(bitset)) continue;
+
+            var chunks = archetype.Chunks;
+            for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+
+                ref var chunk = ref chunks[chunkIndex];
+                var entities = chunk.Entities;
+                
+                for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {
+
+                    ref var entity = ref entities[entityIndex];
+                    list.Add(entity);
+                }
+            }
+        }
+    }
+    
+    /// <summary>
     /// Queries for the passed <see cref="QueryDescription"/> and fills in the passed list with all valid <see cref="Archetype"/>'s.
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetArchetypes(in QueryDescription queryDescription, IList<Archetype> archetypes) {
 
+        // Cache query
+        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
+            query = new Query(queryDescription);
+            QueryCache[queryDescription] = query;
+        }
+        
         // Looping over all archetypes, their chunks and their entities. 
-        var query = new Query(queryDescription);
         for (var index = 0; index < Archetypes.Count; index++) {
 
             var archetype = Archetypes[index];
@@ -234,8 +303,13 @@ public partial class World {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetChunks(in QueryDescription queryDescription, IList<Chunk> chunks) {
 
+        // Cache query
+        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
+            query = new Query(queryDescription);
+            QueryCache[queryDescription] = query;
+        }
+        
         // Looping over all archetypes, their chunks and their entities. 
-        var query = new Query(queryDescription);
         for (var index = 0; index < Archetypes.Count; index++) {
 
             var archetype = Archetypes[index];
@@ -293,4 +367,9 @@ public partial class World {
     /// Recycled entity ids. 
     /// </summary>
     internal PooledQueue<int> RecycledIds { get; set; }
+    
+    /// <summary>
+    /// A cache for mapping a <see cref="QueryDescription"/> to its <see cref="Query"/> instance for preventing new <see cref="BitSet"/> allocations every query. 
+    /// </summary>
+    internal PooledDictionary<QueryDescription, Query> QueryCache { get; set; }
 }

@@ -77,6 +77,19 @@ public class WorldTest {
     }
     
     [Test]
+    public void Reserve() {
+        
+        world = World.Create();
+        world.Reserve(group, 10000);
+        
+        for(var index = 0; index < 10000; index++)
+            world.Create(group);
+        
+        Assert.AreEqual(10000, world.Size);
+        Assert.AreNotEqual(10000, world.Capacity);
+    }
+    
+    [Test]
     public void AllQuery() {
 
         var query = new QueryDescription {
@@ -169,6 +182,38 @@ public class WorldTest {
         
         var otherQueryCount = 0;
         world.Query(otherQuery, entity => { otherQueryCount++; });
+        
+        Assert.AreEqual(queryCount,100);
+        Assert.AreEqual(otherQueryCount,100);
+    }
+    
+    [Test]
+    public void GeneratedQueryTest() {
+
+        var query = new QueryDescription {
+            All = new []{ typeof(Transform) },
+            Any = new []{ typeof(Rotation) },
+            None = new []{ typeof(AI) }
+        };
+        
+        var otherQuery = new QueryDescription {
+            All = new []{ typeof(Transform), typeof(Rotation) },
+            Any = new []{ typeof(AI) },
+        };
+
+
+        world = World.Create();
+        for (var index = 0; index < 100; index++)
+            world.Create(group);
+        
+        for (var index = 0; index < 100; index++)
+            world.Create(otherGroup);
+
+        var queryCount = 0;
+        world.Query(query, (in Entity entity, ref Transform t) => { queryCount++; });
+        
+        var otherQueryCount = 0;
+        world.Query(otherQuery, (ref Rotation rot) => { otherQueryCount++; });
         
         Assert.AreEqual(queryCount,100);
         Assert.AreEqual(otherQueryCount,100);

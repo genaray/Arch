@@ -8,13 +8,35 @@ namespace Arch.Core;
 /// <summary>
 /// A query describtion of which entities we wanna query for.
 /// </summary>
-public struct QueryDescription {
+public struct QueryDescription : IEquatable<QueryDescription> {
 
     public Type[] All = Array.Empty<Type>();
     public Type[] Any = Array.Empty<Type>();
     public Type[] None = Array.Empty<Type>();
     
     public QueryDescription() {}
+
+    public bool Equals(QueryDescription other) {
+        return Equals(All, other.All) && Equals(Any, other.Any) && Equals(None, other.None);
+    }
+
+    public override bool Equals(object obj) {
+        return obj is QueryDescription other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        
+        unchecked{ // Overflow is fine, just wrap{
+            int hash = 17;
+            hash = hash * 23 + All.GetHashCode();
+            hash = hash * 23 + Any.GetHashCode();
+            hash = hash * 23 + None.GetHashCode();
+            return hash;
+        }
+    }
+
+    public static bool operator ==(QueryDescription left, QueryDescription right) { return left.Equals(right); }
+    public static bool operator !=(QueryDescription left, QueryDescription right) { return !left.Equals(right); }
 }
 
 /// <summary>
