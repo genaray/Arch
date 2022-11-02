@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
@@ -21,7 +22,7 @@ namespace Arch.Core;
 /// ]
 /// </example>
 /// </summary>
-public partial struct Chunk{
+public partial struct Chunk {
 
     /// <summary>
     /// Allocates enough space for the passed amount of entities with all its components. 
@@ -77,7 +78,7 @@ public partial struct Chunk{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in int index, in T cmp) {
 
-        var array = GetArray<T>();
+        var array = GetSpan<T>();
         var entityIndex = EntityIdToIndex[index];
         array[entityIndex] = cmp;
     }
@@ -88,6 +89,7 @@ public partial struct Chunk{
     /// <typeparam name="T">The type</typeparam>
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has<T>() {
         
         var id = ComponentMeta<T>.Id;
@@ -100,6 +102,7 @@ public partial struct Chunk{
     /// <typeparam name="T">The type</typeparam>
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has(in Entity entity) {
         return EntityIdToIndex.ContainsKey(entity.EntityId);
     }
@@ -111,9 +114,10 @@ public partial struct Chunk{
     /// <typeparam name="T">The type</typeparam>
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T Get<T>(in int index) {
 
-        var array = GetArray<T>();
+        var array = GetSpan<T>();
         var entityIndex = EntityIdToIndex[index];
         return ref array[entityIndex];
     }
@@ -151,32 +155,32 @@ public partial struct Chunk{
     /// <summary>
     /// The entities in this chunk.
     /// </summary>
-    public readonly Entity[] Entities { get; }
+    public readonly Entity[] Entities { [Pure] get; }
     
     /// <summary>
     /// The entity components in this chunk.
     /// </summary>
-    public readonly Array[] Components { get; }
+    public readonly Array[] Components { [Pure] get; }
     
     /// <summary>
     /// A map to get the index of a component array inside <see cref="Components"/>.
     /// </summary>
-    public readonly Dictionary<int, int> ComponentIdToArrayIndex { get;}
+    public readonly Dictionary<int, int> ComponentIdToArrayIndex { [Pure] get; }
     
     /// <summary>
     /// A map used to get the array indexes of a certain <see cref="Entity"/>.
     /// </summary>
-    public readonly Dictionary<int, int> EntityIdToIndex { get; }
+    public readonly Dictionary<int, int> EntityIdToIndex { [Pure] get; }
 
     /// <summary>
     /// The current size/occupation of this chunk.
     /// </summary>
-    public int Size { get; private set; }
+    public int Size { [Pure] get; private set; }
     
     /// <summary>
     /// The total capacity, how many entities fit in here.
     /// </summary>
-    public int Capacity { get; }
+    public int Capacity { [Pure] get; }
 }
 
 /// <summary>
@@ -190,6 +194,7 @@ public partial struct Chunk {
     /// <typeparam name="T">The component</typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     private int Index<T>() {
 
         var id = ComponentMeta<T>.Id;
@@ -205,6 +210,7 @@ public partial struct Chunk {
     /// <typeparam name="T">The component</typeparam>
     /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public T[] GetArray<T>() {
 
         var index = Index<T>();
@@ -217,8 +223,9 @@ public partial struct Chunk {
     /// <typeparam name="T">The component</typeparam>
     /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Span<T> GetSpan<T>() {
-        return new Span<T>(GetArray<T>());
+        return new Span<T>(GetArray<T>(), 0, Size);
     }
 
     /// <summary>
@@ -227,6 +234,7 @@ public partial struct Chunk {
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T GetFirst<T>() {
         return ref GetSpan<T>()[0];  // Span to avoid bound checking for the [] operation
     }
@@ -238,12 +246,12 @@ public partial struct Chunk {
     /// <typeparam name="T">The component</typeparam>
     /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public T[] GetArrayUnsafe<T>() {
       
         var index = Index<T>();
-        ref var first = ref ArrayExtensions.DangerousGetReference(Components);
-        ref var current = ref Unsafe.Add(ref first, index);
-        return Unsafe.As<T[]>(current);
+        ref var array = ref ArrayExtensions.DangerousGetReferenceAt(Components, index);
+        return Unsafe.As<T[]>(array);
     }
     
     /// <summary>
@@ -253,6 +261,7 @@ public partial struct Chunk {
     /// <typeparam name="T">The component</typeparam>
     /// <returns>The array of the certain component stored in the <see cref="Archetype"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Span<T> GetSpanUnsafe<T>() {
         return new Span<T>(GetArrayUnsafe<T>());
     }
@@ -263,6 +272,7 @@ public partial struct Chunk {
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T GetFirstUnsafe<T>() {
         return ref ArrayExtensions.DangerousGetReference(GetArrayUnsafe<T>());
     }
@@ -272,6 +282,7 @@ public partial struct Chunk {
     /// </summary>
     /// <param name="chunk"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public int ReplaceIndexWithLastEntityFrom(int index, ref Chunk chunk) {
 
         // Get last entity
