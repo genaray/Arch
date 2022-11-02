@@ -92,7 +92,7 @@ public static class StringBuilderExtensions {
         for (var index = 0; index <= amount; index++) {
 
             var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
-            methodBuilder.AddParameter("QueryDescription", "description");
+            methodBuilder.AddParameter("in QueryDescription", "description");
             methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
             
             var generics = new StringBuilder().Generic(index).ToString();
@@ -128,22 +128,25 @@ if (!QueryCache.TryGetValue(description, out var query)) {{
     QueryCache[description] = query;
 }}
 
-for (var index = 0; index < Archetypes.Count; index++) {{
+var size = Archetypes.Count;
+for (var index = 0; index < size; index++) {{
 
     var archetype = Archetypes[index];
+    var archetypeSize = archetype.Size;
     var bitset = archetype.BitSet;
 
     if (!query.Valid(bitset)) continue;
 
     ref var chunkFirstElement = ref archetype.Chunks[0];
-    for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {{
+    for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {{
 
-        ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+        ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+        var chunkSize = chunk.Size;
         {getArrays}
         
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {{
+        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
 
             {getComponents}
             forEach({insertParams});
@@ -161,7 +164,7 @@ for (var index = 0; index < Archetypes.Count; index++) {{
         for (var index = 0; index <= amount; index++) {
 
             var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
-            methodBuilder.AddParameter("QueryDescription", "description");
+            methodBuilder.AddParameter("in QueryDescription", "description");
             methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
 
             var generics = new StringBuilder().Generic(index).ToString();
@@ -198,25 +201,28 @@ if (!QueryCache.TryGetValue(description, out var query)) {{
     QueryCache[description] = query;
 }}
 
-for (var index = 0; index < Archetypes.Count; index++) {{
+var size = Archetypes.Count;
+for (var index = 0; index < size; index++) {{
 
     var archetype = Archetypes[index];
+    var archetypeSize = archetype.Size;
     var bitset = archetype.BitSet;
 
     if (!query.Valid(bitset)) continue;
 
     ref var chunkFirstElement = ref archetype.Chunks[0];
-    for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {{
+    for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {{
 
-        ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+        ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+        var chunkSize = chunk.Size;
         {getArrays}
 
         ref var entityFirstElement = ref chunk.Entities[0];
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {{
+        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
 
-            ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+            ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             {getComponents}
             forEach({insertParams});
         }}

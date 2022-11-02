@@ -81,7 +81,7 @@ public class ArchetypeIterationTechniquesBenchmark {
             
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
-
+          
             for (var index = 0; index < currentChunk.Size; index++) {
 
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);

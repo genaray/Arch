@@ -212,23 +212,26 @@ public partial class World {
         }
 
         // Iterate over all archetypes
-        for (var index = 0; index < Archetypes.Count; index++) {
+        var size = Archetypes.Count;
+        for (var index = 0; index < size; index++) {
 
             var archetype = Archetypes[index];
+            var archetypeSize = archetype.Size;
             var bitset = archetype.BitSet;
 
             // Only process archetypes within the query decribtion
             if (!query.Valid(bitset)) continue;
 
-            var chunks = archetype.Chunks;
-            for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+            ref var chunkFirstElement = ref archetype.Chunks[0];
+            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
 
-                ref var chunk = ref chunks[chunkIndex];
-                var entities = chunk.Entities;
+                ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+                var chunkSize = chunk.Size;
                 
-                for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {
+                ref var entityFirstElement = ref chunk.Entities[0];
+                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
 
-                    ref var entity = ref entities[entityIndex];
+                    ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                     forEntity(entity);
                 }
             }
@@ -250,23 +253,26 @@ public partial class World {
         }
 
         // Iterate over all archetypes
-        for (var index = 0; index < Archetypes.Count; index++) {
+        var size = Archetypes.Count;
+        for (var index = 0; index < size; index++) {
 
             var archetype = Archetypes[index];
+            var archetypeSize = archetype.Size;
             var bitset = archetype.BitSet;
 
             // Only process archetypes within the query decribtion
             if (!query.Valid(bitset)) continue;
 
-            var chunks = archetype.Chunks;
-            for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
+            ref var chunkFirstElement = ref archetype.Chunks[0];
+            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
 
-                ref var chunk = ref chunks[chunkIndex];
-                var entities = chunk.Entities;
+                ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+                var chunkSize = chunk.Size;
                 
-                for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++) {
+                ref var entityFirstElement = ref chunk.Entities[0];
+                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
 
-                    ref var entity = ref entities[entityIndex];
+                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                     list.Add(entity);
                 }
             }
@@ -287,7 +293,8 @@ public partial class World {
         }
         
         // Looping over all archetypes, their chunks and their entities. 
-        for (var index = 0; index < Archetypes.Count; index++) {
+        var size = Archetypes.Count;
+        for (var index = 0; index < size; index++) {
 
             var archetype = Archetypes[index];
             var bitset = archetype.BitSet;
@@ -312,17 +319,20 @@ public partial class World {
         }
         
         // Looping over all archetypes, their chunks and their entities. 
-        for (var index = 0; index < Archetypes.Count; index++) {
+        var size = Archetypes.Count;
+        for (var index = 0; index < size; index++) {
 
             var archetype = Archetypes[index];
+            var archetypeSize = archetype.Size;
             var bitset = archetype.BitSet;
 
             // Only process archetypes within the query decribtion
             if (!query.Valid(bitset)) continue;
-            
-            for (var chunkIndex = 0; chunkIndex < archetype.Size; chunkIndex++) {
 
-                ref var chunk = ref archetype.Chunks[chunkIndex];
+            ref var chunkFirstElement = ref archetype.Chunks[0];
+            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
+
+                ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
                 chunks.Add(chunk);
             }
         }

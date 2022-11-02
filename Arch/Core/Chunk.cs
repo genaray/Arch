@@ -167,7 +167,7 @@ public partial struct Chunk{
     /// A map used to get the array indexes of a certain <see cref="Entity"/>.
     /// </summary>
     public readonly Dictionary<int, int> EntityIdToIndex { get; }
-    
+
     /// <summary>
     /// The current size/occupation of this chunk.
     /// </summary>

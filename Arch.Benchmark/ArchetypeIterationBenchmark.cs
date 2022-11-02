@@ -98,7 +98,7 @@ public class ArchetypeIterationBenchmark {
 
             for (var index = 0; index < chunk.Size; index++) {
 
-                ref var entity = ref entities[index];
+                ref readonly var entity = ref entities[index];
                 ref var transform = ref transforms[index];
                 ref var rotation = ref rotations[index];
                 
@@ -126,7 +126,7 @@ public class ArchetypeIterationBenchmark {
 
             for (var index = 0; index < currentChunk.Size; index++) {
 
-                ref var currentEntity = ref Unsafe.Add(ref entity, index);
+                ref readonly var currentEntity = ref Unsafe.Add(ref entity, index);
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);
                 ref var currentRotation = ref Unsafe.Add(ref rotation, index);
                 

@@ -210,11 +210,11 @@ public class WorldTest {
             world.Create(otherGroup);
 
         var queryCount = 0;
-        world.Query(query, (in Entity entity, ref Transform t) => { queryCount++; });
+        world.Query(in query, (in Entity entity, ref Transform t) => { queryCount++; });
         
         var otherQueryCount = 0;
-        world.Query(otherQuery, (ref Rotation rot) => { otherQueryCount++; });
-        
+        world.Query(in otherQuery, (ref Rotation rot) => { otherQueryCount++; });
+       
         Assert.AreEqual(queryCount,100);
         Assert.AreEqual(otherQueryCount,100);
     }

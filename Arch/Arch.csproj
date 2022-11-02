@@ -6,11 +6,13 @@
         
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.0.4</Version>
+        <Version>1.0.5</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
-        <PackageReleaseNotes>Generated query methods now use unsafe techniques to iterate over chunk entities for avoiding bound checks</PackageReleaseNotes>
+        <PackageReleaseNotes>
+            Some optimizations based on profiling. Copied the sizes of chunks and archetypes to local variables now. This way its already optimized and jit doesnt need to run the code till its hotpathed.
+        </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
         
         <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
