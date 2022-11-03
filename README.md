@@ -1,11 +1,12 @@
 # Arch
-A C# based Archetype Entity Component System ( ECS ).  
-Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance.   
+A C# based Archetype [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS).  
+
+Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance.  
+This technique has two main advantages, first of all it provides an great entity allocation speed and second it lowers the cache misses to the best possible minimum. 
 Its incredible fast, especially for well architectured component structures. 
 
-Since its still work in progress it is not yet finished and there still a lot of features missing. 
-It can not be used with Unity unfortunately yet, but its great for pure c# console apps, gameservers and standalone games. 
-Supports .NetStandard 2.1 and .Net Core 6 and 7.
+Supports .NetStandard 2.1, .Net Core 6 and 7.  
+Since .NetStandard is supported, you may also use it with Unity. 
 
 > First version as a nugget package is coming soon. 
 
@@ -35,10 +36,10 @@ var query = new QueryDescription {
 };
 
 // Execute the query
-world.Query(query, entity => { /* Do something */ });
+world.Query(in query, entity => { /* Do something */ });
 
 // Execute the query and modify components in the same step, up to 10 generic components at the same time. 
-world.Query(query, (in Entity entity, ref Transform transform) => {
+world.Query(in query, (in Entity entity, ref Transform transform) => {
     transform.x++;
     transform.y++;
 });
@@ -57,6 +58,10 @@ ref var transform = entity.Get<Transform();
 
 ```csharp
 
+entity.IsAlive();      // Checks if the entity is alive in the current world
+entity.Has<T>();       // Returns whether the entity has an component
+entity.GetArchetype(); // Returns the archetype of an entity
+
 // To provide flexibility and user support
 var filteredEntities = new List<Entity>();
 var filteredArchetypes = new List<Archetype>();
@@ -69,38 +74,10 @@ world.GetChunks(query, filteredChunks);
 
 # Performance
 Well... its fast, like REALLY fast.  
-However the iteration speed depends, the lessy you query, the faster it is.  
-This rule targets the amount of queried components aswell as their size. To showcase this, i tested this with several benchmarks.
+However the iteration speed depends, the less you query, the faster it is.  
+This rule targets the amount of queried components aswell as their size.  
 
-## Unrealistic Benchmark
-
-In this benchmark we quired 10k to 10M entities for two components : `byte` and `int`.
-Which results in an incredible performance. This however is not that realistic since most game entities will have more data.  
-
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622 <br>
-AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
-.NET SDK=6.0.202 <br>
-  [Host]     : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
-  DefaultJob : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
-
-|                                Method |   amount |          Mean |          Error |        StdDev | CacheMisses/Op |
-|-------------------------------------- |--------- |--------------:|---------------:|--------------:|---------------:|
-|          IterationNormalTwoComponents |    10000 |     12.865 us |      0.3449 us |     0.0189 us |             21 |     
-|       IterationUnsafeAddTwoComponents |    10000 |      7.929 us |      1.0482 us |     0.0575 us |             26 |     
-|    IterationNormalEntityTwoComponents |    10000 |     26.195 us |      7.9725 us |     0.4370 us |             66 |      
-| IterationUnsafeAddEntityTwoComponents |    10000 |     22.052 us |      7.2714 us |     0.3986 us |             27 |     
-|          IterationNormalTwoComponents |   100000 |    129.815 us |     37.7431 us |     2.0688 us |          1,981 |      
-|       IterationUnsafeAddTwoComponents |   100000 |    127.363 us |     13.1882 us |     0.7229 us |          2,619 |    
-|    IterationNormalEntityTwoComponents |   100000 |    257.592 us |     41.6327 us |     2.2820 us |          3,364 |      
-| IterationUnsafeAddEntityTwoComponents |   100000 |    216.907 us |      6.7056 us |     0.3676 us |          2,300 |  
-|          IterationNormalTwoComponents |  1000000 |  1,310.500 us |    250.4711 us |    13.7292 us |         29,863 |       
-|       IterationUnsafeAddTwoComponents |  1000000 |    805.809 us |    136.8741 us |     7.5025 us |         27,876 |   
-|    IterationNormalEntityTwoComponents |  1000000 |  2,582.471 us |    670.0485 us |    36.7276 us |         28,524 |    
-| IterationUnsafeAddEntityTwoComponents |  1000000 |  2,227.871 us |    344.8356 us |    18.9016 us |         34,153 | 
-|          IterationNormalTwoComponents | 10000000 | 17,060.813 us | 19,409.4991 us | 1,063.9001 us |        282,799 |     
-|       IterationUnsafeAddTwoComponents | 10000000 | 12,693.875 us |  5,389.9791 us |   295.4429 us |        289,084 |    
-|    IterationNormalEntityTwoComponents | 10000000 | 28,470.720 us |  4,323.3409 us |   236.9769 us |        310,827 |   
-| IterationUnsafeAddEntityTwoComponents | 10000000 | 24,914.991 us |    333.4365 us |    18.2768 us |        288,271 |   
+Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among the fastest ecs frameworks in terms of allocation and iteration. 
 
 ## Benchmark
 The current Benchmark only tests it Archetype/Chunk iteration performance.  
@@ -113,32 +90,6 @@ public struct Rotation{ float x; float y; float z; float w; }
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
 
-### NET.6
-
-BenchmarkDotNet=v0.13.1, OS=Windows 10.0.22622 <br>
-AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores <br>
-.NET SDK=6.0.202 <br>
-  [Host]     : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
-  DefaultJob : .NET 6.0.4 (6.0.422.16404), X64 RyuJIT <br>
-
-|                       Method |   amount |         Mean |      Error |     StdDev | CacheMisses/Op |
-|----------------------------- |--------- |-------------:|-----------:|-----------:|---------------:|
-|              IterationNormal |    10000 |     30.62 us |   0.519 us |   0.656 us |             49 |
-|           IterationUnsafeAdd |    10000 |     30.15 us |   0.112 us |   0.105 us |             28 |
-|    IterationNormalWithEntity |    10000 |     42.61 us |   0.144 us |   0.135 us |             49 | 
-| IterationUnsafeAddWithEntity |    10000 |     44.92 us |   0.200 us |   0.177 us |             28 |
-|              IterationNormal |   100000 |    298.32 us |   2.185 us |   2.044 us |            641 |
-|           IterationUnsafeAdd |   100000 |    297.39 us |   1.587 us |   1.484 us |            611 |    
-|    IterationNormalWithEntity |   100000 |    421.69 us |   2.129 us |   1.991 us |          1,041 |     
-| IterationUnsafeAddWithEntity |   100000 |    442.95 us |   1.749 us |   1.551 us |            946 |    
-|              IterationNormal |  1000000 |  3,044.35 us |  38.524 us |  34.151 us |         25,502 |  
-|           IterationUnsafeAdd |  1000000 |  3,017.99 us |  13.019 us |  12.178 us |         24,087 |    
-|    IterationNormalWithEntity |  1000000 |  4,246.82 us |  22.290 us |  20.850 us |         26,561 |    
-| IterationUnsafeAddWithEntity |  1000000 |  4,490.07 us |  23.775 us |  22.239 us |         28,689 |    
-|              IterationNormal | 10000000 | 39,867.92 us | 221.959 us | 207.621 us |        275,041 |    
-|           IterationUnsafeAdd | 10000000 | 35,501.86 us | 177.274 us | 148.032 us |        251,094 |   
-|    IterationNormalWithEntity | 10000000 | 47,379.65 us | 223.633 us | 198.244 us |        305,686 |   
-| IterationUnsafeAddWithEntity | 10000000 | 47,517.72 us | 444.653 us | 394.173 us |        321,151 |  
 
 ### NET.7
 
