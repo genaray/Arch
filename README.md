@@ -5,10 +5,16 @@ Each Archetype stores their entities within 16KB sized chunks perfectly fitting 
 This technique has two main advantages, first of all it provides an great entity allocation speed and second it lowers the cache misses to the best possible minimum. 
 Its incredible fast, especially for well architectured component structures. 
 
+Its a bare minimum ECS, following the guideline of "Performance as a feature".  
+New features will be added regulary, feel free to contribute ! 
+
 Supports .NetStandard 2.1, .Net Core 6 and 7.  
 Since .NetStandard is supported, you may also use it with Unity. 
 
-> First version as a nugget package is coming soon. 
+Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
+```sh
+dotnet add PROJECT package Arch --version 1.0.5
+```
 
 # Example
 ## Creating Entities
