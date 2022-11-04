@@ -173,6 +173,24 @@ world.GetChunks(query, filteredChunks);                                 // Fills
 
 Archetype's and Chunk's are internal structures of the world and store entities with the same component types. You will mostly never use them directly, therefore more on them later. 
 
+## Bulk adding
+
+Arch supports bulk adding of entities, this is incredible fast since it allows us to allocate enough space for a certain set of entities in one go. This reservation happens on top of the already existing entities in an archetype. You only need to reserve space once and than it will be filled later or sooner. 
+
+```csharp
+var archetype = new []{ typeof(Position), typeof(Velocity) };
+
+// Create 1k entities
+for(var index = 0; index < 1000; index++)
+    world.Create(archetype)
+
+world.Reserve(archetype, 1000000);              // Reserves space for additional 1mil entities
+for(var index = 0; index < 1000000; index++)    // Create additional 1 mil entities
+    world.Create(archetype)
+
+// In total there now 1mil and 1k entities in that certain archetype. 
+```
+
 # Internal Structure & Memory layout
 
 Arch is an archetype ecs. An archetype ecs groups entities with the same set of components in tightly packed arrays for the fastest possible iteration performance. 
