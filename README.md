@@ -10,9 +10,6 @@ Each Archetype stores their entities within 16KB sized chunks perfectly fitting 
 This technique has two main advantages, first of all it provides an great entity allocation speed and second it lowers the cache misses to the best possible minimum. 
 Its incredible fast, especially for well architectured component structures. 
 
-Its a bare minimum ECS, following the guideline of "Performance as a feature".  
-New features will be added regulary, feel free to contribute ! 
-
 Supports .NetStandard 2.1, .Net Core 6 and 7.  
 Since .NetStandard is supported, you may also use it with Unity. 
 
@@ -21,67 +18,181 @@ Download the [package](https://github.com/genaray/Arch/packages/1697222) and get
 dotnet add PROJECT package Arch --version 1.0.5
 ```
 
-# Example
-## Creating Entities
+# Code Sample
 
 ```csharp
-var archetype = new []{ typeof(Transform), typeof(Rotation) };
+public class Game {
 
-var world = World.Create();
-world.Reserve(archetype, 100000); // Optional, provides bulk adding of entities
-for (var index = 0; index < 100; index++)
-    world.Create(archetype);
+    public struct Position { public float x, y; }
+    public struct Velocity { public float dx, dy; }
+    
+    // The entity structure and or filter/query
+    public static Type[] archetype = { typeof(Position), typeof(Velocity) };
+    
+    public static void Main(string[] args) {
+        
+        var world = World.Create();
+        var query = new QueryDescription{ All = archetype };  // Query all entities with Position AND Velocity components
+
+        // Create entities
+        for (var index = 0; index < 1000; index++) {
+
+            var entity = world.Create(archetype);
+            entity.Set(new Position{ x = 0, y = 0});
+            entity.Set(new Velocity{ dx = 1, dy = 1});
+        }
+
+        // Query and modify entities 
+        world.Query(in query, (ref Position pos, ref Velocity vel) => {
+            pos.x += vel.dx;
+            trans.y += vel.dy;
+        });
+    }
+}
 ```
 
-## Querying Entities
+# Quickstart
+## World
 
-> ! Queries perform faster the smaller your components are or the less components you query !
+The world acts as an management class for all entities, it contains methods to create, destroy and query for them and handles all the internal mechanics.  
+Therefore they are the most important class, you will use the world heavily.  
+Multiple worlds can be used in parallel, each instance and its entities is completly encapsulated from other worlds. 
+
+Worlds are created and destroyed like this...
 
 ```csharp
+var world = World.Create();
+World.Destroy(world);
+```
 
+There can be up to 255 worlds in total. 
+
+## Entity
+
+A entity represents your game entity.   
+It is a simple struct with some metadata acting as a key to acess and manage its components.  
+
+```csharp
+public readonly struct Entity : IEquatable<Entity> {
+        
+    public readonly int EntityId;    // Its id/key in the world
+    public readonly byte WorldId;    // The world the entity lives in
+    public readonly ushort Version;  // Its version, how often the entity or its id was recycled
+    ....
+}
+```
+
+Entities are being created by a world and will "live" in the world in which they were created.  
+When an entity is being created, you need to specify the components it will have. Components are basically the additional data or structure the entity will have. This is called "Archetype". 
+
+```csharp
+var archetype = new []{ typeof(Position), typeof(Velocity), ... };
+var entity = world.Create(archetype);
+```
+
+To ease writing code, you can acess the entity directly to modify its data or to check its metadata.  
+Lets take a look at the most important methods. 
+
+```csharp
+entity.IsAlive();                     // True if the entity is still existing in its world
+entity.Has<Position>();               // True if the entity has a position component
+entity.Set(new Position( x = 10 ));   // Replaces the position component and updates it data
+entity.Get<Position>();               // Returns a reference to the entity position, can directly acess and update position attributes
+```
+
+With those utility methods you are able to implement your game logic.  
+A small example looks like this...
+
+```csharp
+var archetype = new []{ typeof(Position), typeof(Velocity) };
+var entity = world.Create(archetype);
+
+ref var position = ref entity.Get<Position>();    // Get reference to the position
+position.x++;                                     // Update x
+position.y++;                                     // Update y
+
+if(entity.Has<Position>())                        // Make sure that entity has a position ( Optional )
+    entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position 
+```
+
+## Querying/Filtering
+
+To performs operations and to define your game logic, queries are used to iterate over entities.  
+This is performed by using the world ( remember, it manages your created entities ) and by defining a description of which entities we want to iterate over. 
+
+```csharp
 // Define a description of which entities you want to query
 var query = new QueryDescription {
-    All = new []{ typeof(Transform) },
-    Any = new []{ typeof(Rotation) },
-    None = new []{ typeof(AI) }
+    All = new []{ typeof(Position), typeof(Velocity) },   // Should have all specified components
+    Any = new []{ typeof(Player), typeof(Projectile) },   // Should have any of those
+    None = new []{ typeof(AI) }                           // Should have none of those
 };
 
 // Execute the query
 world.Query(in query, entity => { /* Do something */ });
 
 // Execute the query and modify components in the same step, up to 10 generic components at the same time. 
-world.Query(in query, (in Entity entity, ref Transform transform) => {
-    transform.x++;
-    transform.y++;
+world.Query(in query, (ref Position pos, ref Velocity vel) => {
+    pos.x += vel.dx;
+    pos.y += vel.dy;
 });
 ```
 
-## Modifying Entities
+In the example above we want to move our entities based on their `Position` and `Velocity` components. 
+To perform this operation we need to iterate over all entities having both a `Position` and `Velocity` component (`All`). We also want that our entity either is a `Player` or a `Projectile` (`Any`). However, we do not want to iterate and perform that calculation on entities which are controlled by an `AI` (`None`).  
 
-```csharp
-var entity = world.Create(archetype);
-entity.Set(new Transform());
-ref var transform = entity.Get<Transform(); 
-```
-> ! Structural changes are not added yet, but can be simulated by yourself by giving each removeable component an flag !
+The `world.Query` method than smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile` and no `AI` component and executes the defined logic for all of those fitting entities. 
 
-## Utility methods
+Its also important to know that there are multiple different overloads to perform such a query.
+> The less you query in terms of components and the size of components... the faster the query is !
 
 ```csharp
 
-entity.IsAlive();      // Checks if the entity is alive in the current world
-entity.Has<T>();       // Returns whether the entity has an component
-entity.GetArchetype(); // Returns the archetype of an entity
+world.Query(in query, entity => {});                                     // Passes the fitting entity
+world.Query(in query, (ref T1 t1, T2 t2, ...) => {})                     // Passes the defined components of the fitting entity, up to 10 components
+world.Query(in query, (in Entity en, ref T1 t1, ref T2 t2, ...) => {})   // Passed the fitting entity and its defined components, up to 10 components 
 
-// To provide flexibility and user support
 var filteredEntities = new List<Entity>();
 var filteredArchetypes = new List<Archetype>();
 var filteredChunks = new List<Chunk>();
 
-world.GetEntities(query, filteredEntities);
-world.GetArchetypes(query, filteredArchetypes);
-world.GetChunks(query, filteredChunks);
+world.GetEntities(query, filteredEntities);                             // Fills all fitting entities into the passed list
+world.GetArchetypes(query, filteredArchetypes);                         // Fills all fitting archetypes into the list
+world.GetChunks(query, filteredChunks);                                 // Fills all fitting chunks into the list 
 ```
+
+Archetype's and Chunk's are internal structures of the world and store entities with the same component types. You will mostly never use them directly, therefore more on them later. 
+
+# Internal Structure & Memory layout
+
+Arch is an archetype ecs. An archetype ecs groups entities with the same set of components in tightly packed arrays for the fastest possible iteration performance. 
+This has no direct effect on its API useage or the way you develop your game. But understanding the internal structure can help you to improve your game performance even more. 
+However it has an big impact on the internal structures being used and is the secret to its incredible performance. 
+
+## Archetype
+
+An archetype manages all entities with a common set of components. Like the world is used to manage ALL entities, the archetype is only used to manage a specific set of entities... all entities with the same component structure. The world stores those archetypes and acesses them to iterate, create, update and remove entities. 
+
+```csharp
+// Creates one entity, one archetype where all entities with Position and Velocity will be stored
+var archetype = new []{ typeof(Position), typeof(Velocity) };
+var entity = world.Create(archetype);                            
+
+// Creates another entity, another archetype where all entities with Position, Velocity AND Rotation will be stored
+var secondArchetype = new []{ typeof(Position), typeof(Velocity), typeof(Rotation) } ; 
+var secondEntity = world.Create(secondArchetype);
+```
+
+You may probably now ask : `"Why do this create two seperate archtypes ? Both entities share position and velocity, so they could be stored together."`... Shared subsets of component do NOT matter... all what matters is the exact structure of an entity. Why is that ? Because this way we can utilize the cache during iterations, however explaining this would probably break the scope of this documentation. 
+
+## Chunks
+
+Chunks are were the entities and their components are stored. They utilize dense packed contiguous arrays to store and acess entities. Chunks always store entities & components of about 16kb, this is intended since 16kb fit perfectly into the L1 CPU Cache which gives us insane iteration speeds. Furthermore they are fast to (de)allocate and reduces this ECS memory useage to a minimum. 
+
+Each archetype contains multiple chunks and will create and destroy chunks based on worlds need. 
+
+## Archetype & Chunk useage
+TDB
 
 # Performance
 Well... its fast, like REALLY fast.  
