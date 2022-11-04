@@ -45,7 +45,7 @@ public class Game {
         // Query and modify entities 
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
             pos.x += vel.dx;
-            trans.y += vel.dy;
+            pos.y += vel.dy;
         });
     }
 }
@@ -308,6 +308,8 @@ public void Query<T0>(in QueryDescription description, ForEach<T0> forEach)
 With the power of acessing `Archetype` and `Chunk` directly from the world, you can easily write such high performance queries yourself. Great ! Isnt it ? :)  
 Since this is pretty dangerous you should only do this when you are already familiar with archetypes and chunks. Those features should be handled as readonly as long as you do not really know what you are doing. However entities should ONLY be created and removed using the world directly. 
 
+Lets look at an small example of how you could utilize those features...
+
 ```csharp
 var archetype = new[]{ typeof(Position); }
 var queryDesc = new QueryDescription{ All = archetype };
@@ -323,6 +325,9 @@ foreach(var chunk in allChunks){
     
         ref var pos = ref positions[entityIndex];
         Console.WriteLine($"{pos.x}/{pos.y}");
+
+        pos.x++;
+        pos.y++;
     }
 }
 ```
