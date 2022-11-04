@@ -62,6 +62,7 @@ public class Game {
   * [Archetype](#archetype)
   * [Chunks](#chunks)
   * [Archetype and Chunk usage](#archetype-and-chunk-usage)
+  * [How to avoid pitfalls](#how-to-avoid-pitfalls)
 - [Performance](#performance)
   * [Benchmark](#benchmark)
     + [NET.7](#net7)
@@ -339,7 +340,7 @@ foreach(var chunk in allChunks){
 }
 ```
 
-## How do i avoid pitfalls ? 
+## How to avoid pitfalls
 
 Since `Archetype` and `Chunk` do give you raw acess to the underlaying memory and foundation, there are some actions which should be avoided.
 - Adding/Removing entities directly to `Archetype` and `Chunk`, use always the `World` for this 
