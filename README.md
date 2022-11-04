@@ -187,8 +187,20 @@ You may probably now ask : `"Why do this create two seperate archtypes ? Both en
 
 ## Chunks
 
-Chunks are were the entities and their components are stored. They utilize dense packed contiguous arrays to store and acess entities. Chunks always store entities & components of about 16kb, this is intended since 16kb fit perfectly into the L1 CPU Cache which gives us insane iteration speeds. Furthermore they are fast to (de)allocate and reduces this ECS memory useage to a minimum. 
+Chunks are were the entities and their components are stored. They utilize dense packed contiguous arrays ( [SoA](https://www.wikiwand.com/en/AoS_and_SoA#:~:text=Structure%20of%20arrays%20(SoA)%20is,one%20parallel%20array%20per%20field.) ) to store and acess entities. Chunks always store entities & components of about 16kb, this is intended since 16kb fit perfectly into the L1 CPU Cache which gives us insane iteration speeds. 
 
+The internal structure simplified looks like this...
+```
+Chunk
+[
+    [Entity, Entity, Entity],
+    [Position, Position, Position],
+    [Velocity, Velocity, Velocity]
+    ...
+]
+```
+
+Furthermore they are fast to (de)allocate and reduces this ECS memory useage to a minimum. 
 Each archetype contains multiple chunks and will create and destroy chunks based on worlds need. 
 
 ## Archetype & Chunk useage
