@@ -43,8 +43,8 @@ public class ArchetypeIterationTechniquesBenchmark {
                 
             var t = new Transform();
             var r = new Rotation();
-            globalArchetype.Set(entity.EntityId, t);
-            globalArchetype.Set(entity.EntityId, r);
+            globalArchetype.Set(entity, t);
+            globalArchetype.Set(entity, r);
         }
     }
     

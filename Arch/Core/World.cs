@@ -105,6 +105,17 @@ public partial class World {
     }
 
     /// <summary>
+    /// Returns the fitting archetype for a passed <see cref="QueryDescription"/>.
+    /// </summary>
+    /// <param name="types">The archetype structure</param>
+    /// <param name="archetype">The archetype with those entities</param>
+    /// <returns>True if such an <see cref="Archetype"/> exists</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetArchetype(Type[] types, out Archetype archetype) {
+        return GroupToArchetype.TryGetValue(types, out archetype);
+    }
+    
+    /// <summary>
     /// Either gets or creates a <see cref="Archetype"/> based on the passed <see cref="Group"/> and registers it in the <see cref="World"/>
     /// </summary>
     /// <param name="group"></param>
@@ -112,8 +123,7 @@ public partial class World {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Archetype GetOrCreate(Type[] types) {
         
-        var exists = GroupToArchetype.TryGetValue(types, out var archetype);
-        if (exists) return archetype;
+        if (TryGetArchetype(types, out var archetype)) return archetype;
         
         archetype = new Archetype(types);
         GroupToArchetype[types] = archetype;

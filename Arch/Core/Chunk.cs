@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
-using ArrayExtensions = Microsoft.Toolkit.HighPerformance.ArrayExtensions;
+using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 
 namespace Arch.Core; 
 
@@ -32,7 +32,9 @@ public partial struct Chunk {
     internal Chunk(int capacity, params Type[] types) {
 
         // Calculate capacity & init arrays
+        Size = 0;
         Capacity = capacity;
+        
         Entities = new Entity[Capacity];     
         Components = new Array[types.Length];
         
@@ -49,8 +51,6 @@ public partial struct Chunk {
             ComponentIdToArrayIndex[componentId] = index;
             Components[index] = Array.CreateInstance(type, Capacity);
         }
-        
-        Size = 0;
     }
 
     /// <summary>
@@ -79,7 +79,20 @@ public partial struct Chunk {
     public void Set<T>(in int index, in T cmp) {
 
         var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[index];
+        array[index] = cmp;
+    }
+    
+    /// <summary>
+    /// Sets an component into the fitting component array for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <param name="cmp">The component</param>
+    /// <typeparam name="T">The type</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set<T>(in Entity entity, in T cmp) {
+
+        var array = GetSpan<T>();
+        var entityIndex = EntityIdToIndex[entity.EntityId];
         array[entityIndex] = cmp;
     }
 
@@ -118,7 +131,21 @@ public partial struct Chunk {
     public ref T Get<T>(in int index) {
 
         var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[index];
+        return ref array[index];
+    }
+    
+    /// <summary>
+    /// Returns an component from the fitting component array for an entity
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The type</typeparam>
+    /// <returns>The component</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public ref T Get<T>(in Entity entity) {
+
+        var array = GetSpan<T>();
+        var entityIndex = EntityIdToIndex[entity.EntityId];
         return ref array[entityIndex];
     }
     

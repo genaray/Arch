@@ -11,7 +11,7 @@ using Collections.Pooled;
 namespace Arch.Core;
 
 /// <summary>
-/// An archetype, stores all <see cref="Entity"/>'s with the same set of components, tightly packed in <see cref="Chunks"/>
+/// An archetype, stores all <see cref="Entity"/>'s with the same set of components, tightly packed in <see cref="Chunks"/>.
 /// </summary>
 public sealed unsafe partial class Archetype {
     
@@ -71,17 +71,17 @@ public sealed unsafe partial class Archetype {
     }
 
     /// <summary>
-    /// Sets an component into the fitting component array at an index.
+    /// Sets an component into the fitting component array for an entity. 
     /// </summary>
-    /// <param name="index">The index</param>
+    /// <param name="entity">The index</param>
     /// <param name="cmp">The component</param>
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in int index, in T cmp) {
+    public void Set<T>(in Entity entity, in T cmp) {
 
-        var chunkIndex = EntityIdToChunkIndex[index];
+        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
         ref var chunk = ref Chunks[chunkIndex];
-        chunk.Set(in index, in cmp);
+        chunk.Set(in entity, in cmp);
     }
 
     /// <summary>
@@ -97,17 +97,17 @@ public sealed unsafe partial class Archetype {
     }
     
     /// <summary>
-    /// Returns an component from the fitting component array by its index.
+    /// Returns an component from the fitting component array for its entity.
     /// </summary>
-    /// <param name="index">The index</param>
+    /// <param name="entity">The entity</param>
     /// <typeparam name="T">The type</typeparam>
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Get<T>(in int index) {
+    public ref T Get<T>(in Entity entity) {
         
-        var chunkIndex = EntityIdToChunkIndex[index];
+        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
         ref var chunk = ref Chunks[chunkIndex];
-        return ref chunk.Get<T>(in index);
+        return ref chunk.Get<T>(in entity);
     }
     
     /// <summary>
