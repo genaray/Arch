@@ -51,6 +51,23 @@ public class Game {
 }
 ```
 
+# Content
+- [Quickstart](#quickstart)
+  * [ECS](#ecs)
+  * [World](#world)
+  * [Entity](#entity)
+  * [Querying and Filtering](#querying-and-filtering)
+  * [Bulk adding](#bulk-adding)
+- [Internal Structure and Memory layout](#internal-structure-and-memory-layout)
+  * [Archetype](#archetype)
+  * [Chunks](#chunks)
+  * [Archetype and Chunk usage](#archetype-and-chunk-usage)
+- [Performance](#performance)
+  * [Benchmark](#benchmark)
+    + [NET.7](#net7)
+    + [Different Iteration & Acess Techniques](#different-iteration-and-acess-techniques)
+    + [Legend](#legend)
+
 # Quickstart
 ## ECS
 
@@ -125,7 +142,7 @@ if(entity.Has<Position>())                        // Make sure that entity has a
     entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position 
 ```
 
-## Querying/Filtering
+## Querying and Filtering
 
 To performs operations and to define your game logic, queries are used to iterate over entities.  
 This is performed by using the world ( remember, it manages your created entities ) and by defining a description of which entities we want to iterate over. 
@@ -191,7 +208,7 @@ for(var index = 0; index < 1000000; index++)    // Create additional 1 mil entit
 // In total there now 1mil and 1k entities in that certain archetype. 
 ```
 
-# Internal Structure & Memory layout
+# Internal Structure and Memory layout
 
 Arch is an archetype ecs. An archetype ecs groups entities with the same set of components in tightly packed arrays for the fastest possible iteration performance. 
 This has no direct effect on its API useage or the way you develop your game. But understanding the internal structure can help you to improve your game performance even more. 
@@ -231,7 +248,7 @@ Chunk
 This way they are fast to (de)allocate which also reduces memory useage to a minimum. 
 Each archetype contains multiple chunks and will create and destroy chunks based on worlds need. 
 
-## Archetype & Chunk usage
+## Archetype and Chunk usage
 
 Arch gives you acess to the internal structures aswell. You will mostly do not need this feature, however it can be usefull to leverage the performance, writing custom queries or add new features. 
 
@@ -350,7 +367,7 @@ The used structs are actually quite big, the smaller the components, the faster 
 |    IterationNormalEntityTwoComponents | 10000000 | 45,073.30 us | 365.498 us | 341.887 us |        323,789 | 
 | IterationUnsafeAddEntityTwoComponents | 10000000 | 43,000.07 us | 205.964 us | 192.659 us |        304,333 |
 
-### Different Iteration & Acess Techniques
+### Different Iteration and Acess Techniques
 
 We have been testing different strategies and techniques to iterate over the archetype itself and all its chunks for providing the best overall performance.
 Suprisingly all of them are great but especially the Unsafe.Add Iterations were quite faster. Thats why we picked the techniques of `IterationUnsafeAddTwoComponents` and `IterationUnsafeAddTwoComponentsUnsafeArray` and decided that `IterationUnsafeAddTwoComponents` is the best overall since it comes along the least CacheMisses. We will run this benchmark regulary in the future to adjust the ECS performance based on new .NET improvements. 
