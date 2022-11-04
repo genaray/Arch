@@ -15,7 +15,7 @@ Since .NetStandard is supported, you may also use it with Unity.
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
 ```sh
-dotnet add PROJECT package Arch --version 1.0.5
+dotnet add PROJECT package Arch --version 1.0.6
 ```
 
 # Code Sample
