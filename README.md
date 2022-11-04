@@ -52,6 +52,12 @@ public class Game {
 ```
 
 # Quickstart
+## ECS
+
+Entity Component System (ECS) is a software architectural pattern mostly used for the representation of game world objects or data oriented design in general. An ECS comprises entities composed from components of data, with systems or queries which operate on entities' components.  
+
+ECS follows the principle of composition over inheritance, meaning that every entity is defined not by a type hierarchy, but by the components that are associated with it.
+
 ## World
 
 The world acts as an management class for all entities, it contains methods to create, destroy and query for them and handles all the internal mechanics.  
