@@ -77,9 +77,9 @@ ECS follows the principle of composition over inheritance, meaning that every en
 
 ## World
 
-The world acts as a management class for all its entities, it contains methods to create, destroy and query for them and handles all the internal mechanics.  
+The world acts as a management class for all its entities, it contains methods to create, destroy and query them and handles all the internal mechanics.  
 Therefore it is the most important class, you will use the world heavily.  
-Multiple worlds can be used in parallel, each instance and its entities is completly encapsulated from other worlds. 
+Multiple worlds can be used in parallel, each instance and its entities are completly encapsulated from other worlds. Currently worlds and their content can not interact with each other, however this feature is already planned. 
 
 Worlds are created and destroyed like this...
 
@@ -232,7 +232,7 @@ You may probably now ask : `"Why do this create two seperate archtypes ? Both en
 
 ## Chunks
 
-Chunks are were the entities and their components are stored. They utilize dense packed contiguous arrays ( [SoA](https://www.wikiwand.com/en/AoS_and_SoA#:~:text=Structure%20of%20arrays%20(SoA)%20is,one%20parallel%20array%20per%20field.) ) to store and acess entities with the same group of components. Its internal arrays are always 16KB in total, this is intended since 16kb fits perfectly into the L1 CPU Cache which gives us insane iteration speeds. 
+Chunks are where the entities and their components are stored. They utilize dense packed contiguous arrays ( [SoA](https://www.wikiwand.com/en/AoS_and_SoA#:~:text=Structure%20of%20arrays%20(SoA)%20is,one%20parallel%20array%20per%20field.) ) to store and acess entities with the same group of components. Its internal arrays are always 16KB in total, this is intended since 16kb fits perfectly into the L1 CPU Cache which gives us insane iteration speeds. 
 
 The internal structure simplified looks like this...
 ```
@@ -260,8 +260,15 @@ world.GetArchetypes(in queryDescription, myArchetypeList);  // Fills all archety
 world.GetChunks(in queryDescription, myChunkList);          // Fills all chunks fitting the query description into the passed list
 ```
 
-Acessing or using those methods, you will have the power to write and optimize queries yourself. If you want you can even implement new features using them.  
-Lets take a look at how the `world.Query` methods are implemented using those.
+Acessing or using those methods, you will have the power to extend the features of this lib and acess its underlaying foundation. It can be used for e.g. : 
+- Writing custom queries
+- Implementing different iteration techniques
+- Serialisation
+- Multithreading 
+- Code generation
+
+
+Lets take a look at how the `world.Query` methods are implemented using that raw acess of archetypes and chunks.
 
 ```csharp
 // Inside the world
@@ -305,10 +312,10 @@ public void Query<T0>(in QueryDescription description, ForEach<T0> forEach)
 }
 ```
 
-With the power of acessing `Archetype` and `Chunk` directly from the world, you can easily write such high performance queries yourself. Great ! Isnt it ? :)  
-Since this is pretty dangerous you should only do this when you are already familiar with archetypes and chunks. Those features should be handled as readonly as long as you do not really know what you are doing. However entities should ONLY be created and removed using the world directly. 
+With the power of acessing `Archetype` and `Chunk` directly from the world, you could easily write such high performance queries yourself. Great ! Isnt it ? :)  
+Lets look at an small example of how you could utilize those features. 
 
-Lets look at an small example of how you could utilize those features...
+Lets say we want to iterate over every second entity with a `Position` component, since we dont wanna update ALL of them every tick. Well, you could do this easily like this e.g.
 
 ```csharp
 var archetype = new[]{ typeof(Position); }
@@ -321,16 +328,22 @@ foreach(var chunk in allChunks){
 
     // Acess the position component array and loop over each position
     var positions = chunk.GetArray<Position>();
-    for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex++){
+    for (var entityIndex = 0; entityIndex < chunk.Size; entityIndex+=2){ // <- Always skip one entity
     
         ref var pos = ref positions[entityIndex];
-        Console.WriteLine($"{pos.x}/{pos.y}");
-
         pos.x++;
         pos.y++;
+
+        Console.WriteLine($"{pos.x}/{pos.y}");
     }
 }
 ```
+
+## How do i avoid pitfalls ? 
+
+Since `Archetype` and `Chunk` do give you raw acess to the underlaying memory and foundation, there are some actions which should be avoided.
+- Adding/Removing entities directly to `Archetype` and `Chunk`, use always the `World` for this 
+- Trimming or moving the internal arrays and hashmaps
 
 # Performance
 Well... its fast, like REALLY fast.  
