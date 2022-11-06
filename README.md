@@ -209,16 +209,16 @@ Those highperformance queries use an interfacee and its struct implementation. T
 
 ```csharp
 public interface IForEach<T0...T10>{
-    public void Update(ref T0 t0, ref T1 t1, ... ref T10 t10);
+    void Update(ref T0 t0, ref T1 t1, ... ref T10 t10);
 }
 
 public interface IForEachEntity<T0...T10>{
-    public void Update(in Entity entity, ref T0 t0, ref T1 t1, ... ref T10 t10);
+    void Update(in Entity entity, ref T0 t0, ref T1 t1, ... ref T10 t10);
 }
 
 ```
 
-Those to interfaces provide Update methods with various generic overloads which can be used to implement the entity operations. All you need to do is implementing the interface in a struct and passing that struct to the highperformance query api. 
+Those two interfaces provide Update methods with various generic overloads which can be used to implement the entity operations. All you need to do is implementing the interface in a struct and passing that struct to the highperformance query api. 
 
 ```csharp
 public struct VelocityUpdate : IForEach<Position, Velocity> {
