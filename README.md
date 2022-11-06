@@ -198,10 +198,10 @@ The default Query API is easy to use and still very fast, perfect for fast proto
 
 ```csharp
 world.HPQuery<Struct,T0,T1...>(in queryDescription, ref myStruct);
-world.HPEQuer<Struct,T0,T1...>(in queryDescription, ref myEStruct);
+world.HPEQuery<Struct,T0,T1...>(in queryDescription, ref myEStruct);
 ```
 
-Those highperformance queries make use an interfacee and its struct implementation. This allows the compiler to inline the method call which results in less adress jumping and even faster iteration speed. Therefore you need to know two important interfaces and how to implement them.
+Those highperformance queries use an interfacee and its struct implementation. This allows the compiler to inline the method call which results in less adress jumping and even faster iteration speed. Therefore you need to know two important interfaces and how to implement them.
 
 ```csharp
 public interface IForEach<T0...T10>{
