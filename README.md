@@ -191,6 +191,78 @@ world.GetChunks(query, filteredChunks);                                 // Fills
 
 Archetype's and Chunk's are internal structures of the world and store entities with the same component types. You will mostly never use them directly, therefore more on them later. 
 
+## Highperformance Queries
+
+The default Query API is easy to use and still very fast, perfect for fast prototyping and the most features of your game. However sometimes you need even more power, thats where the highperformance queries kick in.
+
+```csharp
+world.HPQuery<Struct,T0,T1...>(in queryDescription, ref myStruct);
+world.HPEQuer<Struct,T0,T1...>(in queryDescription, ref myEStruct);
+```
+
+Those highperformance queries make use an interfacee and its struct implementation. This allows the compiler to inline the method call which results in less adress jumping and even faster iteration speed. Therefore you need to know two important interfaces and how to implement them.
+
+```csharp
+public interface IForEach<T0...T10>{
+    public void Update(ref T0 t0, ref T1 t1, ... ref T10 t10);
+}
+
+public interface IForEachEntity<T0...T10>{
+    public void Update(in Entity entity, ref T0 t0, ref T1 t1, ... ref T10 t10);
+}
+
+```
+
+Those to interfaces provide Update methods with various generic overloads which can be used to implement the entity operations. All you need to do is implementing the interface in a struct and passing that struct to the highperformance query api. 
+
+```csharp
+public struct VelocityUpdate : IForEach<Position, Velocity> {
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Update(ref Position pos, ref Velocity vel) { 
+        pos.x += vel.x;
+        pos.y += vel.y;
+    }
+}
+
+world.HPQuery<VelocityUpdate, Position, Velocity>(in queryDescription);
+
+
+// Also possible with a struct reference
+public struct VelocityUpdate : IForEach<Position, Velocity> {
+
+    public int counter;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Update(ref Position pos, ref Velocity vel) { 
+        pos.x += vel.x;
+        pos.y += vel.y;
+        counter++;
+    }
+}
+
+var velUpdate = new VelocityUpdate();
+world.HPQuery<VelocityUpdate, Position, Velocity>(in queryDescription, ref velUpdate);
+Console.WriteLine(velUpdate.counter);
+```
+
+Thats all, pretty cool right ? However in some cases you may also need a direct reference to the entity itself. In this case theres the `IForEachEntity` interface which is required.
+
+```csharp
+public struct VelocityUpdate : IForEachEntity<Position, Velocity> {
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Update(in Entity entity, ref Position pos, ref Velocity vel) { 
+        pos.x += vel.x;
+        pos.y += vel.y;
+        Console.WriteLine(entity);
+    }
+}
+
+world.HPEQuery<VelocityUpdate, Position, Velocity>(in queryDescription);  // <- Requires HPEQuery instead of HPQuery
+```
+
+
 ## Bulk adding
 
 Arch supports bulk adding of entities, this is incredible fast since it allows us to allocate enough space for a certain set of entities in one go. This reservation happens on top of the already existing entities in an archetype. You only need to reserve space once and than it will be filled later or sooner. 
