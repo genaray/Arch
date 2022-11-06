@@ -57,6 +57,7 @@ public class Game {
   * [World](#world)
   * [Entity](#entity)
   * [Querying and Filtering](#querying-and-filtering)
+- [Advanced usage](#advanced-usage)
   * [Highperformance Queries](#highperformance-queries)
   * [Bulk adding](#bulk-adding)
 - [Internal Structure and Memory layout](#internal-structure-and-memory-layout)
@@ -191,6 +192,9 @@ world.GetChunks(query, filteredChunks);                                 // Fills
 ```
 
 Archetype's and Chunk's are internal structures of the world and store entities with the same component types. You will mostly never use them directly, therefore more on them later. 
+
+
+# Advanced usage
 
 ## Highperformance Queries
 
