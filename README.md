@@ -343,6 +343,7 @@ Acessing or using those methods, you will have the power to extend the features 
 - Implementing different iteration techniques
 - Serialisation
 - Multithreading 
+- SIMD
 - Code generation
 
 
