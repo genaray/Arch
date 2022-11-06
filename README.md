@@ -57,6 +57,7 @@ public class Game {
   * [World](#world)
   * [Entity](#entity)
   * [Querying and Filtering](#querying-and-filtering)
+  * [Highperformance Queries](#highperformance-queries)
   * [Bulk adding](#bulk-adding)
 - [Internal Structure and Memory layout](#internal-structure-and-memory-layout)
   * [Archetype](#archetype)
