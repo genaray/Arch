@@ -101,7 +101,7 @@ public class WorldTest {
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => { count++; });
+        world.Query(query, (in Entity entity) => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -117,7 +117,7 @@ public class WorldTest {
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => { count++; });
+        world.Query(query, (in Entity entity) => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -133,7 +133,7 @@ public class WorldTest {
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => { count++; });
+        world.Query(query, (in Entity entity) => { count++; });
         Assert.AreEqual(count,0);
     }
     
@@ -151,7 +151,7 @@ public class WorldTest {
             world.Create(group);
 
         var count = 0;
-        world.Query(query, entity => { count++; });
+        world.Query(query, (in Entity entity) => { count++; });
         Assert.AreEqual(count,100);
     }
     
@@ -178,10 +178,10 @@ public class WorldTest {
             world.Create(otherGroup);
 
         var queryCount = 0;
-        world.Query(query, entity => { queryCount++; });
+        world.Query(query, (in Entity entity) => { queryCount++; });
         
         var otherQueryCount = 0;
-        world.Query(otherQuery, entity => { otherQueryCount++; });
+        world.Query(otherQuery, (in Entity entity) => { otherQueryCount++; });
         
         Assert.AreEqual(queryCount,100);
         Assert.AreEqual(otherQueryCount,100);
@@ -217,5 +217,51 @@ public class WorldTest {
        
         Assert.AreEqual(queryCount,100);
         Assert.AreEqual(otherQueryCount,100);
+    }
+
+    public struct RotCounter : IForEach<Rotation> {
+
+        public int counter;
+        public void Update(ref Rotation t0) { counter++; }
+    }
+    
+    public struct EntityCounter : IForEachEntity<Transform> {
+
+        public int counter;
+
+        public void Update(in Entity entity, ref Transform t0) { counter++; }
+    }
+
+
+    [Test]
+    public void GeneratedStructQueryTest() {
+
+        var query = new QueryDescription {
+            All = new []{ typeof(Transform) },
+            Any = new []{ typeof(Rotation) },
+            None = new []{ typeof(AI) }
+        };
+        
+        var otherQuery = new QueryDescription {
+            All = new []{ typeof(Transform), typeof(Rotation) },
+            Any = new []{ typeof(AI) },
+        };
+
+
+        world = World.Create();
+        for (var index = 0; index < 100; index++)
+            world.Create(group);
+        
+        for (var index = 0; index < 100; index++)
+            world.Create(otherGroup);
+
+        var entityCounter = new EntityCounter { counter = 0 };
+        world.HPEQuery<EntityCounter, Transform>(in query, ref entityCounter);
+
+        var rotCounter = new RotCounter { counter = 0 };
+        world.HPQuery<RotCounter, Rotation>(in otherQuery, ref rotCounter);
+       
+        Assert.AreEqual(100, entityCounter.counter);
+        Assert.AreEqual(100, rotCounter.counter);
     }
 }

@@ -56,6 +56,21 @@ public readonly struct Entity : IEquatable<Entity> {
 }
 
 /// <summary>
+/// A interface which passes a <see cref="Entity"/> to execute logic on. 
+/// </summary>
+public interface IForEach {
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Update(in Entity entity);
+}
+
+
+/// <summary>
+/// A delegate passing an <see cref="Entity"/> to execute logic on it.
+/// </summary>
+public delegate void ForEach(in Entity entity);
+
+/// <summary>
 /// A world contains multiple <see cref="Archetypes"/>, <see cref="Entity"/>'s and their components.
 /// It is used to manage the <see cref="Entity"/>'s and query for them. 
 /// </summary>
@@ -64,11 +79,10 @@ public partial class World {
     internal World(byte Id) {
 
         this.Id = Id;
-        
+
         GroupToArchetype = new PooledDictionary<Type[], Archetype>(8);
         EntityToArchetype = new PooledDictionary<int, Archetype>(0);
         Archetypes = new PooledList<Archetype>(8);
-        
         RecycledIds = new PooledQueue<int>(256);
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
     }
@@ -213,7 +227,7 @@ public partial class World {
     /// <param name="queryDescription"></param>
     /// <param name="forEntity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query(in QueryDescription queryDescription, Action<Entity> forEntity) {
+    public void Query(in QueryDescription queryDescription, ForEach forEntity) {
 
         // Looping over all archetypes, their chunks and their entities. 
         if (!QueryCache.TryGetValue(queryDescription, out var query)) {
@@ -243,6 +257,47 @@ public partial class World {
 
                     ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                     forEntity(entity);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and calls the passed action on all found entities. 
+    /// </summary>
+    /// <param name="queryDescription"></param>
+    /// <param name="forEntity"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach {
+
+        // Looping over all archetypes, their chunks and their entities. 
+        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
+            query = new Query(queryDescription);
+            QueryCache[queryDescription] = query;
+        }
+
+        // Iterate over all archetypes
+        var size = Archetypes.Count;
+        for (var index = 0; index < size; index++) {
+
+            var archetype = Archetypes[index];
+            var archetypeSize = archetype.Size;
+            var bitset = archetype.BitSet;
+
+            // Only process archetypes within the query decribtion
+            if (!query.Valid(bitset)) continue;
+
+            ref var chunkFirstElement = ref archetype.Chunks[0];
+            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
+
+                ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
+                var chunkSize = chunk.Size;
+                
+                ref var entityFirstElement = ref chunk.Entities[0];
+                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
+
+                    ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                    iForEach.Update(in entity);
                 }
             }
         }
