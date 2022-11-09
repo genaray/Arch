@@ -11,7 +11,7 @@ This technique has two main advantages, first of all it provides an great entity
 Its incredible fast, especially for well architectured component structures. 
 
 Supports .NetStandard 2.1, .Net Core 6 and 7.  
-Since .NetStandard is supported, you may also use it with Unity. 
+Since .NetStandard is supported, you may also use it with Unity or Godot. 
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
 ```sh
