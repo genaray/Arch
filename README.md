@@ -66,9 +66,7 @@ public class Game {
   * [Outlook](#outlook)
 - [Performance](#performance)
   * [Benchmark](#benchmark)
-    + [NET.7](#net7)
-    + [Different Iteration and Acess Techniques](#different-iteration-and-acess-techniques)
-    + [Legend](#legend)
+- [Contributing](#contributing)
 
 # Quickstart
 
@@ -194,9 +192,6 @@ public struct Rotation{ float x; float y; float z; float w; }
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
 
-
-### NET.7
-
 |                                Method |   amount |         Mean |      Error |     StdDev | CacheMisses/Op |
 |-------------------------------------- |--------- |-------------:|-----------:|-----------:|---------------:|
 |          IterationNormalTwoComponents |    10000 |     27.94 us |   0.146 us |   0.129 us |             41 | 
@@ -216,3 +211,7 @@ The used structs are actually quite big, the smaller the components, the faster 
 |    IterationNormalEntityTwoComponents | 10000000 | 45,073.30 us | 365.498 us | 341.887 us |        323,789 | 
 | IterationUnsafeAddEntityTwoComponents | 10000000 | 43,000.07 us | 205.964 us | 192.659 us |        304,333 |
 
+# Contributing
+
+I will accept contributions, especially bugfixes, performance improvements and new features.
+New features however should not harm its performance, if they do they should be wrapped within predecessor variables for enabling/disabling them. 
