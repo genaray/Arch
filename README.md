@@ -74,7 +74,7 @@ public class Game {
 
 I bet you dont wanna read tons of documentations, theory and other boring stuff right ?  
 Lets just ignore all that deep knowledge and jump in directly to get something done. 
-> For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wik) !
+> For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wiki) !
 
 ## ECS
 
@@ -166,7 +166,7 @@ Its also important to know that there are multiple different overloads to perfor
 ## Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
-However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wik) ! 
+However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
 Theres more to explore, for example...
 
 - Bulk Entity Adding
