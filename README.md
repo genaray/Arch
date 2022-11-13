@@ -8,7 +8,7 @@ A C# based Archetype [Entity Component System](https://www.wikiwand.com/en/Entit
 
 Each Archetype stores their entities within 16KB sized chunks perfectly fitting into L1 Caches for maximum iteration performance.  
 This technique has two main advantages, first of all it provides an great entity allocation speed and second it lowers the cache misses to the best possible minimum. 
-Its incredible fast, especially for well architectured component structures. 
+Its incredible fast, especially for well architectured component structures and supports multithreading.  
 
 Supports .NetStandard 2.1, .Net Core 6 and 7.  
 Since .NetStandard is supported, you may also use it with Unity or Godot. 
