@@ -5,6 +5,11 @@
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <Optimize>false</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +19,8 @@
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
       <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
+      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
+      <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
     </ItemGroup>
 
     <ItemGroup>

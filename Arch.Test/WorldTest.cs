@@ -12,20 +12,40 @@ namespace Arch.Test;
 [TestFixture]
 public class WorldTest {
 
+    private JobScheduler.JobScheduler jobScheduler;
     private World world;
+    
     private Type[] group;
     private Type[] otherGroup;
+    
+    QueryDescription query = new QueryDescription {
+        All = new []{ typeof(Transform) },
+        Any = new []{ typeof(Rotation) },
+        None = new []{ typeof(AI) }
+    };
+        
+    QueryDescription otherQuery = new QueryDescription {
+        All = new []{ typeof(Transform), typeof(Rotation) },
+        Any = new []{ typeof(AI) },
+    };
         
     [OneTimeSetUp]
     public void Setup() {
+
+        jobScheduler = new JobScheduler.JobScheduler("Test");
         
         group = new []{ typeof(Transform), typeof(Rotation) };
         otherGroup = new[] { typeof(Transform), typeof(Rotation), typeof(AI) };
     }
+    
+    [OneTimeTearDown]
+    public void Teardown() {
+        jobScheduler.Dispose();
+    }
 
     [Test]
     public void Create() {
-
+        
         world = World.Create();
         
         var entity = world.Create(group);
@@ -139,13 +159,7 @@ public class WorldTest {
     
     [Test]
     public void ComplexQuery() {
-
-        var query = new QueryDescription {
-            All = new []{ typeof(Transform) },
-            Any = new []{ typeof(Rotation) },
-            None = new []{ typeof(AI) }
-        };
-
+        
         world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
@@ -157,18 +171,6 @@ public class WorldTest {
     
     [Test]
     public void ComplexScenarioQuery() {
-
-        var query = new QueryDescription {
-            All = new []{ typeof(Transform) },
-            Any = new []{ typeof(Rotation) },
-            None = new []{ typeof(AI) }
-        };
-        
-        var otherQuery = new QueryDescription {
-            All = new []{ typeof(Transform), typeof(Rotation) },
-            Any = new []{ typeof(AI) },
-        };
-
 
         world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -190,18 +192,6 @@ public class WorldTest {
     [Test]
     public void GeneratedQueryTest() {
 
-        var query = new QueryDescription {
-            All = new []{ typeof(Transform) },
-            Any = new []{ typeof(Rotation) },
-            None = new []{ typeof(AI) }
-        };
-        
-        var otherQuery = new QueryDescription {
-            All = new []{ typeof(Transform), typeof(Rotation) },
-            Any = new []{ typeof(AI) },
-        };
-
-
         world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
@@ -218,6 +208,30 @@ public class WorldTest {
         Assert.AreEqual(queryCount,100);
         Assert.AreEqual(otherQueryCount,100);
     }
+    
+    [Test]
+    public void GeneratedParallelQueryTest() {
+
+        world = World.Create();
+        for (var index = 0; index < 100; index++)
+            world.Create(group);
+        
+        for (var index = 0; index < 100; index++)
+            world.Create(otherGroup);
+
+        var queryCount = 0;
+        world.ParallelQuery(in query, (in Entity entity, ref Transform t) => {
+            Interlocked.Increment(ref queryCount);
+        });
+        
+        var otherQueryCount = 0;
+        world.ParallelQuery(in otherQuery, (ref Rotation rot) => {
+            Interlocked.Increment(ref otherQueryCount);
+        });
+
+        Assert.AreEqual(queryCount,100);
+        Assert.AreEqual(otherQueryCount,100);
+    }
 
     public struct RotCounter : IForEach<Rotation> {
 
@@ -225,7 +239,7 @@ public class WorldTest {
         public void Update(ref Rotation t0) { counter++; }
     }
     
-    public struct EntityCounter : IForEachEntity<Transform> {
+    public struct EntityCounter : IForEachWithEntity<Transform> {
 
         public int counter;
 
@@ -234,20 +248,8 @@ public class WorldTest {
 
 
     [Test]
-    public void GeneratedStructQueryTest() {
-
-        var query = new QueryDescription {
-            All = new []{ typeof(Transform) },
-            Any = new []{ typeof(Rotation) },
-            None = new []{ typeof(AI) }
-        };
+    public void GeneratedHPQueryTest() {
         
-        var otherQuery = new QueryDescription {
-            All = new []{ typeof(Transform), typeof(Rotation) },
-            Any = new []{ typeof(AI) },
-        };
-
-
         world = World.Create();
         for (var index = 0; index < 100; index++)
             world.Create(group);
@@ -260,8 +262,29 @@ public class WorldTest {
 
         var rotCounter = new RotCounter { counter = 0 };
         world.HPQuery<RotCounter, Rotation>(in otherQuery, ref rotCounter);
-       
+        
         Assert.AreEqual(100, entityCounter.counter);
         Assert.AreEqual(100, rotCounter.counter);
+    }
+    
+    [Test]
+    public void GeneratedHPParallelQueryTest() {
+
+        world = World.Create();
+        for (var index = 0; index < 100; index++)
+            world.Create(group);
+        
+        for (var index = 0; index < 100; index++)
+            world.Create(otherGroup);
+
+        var entityCounter = new EntityCounter { counter = 0 };
+        world.HPEParallelQuery<EntityCounter, Transform>(in query, ref entityCounter);
+
+        Assert.True(true);
+        
+        var rotCounter = new RotCounter { counter = 0 };
+        world.HPParallelQuery<RotCounter, Rotation>(in otherQuery, ref rotCounter);
+        
+        Assert.True(true);
     }
 }

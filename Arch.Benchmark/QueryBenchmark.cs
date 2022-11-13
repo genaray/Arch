@@ -15,14 +15,19 @@ public class QueryBenchmark {
 
     [Params( 10000, 100000, 1000000)]
     public int amount;
-    
+
+    private JobScheduler.JobScheduler jobScheduler;
     private Type[] group = { typeof(Transform), typeof(Velocity) };
 
+    private Consumer _consumer = new Consumer();
+    
     private World world;
     private QueryDescription queryDescription;
-    
+
     [GlobalSetup]
     public void Setup() {
+
+        jobScheduler = new JobScheduler.JobScheduler("Arch");
         
         world = World.Create();
         world.Reserve(group, amount);
@@ -34,6 +39,11 @@ public class QueryBenchmark {
         }
 
         queryDescription = new QueryDescription { All = group };
+    }
+
+    [GlobalCleanup]
+    public void Cleanup() {
+        jobScheduler.Dispose();
     }
     
     [Benchmark]
@@ -69,7 +79,7 @@ public class QueryBenchmark {
         world.HPQuery<VelocityUpdate, Transform, Velocity>(in queryDescription, ref vel);
     }
     
-    public struct VelocityEntityUpdate : IForEachEntity<Transform, Velocity> {
+    public struct VelocityEntityUpdate : IForEachWithEntity<Transform, Velocity> {
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(in Entity entity, ref Transform t, ref Velocity v) {
@@ -82,5 +92,18 @@ public class QueryBenchmark {
     public void StructEntityQuery() {
         var vel = new VelocityEntityUpdate();
         world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in queryDescription, ref vel);
+    }
+    
+    [Benchmark]
+    public void PureEntityQuery() {
+
+        world.Query(in queryDescription, (in Entity entity) => {
+
+            ref var t = ref entity.Get<Transform>();
+            ref var v = ref entity.Get<Velocity>();
+            
+            t.x += v.x;
+            t.y += v.y;
+        });
     }
 }

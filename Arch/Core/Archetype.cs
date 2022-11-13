@@ -142,7 +142,13 @@ public sealed unsafe partial class Archetype {
         Size--;
         return true;
     }
-    
+
+    /// <summary>
+    /// Returns a <see cref="Enumerator{T}"/> for <see cref="Chunks"/> to iterate over all chunks in this archetype. 
+    /// </summary>
+    /// <returns></returns>
+    public Enumerator<Chunk> GetEnumerator() { return new Enumerator<Chunk>(Chunks.AsSpan(), Size); }
+
     /// <summary>
     /// The types with which the <see cref="BitSet"/> was created.
     /// </summary>

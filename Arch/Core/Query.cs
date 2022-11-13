@@ -1,7 +1,11 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+using Collections.Pooled;
+using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 
 namespace Arch.Core; 
 
@@ -42,7 +46,9 @@ public struct QueryDescription : IEquatable<QueryDescription> {
 /// <summary>
 /// A constructed query used for translating the <see cref="QueryDescription"/> and validating <see cref="BitSet"/>'s to find the right chunks. 
 /// </summary>
-internal readonly struct Query {
+public readonly struct Query : IEquatable<Query> {
+
+    private readonly PooledList<Archetype> Archetypes;
     
     private readonly BitSet Any;
     private readonly BitSet All;
@@ -50,7 +56,9 @@ internal readonly struct Query {
     
     private QueryDescription QueryDescription { get; }
 
-    internal Query(QueryDescription description) : this() {
+    internal Query(PooledList<Archetype> archetypes, QueryDescription description) : this() {
+
+        this.Archetypes = archetypes;
         
         All = description.All.ToBitSet();
         Any = description.Any.ToBitSet();
@@ -70,4 +78,45 @@ internal readonly struct Query {
     public bool Valid(BitSet bitset) {
         return All.All(bitset) && Any.Any(bitset) && None.None(bitset);
     }
+    
+    /// <summary>
+    /// Returns a <see cref="QueryArchetypeIterator"/> which can be used to iterate over all fitting <see cref="Archetype"/>'s for this query. 
+    /// </summary>
+    /// <param name="world"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryArchetypeIterator GetArchetypeIterator() {
+        return new QueryArchetypeIterator( this, Archetypes.Span);
+    }
+    
+    /// <summary>
+    /// Returns a <see cref="QueryChunkIterator"/> which can be used to iterate over all fitting <see cref="Chunk"/>'s for this query. 
+    /// </summary>
+    /// <param name="world"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryChunkIterator GetChunkIterator() {
+        return new QueryChunkIterator(this, Archetypes.Span);
+    }
+
+    public bool Equals(Query other) {
+        return Equals(Any, other.Any) && Equals(All, other.All) && Equals(None, other.None) && QueryDescription.Equals(other.QueryDescription);
+    }
+
+    public override bool Equals(object obj) {
+        return obj is Query other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        unchecked {
+            var hashCode = (Any != null ? Any.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (All != null ? All.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (None != null ? None.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ QueryDescription.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    public static bool operator ==(Query left, Query right) { return left.Equals(right); }
+    public static bool operator !=(Query left, Query right) { return !left.Equals(right); }
 }

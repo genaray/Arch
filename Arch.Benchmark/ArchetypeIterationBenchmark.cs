@@ -1,10 +1,16 @@
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Arch.Core;
+using Arch.Core.Extensions;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using Arch.Test;
+using CommunityToolkit.HighPerformance.Helpers;
+using JobScheduler;
+using Microsoft.Extensions.ObjectPool;
+using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 
 namespace Arch.Benchmark; 
 
@@ -17,14 +23,15 @@ public class ArchetypeIterationBenchmark {
     public int amount;
 
     private Type[] group = { typeof(Transform), typeof(Rotation) };
-    
-    private Archetype globalArchetype;
+
     private Consumer consumer;
-    
+    private Archetype globalArchetype;
+
     [GlobalSetup]
     public void Setup() {
 
         consumer = new Consumer();
+        //jobScheduler = new JobScheduler();
         
         globalArchetype = new Archetype(group);
         globalArchetype.Reserve(amount);
@@ -39,7 +46,7 @@ public class ArchetypeIterationBenchmark {
             globalArchetype.Set(entity, r);
         }
     }
-    
+
     [Benchmark]
     public void IterationNormalTwoComponents() {
 
@@ -89,6 +96,41 @@ public class ArchetypeIterationBenchmark {
             }
         }
     }
+
+    [Benchmark]
+    public void IterationParallelUnsafeAdd() {
+        
+        // Partition the entire source array.
+        var rangePartitioner = Partitioner.Create(0, globalArchetype.Size);
+        Parallel.ForEach(rangePartitioner, (range) => {
+
+            var start = range.Item1;
+            var end = range.Item2;
+
+            ref var chunk = ref globalArchetype.Chunks[start];
+            for (var chunkIndex = 0; chunkIndex < end-start; chunkIndex++) {
+            
+                ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+                var chunkSize = chunk.Size;
+            
+                var transforms = currentChunk.GetArray<Transform>();
+                var rotations = currentChunk.GetArray<Rotation>();
+            
+                ref var transform = ref transforms[0];
+                ref var rotation = ref rotations[0];
+
+                for (var index = 0; index < chunkSize; index++) {
+
+                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
+                
+                    consumer.Consume(currentTransform);
+                    consumer.Consume(currentRotation);
+                }
+            }
+        });
+    }
+    
     
     [Benchmark]
     public void IterationNormalEntityTwoComponents() {

@@ -8,12 +8,12 @@
         
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.0.7</Version>
+        <Version>1.0.9</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Added documentation. Dont worry, the last version for the next few days. Time to relax a bit. 
+            Added enumerators and parallel queries which are executed multithreaded. 
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
         
@@ -22,15 +22,15 @@
         <RepositoryType>git</RepositoryType>
         <IsPackable>true</IsPackable>
         
-        <LangVersion>10</LangVersion>
+        <LangVersion>preview</LangVersion>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
       <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
-      <PackageReference Include="System.Buffers" Version="4.5.1" />
       <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+      <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
     </ItemGroup>
 
     <ItemGroup>

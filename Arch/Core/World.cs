@@ -4,9 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
+using JobScheduler;
+using JobScheduler.Extensions;
+using Microsoft.Extensions.ObjectPool;
+using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 
 [assembly: InternalsVisibleTo("Arch.Test")]
 [assembly: InternalsVisibleTo("Arch.Benchmark")]
@@ -82,9 +88,15 @@ public partial class World {
 
         GroupToArchetype = new PooledDictionary<Type[], Archetype>(8);
         EntityToArchetype = new PooledDictionary<int, Archetype>(0);
+        
         Archetypes = new PooledList<Archetype>(8);
         RecycledIds = new PooledQueue<int>(256);
+        
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
+        
+        JobHandles = new PooledList<JobHandle>(32);
+        ParallelJobsListCache = new PooledDictionary<Type, object>(16);
+        JobPools = new PooledDictionary<Type, object>(16);
     }
 
     /// <summary>
@@ -165,8 +177,8 @@ public partial class World {
     /// Creates an <see cref="Entity"/> in this world.
     /// Will use the passed <see cref="Archetype"/> to initialize its components once. 
     /// </summary>
-    /// <param name="group">The group of components this entity should have</param>
-    /// <returns></returns>
+    /// <param name="types">The group of components this entity should have, its archetype</param>
+    /// <returns>The created entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(Type[] types) {
 
@@ -199,7 +211,7 @@ public partial class World {
     /// Destroys the passed entity.
     /// Uses a dense array technique and recycles the id properly. 
     /// </summary>
-    /// <param name="entity"></param>
+    /// <param name="entity">The entity to destroy</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity) {
 
@@ -222,124 +234,39 @@ public partial class World {
     }
 
     /// <summary>
-    /// Queries for the passed <see cref="QueryDescription"/> and calls the passed action on all found entities. 
+    /// Constructs a <see cref="Query"/> from the passed <see cref="QueryDescription"/>.
+    /// Is being cached. 
     /// </summary>
     /// <param name="queryDescription"></param>
-    /// <param name="forEntity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query(in QueryDescription queryDescription, ForEach forEntity) {
-
+    /// <returns></returns>
+    public Query Query(in QueryDescription queryDescription) {
+        
         // Looping over all archetypes, their chunks and their entities. 
-        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
-            query = new Query(queryDescription);
-            QueryCache[queryDescription] = query;
-        }
+        if (QueryCache.TryGetValue(queryDescription, out var query)) return query;
+        
+        query = new Query(Archetypes, queryDescription);
+        QueryCache[queryDescription] = query;
 
-        // Iterate over all archetypes
-        var size = Archetypes.Count;
-        for (var index = 0; index < size; index++) {
-
-            var archetype = Archetypes[index];
-            var archetypeSize = archetype.Size;
-            var bitset = archetype.BitSet;
-
-            // Only process archetypes within the query decribtion
-            if (!query.Valid(bitset)) continue;
-
-            ref var chunkFirstElement = ref archetype.Chunks[0];
-            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
-
-                ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
-                var chunkSize = chunk.Size;
-                
-                ref var entityFirstElement = ref chunk.Entities[0];
-                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
-
-                    ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                    forEntity(entity);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Queries for the passed <see cref="QueryDescription"/> and calls the passed action on all found entities. 
-    /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="forEntity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach {
-
-        // Looping over all archetypes, their chunks and their entities. 
-        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
-            query = new Query(queryDescription);
-            QueryCache[queryDescription] = query;
-        }
-
-        // Iterate over all archetypes
-        var size = Archetypes.Count;
-        for (var index = 0; index < size; index++) {
-
-            var archetype = Archetypes[index];
-            var archetypeSize = archetype.Size;
-            var bitset = archetype.BitSet;
-
-            // Only process archetypes within the query decribtion
-            if (!query.Valid(bitset)) continue;
-
-            ref var chunkFirstElement = ref archetype.Chunks[0];
-            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
-
-                ref var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
-                var chunkSize = chunk.Size;
-                
-                ref var entityFirstElement = ref chunk.Entities[0];
-                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
-
-                    ref var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                    iForEach.Update(in entity);
-                }
-            }
-        }
+        return query;
     }
     
     /// <summary>
     /// Queries for the passed <see cref="QueryDescription"/> and copies all fitting entities into a list. 
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="forEntity"></param>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="list">A list where all fitting entities will be added to</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetEntities(in QueryDescription queryDescription, IList<Entity> list) {
 
-        // Looping over all archetypes, their chunks and their entities. 
-        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
-            query = new Query(queryDescription);
-            QueryCache[queryDescription] = query;
-        }
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query.GetChunkIterator()) {
 
-        // Iterate over all archetypes
-        var size = Archetypes.Count;
-        for (var index = 0; index < size; index++) {
+            var chunkSize = chunk.Size;
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
 
-            var archetype = Archetypes[index];
-            var archetypeSize = archetype.Size;
-            var bitset = archetype.BitSet;
-
-            // Only process archetypes within the query decribtion
-            if (!query.Valid(bitset)) continue;
-
-            ref var chunkFirstElement = ref archetype.Chunks[0];
-            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
-
-                ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
-                var chunkSize = chunk.Size;
-                
-                ref var entityFirstElement = ref chunk.Entities[0];
-                for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
-
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                    list.Add(entity);
-                }
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                list.Add(entity);
             }
         }
     }
@@ -347,63 +274,35 @@ public partial class World {
     /// <summary>
     /// Queries for the passed <see cref="QueryDescription"/> and fills in the passed list with all valid <see cref="Archetype"/>'s.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="archetypes">A list where all fitting archetypes will be added to</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetArchetypes(in QueryDescription queryDescription, IList<Archetype> archetypes) {
 
-        // Cache query
-        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
-            query = new Query(queryDescription);
-            QueryCache[queryDescription] = query;
-        }
-        
-        // Looping over all archetypes, their chunks and their entities. 
-        var size = Archetypes.Count;
-        for (var index = 0; index < size; index++) {
-
-            var archetype = Archetypes[index];
-            var bitset = archetype.BitSet;
-
-            // Only process archetypes within the query decribtion
-            if (!query.Valid(bitset)) continue;
+        var query = Query(in queryDescription);
+        foreach (ref var archetype in query.GetArchetypeIterator()) 
             archetypes.Add(archetype);
-        }
     }
     
     /// <summary>
     /// Queries for the passed <see cref="QueryDescription"/> and fills in the passed list with all valid <see cref="Chunk"/>'s.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="chunks">A list where all fitting chunks will be added to</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetChunks(in QueryDescription queryDescription, IList<Chunk> chunks) {
 
-        // Cache query
-        if (!QueryCache.TryGetValue(queryDescription, out var query)) {
-            query = new Query(queryDescription);
-            QueryCache[queryDescription] = query;
-        }
-        
-        // Looping over all archetypes, their chunks and their entities. 
-        var size = Archetypes.Count;
-        for (var index = 0; index < size; index++) {
-
-            var archetype = Archetypes[index];
-            var archetypeSize = archetype.Size;
-            var bitset = archetype.BitSet;
-
-            // Only process archetypes within the query decribtion
-            if (!query.Valid(bitset)) continue;
-
-            ref var chunkFirstElement = ref archetype.Chunks[0];
-            for (var chunkIndex = 0; chunkIndex < archetypeSize; chunkIndex++) {
-
-                ref readonly var chunk = ref Unsafe.Add(ref chunkFirstElement, chunkIndex);
-                chunks.Add(chunk);
-            }
-        }
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query.GetChunkIterator()) 
+            chunks.Add(chunk);
     }
 
-    
+    /// <summary>
+    /// Returns an enumerator to iterate over all <see cref="Archetypes"/>
+    /// </summary>
+    /// <returns></returns>
+    public Enumerator<Archetype> GetEnumerator() { return new Enumerator<Archetype>(Archetypes.Span); }
+
     /// <summary>
     /// All active <see cref="World"/>'s.
     /// </summary>
@@ -449,4 +348,171 @@ public partial class World {
     /// A cache for mapping a <see cref="QueryDescription"/> to its <see cref="Query"/> instance for preventing new <see cref="BitSet"/> allocations every query. 
     /// </summary>
     internal PooledDictionary<QueryDescription, Query> QueryCache { get; set; }
+}
+
+/// <summary>
+/// Partial world with single threaded query methods. 
+/// </summary>
+public partial class World {
+
+    
+    /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and calls the passed action on all found entities. 
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="forEntity">A call back which passes the entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Query(in QueryDescription queryDescription, ForEach forEntity) {
+
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query.GetChunkIterator()) {
+            
+            var chunkSize = chunk.Size;
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
+
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                forEntity(entity);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and calls the <see cref="IForEach.Update"/> method implemented in the struct <see cref="T"/>.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Query<T>(in QueryDescription queryDescription) where T : struct, IForEach {
+
+        var t = new T();
+        
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query.GetChunkIterator()) {
+            
+            var chunkSize = chunk.Size;
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
+
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                t.Update(in entity);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and calls the <see cref="IForEach.Update"/> method implemented in the struct <see cref="T"/>.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="iForEach">The struct implementing <see cref="IForEach"/> to define the logic for each entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach {
+
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query.GetChunkIterator()) {
+            
+            var chunkSize = chunk.Size;
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
+
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                iForEach.Update(in entity);
+            }
+        }
+    }
+}
+
+/// <summary>
+/// Partial world with multi threaded query methods. 
+/// </summary>
+public partial class World {
+
+    /// <summary>
+    /// JobPool for different job types used internally by this multithreaded world.
+    /// </summary>
+    private PooledDictionary<Type, object> JobPools { get; set; }
+    
+    /// <summary>
+    /// Used handles by this world.
+    /// </summary>
+    private PooledList<JobHandle> JobHandles { get; set; }
+    
+    /// <summary>
+    /// JobList cache for avoiding allocs. 
+    /// </summary>
+    private PooledDictionary<Type, object> ParallelJobsListCache { get; set; }
+
+    public T GetJob<T>() where T : class, new() {
+
+        var type = typeof(T);
+        if (!JobPools.TryGetValue(type, out var obj)) {
+            obj = new DefaultObjectPool<T>(new DefaultObjectPolicy<T>());
+            JobPools[type] = obj;
+        }
+        
+        var pool = obj as DefaultObjectPool<T>;
+        return pool.Get();
+    }
+    
+    public void ReturnJob<T>(T instance) where T : class{
+
+        var obj = JobPools[typeof(T)];
+        var pool = obj as DefaultObjectPool<T>;
+        pool.Return(instance);
+    }
+    
+    public List<T> GetListCache<T>() where T : class, new() {
+
+        var type = typeof(T);
+        if (!ParallelJobsListCache.TryGetValue(type, out var obj)) {
+            obj = new List<T>(64);
+            ParallelJobsListCache[type] = obj;
+        }
+        
+        return obj as List<T>;
+    }
+    
+    /// <summary>
+    /// Queries for the passed <see cref="QueryDescription"/> and calls the passed action on all found entities. 
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="forEntity">A call back which passes the entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob {
+
+        if (JobScheduler.JobScheduler.Instance == null)
+            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
+       
+        var listCache = GetListCache<ChunkIterationJob<T>>();
+        
+        var query = Query(in queryDescription);
+        foreach (ref var archetype in query.GetArchetypeIterator()) {
+
+            var archetypeSize = archetype.Size;
+            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+            foreach (var range in part) {
+                
+                var job = GetJob<ChunkIterationJob<T>>();
+                job.start = range.start;
+                job.size = range.range;
+                job.chunks = archetype.Chunks;
+                job.instance = innerJob;
+                listCache.Add(job);
+            }
+            
+            IJob.Schedule(listCache, JobHandles);
+            JobScheduler.JobScheduler.Instance.Flush();
+            JobHandle.Complete(JobHandles);
+            JobHandle.Return(JobHandles);
+
+            // Return jobs to pool
+            for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++) {
+
+                var job = listCache[jobIndex];
+                ReturnJob(job);
+            }
+            
+            JobHandles.Clear();
+            listCache.Clear();
+        }
+    }
 }
