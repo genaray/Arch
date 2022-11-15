@@ -12,9 +12,19 @@ namespace Arch.Core.Utils
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool Equals(Type[] x, Type[] y)
+        public bool Equals(Type[] x, Type[] y) 
         {
-            return x.SequenceEqual(y);
+
+            if (x == y) return true;
+            if (x.Length != y.Length) return false;
+            
+            var xSpan = x.AsSpan();
+            var ySpan = y.AsSpan();
+
+            for (var index = 0; index < xSpan.Length; index++) 
+                if (xSpan[index] != ySpan[index]) return false;
+            
+            return true;
         }
 
         /// <summary>
