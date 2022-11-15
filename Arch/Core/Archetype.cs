@@ -41,6 +41,8 @@ public sealed unsafe partial class Archetype {
         if (Capacity > 0 && Capacity >= Size) {
             
             ref var lastChunk = ref LastChunk;
+            
+            // Fill last chunk
             if (lastChunk.Size < lastChunk.Capacity) {
 
                 lastChunk.Add(in entity);
@@ -51,6 +53,12 @@ public sealed unsafe partial class Archetype {
                 
                 Size++;
                 return false;
+            }
+            
+            // Lust chunk is already full and capaccity still available, move to next chunk
+            if (Capacity > Size) {
+                Size++;
+                return Add(in entity);
             }
         }
         
@@ -123,9 +131,17 @@ public sealed unsafe partial class Archetype {
         
         // If its the last chunk, simply remove the entity
         if (chunkIndex == Size-1) {
+            
             chunk.Remove(entity);
             EntityIdToChunkIndex.Remove(entity.EntityId);
-            return false;
+            
+            if (chunk.Size != 0) return false;
+        
+            // Remove last unused chunk & resize to free memory
+            SetCapacity(Size-1);
+            Capacity--;
+            Size--;
+            return true;
         }
         
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
@@ -218,7 +234,7 @@ public sealed unsafe partial class Archetype {
             // Increase chunk array size
             var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
             Array.Copy(Chunks, newChunks, Size);
-            ArrayPool<Chunk>.Shared.Return(Chunks);
+            ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;   
             
             // Increase mapping
@@ -232,7 +248,7 @@ public sealed unsafe partial class Archetype {
             // Decrease chunk size
             var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
             Array.Copy(Chunks, newChunks, Size-1);
-            ArrayPool<Chunk>.Shared.Return(Chunks);
+            ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;  
 
             // Decrease mapping
