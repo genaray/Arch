@@ -225,9 +225,8 @@ public partial class World {
         
         // Resizing and releasing memory 
         if (destroyedChunk) {
-            var requiredCapacity = Capacity - archetype.EntitiesPerChunk;
-            EntityToArchetype.TrimExcess(requiredCapacity);
-            Capacity = requiredCapacity;
+            EntityToArchetype.TrimExcess();
+            Capacity = EntityToArchetype.Count;
         }
 
         Size--;
