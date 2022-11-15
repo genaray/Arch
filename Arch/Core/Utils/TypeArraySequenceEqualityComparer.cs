@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Arch.Core.Utils
 {
-    internal class SequenceEqualsArchetypeComparer : IEqualityComparer<Type[]>
+    internal class TypeArraySequenceEqualityComparer : IEqualityComparer<Type[]>
     {
         /// <summary>
         /// Checks whether or not two Type Arrays are equal using sequence equality rather than reference equality
@@ -24,11 +24,14 @@ namespace Arch.Core.Utils
         /// <returns></returns>
         public int GetHashCode(Type[] obj)
         {
-            var hashCode = 0;
-            foreach (var x in obj)
-                hashCode += x.GetHashCode();
-
-            return hashCode;
+            unchecked{ 
+                int hash = 17;
+                foreach (var x in obj)
+                    hash = hash * 23 + x.GetHashCode();
+                return hash;
+            }
         }
+
+        public static TypeArraySequenceEqualityComparer Instance { get; } = new TypeArraySequenceEqualityComparer();
     }
 }

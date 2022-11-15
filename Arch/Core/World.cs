@@ -86,7 +86,7 @@ public partial class World {
 
         this.Id = Id;
 
-        GroupToArchetype = new PooledDictionary<Type[], Archetype>(8, new SequenceEqualsArchetypeComparer());
+        GroupToArchetype = new PooledDictionary<Type[], Archetype>(8, TypeArraySequenceEqualityComparer.Instance);
         EntityToArchetype = new PooledDictionary<int, Archetype>(0);
         
         Archetypes = new PooledList<Archetype>(8);

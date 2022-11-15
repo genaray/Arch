@@ -21,7 +21,9 @@ public struct QueryDescription : IEquatable<QueryDescription> {
     public QueryDescription() {}
 
     public bool Equals(QueryDescription other) {
-        return Equals(All, other.All) && Equals(Any, other.Any) && Equals(None, other.None);
+
+        var comparer = TypeArraySequenceEqualityComparer.Instance;
+        return comparer.Equals(All, other.All) && comparer.Equals(Any, other.Any) && comparer.Equals(None, other.None);
     }
 
     public override bool Equals(object obj) {
