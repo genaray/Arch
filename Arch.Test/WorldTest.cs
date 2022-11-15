@@ -133,4 +133,18 @@ public class WorldTest {
         Assert.AreEqual(0, world.Archetypes[0].Size);
         Assert.AreEqual(0, world.Archetypes[1].Size);
     }
+
+    [Test]
+    public void MultipleArchetypesTest()
+    {
+        var world = World.Create();
+
+        var archTypes1 = new Type[] { typeof(Transform) };
+        var archTypes2 = new Type[] { typeof(Transform) };
+
+        var entity1 = world.Create(archTypes1);
+        var entity2 = world.Create(archTypes2);
+
+        Assert.That(world.Archetypes.Count, Is.EqualTo(1), "{0} archetypes were created where only 1 was expected", world.Archetypes.Count);
+    }
 }
