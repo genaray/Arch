@@ -1,18 +1,17 @@
 using System.Text;
-using CodeGenHelpers;
 
-namespace ArchSourceGenerator; 
+namespace ArchSourceGenerator;
 
-public static class StringBuilderHPParallelQueryExtensions {
-
-    public static void AppendHPParallelQuerys(this StringBuilder builder, int amount) {
-
-        for (var index = 0; index < amount; index++) 
-            builder.AppendHPParallelQuery(index);
+public static class StringBuilderHpParallelQueryExtensions
+{
+    public static void AppendHpParallelQuerys(this StringBuilder builder, int amount)
+    {
+        for (var index = 0; index < amount; index++)
+            builder.AppendHpParallelQuery(index);
     }
-    
-    public static void AppendHPParallelQuery(this StringBuilder builder, int amount) {
 
+    public static void AppendHpParallelQuery(this StringBuilder builder, int amount)
+    {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
 
         var template = $@"
@@ -22,7 +21,7 @@ public partial class World{{
     public void HPParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}>{{
         
         var innerJob = new IForEachJob<T,{generics}>();
-        innerJob.forEach = iForEach;
+        innerJob.ForEach = iForEach;
 
         var listCache = GetListCache<ChunkIterationJob<IForEachJob<T,{generics}>>>();
 
@@ -34,10 +33,10 @@ public partial class World{{
             foreach (var range in part) {{
             
                 var job = GetJob<ChunkIterationJob<IForEachJob<T,{generics}>>>();
-                job.start = range.start;
-                job.size = range.range;
-                job.chunks = archetype.Chunks;
-                job.instance = innerJob;
+                job.Start = range.Start;
+                job.Size = range.Length;
+                job.Chunks = archetype.Chunks;
+                job.Instance = innerJob;
                 listCache.Add(job);
             }}
 
@@ -62,15 +61,15 @@ public partial class World{{
 
         builder.AppendLine(template);
     }
-    
-    public static void AppendHPEParallelQuerys(this StringBuilder builder, int amount) {
 
-        for (var index = 0; index < amount; index++) 
-            builder.AppendHPEParallelQuery(index);
+    public static void AppendHpeParallelQuerys(this StringBuilder builder, int amount)
+    {
+        for (var index = 0; index < amount; index++)
+            builder.AppendHpeParallelQuery(index);
     }
-    
-    public static void AppendHPEParallelQuery(this StringBuilder builder, int amount) {
 
+    public static void AppendHpeParallelQuery(this StringBuilder builder, int amount)
+    {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
 
         var template = $@"
@@ -80,7 +79,7 @@ public partial class World{{
     public void HPEParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}>{{
         
         var innerJob = new IForEachWithEntityJob<T,{generics}>();
-        innerJob.forEach = iForEach;
+        innerJob.ForEach = iForEach;
 
         var listCache = GetListCache<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>();
 
@@ -92,10 +91,10 @@ public partial class World{{
             foreach (var range in part) {{
             
                 var job = GetJob<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>();
-                job.start = range.start;
-                job.size = range.range;
-                job.chunks = archetype.Chunks;
-                job.instance = innerJob;
+                job.Start = range.Start;
+                job.Size = range.Length;
+                job.Chunks = archetype.Chunks;
+                job.Instance = innerJob;
                 listCache.Add(job);
             }}
 

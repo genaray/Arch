@@ -1,174 +1,173 @@
-using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Arch.Core;
-using Arch.Core.Extensions;
+using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
-using Arch.Test;
-using CommunityToolkit.HighPerformance.Helpers;
-using JobScheduler;
-using Microsoft.Extensions.ObjectPool;
-using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 
-namespace Arch.Benchmark; 
+namespace Arch.Benchmark;
 
 [HtmlExporter]
-[MemoryDiagnoser(true)]
+[MemoryDiagnoser]
 [HardwareCounters(HardwareCounter.CacheMisses)]
-public class ArchetypeIterationBenchmark {
-    
-    [Params( 10000, 100000, 1000000)]
-    public int amount;
+public class ArchetypeIterationBenchmark
+{
+    private readonly Type[] _group = { typeof(Transform), typeof(Rotation) };
 
-    private Type[] group = { typeof(Transform), typeof(Rotation) };
+    [Params(10000, 100000, 1000000)] public int Amount;
 
-    private Consumer consumer;
-    private Archetype globalArchetype;
+    private Consumer _consumer;
+    private Archetype _globalArchetype;
 
     [GlobalSetup]
-    public void Setup() {
-
-        consumer = new Consumer();
+    public void Setup()
+    {
+        _consumer = new Consumer();
         //jobScheduler = new JobScheduler();
-        
-        globalArchetype = new Archetype(group);
-        globalArchetype.Reserve(amount);
-        for (var index = 0; index < amount; index++) {
 
+        _globalArchetype = new Archetype(_group);
+        _globalArchetype.Reserve(Amount);
+
+        for (var index = 0; index < Amount; index++)
+        {
             var entity = new Entity(index, 0, 0);
-            globalArchetype.Add(in entity);
-                
+            _globalArchetype.Add(in entity);
+
             var t = new Transform();
             var r = new Rotation();
-            globalArchetype.Set(entity, t);
-            globalArchetype.Set(entity, r);
+            _globalArchetype.Set(entity, t);
+            _globalArchetype.Set(entity, r);
         }
     }
 
     [Benchmark]
-    public void IterationNormalTwoComponents() {
+    public void IterationNormalTwoComponents()
+    {
+        var size = _globalArchetype.Size;
+        var chunks = _globalArchetype.Chunks;
 
-        var size = globalArchetype.Size;
-        var chunks = globalArchetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++) {
-
+        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
+        {
             ref readonly var chunk = ref chunks[chunkIndex];
             var chunkSize = chunk.Size;
             var transforms = chunk.GetArray<Transform>();
             var rotations = chunk.GetArray<Rotation>();
 
-            for (var index = 0; index < chunkSize; index++) {
-
+            for (var index = 0; index < chunkSize; index++)
+            {
                 ref var transform = ref transforms[index];
                 ref var rotation = ref rotations[index];
 
-                consumer.Consume(transform);
-                consumer.Consume(rotation);
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
     }
-        
-    [Benchmark]
-    public void IterationUnsafeAddTwoComponents() {
 
-        var size = globalArchetype.Size;
-        ref var chunk = ref globalArchetype.Chunks[0];
-        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++) {
-            
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponents()
+    {
+        var size = _globalArchetype.Size;
+        ref var chunk = ref _globalArchetype.Chunks[0];
+
+        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
+        {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var chunkSize = chunk.Size;
-            
+
             var transforms = currentChunk.GetArray<Transform>();
             var rotations = currentChunk.GetArray<Rotation>();
-            
+
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
 
-            for (var index = 0; index < chunkSize; index++) {
-
+            for (var index = 0; index < chunkSize; index++)
+            {
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);
                 ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-                
-                consumer.Consume(currentTransform);
-                consumer.Consume(currentRotation);
+
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
     }
 
     [Benchmark]
-    public void IterationParallelUnsafeAdd() {
-        
+    public void IterationParallelUnsafeAdd()
+    {
         // Partition the entire source array.
-        var rangePartitioner = Partitioner.Create(0, globalArchetype.Size);
-        Parallel.ForEach(rangePartitioner, (range) => {
-
+        var rangePartitioner = Partitioner.Create(0, _globalArchetype.Size);
+        Parallel.ForEach(rangePartitioner, range =>
+        {
             var start = range.Item1;
             var end = range.Item2;
 
-            ref var chunk = ref globalArchetype.Chunks[start];
-            for (var chunkIndex = 0; chunkIndex < end-start; chunkIndex++) {
-            
+            ref var chunk = ref _globalArchetype.Chunks[start];
+
+            for (var chunkIndex = 0; chunkIndex < end - start; chunkIndex++)
+            {
                 ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
                 var chunkSize = chunk.Size;
-            
+
                 var transforms = currentChunk.GetArray<Transform>();
                 var rotations = currentChunk.GetArray<Rotation>();
-            
+
                 ref var transform = ref transforms[0];
                 ref var rotation = ref rotations[0];
 
-                for (var index = 0; index < chunkSize; index++) {
-
+                for (var index = 0; index < chunkSize; index++)
+                {
                     ref var currentTransform = ref Unsafe.Add(ref transform, index);
                     ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-                
-                    consumer.Consume(currentTransform);
-                    consumer.Consume(currentRotation);
+
+                    _consumer.Consume(currentTransform);
+                    _consumer.Consume(currentRotation);
                 }
             }
         });
     }
-    
-    
-    [Benchmark]
-    public void IterationNormalEntityTwoComponents() {
-        
-        var size = globalArchetype.Size;
-        var chunks = globalArchetype.Chunks;
-        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++) {
 
+
+    [Benchmark]
+    public void IterationNormalEntityTwoComponents()
+    {
+        var size = _globalArchetype.Size;
+        var chunks = _globalArchetype.Chunks;
+
+        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
+        {
             ref readonly var chunk = ref chunks[chunkIndex];
             var chunkSize = chunk.Size;
-            
+
             var entities = chunk.Entities;
             var transforms = chunk.GetArray<Transform>();
             var rotations = chunk.GetArray<Rotation>();
 
-            for (var index = 0; index < chunkSize; index++) {
-
+            for (var index = 0; index < chunkSize; index++)
+            {
                 ref readonly var entity = ref entities[index];
                 ref var transform = ref transforms[index];
                 ref var rotation = ref rotations[index];
-                
-                consumer.Consume(entity);
-                consumer.Consume(transform);
-                consumer.Consume(rotation);
+
+                _consumer.Consume(entity);
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
     }
 
     [Benchmark]
-    public void IterationUnsafeAddEntityTwoComponents() {
+    public void IterationUnsafeAddEntityTwoComponents()
+    {
+        var size = _globalArchetype.Size;
+        ref var chunk = ref _globalArchetype.Chunks[0];
 
-        var size = globalArchetype.Size;
-        ref var chunk = ref globalArchetype.Chunks[0];
-        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++) {
-
+        for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
+        {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var chunkSize = chunk.Size;
-            
+
             var entities = currentChunk.Entities;
             var transforms = currentChunk.GetArray<Transform>();
             var rotations = currentChunk.GetArray<Rotation>();
@@ -177,15 +176,15 @@ public class ArchetypeIterationBenchmark {
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
 
-            for (var index = 0; index < chunkSize; index++) {
-
+            for (var index = 0; index < chunkSize; index++)
+            {
                 ref readonly var currentEntity = ref Unsafe.Add(ref entity, index);
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);
                 ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-                
-                consumer.Consume(currentEntity);
-                consumer.Consume(currentTransform);
-                consumer.Consume(currentRotation);
+
+                _consumer.Consume(currentEntity);
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
     }

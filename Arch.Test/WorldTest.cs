@@ -1,147 +1,136 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.Core.Utils;
-using NUnit.Framework;
 
-namespace Arch.Test; 
+namespace Arch.Test;
 
 [TestFixture]
-public class WorldTest {
-    
-    private World world;
-    
-    private Type[] entityGroup = new []{ typeof(Transform), typeof(Rotation) };
-    private Type[] entityAIGroup = new[] { typeof(Transform), typeof(Rotation), typeof(AI) };
-    
-    QueryDescription withoutAIQuery = new QueryDescription {
-        All = new []{ typeof(Transform) },
-        Any = new []{ typeof(Rotation) },
-        None = new []{ typeof(AI) }
-    };
-        
-    QueryDescription withAIQuery = new QueryDescription {
-        All = new []{ typeof(Transform), typeof(Rotation) },
-        Any = new []{ typeof(AI) },
-    };
-        
+public class WorldTest
+{
     [OneTimeSetUp]
-    public void Setup() {
-        
-        world = World.Create();
-        
-        for(var index = 0; index < 10000; index++)
-            world.Create(entityGroup);
-        
-        for(var index = 0; index < 10000; index++)
-            world.Create(entityAIGroup);
+    public void Setup()
+    {
+        _world = World.Create();
+
+        for (var index = 0; index < 10000; index++)
+            _world.Create(_entityGroup);
+
+        for (var index = 0; index < 10000; index++)
+            _world.Create(_entityAiGroup);
     }
-    
+
     [OneTimeTearDown]
-    public void Teardown() {
-        World.Destroy(world);
+    public void Teardown()
+    {
+        World.Destroy(_world);
     }
+
+    private World _world;
+
+    private readonly Type[] _entityGroup = { typeof(Transform), typeof(Rotation) };
+    private readonly Type[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+
+    private QueryDescription _withoutAiQuery = new() { All = new[] { typeof(Transform) }, Any = new[] { typeof(Rotation) }, None = new[] { typeof(Ai) } };
+
+    private QueryDescription _withAiQuery = new() { All = new[] { typeof(Transform), typeof(Rotation) }, Any = new[] { typeof(Ai) } };
 
     [Test]
-    public void Create() {
+    public void Create()
+    {
+        var size = _world.Size;
+        var entity = _world.Create(_entityGroup);
 
-        var size = world.Size;
-        var entity = world.Create(entityGroup);
-        
-        Assert.AreEqual(size+1, world.Size);
+        Assert.AreEqual(size + 1, _world.Size);
         Assert.True(entity.IsAlive());
     }
-    
-    [Test]
-    public void Destroy() {
-        
-        var worldSizeBefore = world.Size;
-        var entity = world.Create(entityGroup);
-        var worldSizeAfter = world.Size;
-        world.Destroy(in entity);
 
-        Assert.AreEqual(worldSizeBefore, world.Size);
+    [Test]
+    public void Destroy()
+    {
+        var worldSizeBefore = _world.Size;
+        var entity = _world.Create(_entityGroup);
+        var worldSizeAfter = _world.Size;
+        _world.Destroy(in entity);
+
+        Assert.AreEqual(worldSizeBefore, _world.Size);
         Assert.Less(worldSizeBefore, worldSizeAfter);
         Assert.False(entity.IsAlive());
     }
-    
-    [Test]
-    public void CapacityTest() {
 
+    [Test]
+    public void CapacityTest()
+    {
         // Add
-        var before = world.Size;
+        var before = _world.Size;
         for (var index = 0; index < 500; index++)
-            world.Create(entityGroup);
+            _world.Create(_entityGroup);
 
         // Remove
         for (var index = 0; index < 500; index++)
-            world.Destroy(new Entity(index, world.Id,0));
-        var after = world.Size;
+            _world.Destroy(new Entity(index, _world.Id, 0));
+        var after = _world.Size;
 
         Assert.AreEqual(before, after);
     }
 
     [Test]
-    public void RecycleId() {
-
+    public void RecycleId()
+    {
         var localWorld = World.Create();
-        
-        var entity = localWorld.Create(entityGroup);
+
+        var entity = localWorld.Create(_entityGroup);
         localWorld.Destroy(in entity);
-        var recycledEntity = localWorld.Create(entityGroup);
-        var newEntity = localWorld.Create(entityGroup);
+        var recycledEntity = localWorld.Create(_entityGroup);
+        var newEntity = localWorld.Create(_entityGroup);
 
         Assert.AreEqual(entity.EntityId, recycledEntity.EntityId);
         Assert.AreNotEqual(recycledEntity.EntityId, newEntity.EntityId);
-        
+
         World.Destroy(localWorld);
     }
-    
+
     [Test]
-    public void Reserve() {
+    public void Reserve()
+    {
+        var beforeSize = _world.Size;
+        var beforeCapacity = _world.Capacity;
 
-        var beforeSize = world.Size;
-        var beforeCapacity = world.Capacity;
-        
-        world.Reserve(entityGroup, 10000);
-        for(var index = 0; index < 10000; index++)
-            world.Create(entityGroup);
+        _world.Reserve(_entityGroup, 10000);
+        for (var index = 0; index < 10000; index++)
+            _world.Create(_entityGroup);
 
-        Assert.Greater(world.Size, beforeSize);
-        Assert.AreEqual(beforeSize+10000, world.Size);
-        Assert.AreEqual(beforeCapacity+10000, world.Capacity);
+        Assert.Greater(_world.Size, beforeSize);
+        Assert.AreEqual(beforeSize + 10000, _world.Size);
+        Assert.AreEqual(beforeCapacity + 10000, _world.Capacity);
     }
-    
-        
-    [Test]
-    public void DestroyAll() {
 
+
+    [Test]
+    public void DestroyAll()
+    {
         var query = new QueryDescription { All = new[] { typeof(Transform) } };
-        
-        var entities = new List<Entity>();
-        world.GetEntities(query, entities);
 
-        for (var i = 0; i < entities.Count; i++) {
+        var entities = new List<Entity>();
+        _world.GetEntities(query, entities);
+
+        for (var i = 0; i < entities.Count; i++)
+        {
             var entity = entities[i];
-            world.Destroy(in entity);
+            _world.Destroy(in entity);
         }
-        
-        Assert.AreEqual(0, world.Size);
-        Assert.AreEqual(0, world.Archetypes[0].Size);
-        Assert.AreEqual(0, world.Archetypes[1].Size);
+
+        Assert.AreEqual(0, _world.Size);
+        Assert.AreEqual(0, _world.Archetypes[0].Size);
+        Assert.AreEqual(0, _world.Archetypes[1].Size);
     }
 
     [Test]
-    public void MultipleArchetypesTest() {
-        
-        var archTypes1 = new Type[] { typeof(Transform) };
-        var archTypes2 = new Type[] { typeof(Transform) };
+    public void MultipleArchetypesTest()
+    {
+        var archTypes1 = new[] { typeof(Transform) };
+        var archTypes2 = new[] { typeof(Transform) };
 
-        var entity1 = world.Create(archTypes1);
-        var entity2 = world.Create(archTypes2);
+        var entity1 = _world.Create(archTypes1);
+        var entity2 = _world.Create(archTypes2);
 
         Assert.AreEqual(entity1.GetArchetype(), entity2.GetArchetype());
     }

@@ -1,9 +1,15 @@
-namespace Arch.Test; 
+namespace Arch.Test;
 
-public struct Transform {
-    public float x, y;
+public struct Transform
+{
+    public float X, Y;
 }
-    
-public struct Rotation { public float x, y, z, w; }
-    
-public struct AI{}
+
+public struct Rotation
+{
+    public float X, Y, Z, W;
+}
+
+public struct Ai
+{
+}

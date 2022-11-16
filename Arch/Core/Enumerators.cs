@@ -2,239 +2,259 @@ using System;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 
-namespace Arch.Core; 
+namespace Arch.Core;
 
 /// <summary>
-/// A basic enumerator for arrays or spans. 
+///     A basic enumerator for arrays or spans.
 /// </summary>
 /// <typeparam name="T">The generic type</typeparam>
-public ref struct Enumerator<T> {
-    
-    private readonly Span<T> span;
+public ref struct Enumerator<T>
+{
+    private readonly Span<T> _span;
 
-    private int index;
-    private readonly int size;
+    private int _index;
+    private readonly int _size;
 
-    public Enumerator(Span<T> span) {
+    public Enumerator(Span<T> span)
+    {
+        this._span = span;
 
-        this.span = span;
-        
-        index = -1;
-        size = span.Length;
+        _index = -1;
+        _size = span.Length;
     }
-    
-    public Enumerator(Span<T> span, int length) {
 
-        this.span = span;
-        
-        index = -1;
-        size = length;
+    public Enumerator(Span<T> span, int length)
+    {
+        this._span = span;
+
+        _index = -1;
+        _size = length;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool MoveNext() {
-        return unchecked(++index) < size;
+    public bool MoveNext()
+    {
+        return unchecked(++_index) < _size;
     }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reset() { index = -1; }
 
-    public readonly ref T Current {
-        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public readonly ref T Current
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref span[index];
+        get => ref _span[_index];
     }
 }
 
 /// <summary>
-/// A enumerator which accepts a <see cref="Query"/> and will only iterate over fitting <see cref="Archetype"/>'s. 
+///     A enumerator which accepts a <see cref="Query" /> and will only iterate over fitting <see cref="Archetype" />'s.
 /// </summary>
-public ref struct QueryArchetypeEnumerator {
+public ref struct QueryArchetypeEnumerator
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
 
-    private readonly Query query;
-    private readonly Span<Archetype> archetypes;
+    private int _index;
+    private readonly int _size;
 
-    private int index;
-    private readonly int size;
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryArchetypeEnumerator(Query query, Span<Archetype> archetypes) {
-        this.query = query;
-        this.archetypes = archetypes;
-        index = -1;
-        size = archetypes.Length;
+    public QueryArchetypeEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        this._query = query;
+        this._archetypes = archetypes;
+        _index = -1;
+        _size = archetypes.Length;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool MoveNext() {
-
-        unchecked {
-            
-            while (++index < size) {
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            while (++_index < _size)
+            {
                 ref var archetype = ref Current;
-                if (query.Valid(archetype.BitSet)) 
+                if (_query.Valid(archetype.BitSet))
                     return true;
             }
 
             return false;
         }
     }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reset() { index = -1; }
 
-    public readonly ref Archetype Current {
-        
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public readonly ref Archetype Current
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref archetypes[index];
+        get => ref _archetypes[_index];
     }
 }
 
 /// <summary>
-/// A iterator for the <see cref="QueryArchetypeEnumerator"/> to use it in a foreach loop. 
+///     A iterator for the <see cref="QueryArchetypeEnumerator" /> to use it in a foreach loop.
 /// </summary>
-public readonly ref struct QueryArchetypeIterator {
+public readonly ref struct QueryArchetypeIterator
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
 
-    private readonly Query query;
-    private readonly Span<Archetype> archetypes;
-    
-    public QueryArchetypeIterator(Query query, Span<Archetype> archetypes) {
-        this.query = query;
-        this.archetypes = archetypes;
+    public QueryArchetypeIterator(Query query, Span<Archetype> archetypes)
+    {
+        this._query = query;
+        this._archetypes = archetypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryArchetypeEnumerator GetEnumerator() {
-        return new QueryArchetypeEnumerator(query, archetypes);
+    public QueryArchetypeEnumerator GetEnumerator()
+    {
+        return new QueryArchetypeEnumerator(_query, _archetypes);
     }
 }
 
 /// <summary>
-/// A enumerator to iterate over <see cref="Chunk"/>'s fitting the <see cref="Query"/>.
+///     A enumerator to iterate over <see cref="Chunk" />'s fitting the <see cref="Query" />.
 /// </summary>
-public ref struct QueryChunkEnumerator {
+public ref struct QueryChunkEnumerator
+{
+    private QueryArchetypeEnumerator _archetypeEnumerator;
+    private Span<Chunk> _chunks;
 
-    private QueryArchetypeEnumerator archetypeEnumerator;
-    private Span<Chunk> chunks;
+    private int _index;
+    private int _size;
 
-    private int index;
-    private int size;
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkEnumerator(Query query, Span<Archetype> archetypes) {
-        index = -1;
-        archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
+    public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        _index = -1;
+        _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool MoveNext() {
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            _index++;
 
-        unchecked {
-
-            index++;
-            
             // We reached the end, next archetype
-            if (index < size) return true;
-            if (!archetypeEnumerator.MoveNext()) return false;
+            if (_index < _size) return true;
+            if (!_archetypeEnumerator.MoveNext()) return false;
 
-            ref var current = ref archetypeEnumerator.Current;
-            chunks = new Span<Chunk>(current.Chunks);
-            index = 0;
-            size = current.Size;
+            ref var current = ref _archetypeEnumerator.Current;
+            _chunks = new Span<Chunk>(current.Chunks);
+            _index = 0;
+            _size = current.Size;
 
             return true;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reset() {
-        
-        index = -1; 
-        archetypeEnumerator.Reset();
+    public void Reset()
+    {
+        _index = -1;
+        _archetypeEnumerator.Reset();
     }
 
-    public readonly ref Chunk Current {
-        
+    public readonly ref Chunk Current
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref chunks[index];
+        get => ref _chunks[_index];
     }
 }
 
 /// <summary>
-/// A implementation of the <see cref="QueryChunkEnumerator"/> in order to use it in a foreach loop. 
+///     A implementation of the <see cref="QueryChunkEnumerator" /> in order to use it in a foreach loop.
 /// </summary>
-public readonly ref struct QueryChunkIterator {
+public readonly ref struct QueryChunkIterator
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
 
-    private readonly Query query;
-    private readonly Span<Archetype> archetypes;
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkIterator(Query query, Span<Archetype> archetypes) {
-        this.query = query;
-        this.archetypes = archetypes;
+    public QueryChunkIterator(Query query, Span<Archetype> archetypes)
+    {
+        this._query = query;
+        this._archetypes = archetypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkEnumerator GetEnumerator() {
-        return new QueryChunkEnumerator(query, archetypes);
+    public QueryChunkEnumerator GetEnumerator()
+    {
+        return new QueryChunkEnumerator(_query, _archetypes);
     }
 }
 
 /// <summary>
-/// A struct used to split an array into multiple <see cref="Range"/>'s. 
+///     A struct used to split an array into multiple <see cref="Range" />'s.
 /// </summary>
-public ref struct RangeEnumerator {
-    
-    private readonly int size;
+public ref struct RangeEnumerator
+{
+    private readonly int _size;
 
-    private readonly int jobs;
-    private readonly int perJob;
+    private readonly int _jobs;
+    private readonly int _perJob;
 
-    private int index;
-    
-    public RangeEnumerator(int threads, int size) {
-        
-        this.size = size;
-        index = -1;
-        
-        JobExtensions.PartionateArray(threads, size,  out jobs, out perJob);
+    private int _index;
+
+    public RangeEnumerator(int threads, int size)
+    {
+        this._size = size;
+        _index = -1;
+
+        JobExtensions.PartionateArray(threads, size, out _jobs, out _perJob);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int AmountForJob(int i) {
-        
-        if (i <= 0) return perJob;
-        if(i == jobs-1) return (int)Math.Ceiling((float)(size % jobs));
-        return perJob;
+    public int AmountForJob(int i)
+    {
+        if (i <= 0) return _perJob;
+        if (i == _jobs - 1) return (int)Math.Ceiling((float)(_size % _jobs));
+        return _perJob;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool MoveNext() {
-        return (unchecked(++index) < jobs);
+    public bool MoveNext()
+    {
+        return unchecked(++_index) < _jobs;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reset() { index = -1; }
-    
-    public Range Current => new(index*perJob, AmountForJob(index));
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public Range Current => new(_index * _perJob, AmountForJob(_index));
 }
 
 /// <summary>
-/// A implementation of the <see cref="RangeEnumerator"/> for being used in a foreach loop. 
+///     A implementation of the <see cref="RangeEnumerator" /> for being used in a foreach loop.
 /// </summary>
-public readonly ref struct RangePartitioner {
+public readonly ref struct RangePartitioner
+{
+    private readonly int _threads;
+    private readonly int _size;
 
-    private readonly int threads;
-    private readonly int size;
-    
-    public RangePartitioner(int threads, int size) {
-        this.threads = threads;
-        this.size = size;
+    public RangePartitioner(int threads, int size)
+    {
+        this._threads = threads;
+        this._size = size;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public RangeEnumerator GetEnumerator() {
-        return new RangeEnumerator(threads, size);
+    public RangeEnumerator GetEnumerator()
+    {
+        return new RangeEnumerator(_threads, _size);
     }
 }
 

@@ -5,7 +5,7 @@
         <GenerateProgramFile>false</GenerateProgramFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-        
+
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
         <Version>1.0.11</Version>
@@ -13,28 +13,28 @@
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Fixed a bug where multiple same structured archetypes and querydescriptions could exist next to each other. 
+            Fixed a bug where multiple same structured archetypes and querydescriptions could exist next to each other.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
-        
+
         <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
         <RepositoryUrl>https://github.com/genaray/Arch.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <IsPackable>true</IsPackable>
-        
+
         <LangVersion>preview</LangVersion>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
-      <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
-      <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
-      <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
+        <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27"/>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2"/>
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0"/>
+        <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Arch.SourceGenerator\Arch.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\Arch.SourceGenerator\Arch.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
 </Project>

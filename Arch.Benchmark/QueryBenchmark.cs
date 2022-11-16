@@ -9,101 +9,109 @@ using BenchmarkDotNet.Engines;
 namespace Arch.Benchmark;
 
 [HtmlExporter]
-[MemoryDiagnoser(true)]
+[MemoryDiagnoser]
 [HardwareCounters(HardwareCounter.CacheMisses)]
-public class QueryBenchmark {
+public class QueryBenchmark
+{
+    private readonly Type[] _group = { typeof(Transform), typeof(Velocity) };
 
-    [Params( 10000, 100000, 1000000)]
-    public int amount;
+    private Consumer _consumer = new();
 
-    private JobScheduler.JobScheduler jobScheduler;
-    private Type[] group = { typeof(Transform), typeof(Velocity) };
+    [Params(10000, 100000, 1000000)] public int Amount;
 
-    private Consumer _consumer = new Consumer();
-    
-    private World world;
-    private QueryDescription queryDescription;
+    private JobScheduler.JobScheduler _jobScheduler;
+    private QueryDescription _queryDescription;
+
+    private World _world;
 
     [GlobalSetup]
-    public void Setup() {
+    public void Setup()
+    {
+        _jobScheduler = new JobScheduler.JobScheduler("Arch");
 
-        jobScheduler = new JobScheduler.JobScheduler("Arch");
-        
-        world = World.Create();
-        world.Reserve(group, amount);
-        
-        for (var index = 0; index < amount; index++) {
-            var entity = world.Create(group);
-            entity.Set(new Transform{ x = 0, y = 0});
-            entity.Set(new Velocity{ x = 1, y = 1});
+        _world = World.Create();
+        _world.Reserve(_group, Amount);
+
+        for (var index = 0; index < Amount; index++)
+        {
+            var entity = _world.Create(_group);
+            entity.Set(new Transform { X = 0, Y = 0 });
+            entity.Set(new Velocity { X = 1, Y = 1 });
         }
 
-        queryDescription = new QueryDescription { All = group };
+        _queryDescription = new QueryDescription { All = _group };
     }
 
     [GlobalCleanup]
-    public void Cleanup() {
-        jobScheduler.Dispose();
+    public void Cleanup()
+    {
+        _jobScheduler.Dispose();
     }
-    
-    [Benchmark]
-    public void Query() {
 
-        world.Query(in queryDescription, (ref Transform t, ref Velocity v) => {
-            t.x += v.x;
-            t.y += v.y;
-        });
-    }
-    
     [Benchmark]
-    public void EntityQuery() {
-
-        world.Query(in queryDescription, (in Entity entity, ref Transform t, ref Velocity v) => {
-            t.x += v.x;
-            t.y += v.y;
+    public void Query()
+    {
+        _world.Query(in _queryDescription, (ref Transform t, ref Velocity v) =>
+        {
+            t.X += v.X;
+            t.Y += v.Y;
         });
     }
 
-    public struct VelocityUpdate : IForEach<Transform, Velocity> {
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Update(ref Transform t, ref Velocity v) {
-            t.x += v.x;
-            t.y += v.y;
-        }
-    }
-    
     [Benchmark]
-    public void StructQuery() {
+    public void EntityQuery()
+    {
+        _world.Query(in _queryDescription, (in Entity entity, ref Transform t, ref Velocity v) =>
+        {
+            t.X += v.X;
+            t.Y += v.Y;
+        });
+    }
+
+    [Benchmark]
+    public void StructQuery()
+    {
         var vel = new VelocityUpdate();
-        world.HPQuery<VelocityUpdate, Transform, Velocity>(in queryDescription, ref vel);
+        _world.HPQuery<VelocityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
-    
-    public struct VelocityEntityUpdate : IForEachWithEntity<Transform, Velocity> {
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Update(in Entity entity, ref Transform t, ref Velocity v) {
-            t.x += v.x;
-            t.y += v.y;
-        }
-    }
-    
+
     [Benchmark]
-    public void StructEntityQuery() {
+    public void StructEntityQuery()
+    {
         var vel = new VelocityEntityUpdate();
-        world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in queryDescription, ref vel);
+        _world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
-    
+
     [Benchmark]
-    public void PureEntityQuery() {
-
-        world.Query(in queryDescription, (in Entity entity) => {
-
+    public void PureEntityQuery()
+    {
+        _world.Query(in _queryDescription, (in Entity entity) =>
+        {
             ref var t = ref entity.Get<Transform>();
             ref var v = ref entity.Get<Velocity>();
-            
-            t.x += v.x;
-            t.y += v.y;
+
+            t.X += v.X;
+            t.Y += v.Y;
         });
+    }
+
+    public struct VelocityUpdate : IForEach<Transform, Velocity>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Update(ref Transform t, ref Velocity v)
+        {
+            t.X += v.X;
+            t.Y += v.Y;
+        }
+    }
+
+    public struct VelocityEntityUpdate : IForEachWithEntity<Transform, Velocity>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Update(in Entity entity, ref Transform t, ref Velocity v)
+        {
+            t.X += v.X;
+            t.Y += v.Y;
+        }
     }
 }

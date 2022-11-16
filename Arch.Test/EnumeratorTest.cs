@@ -1,75 +1,74 @@
 using Arch.Core;
-using Arch.Core.Extensions;
 
-namespace Arch.Test; 
+namespace Arch.Test;
 
-public class EnumeratorTest {
+public class EnumeratorTest
+{
+    private QueryDescription _description;
+    private Type[] _group;
+    private Type[] _otherGroup;
 
-    private World world;
-    private Type[] group;
-    private Type[] otherGroup;
+    private World _world;
 
-    private QueryDescription description;
-        
     [OneTimeSetUp]
-    public void Setup() {
-        
-        group = new []{ typeof(Transform), typeof(Rotation) };
-        otherGroup = new[] { typeof(Transform), typeof(Rotation), typeof(AI) };
-        
-        world = World.Create();
-        world.Reserve(group, 10000);
-        world.Reserve(otherGroup,10000);
-        
-        for (var index = 0; index < 10000; index++)
-            world.Create(group);
-        
-        for (var index = 0; index < 10000; index++)
-            world.Create(otherGroup);
+    public void Setup()
+    {
+        _group = new[] { typeof(Transform), typeof(Rotation) };
+        _otherGroup = new[] { typeof(Transform), typeof(Rotation), typeof(Ai) };
 
-        description = new QueryDescription { All = group };
+        _world = World.Create();
+        _world.Reserve(_group, 10000);
+        _world.Reserve(_otherGroup, 10000);
+
+        for (var index = 0; index < 10000; index++)
+            _world.Create(_group);
+
+        for (var index = 0; index < 10000; index++)
+            _world.Create(_otherGroup);
+
+        _description = new QueryDescription { All = _group };
     }
 
     [Test]
-    public void WorldArchetypeEnumeration() {
-
+    public void WorldArchetypeEnumeration()
+    {
         var counter = 0;
-        foreach (ref var archetype in world) 
+        foreach (ref var archetype in _world)
             counter++;
-        
+
         Assert.AreEqual(2, counter);
     }
-    
-    [Test]
-    public void ArchetypeChunkEnumeration() {
 
+    [Test]
+    public void ArchetypeChunkEnumeration()
+    {
         var counter = 0;
-        var archetype = world.Archetypes[0];
-        foreach (ref var chunk in archetype) 
+        var archetype = _world.Archetypes[0];
+        foreach (ref var chunk in archetype)
             counter++;
 
-        Assert.AreEqual(10000/Archetype.CalculateEntitiesPerChunk(group), counter);
+        Assert.AreEqual(10000 / Archetype.CalculateEntitiesPerChunk(_group), counter);
     }
-    
-    [Test]
-    public void QueryArchetypeEnumeration() {
 
+    [Test]
+    public void QueryArchetypeEnumeration()
+    {
         var counter = 0;
-        var query = world.Query(in description);
-        foreach (ref var archetype in query.GetArchetypeIterator()) 
+        var query = _world.Query(in _description);
+        foreach (ref var archetype in query.GetArchetypeIterator())
             counter++;
-        
+
         Assert.AreEqual(2, counter);
     }
-    
-    [Test]
-    public void QueryChunkEnumeration() {
 
+    [Test]
+    public void QueryChunkEnumeration()
+    {
         var counter = 0;
-        var query = world.Query(in description);
-        foreach (ref var chunk in query.GetChunkIterator()) 
+        var query = _world.Query(in _description);
+        foreach (ref var chunk in query.GetChunkIterator())
             counter++;
-        
+
         Assert.AreEqual(41, counter);
     }
 }

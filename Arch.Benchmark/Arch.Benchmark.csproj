@@ -9,33 +9,33 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <Optimize>false</Optimize>
+        <Optimize>false</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Arch\Arch.csproj" />
+        <ProjectReference Include="..\Arch\Arch.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-      <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
-      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
-      <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.13.1"/>
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1"/>
+        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0"/>
+        <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="obj\Arch.Benchmark.csproj.nuget.dgspec.json" />
-      <Content Include="obj\project.assets.json" />
-      <Content Include="obj\project.nuget.cache" />
-      <Content Include="obj\project.packagespec.json" />
-      <Content Include="obj\Release\net7.0\Arch.Benchmark.AssemblyInfoInputs.cache" />
-      <Content Include="obj\Release\net7.0\Arch.Benchmark.assets.cache" />
-      <Content Include="obj\Release\net7.0\Arch.Benchmark.csproj.AssemblyReference.cache" />
-      <Content Include="obj\rider.project.restore.info" />
+        <Content Include="obj\Arch.Benchmark.csproj.nuget.dgspec.json"/>
+        <Content Include="obj\project.assets.json"/>
+        <Content Include="obj\project.nuget.cache"/>
+        <Content Include="obj\project.packagespec.json"/>
+        <Content Include="obj\Release\net7.0\Arch.Benchmark.AssemblyInfoInputs.cache"/>
+        <Content Include="obj\Release\net7.0\Arch.Benchmark.assets.cache"/>
+        <Content Include="obj\Release\net7.0\Arch.Benchmark.csproj.AssemblyReference.cache"/>
+        <Content Include="obj\rider.project.restore.info"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Include="obj\Release\net7.0\.NETCoreApp,Version=v7.0.AssemblyAttributes.cs" />
+        <Compile Include="obj\Release\net7.0\.NETCoreApp,Version=v7.0.AssemblyAttributes.cs"/>
     </ItemGroup>
 
 </Project>
