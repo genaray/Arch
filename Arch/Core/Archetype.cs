@@ -116,47 +116,7 @@ public sealed unsafe partial class Archetype
 
         return true;
     }
-
-    /// <summary>
-    ///     Sets an component into the fitting component array for an entity.
-    /// </summary>
-    /// <param name="entity">The index</param>
-    /// <param name="cmp">The component</param>
-    /// <typeparam name="T">The type</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T cmp)
-    {
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
-        ref var chunk = ref Chunks[chunkIndex];
-        chunk.Set(in entity, in cmp);
-    }
-
-    /// <summary>
-    ///     Checks wether this chunk contains an array of the type.
-    /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has<T>()
-    {
-        var id = ComponentMeta<T>.Id;
-        return BitSet.IsSet(id);
-    }
-
-    /// <summary>
-    ///     Returns an component from the fitting component array for its entity.
-    /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>The component</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Get<T>(in Entity entity)
-    {
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
-        ref var chunk = ref Chunks[chunkIndex];
-        return ref chunk.Get<T>(in entity);
-    }
-
+    
     /// <summary>
     ///     Removes an <see cref="Entity" /> from this chunk and all its components.
     /// </summary>
@@ -199,6 +159,46 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
+    ///     Sets an component into the fitting component array for an entity.
+    /// </summary>
+    /// <param name="entity">The index</param>
+    /// <param name="cmp">The component</param>
+    /// <typeparam name="T">The type</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set<T>(in Entity entity, in T cmp)
+    {
+        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        ref var chunk = ref Chunks[chunkIndex];
+        chunk.Set(in entity, in cmp);
+    }
+
+    /// <summary>
+    ///     Checks wether this chunk contains an array of the type.
+    /// </summary>
+    /// <typeparam name="T">The type</typeparam>
+    /// <returns>True if it does, false if it doesnt</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Has<T>()
+    {
+        var id = ComponentMeta<T>.Id;
+        return BitSet.IsSet(id);
+    }
+
+    /// <summary>
+    ///     Returns an component from the fitting component array for its entity.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The type</typeparam>
+    /// <returns>The component</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T Get<T>(in Entity entity)
+    {
+        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        ref var chunk = ref Chunks[chunkIndex];
+        return ref chunk.Get<T>(in entity);
+    }
+
+    /// <summary>
     ///     Returns a <see cref="Enumerator{T}" /> for <see cref="Chunks" /> to iterate over all chunks in this archetype.
     /// </summary>
     /// <returns></returns>
@@ -215,6 +215,26 @@ public sealed unsafe partial class Archetype
     public static int CalculateEntitiesPerChunk(Type[] types)
     {
         return TotalCapacity / (sizeof(Entity) + types.ToByteSize());
+    }
+}
+
+/// <summary>
+///     Adds structural change related methods. 
+/// </summary>
+public sealed partial class Archetype
+{
+
+    internal PooledDictionary<Type, Archetype> AddEdge { get; set; }
+    internal PooledDictionary<Type, Archetype> RemoveEdge { get; set; }
+
+    public bool Add<T>(in Entity entity, in T cmp)
+    {
+        return true;
+    }
+    
+    public bool Remove<T>(in Entity entity)
+    {
+        return true;
     }
 }
 

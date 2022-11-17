@@ -141,4 +141,31 @@ public static class EntityExtensions
         component = archetype.Get<T>(entity);
         return true;
     }
+    
+    /// <summary>
+    ///     Adds a component to the existing entity.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="component">The component itself</param>
+    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Add<T>(this in Entity entity, in T cmp = default)
+    {
+        return true;
+    }
+    
+    /// <summary>
+    ///     Returns the component if it exists for that entity.
+    ///     In case of a struct it will only returns a copy.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="component">The component itself</param>
+    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T>(this in Entity entity, in T cmp = default)
+    {
+        return true;
+    }
 }
