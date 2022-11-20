@@ -316,7 +316,6 @@ public partial class World
     public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -380,7 +379,6 @@ public partial class World
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -404,7 +402,6 @@ public partial class World
         var t = new T();
 
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -427,7 +424,6 @@ public partial class World
     public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -470,7 +466,6 @@ public partial class World
     public T GetJob<T>() where T : class, new()
     {
         var type = typeof(T);
-
         if (!JobPools.TryGetValue(type, out var obj))
         {
             obj = new DefaultObjectPool<T>(new DefaultObjectPolicy<T>());
@@ -501,7 +496,6 @@ public partial class World
     public List<T> GetListCache<T>() where T : class, new()
     {
         var type = typeof(T);
-
         if (!ParallelJobsListCache.TryGetValue(type, out var obj))
         {
             obj = new List<T>(64);

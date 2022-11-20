@@ -78,7 +78,7 @@ public ref struct QueryArchetypeEnumerator
             while (++_index < _size)
             {
                 ref var archetype = ref Current;
-                if (_query.Valid(archetype.BitSet))
+                if (archetype.Size > 0 && _query.Valid(archetype.BitSet))
                     return true;
             }
 
