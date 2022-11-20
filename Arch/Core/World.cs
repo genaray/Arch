@@ -261,6 +261,9 @@ public partial class World {
         foreach (ref var chunk in query.GetChunkIterator()) {
 
             var chunkSize = chunk.Size;
+            if (chunkSize == 0)
+                continue;
+
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
             for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {
 

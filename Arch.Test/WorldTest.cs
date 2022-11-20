@@ -133,4 +133,26 @@ public class WorldTest {
         Assert.AreEqual(0, world.Archetypes[0].Size);
         Assert.AreEqual(0, world.Archetypes[1].Size);
     }
+
+    [Test]
+    public void GetEntitesTest()
+    {
+        world = World.Create();
+
+        var archTypes = new Type[] { typeof(Transform) };
+        var query = new QueryDescription { All = archTypes };
+
+        var entity = world.Create(archTypes);
+
+        var entites = new List<Entity>();
+        world.GetEntities(query, entites);
+
+        Assert.That(entites.Count, Is.EqualTo(1));
+
+        entites.Clear();
+        world.Destroy(entity);
+        world.GetEntities(query, entites);
+
+        Assert.That(entites.Count, Is.EqualTo(0));
+    }
 }
