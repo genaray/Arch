@@ -127,6 +127,9 @@ position.y++;                                     // Update y
 
 if(entity.Has<Position>())                        // Make sure that entity has a position ( Optional )
     entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position 
+
+entity.Remove<Velocity>();                         // Removes an velocity component and moves it to a new archetype.
+entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component and moves the entity back to the previous archetype. 
 ```
 
 ## System aka. Query
