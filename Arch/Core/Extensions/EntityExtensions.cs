@@ -14,7 +14,7 @@ public static class EntityExtensions
     public static Archetype GetArchetype(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.EntityToArchetype[entity.EntityId];
+        return world.GetArchetype(in entity);
     }
 
     /// <summary>
@@ -25,9 +25,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly Chunk GetChunk(this in Entity entity)
     {
-        var archetype = entity.GetArchetype();
-        var chunkIndex = archetype.EntityIdToChunkIndex[entity.EntityId];
-        return ref archetype.Chunks[chunkIndex];
+        var world = World.Worlds[entity.WorldId];
+        return ref world.GetChunk(in entity);
     }
 
     /// <summary>
@@ -38,8 +37,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Type[] GetComponentTypes(this in Entity entity)
     {
-        var archetype = entity.GetArchetype();
-        return archetype.Types;
+        var world = World.Worlds[entity.WorldId];
+        return world.GetComponentTypes(in entity);
     }
 
     /// <summary>
@@ -51,24 +50,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static object[] GetAllComponents(this in Entity entity)
     {
-        // Get archetype and chunk
-        var archetype = entity.GetArchetype();
-        var chunkIndex = archetype.EntityIdToChunkIndex[entity.EntityId];
-        var chunk = archetype.Chunks[chunkIndex];
-        var components = chunk.Components;
-
-        // Loop over components, collect and returns them
-        var entityIndex = chunk.EntityIdToIndex[entity.EntityId];
-        var cmps = new object[components.Length];
-
-        for (var index = 0; index < components.Length; index++)
-        {
-            var componentArray = components[index];
-            var component = componentArray.GetValue(entityIndex);
-            cmps[index] = component;
-        }
-
-        return cmps;
+        var world = World.Worlds[entity.WorldId];
+        return world.GetAllComponents(in entity);
     }
 
     /// <summary>
@@ -80,7 +63,7 @@ public static class EntityExtensions
     public static bool IsAlive(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.EntityToArchetype.ContainsKey(entity.EntityId);
+        return world.IsAlive(in entity);
     }
 
     /// <summary>
@@ -92,9 +75,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Set<T>(this in Entity entity, in T component)
     {
-        var componentCopy = component;
-        var archetype = entity.GetArchetype();
-        archetype.Set(in entity, in componentCopy);
+        var world = World.Worlds[entity.WorldId];
+        world.Set(in entity, in component);
     }
 
     /// <summary>
@@ -106,8 +88,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>(this in Entity entity)
     {
-        var archetype = entity.GetArchetype();
-        return archetype.Has<T>();
+        var world = World.Worlds[entity.WorldId];
+        return world.Has<T>(in entity);
     }
 
     /// <summary>
@@ -119,8 +101,8 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T Get<T>(this in Entity entity)
     {
-        var archetype = entity.GetArchetype();
-        return ref archetype.Get<T>(entity);
+        var world = World.Worlds[entity.WorldId];
+        return ref world.Get<T>(entity);
     }
 
     /// <summary>
@@ -134,11 +116,35 @@ public static class EntityExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet<T>(this in Entity entity, out T component)
     {
-        component = default;
-        if (!entity.Has<T>()) return false;
-
-        var archetype = entity.GetArchetype();
-        component = archetype.Get<T>(entity);
-        return true;
+        var world = World.Worlds[entity.WorldId];
+        return world.TryGet(in entity, out component);
+    }
+    
+    /// <summary>
+    ///     Adds a component to the existing entity.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="component">The component itself</param>
+    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add<T>(this in Entity entity, in T cmp = default)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Add<T>(in entity);
+    }
+    
+    /// <summary>
+    ///     Removes an component from an entity. 
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="component">The component itself</param>
+    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Remove<T>(this in Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Remove<T>(in entity);
     }
 }

@@ -211,10 +211,11 @@ public partial struct Chunk
 }
 
 /// <summary>
-///     Adds various utility methods to the chunk.
+///     Adds various generic acess methods to the chunk for acessing its internal arrays. 
 /// </summary>
 public partial struct Chunk
 {
+
     /// <summary>
     ///     Returns the index of the component array inside the structure of arrays.
     /// </summary>
@@ -306,6 +307,98 @@ public partial struct Chunk
     public ref T GetFirstUnsafe<T>()
     {
         return ref GetArrayUnsafe<T>().DangerousGetReference();
+    }
+}
+
+/// <summary>
+/// Adds various non generic methods to acess internals of the chunk. 
+/// </summary>
+public partial struct Chunk
+{
+    
+    /// <summary>
+    ///     Checks wether this chunk contains an array of the type.
+    /// </summary>
+    /// <typeparam name="T">The type</typeparam>
+    /// <returns>True if it does, false if it doesnt</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public bool Has(Type t)
+    {
+        var id = ComponentMeta.Id(t);
+        return ComponentIdToArrayIndex.ContainsKey(id);
+    }
+
+    /// <summary>
+    ///     Returns the index of the component array inside the structure of arrays.
+    /// </summary>
+    /// <param name="type">The component type.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    private int Index(Type type)
+    {
+        var id = ComponentMeta.Id(type);
+        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
+            return index;
+
+        return -1;
+    }
+    
+    /// <summary>
+    ///     Returns the internal array for the passed component
+    /// </summary>
+    /// <param name="type">The component type</param>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public Array GetArray(Type type)
+    {
+        var index = Index(type);
+        return Components[index];
+    }
+}
+
+/// <summary>
+/// Adds various utility methods to the chunk for moving entities and components. 
+/// </summary>
+public partial struct Chunk
+{
+    
+    /// <summary>
+    /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a similar structured <see cref="Chunk"/>.
+    /// </summary>
+    /// <param name="index">The entity index</param>
+    /// <param name="toChunk">A similar structured chunk where the entity by its index will move to.</param>
+    public void CopyToSimilar(int index, ref Chunk toChunk, int toIndex)
+    {
+        // Move/Copy components to the new chunk
+        for (var i = 0; i < Components.Length; i++)
+        {
+            var sourceArray = Components[i];
+            var desArray = toChunk.Components[i];
+            Array.Copy(sourceArray, toIndex, desArray, index, 1);
+        }
+    }
+    
+    /// <summary>
+    /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a different structured <see cref="Chunk"/>.
+    /// </summary>
+    /// <param name="index">The entity index</param>
+    /// <param name="toChunk">A different structured chunk where the entity by its index will move to.</param>
+    public void CopyToDifferent(int index, ref Chunk toChunk, int toIndex)
+    {
+        // Move/Copy components to the new chunk
+        for (var i = 0; i < Components.Length; i++)
+        {
+            var sourceArray = Components[i];
+            var sourceType = sourceArray.GetType().GetElementType();
+
+            if (!toChunk.Has(sourceType)) continue;
+            
+            var desArray = toChunk.GetArray(sourceType);
+            Array.Copy(sourceArray, index, desArray, toIndex, 1);
+        }
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Jobs;
 
 namespace Arch.Benchmark;
 
@@ -14,8 +15,6 @@ namespace Arch.Benchmark;
 public class QueryBenchmark
 {
     private readonly Type[] _group = { typeof(Transform), typeof(Velocity) };
-
-    private Consumer _consumer = new();
 
     [Params(10000, 100000, 1000000)] public int Amount;
 

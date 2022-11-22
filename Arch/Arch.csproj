@@ -27,14 +27,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27"/>
-        <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2"/>
-        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0"/>
-        <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2"/>
+        <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+        <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Arch.SourceGenerator\Arch.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\Arch.SourceGenerator\Arch.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

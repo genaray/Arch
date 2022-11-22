@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Utils;
 
 namespace Arch.Test;
 
@@ -135,6 +136,33 @@ public class WorldTest
         Assert.AreEqual(entity1.GetArchetype(), entity2.GetArchetype());
     }
     
+    [Test]
+    public void Remove()
+    {
+
+        var entity = _world.Create(_entityGroup);
+        var entity2 = _world.Create(_entityGroup);
+        _world.Remove<Transform>(in entity);
+        _world.Remove<Transform>(in entity2);
+        
+        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
+        Assert.AreEqual(1, entity.GetArchetype().Size);
+        Assert.AreEqual(2, entity.GetArchetype().Chunks[0].Size);
+    }
+    
+    [Test]
+    public void Add()
+    {
+        var entity = _world.Create(_entityGroup);
+        var entity2 = _world.Create(_entityGroup);
+        _world.Add<Ai>(in entity);
+        _world.Add<Ai>(in entity2);
+
+        _world.TryGetArchetype(_entityAiGroup, out var arch);
+        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
+        Assert.AreEqual(entity.GetArchetype(), arch);
+    }
+
     [Test]
     public void GetEntitesTest()
     {

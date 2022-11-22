@@ -21,8 +21,10 @@ public struct QueryDescription : IEquatable<QueryDescription>
 
     public bool Equals(QueryDescription other)
     {
-        var comparer = TypeArraySequenceEqualityComparer.Instance;
-        return comparer.Equals(All, other.All) && comparer.Equals(Any, other.Any) && comparer.Equals(None, other.None);
+        var allHash = ComponentMeta.GetHashCode(All);
+        var anyHash = ComponentMeta.GetHashCode(Any);
+        var noneHash = ComponentMeta.GetHashCode(None);
+        return allHash == ComponentMeta.GetHashCode(other.All) && anyHash == ComponentMeta.GetHashCode(other.Any) && noneHash == ComponentMeta.GetHashCode(other.None);
     }
 
     public override bool Equals(object obj)

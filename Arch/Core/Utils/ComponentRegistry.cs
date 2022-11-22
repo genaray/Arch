@@ -121,4 +121,68 @@ public static class ComponentMeta
     {
         return ComponentRegistry.Has(type) ? ComponentRegistry.Get(type) : ComponentRegistry.Add(type);
     }
+    
+    /// <summary>
+    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int GetHashCode(params Type[] obj)
+    {
+        
+        // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
+        unchecked
+        {
+            int hash = 0;
+            foreach(var type in obj)
+            {
+                int x = Id(type)+1;
+
+                x ^= x >> 17;
+                x *= 830770091;   // 0xed5ad4bb
+                x ^= x >> 11;
+                x *= -1404298415; // 0xac4c1b51
+                x ^= x >> 15;
+                x *= 830770091;   // 0x31848bab
+                x ^= x >> 14;
+
+                hash += x;
+            }
+
+            return hash;
+        }
+    }
+    
+    /// <summary>
+    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders. 
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int GetHashCode(Span<int> obj)
+    {
+        
+        // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
+        unchecked
+        {
+            int hash = 0;
+            foreach(var type in obj)
+            {
+                int x = type+1;
+
+                x ^= x >> 17;
+                x *= 830770091;   // 0xed5ad4bb
+                x ^= x >> 11;
+                x *= -1404298415; // 0xac4c1b51
+                x ^= x >> 15;
+                x *= 830770091;   // 0x31848bab
+                x ^= x >> 14;
+
+                hash += x;
+            }
+
+            return hash;
+        }
+    }
 }
