@@ -150,22 +150,23 @@ public static class EntityExtensions
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Add<T>(this in Entity entity, in T cmp = default)
+    public static void Add<T>(this in Entity entity, in T cmp = default)
     {
-        return true;
+        var world = World.Worlds[entity.WorldId];
+        world.Add<T>(in entity);
     }
     
     /// <summary>
-    ///     Returns the component if it exists for that entity.
-    ///     In case of a struct it will only returns a copy.
+    ///     Removes an component from an entity. 
     /// </summary>
     /// <param name="entity">The entity</param>
     /// <typeparam name="T">The component type</typeparam>
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this in Entity entity, in T cmp = default)
+    public static void Remove<T>(this in Entity entity)
     {
-        return true;
+        var world = World.Worlds[entity.WorldId];
+        world.Remove<T>(in entity);
     }
 }

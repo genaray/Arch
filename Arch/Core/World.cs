@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
@@ -95,7 +97,7 @@ public partial class World
     {
         this.Id = id;
 
-        GroupToArchetype = new PooledDictionary<Type[], Archetype>(8, TypeArraySequenceEqualityComparer.Instance);
+        GroupToArchetype = new PooledDictionary<int, Archetype>(8);
         EntityToArchetype = new PooledDictionary<int, Archetype>(0);
 
         Archetypes = new PooledList<Archetype>(8);
@@ -137,7 +139,7 @@ public partial class World
     /// <summary>
     ///     A map which assigns a archetype to each group for fast acess.
     /// </summary>
-    internal PooledDictionary<Type[], Archetype> GroupToArchetype { get; set; }
+    internal PooledDictionary<int, Archetype> GroupToArchetype { get; set; }
 
     /// <summary>
     ///     A map which maps each entity to its archetype for fast acess of its components
@@ -186,7 +188,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Returns the fitting archetype for a passed <see cref="QueryDescription" />.
+    ///     Returns a <see cref="Archetype"/> by its structure represented as a type array.
     /// </summary>
     /// <param name="types">The archetype structure</param>
     /// <param name="archetype">The archetype with those entities</param>
@@ -194,7 +196,21 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetArchetype(Type[] types, out Archetype archetype)
     {
-        return GroupToArchetype.TryGetValue(types, out archetype);
+        var hash = ComponentMeta.GetHashCode(types); 
+        return GroupToArchetype.TryGetValue(hash, out archetype);
+    }
+    
+    /// <summary>
+    ///     Returns a <see cref="Archetype"/> by its structure represented as a array of component ids. 
+    /// </summary>
+    /// <param name="types">The archetype structure</param>
+    /// <param name="archetype">The archetype with those entities</param>
+    /// <returns>True if such an <see cref="Archetype" /> exists</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetArchetype(Span<int> ids, out Archetype archetype)
+    {
+        var hash = ComponentMeta.GetHashCode(ids); 
+        return GroupToArchetype.TryGetValue(hash, out archetype);
     }
 
     /// <summary>
@@ -208,7 +224,9 @@ public partial class World
         if (TryGetArchetype(types, out var archetype)) return archetype;
 
         archetype = new Archetype(types);
-        GroupToArchetype[types] = archetype;
+        
+        var hash = ComponentMeta.GetHashCode(types);
+        GroupToArchetype[hash] = archetype;
         Archetypes.Add(archetype);
         return archetype;
     }
@@ -236,7 +254,7 @@ public partial class World
     /// <param name="types">The group of components this entity should have, its archetype</param>
     /// <returns>The created entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Entity Create(Type[] types)
+    public Entity Create(params Type[] types)
     {
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
@@ -264,6 +282,29 @@ public partial class World
         return entity;
     }
 
+    /// <summary>
+    /// Moves an <see cref="Entity"/> from one archetype to another.
+    /// Copies the entity and its components if they also exist in the other archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="from">Its origin archetype.</param>
+    /// <param name="to">The archetype it should move to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Move(in Entity entity, Archetype from, Archetype to)
+    {
+        
+        from.Move(in entity, to, out var created, out var destroyed);
+        EntityToArchetype[entity.EntityId] = to;
+        
+        var difference = 0;
+        if (created) difference += to.EntitiesPerChunk;
+        if (destroyed) difference -= from.EntitiesPerChunk;
+        Capacity += difference;
+        
+        if (difference >= 0) EntityToArchetype.EnsureCapacity(Capacity);
+        else EntityToArchetype.TrimExcess(Capacity);
+    }
+    
     /// <summary>
     ///     Destroys the passed entity.
     ///     Uses a dense array technique and recycles the id properly.
@@ -316,7 +357,6 @@ public partial class World
     public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -380,7 +420,6 @@ public partial class World
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -404,7 +443,6 @@ public partial class World
         var t = new T();
 
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -427,7 +465,6 @@ public partial class World
     public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
-
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
@@ -501,7 +538,6 @@ public partial class World
     public List<T> GetListCache<T>() where T : class, new()
     {
         var type = typeof(T);
-
         if (!ParallelJobsListCache.TryGetValue(type, out var obj))
         {
             obj = new List<T>(64);
@@ -555,5 +591,77 @@ public partial class World
             JobHandles.Clear();
             listCache.Clear();
         }
+    }
+}
+
+public partial class World
+{
+
+    /// <summary>
+    /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    /// <typeparam name="T">The Component.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add<T>(in Entity entity)
+    {
+        var oldArchetype = entity.GetArchetype();
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
+        oldArchetype.Types.WriteComponentIds(ids);
+        ids[^1] = ComponentMeta<T>.Id;
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
+
+        Move(in entity, oldArchetype, newArchetype);
+    }
+    
+    /// <summary>
+    /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    /// <typeparam name="T">The Component.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add<T>(in Entity entity, in T cmp)
+    {
+        var oldArchetype = entity.GetArchetype();
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
+        oldArchetype.Types.WriteComponentIds(ids);
+        ids[^1] = ComponentMeta<T>.Id;
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
+
+        Move(in entity, oldArchetype, newArchetype);
+        newArchetype.Set(in entity, cmp);
+    }
+    
+    /// <summary>
+    /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    /// <typeparam name="T">The Component.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove<T>(in Entity entity)
+    {
+        var oldArchetype = entity.GetArchetype();
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
+        oldArchetype.Types.WriteComponentIds(ids);
+        ids.Remove(ComponentMeta<T>.Id);
+        ids = ids[..^1];
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
+
+        Move(in entity, oldArchetype, newArchetype);
     }
 }

@@ -174,4 +174,44 @@ public class BitSet
 
         return false;
     }
+    
+    /// <summary>
+    ///     Determines whether all of the bits in this instance are also set in the given bitset.
+    /// </summary>
+    /// <param name="other">The bitset to check.</param>
+    /// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other" />; otherwise, <c>false</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Exclusive(BitSet other)
+    {
+        if (other == null)
+            throw new ArgumentNullException("other");
+
+        var otherBits = other._bits;
+        var count = Math.Min(_bits.Length, otherBits.Length);
+
+        for (var i = 0; i < count; i++)
+        {
+            var bit = _bits[i];
+            if ((bit ^ otherBits[i]) != 0)
+                return false;
+        }
+
+        // handle extra bits on our side that might just be all zero
+        var extra = _bits.Length - count;
+        for (var i = count; i < extra; i++)
+            if (_bits[i] != 0)
+                return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Returns a span to read the bitset.
+    /// </summary>
+    /// <returns>A <see cref="ReadOnlySpan{T}"/> to read the bitset.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<uint> AsSpan()
+    {
+        return new ReadOnlySpan<uint>(_bits);
+    }
 }

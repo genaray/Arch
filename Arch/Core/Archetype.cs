@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
@@ -67,6 +68,26 @@ public sealed unsafe partial class Archetype
     public int EntitiesPerChunk { get; }
 
     /// <summary>
+    /// Searches for the next free <see cref="Chunk"/> to insert an <see cref="Entity"/> and returns its index. 
+    /// </summary>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal int NextChunkIndex()
+    {
+        
+        // If there reserved chunks, but no used yet... fill them 
+        if (Capacity <= 0 || Capacity < Size) return -1;
+        
+        ref var lastChunk = ref LastChunk;
+        if (lastChunk.Size < lastChunk.Capacity) return Size-1;
+            
+        // Last chunk is already full and capaccity still available, move to next chunk
+        if (Capacity <= Size) return -1;
+        Size++;
+        return NextChunkIndex();
+    }
+    
+    /// <summary>
     ///     Adds an <see cref="Entity" /> to this chunk.
     ///     Will fill existing allocated <see cref="Chunk" />'s till all of them are full, then it will start to allocate a new chunk and fill that one again.
     /// </summary>
@@ -75,30 +96,21 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(in Entity entity)
     {
-        // If there reserved chunks, but no used yet... fill them 
-        if (Capacity > 0 && Capacity >= Size)
+
+        var nextChunkIndex = NextChunkIndex();
+        if (nextChunkIndex != -1)
         {
-            ref var lastChunk = ref LastChunk;
+            ref var lastChunk = ref Chunks[nextChunkIndex];
+            lastChunk.Add(in entity);
+            EntityIdToChunkIndex[entity.EntityId] = Size - 1;
 
-            // Fill last chunk
-            if (lastChunk.Size < lastChunk.Capacity)
+            // Last chunk was filled, still capacity, increase size to make next entity fill reserved chunk 
+            if (lastChunk.Size == EntitiesPerChunk && Capacity >= Size + 1)
             {
-                lastChunk.Add(in entity);
-                EntityIdToChunkIndex[entity.EntityId] = Size - 1;
-
-                // Last chunk was filled, still capacity, increase size to make next entity fill reserved chunk 
-                if (lastChunk.Size != EntitiesPerChunk || Capacity < Size + 1) return false;
-
                 Size++;
                 return false;
             }
-
-            // Lust chunk is already full and capaccity still available, move to next chunk
-            if (Capacity > Size)
-            {
-                Size++;
-                return Add(in entity);
-            }
+            return false;
         }
 
         // Create new chunk
@@ -106,7 +118,7 @@ public sealed unsafe partial class Archetype
         newChunk.Add(in entity);
 
         // Resize chunks
-        SetCapacity(Size + 1);
+        EnsureOrTrimCapacity(Size + 1);
 
         // Add chunk & map entity
         Chunks[Size] = newChunk;
@@ -137,7 +149,7 @@ public sealed unsafe partial class Archetype
             if (chunk.Size != 0) return false;
 
             // Remove last unused chunk & resize to free memory
-            SetCapacity(Size - 1);
+            EnsureOrTrimCapacity(Size - 1);
             Capacity--;
             Size--;
             return true;
@@ -152,7 +164,7 @@ public sealed unsafe partial class Archetype
         if (LastChunk.Size != 0) return false;
 
         // Remove last unused chunk & resize to free memory
-        SetCapacity(Size - 1);
+        EnsureOrTrimCapacity(Size - 1);
         Capacity--;
         Size--;
         return true;
@@ -218,25 +230,6 @@ public sealed unsafe partial class Archetype
     }
 }
 
-/// <summary>
-///     Adds structural change related methods. 
-/// </summary>
-public sealed partial class Archetype
-{
-
-    internal PooledDictionary<Type, Archetype> AddEdge { get; set; }
-    internal PooledDictionary<Type, Archetype> RemoveEdge { get; set; }
-
-    public bool Add<T>(in Entity entity, in T cmp)
-    {
-        return true;
-    }
-    
-    public bool Remove<T>(in Entity entity)
-    {
-        return true;
-    }
-}
 
 /// <summary>
 ///     Adds capacity related methods.
@@ -248,7 +241,7 @@ public sealed partial class Archetype
     /// </summary>
     /// <param name="newCapacity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void SetCapacity(int newCapacity)
+    private void EnsureOrTrimCapacity(int newCapacity)
     {
         // More size needed
         if (newCapacity > Capacity)
@@ -298,7 +291,7 @@ public sealed partial class Archetype
             var neededChunks = neededSpots / EntitiesPerChunk;
 
             // Set capacity and insert new empty chunks
-            SetCapacity(Capacity + neededChunks);
+            EnsureOrTrimCapacity(Capacity + neededChunks);
 
             for (var index = 0; index < neededChunks; index++)
             {
@@ -312,7 +305,7 @@ public sealed partial class Archetype
         {
             // Allocate new chunks in one go
             var neededChunks = (int)Math.Ceiling((float)amount / EntitiesPerChunk);
-            SetCapacity(Capacity + neededChunks);
+            EnsureOrTrimCapacity(Capacity + neededChunks);
 
             for (var index = 0; index < neededChunks; index++)
             {
@@ -323,5 +316,38 @@ public sealed partial class Archetype
             Capacity += neededChunks; // So many chunks are allocated
             Size = 1; // Since no other chunks are allocated... 
         }
+    }
+}
+
+
+/// <summary>
+///     Adds structural change related methods. 
+/// </summary>
+public sealed partial class Archetype
+{
+    /// <summary>
+    /// Moves an <see cref="Entity"/> from this <see cref="Archetype"/> into a different one.
+    /// Removes it from the current one. 
+    /// </summary>
+    /// <param name="entity">The entity to move.</param>
+    /// <param name="toArchetype">The archetype it should move into.</param>
+    /// <param name="created">If there was a new chunk created in the <see cref="toArchetype"/>.</param>
+    /// <param name="destroyed">If there was a chunk destroyed in this archetype.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Move(in Entity entity, Archetype toArchetype, out bool created, out bool destroyed)
+    {
+        created = toArchetype.Add(in entity);
+        
+        var oldChunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        var newChunkIndex = toArchetype.EntityIdToChunkIndex[entity.EntityId];
+
+        ref var oldChunk = ref Chunks[oldChunkIndex];
+        ref var newChunk = ref toArchetype.Chunks[newChunkIndex];
+
+        var oldIndex = oldChunk.EntityIdToIndex[entity.EntityId];
+        var newIndex = newChunk.EntityIdToIndex[entity.EntityId];
+        oldChunk.CopyToDifferent(oldIndex, ref newChunk, newIndex);
+        
+        destroyed = Remove(in entity);
     }
 }
