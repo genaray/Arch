@@ -8,12 +8,12 @@
 
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.0.11</Version>
+        <Version>1.0.12</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Fixed a bug where multiple same structured archetypes and querydescriptions could exist next to each other.
+            Fixed a bug where queries would produce a null reference exception if there no target entities for it. 
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 

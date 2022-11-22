@@ -515,7 +515,6 @@ public partial class World
     public T GetJob<T>() where T : class, new()
     {
         var type = typeof(T);
-
         if (!JobPools.TryGetValue(type, out var obj))
         {
             obj = new DefaultObjectPool<T>(new DefaultObjectPolicy<T>());
