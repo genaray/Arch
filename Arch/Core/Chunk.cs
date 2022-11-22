@@ -211,40 +211,11 @@ public partial struct Chunk
 }
 
 /// <summary>
-///     Adds various acess methods to the chunk for acessing its internal arrays. 
+///     Adds various generic acess methods to the chunk for acessing its internal arrays. 
 /// </summary>
 public partial struct Chunk
 {
-    
-    /// <summary>
-    ///     Checks wether this chunk contains an array of the type.
-    /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public bool Has(Type t)
-    {
-        var id = ComponentMeta.Id(t);
-        return ComponentIdToArrayIndex.ContainsKey(id);
-    }
 
-    /// <summary>
-    ///     Returns the index of the component array inside the structure of arrays.
-    /// </summary>
-    /// <param name="type">The component type.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    private int Index(Type type)
-    {
-        var id = ComponentMeta.Id(type);
-        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
-            return index;
-
-        return -1;
-    }
-    
     /// <summary>
     ///     Returns the index of the component array inside the structure of arrays.
     /// </summary>
@@ -272,19 +243,6 @@ public partial struct Chunk
     {
         var index = Index<T>();
         return Components[index] as T[];
-    }
-    
-    /// <summary>
-    ///     Returns the internal array for the passed component
-    /// </summary>
-    /// <<param name="type">The component type</param>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public Array GetArray(Type type)
-    {
-        var index = Index(type);
-        return Components[index];
     }
 
     /// <summary>
@@ -349,6 +307,55 @@ public partial struct Chunk
     public ref T GetFirstUnsafe<T>()
     {
         return ref GetArrayUnsafe<T>().DangerousGetReference();
+    }
+}
+
+/// <summary>
+/// Adds various non generic methods to acess internals of the chunk. 
+/// </summary>
+public partial struct Chunk
+{
+    
+    /// <summary>
+    ///     Checks wether this chunk contains an array of the type.
+    /// </summary>
+    /// <typeparam name="T">The type</typeparam>
+    /// <returns>True if it does, false if it doesnt</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public bool Has(Type t)
+    {
+        var id = ComponentMeta.Id(t);
+        return ComponentIdToArrayIndex.ContainsKey(id);
+    }
+
+    /// <summary>
+    ///     Returns the index of the component array inside the structure of arrays.
+    /// </summary>
+    /// <param name="type">The component type.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    private int Index(Type type)
+    {
+        var id = ComponentMeta.Id(type);
+        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
+            return index;
+
+        return -1;
+    }
+    
+    /// <summary>
+    ///     Returns the internal array for the passed component
+    /// </summary>
+    /// <param name="type">The component type</param>
+    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public Array GetArray(Type type)
+    {
+        var index = Index(type);
+        return Components[index];
     }
 }
 
