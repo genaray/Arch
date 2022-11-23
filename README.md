@@ -192,7 +192,7 @@ Two different iteration techniques, 2 Components ( Transform & Rotation ) modifi
 
 ```CSHARP
 public struct Transform{ float x; float y; float z; }
-public struct Rotation{ float x; float y; float z; float w; }
+public struct Velocity { float x; float y; }
 ```
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
