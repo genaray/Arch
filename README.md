@@ -187,15 +187,15 @@ This rule targets the amount of queried components aswell as their size.
 Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among the fastest ecs frameworks in terms of allocation and iteration. 
 
 ## Benchmark
-The current Benchmark only tests it Archetype/Chunk iteration performance.  
-Two different iteration techniques, 2 Components ( Transform & Rotation ) modification and Entity + 2 Components modification. 
+The current Benchmark tested a bunch of different iterations and acess techniques. However the most interesting one is the `QueryBenchmark`. 
+It tests `world.Query` against `world.HPQuery` and a `world.Query(in desc, (in Entity) => { entity.Get<T>... }` variant. 
 
 ```CSHARP
 public struct Transform{ float x; float y; float z; }
 public struct Velocity { float x; float y; }
 ```
 
-The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
+The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
 
 |            Method |  Amount |          Mean |         Error |      StdDev | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|----------:|
