@@ -197,24 +197,23 @@ public struct Rotation{ float x; float y; float z; float w; }
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Rotation. 
 
-|                                Method |   amount |         Mean |      Error |     StdDev | CacheMisses/Op |
-|-------------------------------------- |--------- |-------------:|-----------:|-----------:|---------------:|
-|          IterationNormalTwoComponents |    10000 |     27.94 us |   0.146 us |   0.129 us |             41 | 
-|       IterationUnsafeAddTwoComponents |    10000 |     25.46 us |   0.112 us |   0.105 us |             18 |
-|    IterationNormalEntityTwoComponents |    10000 |     40.44 us |   0.191 us |   0.179 us |             35 | 
-| IterationUnsafeAddEntityTwoComponents |    10000 |     37.95 us |   0.164 us |   0.146 us |             41 | 
-|          IterationNormalTwoComponents |   100000 |    275.20 us |   2.149 us |   2.010 us |            540 | 
-|       IterationUnsafeAddTwoComponents |   100000 |    250.88 us |   1.380 us |   1.223 us |            549 | 
-|    IterationNormalEntityTwoComponents |   100000 |    397.54 us |   1.935 us |   1.810 us |            842 | 
-| IterationUnsafeAddEntityTwoComponents |   100000 |    373.28 us |   1.713 us |   1.519 us |            695 | 
-|          IterationNormalTwoComponents |  1000000 |  2,810.57 us |  16.850 us |  15.762 us |         24,009 | 
-|       IterationUnsafeAddTwoComponents |  1000000 |  2,573.61 us |  13.632 us |  12.752 us |         24,724 |
-|    IterationNormalEntityTwoComponents |  1000000 |  4,050.63 us |  36.415 us |  34.063 us |         28,637 |
-| IterationUnsafeAddEntityTwoComponents |  1000000 |  3,804.67 us |  29.850 us |  23.305 us |         28,960 |
-|          IterationNormalTwoComponents | 10000000 | 32,790.69 us | 176.802 us | 165.381 us |        257,843 |
-|       IterationUnsafeAddTwoComponents | 10000000 | 30,275.69 us | 261.629 us | 244.728 us |        271,411 | 
-|    IterationNormalEntityTwoComponents | 10000000 | 45,073.30 us | 365.498 us | 341.887 us |        323,789 | 
-| IterationUnsafeAddEntityTwoComponents | 10000000 | 43,000.07 us | 205.964 us | 192.659 us |        304,333 |
+|            Method |  Amount |          Mean |         Error |      StdDev | Allocated |
+|------------------ |-------- |--------------:|--------------:|------------:|----------:|
+|             Query |   10000 |     20.648 us |    16.4985 us |   0.9043 us |         - |
+|       EntityQuery |   10000 |     17.791 us |     1.1502 us |   0.0630 us |         - |
+|       StructQuery |   10000 |      7.517 us |     5.6294 us |   0.3086 us |         - |
+| StructEntityQuery |   10000 |      7.851 us |     0.9644 us |   0.0529 us |         - |
+|   PureEntityQuery |   10000 |    513.765 us |   297.3252 us |  16.2974 us |         - |
+|             Query |  100000 |    199.354 us |     0.8275 us |   0.0454 us |         - |
+|       EntityQuery |  100000 |    200.223 us |    23.0012 us |   1.2608 us |         - |
+|       StructQuery |  100000 |     75.616 us |    46.9128 us |   2.5714 us |         - |
+| StructEntityQuery |  100000 |     79.390 us |     8.5673 us |   0.4696 us |         - |
+|   PureEntityQuery |  100000 |  5,032.846 us | 2,116.4383 us | 116.0091 us |         - |
+|             Query | 1000000 |  2,257.803 us |    52.4331 us |   2.8740 us |         - |
+|       EntityQuery | 1000000 |  2,661.399 us |    74.9702 us |   4.1094 us |         - |
+|       StructQuery | 1000000 |  1,556.662 us |   734.0822 us |  40.2375 us |         - |
+| StructEntityQuery | 1000000 |  1,746.782 us |   627.7881 us |  34.4112 us |         - |
+|   PureEntityQuery | 1000000 | 50,894.500 us | 1,944.0534 us | 106.5601 us |         - |
 
 # Contributing
 
