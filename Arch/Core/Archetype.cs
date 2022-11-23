@@ -22,6 +22,8 @@ public sealed unsafe partial class Archetype
 
         // The bitmask/set 
         BitSet = types.ToBitSet();
+        ComponentIdToArrayIndex = types.ToLookupArray();
+        
         EntityIdToChunkIndex = new PooledDictionary<int, int>(EntitiesPerChunk);
         Chunks = Array.Empty<Chunk>();
     }
@@ -29,17 +31,23 @@ public sealed unsafe partial class Archetype
     /// <summary>
     ///     The types with which the <see cref="BitSet" /> was created.
     /// </summary>
-    public Type[] Types { get; set; }
+    public Type[] Types { get; }
 
     /// <summary>
     ///     The bitmask for querying, contains the component flags set for this archetype.
     /// </summary>
-    public BitSet BitSet { get; set; }
+    public BitSet BitSet { get; }
+
+    /// <summary>
+    /// A lookup table which maps a component-id to its array index in the <see cref="Chunk"/>.
+    /// Stored here since it reduces the amount of memory, better than every chunk having one of these. 
+    /// </summary>
+    public int[] ComponentIdToArrayIndex { get; }
 
     /// <summary>
     ///     For mapping the entity id to the chunk it is in.
     /// </summary>
-    public PooledDictionary<int, int> EntityIdToChunkIndex { get; set; }
+    public PooledDictionary<int, int> EntityIdToChunkIndex { get; }
 
     /// <summary>
     ///     A array of active chunks within this archetype.
@@ -97,6 +105,7 @@ public sealed unsafe partial class Archetype
     public bool Add(in Entity entity)
     {
 
+        // Get next available chunk which has free space... 
         var nextChunkIndex = NextChunkIndex();
         if (nextChunkIndex != -1)
         {
@@ -114,7 +123,7 @@ public sealed unsafe partial class Archetype
         }
 
         // Create new chunk
-        var newChunk = new Chunk(EntitiesPerChunk, Types);
+        var newChunk = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, Types);
         newChunk.Add(in entity);
 
         // Resize chunks
@@ -295,7 +304,7 @@ public sealed partial class Archetype
 
             for (var index = 0; index < neededChunks; index++)
             {
-                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                var newChunk = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, Types);
                 Chunks[Capacity + index] = newChunk;
             }
 
@@ -309,7 +318,7 @@ public sealed partial class Archetype
 
             for (var index = 0; index < neededChunks; index++)
             {
-                var newChunk = new Chunk(EntitiesPerChunk, Types);
+                var newChunk = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, Types);
                 Chunks[Capacity + index] = newChunk;
             }
 

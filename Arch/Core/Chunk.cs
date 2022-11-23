@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
 
@@ -22,6 +23,7 @@ namespace Arch.Core;
 /// </summary>
 public partial struct Chunk
 {
+    
     /// <summary>
     ///     Allocates enough space for the passed amount of entities with all its components.
     /// </summary>
@@ -37,16 +39,39 @@ public partial struct Chunk
         Components = new Array[types.Length];
 
         // Init mapping
-        ComponentIdToArrayIndex = new Dictionary<int, int>(types.Length);
+        ComponentIdToArrayIndex = types.ToLookupArray();
         EntityIdToIndex = new Dictionary<int, int>(Capacity);
 
         // Allocate arrays and map 
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
-            var componentId = ComponentMeta.Id(type);
+            Components[index] = Array.CreateInstance(type, Capacity);
+        }
+    }
+    
+    /// <summary>
+    ///     Allocates enough space for the passed amount of entities with all its components.
+    /// </summary>
+    /// <param name="capacity"></param>
+    /// <param name="types"></param>
+    internal Chunk(int capacity, int[] componentIdToArrayIndex, params Type[] types)
+    {
+        // Calculate capacity & init arrays
+        Size = 0;
+        Capacity = capacity;
 
-            ComponentIdToArrayIndex[componentId] = index;
+        Entities = new Entity[Capacity];
+        Components = new Array[types.Length];
+
+        // Init mapping
+        ComponentIdToArrayIndex = componentIdToArrayIndex;
+        EntityIdToIndex = new Dictionary<int, int>(Capacity);
+
+        // Allocate arrays and map 
+        for (var index = 0; index < types.Length; index++)
+        {
+            var type = types[index];
             Components[index] = Array.CreateInstance(type, Capacity);
         }
     }
@@ -104,7 +129,8 @@ public partial struct Chunk
     public bool Has<T>()
     {
         var id = ComponentMeta<T>.Id;
-        return ComponentIdToArrayIndex.ContainsKey(id);
+        if (id >= ComponentIdToArrayIndex.Length) return false;
+        return ComponentIdToArrayIndex[id] != 1;
     }
 
     /// <summary>
@@ -192,7 +218,7 @@ public partial struct Chunk
     /// <summary>
     ///     A map to get the index of a component array inside <see cref="Components" />.
     /// </summary>
-    public readonly Dictionary<int, int> ComponentIdToArrayIndex { [Pure] get; }
+    public readonly int[] ComponentIdToArrayIndex { [Pure] get; }
 
     /// <summary>
     ///     A map used to get the array indexes of a certain <see cref="Entity" />.
@@ -226,10 +252,8 @@ public partial struct Chunk
     private int Index<T>()
     {
         var id = ComponentMeta<T>.Id;
-        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
-            return index;
-
-        return -1;
+        if (id >= ComponentIdToArrayIndex.Length) return -1;
+        return ComponentIdToArrayIndex[id];
     }
 
     /// <summary>
@@ -326,7 +350,8 @@ public partial struct Chunk
     public bool Has(Type t)
     {
         var id = ComponentMeta.Id(t);
-        return ComponentIdToArrayIndex.ContainsKey(id);
+        if (id >= ComponentIdToArrayIndex.Length) return false;
+        return ComponentIdToArrayIndex[id] != -1;
     }
 
     /// <summary>
@@ -339,10 +364,8 @@ public partial struct Chunk
     private int Index(Type type)
     {
         var id = ComponentMeta.Id(type);
-        if (ComponentIdToArrayIndex.TryGetValue(id, out var index))
-            return index;
-
-        return -1;
+        if (id >= ComponentIdToArrayIndex.Length) return -1;
+        return ComponentIdToArrayIndex[id];
     }
     
     /// <summary>

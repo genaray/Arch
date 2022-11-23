@@ -34,10 +34,9 @@ public static class TypeExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ToByteSize(this IEnumerable<Type> types)
+    public static int ToByteSize(this Type[] types)
     {
         var size = 0;
-
         foreach (var type in types)
         {
             if (!type.IsValueType)
@@ -48,7 +47,7 @@ public static class TypeExtensions
 
         return size;
     }
-
+    
     /// <summary>
     ///     Calculates the byte sum of the types.
     /// </summary>
@@ -56,50 +55,26 @@ public static class TypeExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int OffsetTo(this IEnumerable<Type> types, Type type, int capacity)
+    public static int[] ToLookupArray(this Type[] types)
     {
-        var offset = 0;
-
-        foreach (var currentType in types)
+        
+        // Get max component id
+        var max = 0;
+        foreach (var type in types)
         {
-            if (!currentType.IsValueType)
-                throw new ArgumentException("Cant determine size of non value type.");
-
-            if (currentType == type) return offset;
-            offset += Marshal.SizeOf(currentType) * capacity;
+            var componentId = ComponentMeta.Id(type);
+            if (componentId >= max) max = componentId;
         }
 
-        return offset;
-    }
-
-    /// <summary>
-    ///     Checks wether a passed type is managed or not using a cached type version of <see cref="RuntimeHelpers.IsReferenceOrContainsReferences{T}" />
-    /// </summary>
-    /// <param name="type">The type, must be struct.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsManaged(Type type)
-    {
-        // Use cache
-        if (IsReferenceOrContainsReferenceCache.TryGetValue(type, out var func))
-            return func();
-
-        // Cache for type
-        var methodInfo = typeof(RuntimeHelpers).GetMethod("IsReferenceOrContainsReferences");
-        var genericMethod = methodInfo.MakeGenericMethod(type);
-        var funcDelegate = (Func<bool>)genericMethod.CreateDelegate(typeof(Func<bool>));
-        IsReferenceOrContainsReferenceCache[type] = funcDelegate;
-
-        return funcDelegate();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Categorize(this Type[] types, out List<Type> managed, out List<Type> unmanaged)
-    {
-        managed = new List<Type>(types.Length);
-        unmanaged = new List<Type>(types.Length);
-        foreach (var type in types)
-            if (!IsManaged(type)) unmanaged.Add(type);
-            else managed.Add(type);
+        // Create lookup table where the component-id points to the component index. 
+        var array = new int[max+1];
+        Array.Fill(array, -1);  // -1 Since that indicates no component is in that index since components start at zero we can not use zero here. 
+        for(var index = 0; index < types.Length; index++)
+        {
+            var type = types[index];
+            var componentId = ComponentMeta.Id(type);
+            array[componentId] = index;
+        }
+        return array;
     }
 }

@@ -6,6 +6,8 @@ namespace Arch.Core.Utils;
 
 /// <summary>
 ///     A class which tracks all used components in this project.
+///     Component-Ids start at 0 and each new used component will get an increased id.
+///     TODO : Probably components should start at 1 instead, since the hash and chunk.Has would work way smoother with it. 
 /// </summary>
 public static class ComponentRegistry
 {
