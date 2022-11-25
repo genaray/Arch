@@ -5,11 +5,18 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core;
 
+/// <summary>
+/// Compile static class that acts as a counter. 
+/// </summary>
 public static class JobMeta
 {
     internal static int Id;
 }
 
+/// <summary>
+/// Compile static class that counts each generic overload, provides an id, a policy and a pool for it. 
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public static class JobMeta<T> where T : class, new()
 {
 
