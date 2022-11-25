@@ -105,9 +105,8 @@ public partial class World
 
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
 
-        JobHandles = new PooledList<JobHandle>(32);
-        ParallelJobsListCache = new PooledDictionary<Type, object>(16);
-        JobPools = new PooledDictionary<Type, object>(16);
+        JobHandles = new PooledList<JobHandle>(Environment.ProcessorCount);
+        JobsCache = new List<IJob>(Environment.ProcessorCount);
     }
 
     /// <summary>
@@ -492,67 +491,17 @@ public partial class World
 /// </summary>
 public partial class World
 {
-    /// <summary>
-    ///     JobPool for different job types used internally by this multithreaded world.
-    /// </summary>
-    private PooledDictionary<Type, object> JobPools { get; }
-
+    
     /// <summary>
     ///     Used handles by this world.
     /// </summary>
     private PooledList<JobHandle> JobHandles { get; }
-
+    
     /// <summary>
-    ///     JobList cache for avoiding allocs.
+    ///     List for preventing allocs for jobs. 
     /// </summary>
-    private PooledDictionary<Type, object> ParallelJobsListCache { get; }
-
-    /// <summary>
-    /// Gets a job from the <see cref="JobPools"/> ( pooled ). 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public T GetJob<T>() where T : class, new()
-    {
-        var type = typeof(T);
-        if (!JobPools.TryGetValue(type, out var obj))
-        {
-            obj = new DefaultObjectPool<T>(new DefaultObjectPolicy<T>());
-            JobPools[type] = obj;
-        }
-
-        var pool = obj as DefaultObjectPool<T>;
-        return pool.Get();
-    }
-
-    /// <summary>
-    /// Returns a job to the <see cref="JobPools"/>.
-    /// </summary>
-    /// <param name="instance"></param>
-    /// <typeparam name="T"></typeparam>
-    public void ReturnJob<T>(T instance) where T : class
-    {
-        var obj = JobPools[typeof(T)];
-        var pool = obj as DefaultObjectPool<T>;
-        pool.Return(instance);
-    }
-
-    /// <summary>
-    /// Returns a list of a specific type for caching purposes, like an arraypool. 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public List<T> GetListCache<T>() where T : class, new()
-    {
-        var type = typeof(T);
-        if (!ParallelJobsListCache.TryGetValue(type, out var obj))
-        {
-            obj = new List<T>(64);
-            ParallelJobsListCache[type] = obj;
-        }
-
-        return obj as List<T>;
-    }
+    internal List<IJob> JobsCache { get; set; }
+    
 
     /// <summary>
     ///     Queries for the passed <see cref="QueryDescription" /> and calls the passed action on all found entities.
@@ -562,11 +511,13 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParallelQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
+ 
+        // Job scheduler needs to be initialized
         if (JobScheduler.JobScheduler.Instance == null)
             throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
-
-        var listCache = GetListCache<ChunkIterationJob<T>>();
-
+        
+        // Cast pool in an unsafe fast way and run the query. 
+        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
         var query = Query(in queryDescription);
         foreach (ref var archetype in query.GetArchetypeIterator())
         {
@@ -575,28 +526,29 @@ public partial class World
 
             foreach (var range in part)
             {
-                var job = GetJob<ChunkIterationJob<T>>();
+                var job = pool.Get();
                 job.Start = range.Start;
                 job.Size = range.Length;
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
-                listCache.Add(job);
+                JobsCache.Add(job);
             }
 
-            IJob.Schedule(listCache, JobHandles);
+            // Schedule, flush, wait, return
+            IJob.Schedule(JobsCache, JobHandles);
             JobScheduler.JobScheduler.Instance.Flush();
             JobHandle.Complete(JobHandles);
             JobHandle.Return(JobHandles);
 
             // Return jobs to pool
-            for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++)
+            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
             {
-                var job = listCache[jobIndex];
-                ReturnJob(job);
+                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[jobIndex]);
+                pool.Return(job);
             }
 
             JobHandles.Clear();
-            listCache.Clear();
+            JobsCache.Clear();
         }
     }
 }

@@ -23,8 +23,7 @@ public partial class World{{
         var innerJob = new IForEachJob<T,{generics}>();
         innerJob.ForEach = iForEach;
 
-        var listCache = GetListCache<ChunkIterationJob<IForEachJob<T,{generics}>>>();
-
+        var pool = JobMeta<ChunkIterationJob<IForEachJob<T,{generics}>>>.Pool;
         var query = Query(in description);
         foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
@@ -32,28 +31,28 @@ public partial class World{{
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
             foreach (var range in part) {{
             
-                var job = GetJob<ChunkIterationJob<IForEachJob<T,{generics}>>>();
+                var job = pool.Get();
                 job.Start = range.Start;
                 job.Size = range.Length;
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
-                listCache.Add(job);
+                JobsCache.Add(job);
             }}
 
-            IJob.Schedule(listCache, JobHandles);
+            IJob.Schedule(JobsCache, JobHandles);
             JobScheduler.JobScheduler.Instance.Flush();
             JobHandle.Complete(JobHandles);
             JobHandle.Return(JobHandles);
 
             // Return jobs to pool
-            for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++) {{
+            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-                var job = listCache[jobIndex];
-                ReturnJob(job);
+                var job = Unsafe.As<ChunkIterationJob<IForEachJob<T,{generics}>>>(JobsCache[jobIndex]);
+                pool.Return(job);
             }}
 
             JobHandles.Clear();
-            listCache.Clear();
+            JobsCache.Clear();
         }}
     }}
 }}
@@ -81,8 +80,7 @@ public partial class World{{
         var innerJob = new IForEachWithEntityJob<T,{generics}>();
         innerJob.ForEach = iForEach;
 
-        var listCache = GetListCache<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>();
-
+        var pool = JobMeta<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>.Pool;
         var query = Query(in description);
         foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
@@ -90,28 +88,28 @@ public partial class World{{
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
             foreach (var range in part) {{
             
-                var job = GetJob<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>();
+                var job = pool.Get();
                 job.Start = range.Start;
                 job.Size = range.Length;
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
-                listCache.Add(job);
+                JobsCache.Add(job);
             }}
 
-            IJob.Schedule(listCache, JobHandles);
+            IJob.Schedule(JobsCache, JobHandles);
             JobScheduler.JobScheduler.Instance.Flush();
             JobHandle.Complete(JobHandles);
             JobHandle.Return(JobHandles);
 
             // Return jobs to pool
-            for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++) {{
+            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-                var job = listCache[jobIndex];
-                ReturnJob(job);
+                var job = Unsafe.As<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>(JobsCache[jobIndex]);
+                pool.Return(job);
             }}
 
             JobHandles.Clear();
-            listCache.Clear();
+            JobsCache.Clear();
         }}
     }}
 }}

@@ -26,7 +26,7 @@ public class QueryBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler.JobScheduler("Arch");
+        //_jobScheduler = new JobScheduler.JobScheduler("Arch");
 
         _world = World.Create();
         _world.Reserve(_group, Amount);
@@ -44,7 +44,7 @@ public class QueryBenchmark
     [GlobalCleanup]
     public void Cleanup()
     {
-        _jobScheduler.Dispose();
+        //_jobScheduler.Dispose();
     }
 
     [Benchmark]

@@ -8,12 +8,12 @@
 
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.0.13</Version>
+        <Version>1.0.14</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Added structural changes, some bugfixes. 
+            Performance improvements for .Get/.Has and .Set operations on entities and chunks. 
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 

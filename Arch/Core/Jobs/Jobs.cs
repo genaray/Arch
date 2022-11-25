@@ -5,6 +5,26 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core;
 
+public static class JobMeta
+{
+    internal static int Id;
+}
+
+public static class JobMeta<T> where T : class, new()
+{
+
+    public static readonly int Id;
+    public static readonly DefaultObjectPolicy<T> Policy;
+    public static readonly DefaultObjectPool<T> Pool;
+
+    static JobMeta()
+    {
+        Id = JobMeta.Id++;
+        Policy = new DefaultObjectPolicy<T>();
+        Pool = new DefaultObjectPool<T>(Policy);
+    }
+}
+
 /// <summary>
 ///     A default pooling policy for a class T.
 /// </summary>

@@ -125,15 +125,15 @@ public class QueryTest
     public void GeneratedParallelQueryTest()
     {
         _world = World.Create();
-        for (var index = 0; index < 100; index++)
+        for (var index = 0; index < 1000; index++)
             _world.Create(_entityGroup);
 
-        for (var index = 0; index < 100; index++)
+        for (var index = 0; index < 1000; index++)
             _world.Create(_entityAiGroup);
 
         var queryCount = 0;
         _world.ParallelQuery(in _withoutAiQuery, (in Entity entity, ref Transform t) => { Interlocked.Increment(ref queryCount); });
-
+        
         var otherQueryCount = 0;
         _world.ParallelQuery(in _allQuery, (ref Rotation rot) => { Interlocked.Increment(ref otherQueryCount); });
 
@@ -186,10 +186,10 @@ public class QueryTest
     public void GeneratedHpParallelQueryTest()
     {
         _world = World.Create();
-        for (var index = 0; index < 100; index++)
+        for (var index = 0; index < 1000; index++)
             _world.Create(_entityGroup);
 
-        for (var index = 0; index < 100; index++)
+        for (var index = 0; index < 1000; index++)
             _world.Create(_entityAiGroup);
 
         var entityCounter = new EntityCounter { Counter = 0 };

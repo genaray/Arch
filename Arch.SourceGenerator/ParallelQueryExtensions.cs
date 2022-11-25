@@ -1,10 +1,21 @@
 using System.Text;
 using CodeGenHelpers;
+using Microsoft.CodeAnalysis;
 
 namespace ArchSourceGenerator;
 
 public static class StringBuilderParallelQueryExtensions
 {
+    public static void AppendProperties(this ClassBuilder builder, string name, int amount)
+    {
+        for (var index = 0; index < amount; index++)
+        {
+            var propertyBuilder = builder.AddProperty($"{name}{index}", Accessibility.Internal);
+            propertyBuilder.SetType<object>();
+            propertyBuilder.UseAutoProps(); 
+        }
+    }
+    
     public static void AppendParallelQuerys(this ClassBuilder builder, int amount)
     {
         for (var index = 0; index < amount; index++)
@@ -32,8 +43,7 @@ public static class StringBuilderParallelQueryExtensions
 var innerJob = new ForEachJob<{generics}>();
 innerJob.ForEach = forEach;
 
-var listCache = GetListCache<ChunkIterationJob<ForEachJob<{generics}>>>();
-
+var pool = JobMeta<ChunkIterationJob<ForEachJob<{generics}>>>.Pool;
 var query = Query(in description);
 foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
@@ -41,28 +51,28 @@ foreach (ref var archetype in query.GetArchetypeIterator()) {{
     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
     foreach (var range in part) {{
     
-        var job = GetJob<ChunkIterationJob<ForEachJob<{generics}>>>();
+        var job = pool.Get();
         job.Start = range.Start;
         job.Size = range.Length;
         job.Chunks = archetype.Chunks;
         job.Instance = innerJob;
-        listCache.Add(job);
+        JobsCache.Add(job);
     }}
 
-    IJob.Schedule(listCache, JobHandles);
+    IJob.Schedule(JobsCache, JobHandles);
     JobScheduler.JobScheduler.Instance.Flush();
     JobHandle.Complete(JobHandles);
     JobHandle.Return(JobHandles);
 
     // Return jobs to pool
-    for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++) {{
+    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-        var job = listCache[jobIndex];
-        ReturnJob(job);
+        var job = Unsafe.As<ChunkIterationJob<ForEachJob<{generics}>>>(JobsCache[jobIndex]);
+        pool.Return(job);
     }}
 
     JobHandles.Clear();
-    listCache.Clear();
+    JobsCache.Clear();
 }}
 ";
             writer.AppendLine(template);
@@ -96,8 +106,7 @@ foreach (ref var archetype in query.GetArchetypeIterator()) {{
 var innerJob = new ForEachWithEntityJob<{generics}>();
 innerJob.ForEach = forEach;
 
-var listCache = GetListCache<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>();
-
+var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>.Pool;
 var query = Query(in description);
 foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
@@ -105,28 +114,28 @@ foreach (ref var archetype in query.GetArchetypeIterator()) {{
     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
     foreach (var range in part) {{
     
-        var job = GetJob<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>();
+        var job = pool.Get();
         job.Start = range.Start;
         job.Size = range.Length;
         job.Chunks = archetype.Chunks;
         job.Instance = innerJob;
-        listCache.Add(job);
+        JobsCache.Add(job);
     }}
 
-    IJob.Schedule(listCache, JobHandles);
+    IJob.Schedule(JobsCache, JobHandles);
     JobScheduler.JobScheduler.Instance.Flush();
     JobHandle.Complete(JobHandles);
     JobHandle.Return(JobHandles);
 
     // Return jobs to pool
-    for (var jobIndex = 0; jobIndex < listCache.Count; jobIndex++) {{
+    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-        var job = listCache[jobIndex];
-        ReturnJob(job);
+        var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>(JobsCache[jobIndex]);
+        pool.Return(job);
     }}
 
     JobHandles.Clear();
-    listCache.Clear();
+    JobsCache.Clear();
 }}
 ";
             writer.AppendLine(template);

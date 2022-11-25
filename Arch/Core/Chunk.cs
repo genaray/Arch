@@ -266,7 +266,7 @@ public partial struct Chunk
     public T[] GetArray<T>()
     {
         var index = Index<T>();
-        return Components[index] as T[];
+        return Unsafe.As<T[]>(Components[index]);
     }
 
     /// <summary>
