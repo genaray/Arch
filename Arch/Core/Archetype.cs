@@ -178,7 +178,7 @@ public sealed unsafe partial class Archetype
         Size--;
         return true;
     }
-
+    
     /// <summary>
     ///     Sets an component into the fitting component array for an entity.
     /// </summary>
@@ -187,7 +187,7 @@ public sealed unsafe partial class Archetype
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T cmp)
-    {
+    { 
         var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
         ref var chunk = ref Chunks[chunkIndex];
         chunk.Set(in entity, in cmp);
@@ -200,7 +200,7 @@ public sealed unsafe partial class Archetype
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>()
-    {
+    { 
         var id = ComponentMeta<T>.Id;
         return BitSet.IsSet(id);
     }

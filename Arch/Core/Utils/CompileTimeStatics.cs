@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
 
@@ -188,3 +189,37 @@ public static class ComponentMeta
         }
     }
 }
+
+
+/// <summary>
+/// Compile static class that acts as a counter. 
+/// </summary>
+public static class JobMeta
+{
+    internal static int Id;
+}
+
+/// <summary>
+/// Compile static class that counts each generic overload, provides an id, a policy and a pool for it. 
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public static class JobMeta<T> where T : class, new()
+{
+
+    public static readonly int Id;
+    public static readonly DefaultObjectPolicy<T> Policy;
+    public static readonly DefaultObjectPool<T> Pool;
+
+    static JobMeta()
+    {
+        Id = JobMeta.Id++;
+        Policy = new DefaultObjectPolicy<T>();
+        Pool = new DefaultObjectPool<T>(Policy);
+    }
+}
+
+public static class Group
+{
+    internal static int Id;
+}
+

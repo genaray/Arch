@@ -558,7 +558,7 @@ public partial class World
 /// </summary>
 public partial class World
 {
-
+    
     /// <summary>
     /// Sets a component for the passed <see cref="Entity"/>.
     /// This replaces the previous values. 
@@ -581,7 +581,7 @@ public partial class World
     /// <returns>True if it exists for that entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(in Entity entity)
-    {
+    {  
         var archetype = EntityToArchetype[entity.EntityId];
         return archetype.Has<T>();
     }
@@ -739,7 +739,7 @@ public partial class World{
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T cmp)
-    {
+    {  
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
         // Create a stack array with all component we now search an archetype for. 
@@ -762,7 +762,7 @@ public partial class World{
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
-    {
+    { 
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
         // Create a stack array with all component we now search an archetype for. 
@@ -775,5 +775,42 @@ public partial class World{
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
 
         Move(in entity, oldArchetype, newArchetype);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TestParallelQuery<T0>(in QueryDescription description, ForEachWithEntity<T0> forEach)
+    {
+        var innerJob = new ForEachWithEntityJob<T0>();
+        innerJob.ForEach = forEach;
+        var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<T0>>>.Pool;
+        var query = Query(in description);
+        foreach (ref var archetype in query.GetArchetypeIterator())
+        {
+            var archetypeSize = archetype.Size;
+            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+            foreach (var range in part)
+            {
+                var job = pool.Get();
+                job.Start = range.Start;
+                job.Size = range.Length;
+                job.Chunks = archetype.Chunks;
+                job.Instance = innerJob;
+                JobsCache.Add(job);
+            }
+
+            IJob.Schedule(JobsCache, JobHandles);
+            JobScheduler.JobScheduler.Instance.Flush();
+            JobHandle.Complete(JobHandles);
+            JobHandle.Return(JobHandles);
+            // Return jobs to pool
+            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
+            {
+                var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<T0>>>(JobsCache[jobIndex]);
+                pool.Return(job);
+            }
+
+            JobHandles.Clear();
+            JobsCache.Clear();
+        }
     }
 }

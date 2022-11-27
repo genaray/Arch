@@ -91,7 +91,7 @@ public partial struct Chunk
         Entities[Size] = entity;
         Size++;
     }
-
+    
     /// <summary>
     ///     Sets an component into the fitting component array at an index.
     /// </summary>
@@ -104,7 +104,7 @@ public partial struct Chunk
         var array = GetSpan<T>();
         array[index] = cmp;
     }
-
+    
     /// <summary>
     ///     Sets an component into the fitting component array for an <see cref="Entity" />.
     /// </summary>
@@ -113,11 +113,11 @@ public partial struct Chunk
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T cmp)
-    {
+    { 
         var array = GetSpan<T>();
         var entityIndex = EntityIdToIndex[entity.EntityId];
         array[entityIndex] = cmp;
-    }
+    } 
 
     /// <summary>
     ///     Checks wether this chunk contains an array of the type.
@@ -144,7 +144,7 @@ public partial struct Chunk
     {
         return EntityIdToIndex.ContainsKey(entity.EntityId);
     }
-
+    
     /// <summary>
     ///     Returns an component from the fitting component array by its index.
     /// </summary>
@@ -157,8 +157,9 @@ public partial struct Chunk
     {
         var array = GetSpan<T>();
         return ref array[index];
-    }
+    } 
 
+    
     /// <summary>
     ///     Returns an component from the fitting component array for an entity
     /// </summary>
@@ -172,7 +173,7 @@ public partial struct Chunk
         var array = GetSpan<T>();
         var entityIndex = EntityIdToIndex[entity.EntityId];
         return ref array[entityIndex];
-    }
+    } 
 
     /// <summary>
     ///     Removes an <see cref="Entity" /> from this chunk and all its components.

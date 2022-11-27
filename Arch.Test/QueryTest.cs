@@ -132,13 +132,13 @@ public class QueryTest
             _world.Create(_entityAiGroup);
 
         var queryCount = 0;
-        _world.ParallelQuery(in _withoutAiQuery, (in Entity entity, ref Transform t) => { Interlocked.Increment(ref queryCount); });
+        _world.TestParallelQuery(in _withoutAiQuery, (in Entity entity, ref Transform t) => { Interlocked.Increment(ref queryCount); });
         
         var otherQueryCount = 0;
         _world.ParallelQuery(in _allQuery, (ref Rotation rot) => { Interlocked.Increment(ref otherQueryCount); });
 
-        Assert.AreEqual(queryCount, 100);
-        Assert.AreEqual(otherQueryCount, 100);
+        Assert.AreEqual(1000,queryCount);
+        Assert.AreEqual(1000,otherQueryCount);
     }
 
     public struct RotCounter : IForEach<Rotation>

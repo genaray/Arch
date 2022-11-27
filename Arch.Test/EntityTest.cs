@@ -5,7 +5,7 @@ using Arch.Core.Utils;
 namespace Arch.Test;
 
 [TestFixture]
-public class EntityTest
+public partial class EntityTest
 {
     [OneTimeSetUp]
     public void Setup()
@@ -57,5 +57,27 @@ public class EntityTest
 
         Assert.AreEqual(transform.X, tramsformReference.X);
         Assert.AreEqual(transform.Y, tramsformReference.Y);
+    }
+}
+
+public partial class EntityTest
+{
+
+    [Test]
+    public void GeneratedSetAndGet()
+    {
+        _entity.Set(new Transform { X = 10, Y = 10 }, new Rotation{ X = 10, Y = 10});
+        var refs = _entity.Get<Transform, Rotation>();
+
+        Assert.AreEqual(10, refs.t0.X);
+        Assert.AreEqual(10, refs.t0.Y);
+        Assert.AreEqual(10, refs.t1.X);
+        Assert.AreEqual(10, refs.t1.Y);
+    }
+
+    [Test]
+    public void GeneratedHas()
+    {
+        Assert.True(_entity.Has<Transform, Rotation>());
     }
 }

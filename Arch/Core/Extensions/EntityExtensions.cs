@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Arch.Core.Extensions;
 
-public static class EntityExtensions
+public static partial class EntityExtensions
 {
     /// <summary>
     ///     Returns the <see cref="Archetype" /> in which the <see cref="Entity" /> and its components are stored in.
@@ -74,7 +74,7 @@ public static class EntityExtensions
     /// <typeparam name="T">The component type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Set<T>(this in Entity entity, in T component)
-    {
+    { 
         var world = World.Worlds[entity.WorldId];
         world.Set(in entity, in component);
     }
