@@ -15,7 +15,7 @@ Since .NetStandard is supported, you may also use it with Unity or Godot.
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
 ```sh
-dotnet add PROJECT package Arch --version 1.0.13
+dotnet add PROJECT package Arch --version 1.0.15
 ```
 
 # Code Sample
@@ -39,13 +39,9 @@ public class Game {
         var query = new QueryDescription{ All = archetype };  // Query all entities with Position AND Velocity components
 
         // Create entities
-        for (var index = 0; index < 1000; index++) {
-
-            var entity = world.Create(archetype);
-            entity.Set(new Position{ x = 0, y = 0});
-            entity.Set(new Velocity{ dx = 1, dy = 1});
-        }
-
+        for (var index = 0; index < 1000; index++) 
+            var entity = world.Create(new Position{ x = 0, y = 0}, new Velocity{ dx = 1, dy = 1});
+        
         // Query and modify entities 
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
             pos.x += vel.dx;
@@ -104,8 +100,13 @@ Entities are being created by a world and will "live" in the world in which they
 When an entity is being created, you need to specify the components it will have. Components are basically the additional data or structure the entity will have. This is called "Archetype". 
 
 ```csharp
+var otherEntity = world.Create<Transform, Collider, PowerUp>(... optional);
+
+or
+
 var archetype = new []{ typeof(Position), typeof(Velocity), ... };
 var entity = world.Create(archetype);
+
 world.Destroy(in entity);
 ```
 
@@ -118,8 +119,7 @@ To ease writing code, you can acess the entity directly to modify its components
 A small example could look like this...
 
 ```csharp
-var archetype = new []{ typeof(Position), typeof(Velocity) };
-var entity = world.Create(archetype);
+var entity = world.Create<Position, Velocity>();
 
 ref var position = ref entity.Get<Position>();    // Get reference to the position
 position.x++;                                     // Update x
