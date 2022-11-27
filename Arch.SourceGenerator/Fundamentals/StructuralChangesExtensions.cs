@@ -94,4 +94,54 @@ public void Remove<{generics}>(in Entity entity)
 
         return sb.AppendLine(template);
     }
+    
+    public static StringBuilder AppendEntityAdds(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+            sb.AppendEntityAdd(index);
+        
+        return sb;
+    }
+
+    public static StringBuilder AppendEntityAdd(this StringBuilder sb, int amount)
+    {
+
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var parameters = new StringBuilder().GenericInDefaultParams(amount);
+        
+        var template = $@"
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public static void Add<{generics}>(this in Entity entity, {parameters})
+{{
+    var world = World.Worlds[entity.WorldId];
+    world.Add<{generics}>(in entity);
+}}
+";
+
+        return sb.AppendLine(template);
+    }
+    
+    public static StringBuilder AppendEntityRemoves(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+            sb.AppendEntityRemove(index);
+        
+        return sb;
+    }
+
+    public static StringBuilder AppendEntityRemove(this StringBuilder sb, int amount)
+    {
+
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var template = $@"
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public static void Remove<{generics}>(this in Entity entity)
+{{
+    var world = World.Worlds[entity.WorldId];
+    world.Remove<{generics}>(in entity);
+}}
+";
+
+        return sb.AppendLine(template);
+    }
 }

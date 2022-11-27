@@ -104,6 +104,8 @@ public class QueryGenerator : IIncrementalGenerator
                     {new StringBuilder().AppendEntityHases(10)}
                     {new StringBuilder().AppendEntitySets(10)}
                     {new StringBuilder().AppendEntityGets(10)}
+                    {new StringBuilder().AppendEntityAdds(10)}
+                    {new StringBuilder().AppendEntityRemoves(10)}
                 }}
             ");
             
