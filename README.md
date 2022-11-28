@@ -30,13 +30,10 @@ public class Game {
     public struct Position { public float x, y; }
     public struct Velocity { public float dx, dy; }
     
-    // The entity structure and or filter/query
-    public static Type[] archetype = { typeof(Position), typeof(Velocity) };
-    
     public static void Main(string[] args) {
         
         var world = World.Create();
-        var query = new QueryDescription{ All = archetype };  // Query all entities with Position AND Velocity components
+        var query = new QueryDescription{ All = { typeof(Position), typeof(Velocity) } };  // Query all entities with Position AND Velocity components
 
         // Create entities
         for (var index = 0; index < 1000; index++) 
