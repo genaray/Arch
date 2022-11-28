@@ -106,6 +106,7 @@ var entity = world.Create(archetype);
 
 world.Destroy(in entity);
 ```
+> Entity creation/deletion should not happen during a Query ! [#17](https://github.com/genaray/Arch/issues/17) will introduce this soon.
 
 ## Component
 
@@ -128,6 +129,8 @@ if(entity.Has<Position>())                        // Make sure that entity has a
 entity.Remove<Velocity>();                         // Removes an velocity component and moves it to a new archetype.
 entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component and moves the entity back to the previous archetype. 
 ```
+
+> Structural entity changes should not happen during a Query or Iteration ! [#17](https://github.com/genaray/Arch/issues/17) will introduce this soon.
 
 ## System aka. Query
 
