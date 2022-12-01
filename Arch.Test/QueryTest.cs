@@ -70,6 +70,28 @@ public class QueryTest
     }
 
     [Test]
+    public void ExclusiveQuery()
+    {
+        var exclusiveGroup = new[] { typeof(Transform), typeof(Rotation) };
+        var query = new QueryDescription { Exclusive = exclusiveGroup };
+
+        _world = World.Create();
+        for (var index = 0; index < 100; index++)
+            _world.Create(_entityAiGroup);
+
+        var count = 0;
+        _world.Query(query, (in Entity entity) => { count++; });
+        Assert.That(count, Is.EqualTo(0));
+
+        for (var index = 0; index < 100; index++)
+            _world.Create(exclusiveGroup);
+
+        count = 0;
+        _world.Query(query, (in Entity entity) => { count++; });
+        Assert.That(count, Is.EqualTo(100));
+    }
+
+    [Test]
     public void ComplexQuery()
     {
         _world = World.Create();

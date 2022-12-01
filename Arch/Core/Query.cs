@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
@@ -14,6 +15,7 @@ public struct QueryDescription : IEquatable<QueryDescription>
     public Type[] All = Array.Empty<Type>();
     public Type[] Any = Array.Empty<Type>();
     public Type[] None = Array.Empty<Type>();
+    public Type[] Exclusive = Array.Empty<Type>();
 
     public QueryDescription()
     {
@@ -66,6 +68,9 @@ public readonly struct Query : IEquatable<Query>
     private readonly BitSet _any;
     private readonly BitSet _all;
     private readonly BitSet _none;
+    private readonly BitSet _exclusive;
+
+    private readonly bool _isExclusive;
 
     private QueryDescription QueryDescription { get; }
 
@@ -73,9 +78,22 @@ public readonly struct Query : IEquatable<Query>
     {
         _archetypes = archetypes;
 
+        Debug.Assert(
+            !((description.Any.Length != 0 ||
+            description.All.Length != 0 ||
+            description.None.Length != 0) &&
+            description.Exclusive.Length != 0),
+            "If Any, All or None have items then Exclusive may not have any items"
+        );
+
         _all = description.All.ToBitSet();
         _any = description.Any.ToBitSet();
         _none = description.None.ToBitSet();
+        _exclusive = description.Exclusive.ToBitSet();
+
+        if (description.Exclusive.Length != 0)
+            _isExclusive = true;
+
         QueryDescription = description;
 
         // Otherwhise a any value of 0 always returns false somehow
@@ -90,6 +108,9 @@ public readonly struct Query : IEquatable<Query>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Valid(BitSet bitset)
     {
+        if (_isExclusive)
+            return _exclusive.Exclusive(bitset);
+
         return _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
     }
 
@@ -117,7 +138,7 @@ public readonly struct Query : IEquatable<Query>
 
     public bool Equals(Query other)
     {
-        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && QueryDescription.Equals(other.QueryDescription);
+        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && Equals(_exclusive, other._exclusive) && QueryDescription.Equals(other.QueryDescription);
     }
 
     public override bool Equals(object obj)
@@ -132,6 +153,7 @@ public readonly struct Query : IEquatable<Query>
             var hashCode = _any != null ? _any.GetHashCode() : 0;
             hashCode = (hashCode * 397) ^ (_all != null ? _all.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (_none != null ? _none.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (_exclusive?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ QueryDescription.GetHashCode();
             return hashCode;
         }
