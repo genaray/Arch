@@ -75,4 +75,43 @@ public class CommandBufferTest
         
         World.Destroy(world);
     }
+    
+    [Test]
+    public void ModificationBuffer()
+    {
+        var world = World.Create();
+        var buffer = new ModificationBuffer(world);
+
+        var entity = world.Create(_group);
+        var bufferedEntity = buffer.Modify(in entity);
+        buffer.Set(in bufferedEntity, new Transform{ X = 10 });
+        buffer.Set(in bufferedEntity, new Rotation{ X = 10 });
+        
+        buffer.Playback();
+        
+        var entities = new List<Entity>();
+        world.GetEntities(in _queryDescription, entities);
+        Assert.AreEqual(10, entities[0].Get<Transform>().X);
+        Assert.AreEqual(10, entities[0].Get<Rotation>().X);
+        
+        World.Destroy(world);
+    }
+    
+    [Test]
+    public void StructuralBuffer()
+    {
+        var world = World.Create();
+        var buffer = new StructuralBuffer(world);
+
+        var entity = world.Create(_group);
+        buffer.Add<Ai>(in entity);
+        
+        buffer.Playback();
+        
+        var entities = new List<Entity>();
+        world.GetEntities(in _queryDescription, entities);
+        Assert.AreEqual(true, entities[0].Has<Ai>());
+
+        World.Destroy(world);
+    }
 }

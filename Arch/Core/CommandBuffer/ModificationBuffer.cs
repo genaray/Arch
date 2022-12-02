@@ -130,13 +130,11 @@ internal class SparseSet : IDisposable
     internal int _size;
     internal List<WrappedEntity> _entities;
     internal SparseArray[] _components;  // Blocking Collections
-    internal int[] _lookupArray; // ComponentId to Array index
 
     public SparseSet(int capacity = 64)
     {
         _entities = new List<WrappedEntity>();
         _components = new SparseArray[ComponentRegistry.Size];
-        _lookupArray = new int[ComponentRegistry.Size];
     }
 
     /// <summary>
@@ -163,19 +161,13 @@ internal class SparseSet : IDisposable
     public void Set<T>(int index, in T component)
     {
         var id = ComponentMeta<T>.Id;
-        if (id >= _lookupArray.Length)
-            _lookupArray = new int[ComponentRegistry.Size];
-        
-        var arrayIndex = _lookupArray[id];
-        
-        // Check wether array exists, if not... create
-        if (_components.Length <= arrayIndex)
+        if (id >= _components.Length)
         {
-            Array.Resize(ref _components, arrayIndex+1);
-            _components[arrayIndex] = new SparseArray(typeof(T));
+            Array.Resize(ref _components, id+1);
+            _components[id] = new SparseArray(typeof(T));
         }
-            
-        var array = _components[arrayIndex];
+        
+        var array = _components[id];
         if(!array.Has(index)) array.Add(index);
         array.Set(index, in component);
     }
@@ -191,8 +183,7 @@ internal class SparseSet : IDisposable
     public bool Has<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        var arrayIndex = _lookupArray[id];
-        var array = _components[arrayIndex];
+        var array = _components[id];
         return array.Has(index);
     }
 
@@ -206,8 +197,7 @@ internal class SparseSet : IDisposable
     public T Get<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        var arrayIndex = _lookupArray[id];
-        var array = _components[arrayIndex];
+        var array = _components[id];
         return array.Get<T>(index);
     }
 
@@ -244,8 +234,6 @@ public struct ModificationBuffer : IDisposable
     
     internal World _world;
     internal SparseSet _sparseSet;
-    internal ConcurrentDictionary<Entity, List<Type>> _adds;
-    internal ConcurrentDictionary<Entity, List<Type>> _removes;
 
     internal ModificationBuffer(World world, int capacity = 64)
     {
@@ -260,7 +248,7 @@ public struct ModificationBuffer : IDisposable
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ModificatedEntity Modify<T>(in Entity existingEntity)
+    public ModificatedEntity Modify(in Entity existingEntity)
     {
         var index = _sparseSet.Create(existingEntity);
         return new ModificatedEntity(index);
@@ -279,59 +267,12 @@ public struct ModificationBuffer : IDisposable
     }
 
     /// <summary>
-    /// Adds a component for a wrapped entity. 
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <typeparam name="T"></typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in Entity entity)
-    {
-        if (!_adds.TryGetValue(entity, out var adds))
-        {
-            adds = new List<Type>(8);
-            _adds[entity] = adds;
-        }
-        adds.Add(typeof(T));
-    }
-
-    /// <summary>
-    /// Removes an component for a wrapped entity. 
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <typeparam name="T"></typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove<T>(in Entity entity)
-    {
-        if (!_removes.TryGetValue(entity, out var removes))
-        {
-            removes = new List<Type>(8);
-            _removes[entity] = removes;
-        }
-        removes.Add(typeof(T));
-    }
-
-    /// <summary>
     /// Plays back all recorded operations. 
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Playback()
     {
-        // Playback added
-        foreach (var kvp in _adds)
-        {
-            var entity = kvp.Key;
-            var addedComponents = kvp.Value;
-            _world.Add(in entity, addedComponents);
-        }
-        
-        // Playback removed
-        foreach (var kvp in _removes)
-        {
-            var entity = kvp.Key;
-            var removedComponents = kvp.Value;
-            _world.Remove(in entity, removedComponents);
-        }
-        
+
         // Loop over all sparset entities
         for (var index = 0; index < _sparseSet._size; index++)
         {
@@ -347,19 +288,20 @@ public struct ModificationBuffer : IDisposable
             // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
             for (var i = 0; i < _sparseSet._components.Length; i++)
             {
-                var sparseArray = _sparseSet._components[index];
+                var sparseArray = _sparseSet._components[i];
                 if(!sparseArray.Has(id)) continue;
 
                 var chunkArray = chunk.GetArray(sparseArray._type);
                 Array.Copy(sparseArray._components, id, chunkArray, chunkIndex, 1);
             }
         }
+        
+        Dispose();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
         _sparseSet.Dispose();
-        _adds.Clear();
-        _removes.Clear();
     }
 }
