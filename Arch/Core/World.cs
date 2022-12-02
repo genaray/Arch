@@ -400,7 +400,7 @@ public partial class World
     /// <param name="group"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Archetype GetOrCreate(Type[] types)
+    internal Archetype GetOrCreate(Type[] types)
     {
         if (TryGetArchetype(types, out var archetype)) return archetype;
 
@@ -657,9 +657,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly Chunk GetChunk(in Entity entity)
     {
-        var archetype = EntityToArchetype[entity.EntityId];
-        var chunkIndex = archetype.EntityIdToChunkIndex[entity.EntityId];
-        return ref archetype.Chunks[chunkIndex];
+        var archetype = GetArchetype(in entity);
+        return ref archetype.GetChunk(in entity);
     }
     
     /// <summary>
@@ -730,6 +729,33 @@ public partial class World{
 
         Move(in entity, oldArchetype, newArchetype);
     }
+
+    /// <summary>
+    /// Adds an list of components to the entity. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(in Entity entity, List<Type> components)
+    {
+        var oldArchetype = EntityToArchetype[entity.EntityId];
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length+components.Count];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        // Add ids from array to all ids 
+        for (var index = 0; index < components.Count; index++)
+        {
+            var type = components[index];
+            ids[oldArchetype.Types.Length + index] = ComponentMeta.Id(type);
+        }
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
+
+        Move(in entity, oldArchetype, newArchetype);
+    }
     
     /// <summary>
     /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
@@ -773,6 +799,32 @@ public partial class World{
         
         if (!TryGetArchetype(ids, out var newArchetype))
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
+
+        Move(in entity, oldArchetype, newArchetype);
+    }
+    
+    /// <summary>
+    /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    /// <typeparam name="T">The Component.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove(in Entity entity, List<Type> types)
+    { 
+        var oldArchetype = EntityToArchetype[entity.EntityId];
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        foreach (var type in types)
+            ids.Remove(ComponentMeta.Id(type));
+        
+        ids = ids[..^types.Count];
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
 
         Move(in entity, oldArchetype, newArchetype);
     }
