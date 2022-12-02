@@ -7,7 +7,7 @@ namespace Arch.Test;
 [TestFixture]
 public partial class WorldTest
 {
-    [OneTimeSetUp]
+    [SetUp]
     public void Setup()
     {
         _world = World.Create();
@@ -19,7 +19,7 @@ public partial class WorldTest
             _world.Create(_entityAiGroup);
     }
 
-    [OneTimeTearDown]
+    [TearDown]
     public void Teardown()
     {
         World.Destroy(_world);
