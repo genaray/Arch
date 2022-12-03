@@ -15,16 +15,21 @@ internal class SparseArray : IDisposable
 {
 
     internal Type _type;
+
+    internal int _capacity;
     internal int _size;
     internal int[] _entities;
     internal Array _components;
 
-    public SparseArray(Type type)
+    public SparseArray(Type type, int capacity = 64)
     {
         _type = type;
+
+        _capacity = capacity;
         _size = 0;
-        _entities = Array.Empty<int>();
-        _components = Array.CreateInstance(type, 1);
+        _entities = new int[_capacity];
+        Array.Fill(_entities, -1);
+        _components = Array.CreateInstance(type, _capacity);
     }
 
     /// <summary>
@@ -34,23 +39,28 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        
-        // Resize entities
-        if (index >= _entities.Length)
+        lock (_type)
         {
-            Array.Resize(ref _entities, index+1);
-            Array.Fill(_entities, -1, _size, index);
+            // Resize entities
+            if (index >= _entities.Length)
+            {
+                var length = _entities.Length;
+                Array.Resize(ref _entities, index + 1);
+                Array.Fill(_entities, -1, length, index-length);
+            }
+
+            _entities[index] = _size;
+            _size++;
+
+            // Resize components
+            if (_size < _components.Length) return;
+
+            _capacity = _capacity <= 0 ? 1 : _capacity;
+            var array = Array.CreateInstance(_type, _capacity * 2);
+            _components.CopyTo(array, 0);
+            _components = array;
+            _capacity *= 2;
         }
-
-        _entities[index] = _size;
-        _size++;
-
-        // Resize components
-        if (_size < _components.Length) return;
-        
-        var array = Array.CreateInstance(_type, _components.Length*2);
-        _components.CopyTo(array, 0);
-        _components = array;
     }
     
     /// <summary>
@@ -82,8 +92,11 @@ internal class SparseArray : IDisposable
     /// <param name="component"></param>
     /// <typeparam name="T"></typeparam>
     public void Set<T>(int index, in T component)
-    {
-        GetArray<T>()[_entities[index]] = component;
+    { 
+        lock (_type)
+        {
+            GetArray<T>()[_entities[index]] = component;   
+        }
     }
 
     /// <summary>
@@ -107,7 +120,8 @@ internal class SparseArray : IDisposable
 }
 
 /// <summary>
-/// A sparset which is an alternative to an archetype. Has some advantages, for example less copy around stuff and easier archetype changes. 
+/// A sparset which is an alternative to an archetype. Has some advantages, for example less copy around stuff and easier archetype changes.
+/// TODO : Tight array like in the structural sparset to avoid uncessecary iterations !! 
 /// </summary>
 internal class SparseSet : IDisposable
 {
@@ -126,14 +140,25 @@ internal class SparseSet : IDisposable
             this._index = index;
         }
     }
-    
-    internal int _size;
+
+    internal int _initCapacity;
+    internal int _size;                       // Amount of entities
     internal List<WrappedEntity> _entities;
-    internal SparseArray[] _components;  // Blocking Collections
+
+    internal int _usedSize;                  // Amount of sparse arrays
+    internal int[] _used;                    // Tight packed array pointing to used sparse arrays for iteration
+    internal SparseArray[] _components;      // Sparse arrays. 
+
+    internal object createLock = new();              // Lock for create operations
+    internal object setLock = new();                 // Lock for set operations
 
     public SparseSet(int capacity = 64)
     {
+        _initCapacity = capacity;
         _entities = new List<WrappedEntity>();
+
+        _usedSize = 0;
+        _used = Array.Empty<int>();
         _components = new SparseArray[ComponentRegistry.Size];
     }
 
@@ -145,10 +170,13 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Create(in Entity entity)
     {
-        var id = _size;
-        _entities.Add(new WrappedEntity(entity, id));
-        _size++;
-        return id;
+        lock (createLock)
+        {
+            var id = _size;
+            _entities.Add(new WrappedEntity(entity, id));
+            _size++;
+            return id;
+        }
     }
 
     /// <summary>
@@ -161,14 +189,23 @@ internal class SparseSet : IDisposable
     public void Set<T>(int index, in T component)
     {
         var id = ComponentMeta<T>.Id;
-        if (id >= _components.Length)
+        lock (setLock)
         {
-            Array.Resize(ref _components, id+1);
-            _components[id] = new SparseArray(typeof(T));
+            // Allocate new sparsearray for new component type 
+            if (id >= _components.Length)
+            {
+                Array.Resize(ref _components, id + 1);
+                _components[id] = new SparseArray(typeof(T), _initCapacity);
+
+                Array.Resize(ref _used, _usedSize + 1);
+                _used[_usedSize] = id;
+                _usedSize++;
+            }
         }
-        
+
+        // Add and set to sparsearray
         var array = _components[id];
-        if(!array.Has(index)) array.Add(index);
+        lock (array._type) if (!array.Has(index)) array.Add(index);
         array.Set(index, in component);
     }
 
@@ -215,23 +252,23 @@ internal class SparseSet : IDisposable
 }
 
 /// <summary>
+/// Represents a modificated entity, basically a real world entity which got a newly reassigned id. 
+/// </summary>
+public readonly ref struct ModificatedEntity
+{
+    internal readonly int _index;
+    internal ModificatedEntity(int index)
+    {
+        _index = index;
+    }
+}
+
+/// <summary>
 /// A buffer which stores modification requests of existing entities. 
 /// </summary>
 public struct ModificationBuffer : IDisposable
 {
-    
-    /// <summary>
-    /// Represents a modificated entity, basically a real world entity which got a newly reassigned id. 
-    /// </summary>
-    public readonly ref struct ModificatedEntity
-    {
-        internal readonly int _index;
-        internal ModificatedEntity(int index)
-        {
-            _index = index;
-        }
-    }
-    
+
     internal World _world;
     internal SparseSet _sparseSet;
 
@@ -291,9 +328,10 @@ public struct ModificationBuffer : IDisposable
             var chunkIndex = chunk.EntityIdToIndex[entity.EntityId];
             
             // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
-            for (var i = 0; i < _sparseSet._components.Length; i++)
+            for (var i = 0; i < _sparseSet._usedSize; i++)
             {
-                var sparseArray = _sparseSet._components[i];
+                var used = _sparseSet._used[i];
+                var sparseArray = _sparseSet._components[used];
                 if(!sparseArray.Has(id)) continue;
 
                 var chunkArray = chunk.GetArray(sparseArray._type);

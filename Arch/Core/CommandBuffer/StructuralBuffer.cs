@@ -12,12 +12,12 @@ namespace Arch.Core.CommandBuffer;
 /// <summary>
 /// Represents an entity, combined to a internal sparset index id for fast lookups.
 /// </summary>
-public readonly struct WrappedEntity
+public readonly struct StructuralEntity
 {
     internal readonly Entity _entity;
     internal readonly int _index;
 
-    public WrappedEntity(Entity entity, int index)
+    public StructuralEntity(Entity entity, int index)
     {
         _entity = entity;
         this._index = index;
@@ -39,6 +39,7 @@ internal class StructuralSparseArray : IDisposable
         _type = type;
         _size = 0;
         _entities = new int[capacity];
+        Array.Fill(_entities, -1);
     }
 
     /// <summary>
@@ -48,15 +49,19 @@ internal class StructuralSparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        // Resize entities
-        if (index >= _entities.Length)
+        lock (_type)
         {
-            Array.Resize(ref _entities, index+1);
-            Array.Fill(_entities, -1, _size, index);
-        }
+            // Resize entities
+            if (index >= _entities.Length)
+            {
+                var lenght = _entities.Length;
+                Array.Resize(ref _entities, index + 1);
+                Array.Fill(_entities, -1, lenght, index-lenght);
+            }
 
-        _entities[index] = _size;
-        _size++;
+            _entities[index] = _size;
+            _size++;
+        }
     }
     
     /// <summary>
@@ -88,16 +93,19 @@ internal class StructuralSparseSet : IDisposable
     internal int _initialCapacity;
     
     internal int _size;                            // Amount of entities
-    internal List<WrappedEntity> _entities;
+    internal List<StructuralEntity> _entities;
     
     internal int[] _used;                          // Stores all used component indexes in a tightly packed array [5,1,10]
     internal int _usedSize;                        // Amount of different components
     internal StructuralSparseArray[] _components;  // The components as a sparset so we can easily acess them via component ids
 
+    internal object _createLock = new();
+    internal object _setLock = new();
+    
     public StructuralSparseSet(int capacity = 64)
     {
         _initialCapacity = capacity;
-        _entities = new List<WrappedEntity>(capacity);
+        _entities = new List<StructuralEntity>(capacity);
         _components = new StructuralSparseArray[ComponentRegistry.Size];
     }
 
@@ -109,10 +117,13 @@ internal class StructuralSparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Create(in Entity entity)
     {
-        var id = _size;
-        _entities.Add(new WrappedEntity(entity, id));
-        _size++;
-        return id;
+        lock (_createLock)
+        {
+            var id = _size;
+            _entities.Add(new StructuralEntity(entity, id));
+            _size++;
+            return id;
+        }
     }
 
     /// <summary>
@@ -125,18 +136,23 @@ internal class StructuralSparseSet : IDisposable
     public void Set<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        if (id >= _components.Length)
+
+        lock (_setLock)
         {
-            Array.Resize(ref _used, _usedSize+1);
-            Array.Resize(ref _components, id+1);
-            
-            _components[id] = new StructuralSparseArray(typeof(T));
-            _used[_usedSize] = id;
-            _usedSize++;
+            // Allocate new sparsearray for component and resize arrays 
+            if (id >= _components.Length)
+            {
+                Array.Resize(ref _used, _usedSize + 1);
+                Array.Resize(ref _components, id + 1);
+
+                _components[id] = new StructuralSparseArray(typeof(T), _initialCapacity);
+                _used[_usedSize] = id;
+                _usedSize++;
+            }
         }
-        
+
         var array = _components[id];
-        if(!array.Has(index)) array.Add(index);
+        lock(_setLock) if(!array.Has(index)) array.Add(index);
     }
 
     
@@ -201,10 +217,10 @@ public struct StructuralBuffer : IDisposable
     /// <param name="entity"></param>
     /// <returns>A wrapped entity which can be used in further add operations. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public WrappedEntity BatchAdd(in Entity entity)
+    public StructuralEntity BatchAdd(in Entity entity)
     {
         var id = _adds.Create(in entity);
-        return new WrappedEntity(entity, id);
+        return new StructuralEntity(entity, id);
     }
     
     /// <summary>
@@ -212,10 +228,10 @@ public struct StructuralBuffer : IDisposable
     /// </summary>
     /// <param name="entity"></param>
     /// <returns>A wrapped entity which can be used in further remove operations.</returns>
-    public WrappedEntity BatchRemove(in Entity entity)
+    public StructuralEntity BatchRemove(in Entity entity)
     {
         var id = _removes.Create(in entity);
-        return new WrappedEntity(entity, id);
+        return new StructuralEntity(entity, id);
     }
     
     /// <summary>
@@ -224,7 +240,7 @@ public struct StructuralBuffer : IDisposable
     /// <param name="entity"></param>
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in WrappedEntity entity)
+    public void Add<T>(in StructuralEntity entity)
     {
         _adds.Set<T>(entity._index);
     }
@@ -235,7 +251,7 @@ public struct StructuralBuffer : IDisposable
     /// <param name="entity"></param>
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove<T>(in WrappedEntity entity)
+    public void Remove<T>(in StructuralEntity entity)
     {
         _removes.Set<T>(entity._index);
     }

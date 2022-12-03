@@ -87,7 +87,7 @@ public partial class CommandBufferTest
         var bufferedEntity = buffer.Modify(in entity);
         buffer.Set(in bufferedEntity, new Transform{ X = 10 });
         buffer.Set(in bufferedEntity, new Rotation{ X = 10 });
-        
+
         buffer.Playback();
         
         Assert.AreEqual(10, entity.Get<Transform>().X);
@@ -127,12 +127,25 @@ public partial class CommandBufferTest
 [TestFixture]
 public partial class CommandBufferTest
 {
+
+    private JobScheduler.JobScheduler _jobScheduler;
+    
+    [OneTimeSetUp]
+    public void Setup()
+    {
+        _jobScheduler = new JobScheduler.JobScheduler("Test");
+    }
+
+    [OneTimeTearDown]
+    public void Teardown()
+    {
+        _jobScheduler.Dispose();
+    }
+
     
     [Test]
     public void ParallelDestructionBuffer()
     {
-
-        var scheduler = new JobScheduler.JobScheduler("Arch");
         
         var world = World.Create();
         var buffer = new DestructionBuffer(world, 1000);
@@ -146,14 +159,11 @@ public partial class CommandBufferTest
         
         Assert.AreEqual(0, world.Size);
         World.Destroy(world);
-        scheduler.Dispose();
     }
     
     [Test]
     public void ParallelCreationBuffer()
     {
-        var scheduler = new JobScheduler.JobScheduler("Arch");
-        
         var world = World.Create();
         var buffer = new CreationBuffer(world);
         for (var index = 0; index < 1000; index++)
@@ -173,6 +183,68 @@ public partial class CommandBufferTest
         Assert.AreEqual(2000, world.Size);
 
         World.Destroy(world);
-        scheduler.Dispose();
+    }
+    
+    [Test]
+    public void ParallelModificationBuffer()
+    {
+
+        // Create buffer and world, populate world
+        var world = World.Create();
+        var buffer = new ModificationBuffer(world);
+        for (var index = 0; index < 10000; index++)
+            world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
+        
+        // Modify all existing entities 
+        world.ParallelQuery(in _queryDescription, (in Entity entity) => {
+            
+            var bufferedEntity = buffer.Modify(in entity);
+            buffer.Set(in bufferedEntity, new Transform{ X = 20 });
+            buffer.Set(in bufferedEntity, new Rotation{ X = 20 });
+        });
+
+        buffer.Playback();
+
+        var entities = new List<Entity>(10000);
+        world.GetEntities(in _queryDescription, entities);
+
+        // Make sure all 10k entities have the updated components
+        foreach (var entity in entities)
+        {
+            Assert.AreEqual(20, entity.Get<Transform>().X);   
+            Assert.AreEqual(20, entity.Get<Rotation>().X);   
+        }
+        
+        World.Destroy(world);
+    }
+    
+    [Test]
+    public void ParallelStructuralBuffer()
+    {
+        
+        var world = World.Create();
+        var buffer = new StructuralBuffer(world);
+        
+        for (var index = 0; index < 10000; index++)
+            world.Create<Transform, Rotation>();
+        
+        // Modify all existing entities 
+        world.ParallelQuery(in _queryDescription, (in Entity entity) => {
+            
+            var addToEntity = buffer.BatchAdd(in entity);
+            buffer.Add<Ai>(in addToEntity);
+            buffer.Add<int>(in addToEntity);
+        });
+        
+        buffer.Playback();
+        
+        var entities = new List<Entity>(10000);
+        world.GetEntities(in _queryDescription, entities);
+
+        // Make sure all 10k entities have the updated components
+        foreach (var entity in entities)
+            Assert.AreEqual(true, entity.Has<Ai, int>());
+        
+        World.Destroy(world);
     }
 }

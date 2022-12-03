@@ -86,7 +86,7 @@ internal class LinearArchetype
         var id = ComponentMeta<T>.Id;
         var arrayIndex = _lookupArray[id];
         var components = _componentsArray[arrayIndex];
-        var array = Unsafe.As<T[]>(component);
+        var array = Unsafe.As<T[]>(components);
 
         lock (components)
         { 
@@ -96,26 +96,26 @@ internal class LinearArchetype
 }
 
 /// <summary>
+/// Represents a created entity. 
+/// </summary>
+public readonly ref struct BufferedEntity
+{
+    internal readonly int _index;
+    internal readonly LinearArchetype _archetype;
+
+    internal BufferedEntity(int index, LinearArchetype archetype)
+    {
+        _index = index;
+        _archetype = archetype;
+    }
+}
+
+/// <summary>
 /// A buffer used to buffer the creation of entities. 
 /// </summary>
 public struct CreationBuffer
 {
-    
-    /// <summary>
-    /// Represents a created entity. 
-    /// </summary>
-    public readonly ref struct BufferedEntity
-    {
-        internal readonly int _index;
-        internal readonly LinearArchetype _archetype;
 
-        internal BufferedEntity(int index, LinearArchetype archetype)
-        {
-            _index = index;
-            _archetype = archetype;
-        }
-    }
-    
     internal World _world;
     internal int _capacity;
     internal Dictionary<int, LinearArchetype> _archetypes;

@@ -220,7 +220,7 @@ public ref struct RangeEnumerator
         if (i <= 0) return _perJob;
         if (i == _jobs - 1)
         {
-            var amount = (int)Math.Ceiling((float)(_size % _jobs));
+            var amount = (int)Math.Ceiling((float)(_size % _jobs))+1;
             return amount > 0 ? amount : 1;
         }
         return _perJob;
