@@ -15,6 +15,11 @@ public struct DestructionBuffer : IDisposable
     internal World _world;
     internal List<Entity> _destroy;
 
+    /// <summary>
+    /// Creates a destruction buffer.
+    /// </summary>
+    /// <param name="world">The world this playbacks to.</param>
+    /// <param name="initCapacity">The initial capacity.</param>
     public DestructionBuffer(World world, int initCapacity = 64)
     {
         _world = world;

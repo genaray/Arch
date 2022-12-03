@@ -235,6 +235,11 @@ public struct ModificationBuffer : IDisposable
     internal World _world;
     internal SparseSet _sparseSet;
 
+    /// <summary>
+    /// Creates a modification buffer.
+    /// </summary>
+    /// <param name="world">The world this buffer playbacks to.</param>
+    /// <param name="capacity">The initial capcity, grows once it was reached.</param>
     internal ModificationBuffer(World world, int capacity = 64)
     {
         _world = world;

@@ -40,7 +40,7 @@ public static class ArrayExtensions
     /// <typeparam name="T">The types</typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Add<T>(this T[] target, List<T> items)
+    public static T[] Add<T>(this T[] target, IList<T> items)
     {
         
         if (target == null)
@@ -96,7 +96,7 @@ public static class ArrayExtensions
     /// <typeparam name="T">The types</typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Remove<T>(this T[] target, List<T> items) 
+    public static T[] Remove<T>(this T[] target, IList<T> items) 
     {
         
         if (target == null)

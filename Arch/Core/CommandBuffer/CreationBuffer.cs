@@ -18,7 +18,7 @@ internal class LinearArchetype
     internal int _size;
     internal int _capacity;
     
-    internal Array[] _components;
+    internal Array[] _componentsArray;
     internal int[] _lookupArray; 
 
     internal LinearArchetype(Type[] types, int capacity = 64)
@@ -27,11 +27,11 @@ internal class LinearArchetype
         
         // Allocate arrays and map 
         _lookupArray = types.ToLookupArray();
-        _components = new Array[types.Length];
+        _componentsArray = new Array[types.Length];
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
-            _components[index] = Array.CreateInstance(type, capacity);
+            _componentsArray[index] = Array.CreateInstance(type, capacity);
         }
 
         _capacity = capacity;
@@ -44,22 +44,34 @@ internal class LinearArchetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Add()
     {
-        // Increase internal capacities when full
-        if (_size >= _capacity)
+
+        lock (_componentsArray)
         {
-            for (var i = 0; i < _components.Length; i++)
+            // Increase internal capacities when full
+            if (_size >= _capacity-1)
             {
-                var type = _types[i];
-                var components = _components[i];
-                var newArray = Array.CreateInstance(type, _capacity * 2);
-                components.CopyTo(newArray, 0);
-                _components[i] = newArray;
+                // Set capacity to 1 if its zero, resize all arrays to a bigger size
+                _capacity = _capacity <= 0 ? 1 : _capacity;
+                for (var i = 0; i < _componentsArray.Length; i++)
+                {
+                    var type = _types[i];
+                    var components = _componentsArray[i];
+                    var newArray = Array.CreateInstance(type, _capacity * 2);
+
+                    // Lock components since another thread might just modify it, only one at a time !
+                    lock (components)
+                    {
+                        components.CopyTo(newArray, 0);
+                        _componentsArray[i] = newArray;   
+                    }
+                }
+                _capacity *= 2;
             }
+
+            var index = _size;
+            _size++;
+            return index;
         }
-        
-        var index = _size;
-        _size++;
-        return index;
     }
 
     /// <summary>
@@ -73,9 +85,10 @@ internal class LinearArchetype
     {
         var id = ComponentMeta<T>.Id;
         var arrayIndex = _lookupArray[id];
-        var array = Unsafe.As<T[]>(_components[arrayIndex]);
+        var components = _componentsArray[arrayIndex];
+        var array = Unsafe.As<T[]>(component);
 
-        lock (array)
+        lock (components)
         { 
             array[index] = component;
         }
@@ -91,12 +104,12 @@ public struct CreationBuffer
     /// <summary>
     /// Represents a created entity. 
     /// </summary>
-    public readonly ref struct CreatedEntity
+    public readonly ref struct BufferedEntity
     {
         internal readonly int _index;
         internal readonly LinearArchetype _archetype;
 
-        internal CreatedEntity(int index, LinearArchetype archetype)
+        internal BufferedEntity(int index, LinearArchetype archetype)
         {
             _index = index;
             _archetype = archetype;
@@ -104,11 +117,18 @@ public struct CreationBuffer
     }
     
     internal World _world;
+    internal int _capacity;
     internal Dictionary<int, LinearArchetype> _archetypes;
     
-    internal CreationBuffer(World world)
+    /// <summary>
+    /// Creates a creation buffer.
+    /// </summary>
+    /// <param name="world">The world this playbacks to.</param>
+    /// <param name="capacity">The initial capacity, grows once it was reached.</param>
+    internal CreationBuffer(World world, int capacity = 64)
     {
         _world = world;
+        _capacity = capacity;
         _archetypes = new Dictionary<int, LinearArchetype>(8);
     }
 
@@ -120,11 +140,15 @@ public struct CreationBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void GetOrCreateArchetype(Type[] types, out LinearArchetype archetype)
     {
-        var hash = ComponentMeta.GetHashCode(types);
-        if (_archetypes.TryGetValue(hash, out archetype)) return;
-        
-        archetype = new LinearArchetype(types);
-        _archetypes[hash] = archetype;
+        // Create new archetype, requires a lock. 
+        lock (_archetypes)
+        {
+            var hash = ComponentMeta.GetHashCode(types);
+            if (_archetypes.TryGetValue(hash, out archetype)) return;
+
+            archetype = new LinearArchetype(types, _capacity);
+            _archetypes[hash] = archetype;
+        }
     }
     
     /// <summary>
@@ -133,25 +157,24 @@ public struct CreationBuffer
     /// <param name="types"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public CreatedEntity Create(Type[] types)
+    public BufferedEntity Create(Type[] types)
     {
-        
         GetOrCreateArchetype(types, out var archetype);
         var archetypeIndex = archetype.Add();
-        return new CreatedEntity(archetypeIndex, archetype);
+        return new BufferedEntity(archetypeIndex, archetype);
     }
 
     /// <summary>
     /// Sets a component for a created entity. 
     /// </summary>
-    /// <param name="createdEntity"></param>
+    /// <param name="bufferedEntity"></param>
     /// <param name="component"></param>
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in CreatedEntity createdEntity, in T component)
+    public void Set<T>(in BufferedEntity bufferedEntity, in T component)
     {
-        var archetype = createdEntity._archetype;
-        archetype.Set(createdEntity._index, in component);
+        var archetype = bufferedEntity._archetype;
+        archetype.Set(bufferedEntity._index, in component);
     }
 
     /// <summary>
@@ -163,7 +186,7 @@ public struct CreationBuffer
         foreach (var kvp in _archetypes)
         {
             var commandBufferArchetype = kvp.Value;
-            var components = commandBufferArchetype._components;
+            var components = commandBufferArchetype._componentsArray;
             
             var archetype = _world.GetOrCreate(commandBufferArchetype._types);
             _world.Reserve(commandBufferArchetype._types, commandBufferArchetype._size);

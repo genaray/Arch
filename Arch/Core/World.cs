@@ -502,14 +502,50 @@ public partial class World
     /// </summary>
     internal List<IJob> JobsCache { get; set; }
     
-
     /// <summary>
     ///     Queries for the passed <see cref="QueryDescription" /> and calls the passed action on all found entities.
+    ///     Runs multithreaded. 
     /// </summary>
     /// <param name="queryDescription">The description</param>
     /// <param name="forEntity">A call back which passes the entity</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
+    public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
+    {
+        var foreachJob = new ForEachJob();
+        foreachJob.ForEach = forEntity;
+        ParallelChunkQuery(in queryDescription, foreachJob);
+    }
+    
+        /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the <see cref="IForEach.Update" /> method implemented in the struct <see cref="T" />.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    {
+        var iForEachJob = new IForEachJob<T>();
+        ParallelChunkQuery(in queryDescription, iForEachJob);
+    }
+
+    /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the <see cref="IForEach.Update" /> method implemented in the struct <see cref="T" />.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="iForEach">The struct implementing <see cref="IForEach" /> to define the logic for each entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
+    {
+        ParallelChunkQuery(in queryDescription, in iForEach);
+    }
+
+    /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the passed action on all found entities.
+    ///     Runs multithreaded. 
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="forEntity">A call back which passes the entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
  
         // Job scheduler needs to be initialized
@@ -736,7 +772,7 @@ public partial class World{
     /// <param name="entity">The entity.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(in Entity entity, List<Type> components)
+    public void Add(in Entity entity, IList<Type> components)
     {
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
@@ -810,7 +846,7 @@ public partial class World{
     /// <param name="cmp">The component value.</param>
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove(in Entity entity, List<Type> types)
+    public void Remove(in Entity entity, IList<Type> types)
     { 
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
