@@ -14,22 +14,40 @@ namespace Arch.Core.CommandBuffer;
 internal class SparseArray : IDisposable
 {
 
-    internal Type _type;
+    /// <summary>
+    /// The type this sparsearray stores as an contignous array.
+    /// </summary>
+    public Type Type { get; }
 
-    internal int _capacity;
-    internal int _size;
-    internal int[] _entities;
-    internal Array _components;
+    /// <summary>
+    /// The capacity.
+    /// </summary>
+    public int Capacity { get; private set; }
+    
+    /// <summary>
+    /// The current size.
+    /// </summary>
+    public int Size { get; private set; }
+
+    /// <summary>
+    /// The stored entities / indexes.
+    /// </summary>
+    public int[] Entities;
+    
+    /// <summary>
+    /// The component array of <see cref="Type"/>. 
+    /// </summary>
+    public Array Components { get; private set; }
 
     public SparseArray(Type type, int capacity = 64)
     {
-        _type = type;
+        Type = type;
 
-        _capacity = capacity;
-        _size = 0;
-        _entities = new int[_capacity];
-        Array.Fill(_entities, -1);
-        _components = Array.CreateInstance(type, _capacity);
+        Capacity = capacity;
+        Size = 0;
+        Entities = new int[Capacity];
+        Array.Fill(Entities, -1);
+        Components = Array.CreateInstance(type, Capacity);
     }
 
     /// <summary>
@@ -39,27 +57,27 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        lock (_type)
+        lock (Type)
         {
             // Resize entities
-            if (index >= _entities.Length)
+            if (index >= Entities.Length)
             {
-                var length = _entities.Length;
-                Array.Resize(ref _entities, index + 1);
-                Array.Fill(_entities, -1, length, index-length);
+                var length = Entities.Length;
+                Array.Resize(ref Entities, index + 1);
+                Array.Fill(Entities, -1, length, index-length);
             }
 
-            _entities[index] = _size;
-            _size++;
+            Entities[index] = Size;
+            Size++;
 
             // Resize components
-            if (_size < _components.Length) return;
+            if (Size < Components.Length) return;
 
-            _capacity = _capacity <= 0 ? 1 : _capacity;
-            var array = Array.CreateInstance(_type, _capacity * 2);
-            _components.CopyTo(array, 0);
-            _components = array;
-            _capacity *= 2;
+            Capacity = Capacity <= 0 ? 1 : Capacity;
+            var array = Array.CreateInstance(Type, Capacity * 2);
+            Components.CopyTo(array, 0);
+            Components = array;
+            Capacity *= 2;
         }
     }
     
@@ -71,7 +89,7 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(int index)
     {
-        return index < _entities.Length && _entities[index] != -1;
+        return index < Entities.Length && Entities[index] != -1;
     }
 
     /// <summary>
@@ -82,7 +100,7 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T[] GetArray<T>()
     {
-        return Unsafe.As<T[]>(_components);
+        return Unsafe.As<T[]>(Components);
     }
 
     /// <summary>
@@ -93,9 +111,9 @@ internal class SparseArray : IDisposable
     /// <typeparam name="T"></typeparam>
     public void Set<T>(int index, in T component)
     { 
-        lock (_type)
+        lock (Type)
         {
-            GetArray<T>()[_entities[index]] = component;   
+            GetArray<T>()[Entities[index]] = component;   
         }
     }
 
@@ -107,7 +125,7 @@ internal class SparseArray : IDisposable
     /// <returns></returns>
     public ref T Get<T>(int index)
     {
-        return ref GetArray<T>()[_entities[index]];
+        return ref GetArray<T>()[Entities[index]];
     }
 
     /// <summary>
@@ -115,7 +133,7 @@ internal class SparseArray : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _size = 0;
+        Size = 0;
     }
 }
 
@@ -141,25 +159,47 @@ internal class SparseSet : IDisposable
         }
     }
 
-    internal int _initCapacity;
-    internal int _size;                       // Amount of entities
-    internal List<WrappedEntity> _entities;
+    /// <summary>
+    /// The initial capacity of this set. 
+    /// </summary>
+    public int InitialCapacity { get; }
 
-    internal int _usedSize;                  // Amount of sparse arrays
-    internal int[] _used;                    // Tight packed array pointing to used sparse arrays for iteration
-    internal SparseArray[] _components;      // Sparse arrays. 
+    /// <summary>
+    /// The size, how many entities are stored in this set.
+    /// </summary>
+    public int Size { get; private set; }
+    
+    /// <summary>
+    /// A list of all entities. 
+    /// </summary>
+    public List<WrappedEntity> Entities { get; }
 
-    internal object createLock = new();              // Lock for create operations
-    internal object setLock = new();                 // Lock for set operations
+    /// <summary>
+    /// The amount of sparse arrays in this set.
+    /// </summary>
+    public int UsedSize { get; private set; }
+
+    /// <summary>
+    /// Tight packed array pointing to used sparse arrays for iteration
+    /// </summary>
+    public int[] Used;
+    
+    /// <summary>
+    /// The sparse arrays. 
+    /// </summary>
+    public SparseArray[] Components; 
+
+    private readonly object _createLock = new();              // Lock for create operations
+    private readonly object _setLock = new();                 // Lock for set operations
 
     public SparseSet(int capacity = 64)
     {
-        _initCapacity = capacity;
-        _entities = new List<WrappedEntity>();
+        InitialCapacity = capacity;
+        Entities = new List<WrappedEntity>();
 
-        _usedSize = 0;
-        _used = Array.Empty<int>();
-        _components = Array.Empty<SparseArray>();
+        UsedSize = 0;
+        Used = Array.Empty<int>();
+        Components = Array.Empty<SparseArray>();
     }
 
     /// <summary>
@@ -170,11 +210,11 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Create(in Entity entity)
     {
-        lock (createLock)
+        lock (_createLock)
         {
-            var id = _size;
-            _entities.Add(new WrappedEntity(entity, id));
-            _size++;
+            var id = Size;
+            Entities.Add(new WrappedEntity(entity, id));
+            Size++;
             return id;
         }
     }
@@ -189,22 +229,22 @@ internal class SparseSet : IDisposable
     public void Set<T>(int index, in T component)
     {
         var id = ComponentMeta<T>.Id;
-        lock (setLock)
+        lock (_setLock)
         {
             // Allocate new sparsearray for new component type 
-            if (id >= _components.Length)
+            if (id >= Components.Length)
             {
-                Array.Resize(ref _components, id + 1);
-                _components[id] = new SparseArray(typeof(T), _initCapacity);
+                Array.Resize(ref Components, id + 1);
+                Components[id] = new SparseArray(typeof(T), InitialCapacity);
 
-                Array.Resize(ref _used, _usedSize + 1);
-                _used[_usedSize] = id;
-                _usedSize++;
+                Array.Resize(ref Used, UsedSize + 1);
+                Used[UsedSize] = id;
+                UsedSize++;
             }
         }
 
         // Add and set to sparsearray
-        var array = _components[id];
+        var array = Components[id];
         lock (array) { if (!array.Has(index)) array.Add(index); }
         array.Set(index, in component);
     }
@@ -220,7 +260,7 @@ internal class SparseSet : IDisposable
     public bool Has<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        var array = _components[id];
+        var array = Components[id];
         return array.Has(index);
     }
 
@@ -234,7 +274,7 @@ internal class SparseSet : IDisposable
     public T Get<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        var array = _components[id];
+        var array = Components[id];
         return array.Get<T>(index);
     }
 
@@ -244,9 +284,9 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        _size = 0;
-        _entities.Clear();
-        foreach (var sparset in _components)
+        Size = 0;
+        Entities.Clear();
+        foreach (var sparset in Components)
             sparset.Dispose();
     }
 }
@@ -269,7 +309,10 @@ public readonly ref struct ModificatedEntity
 public struct ModificationBuffer : IDisposable
 {
 
-    internal World _world;
+    /// <summary>
+    /// The world this buffer playbacks to.
+    /// </summary>
+    public World World { get; }
     internal SparseSet _sparseSet;
 
     /// <summary>
@@ -279,7 +322,7 @@ public struct ModificationBuffer : IDisposable
     /// <param name="capacity">The initial capcity, grows once it was reached.</param>
     internal ModificationBuffer(World world, int capacity = 64)
     {
-        _world = world;
+        World = world;
         _sparseSet = new SparseSet(capacity);
     }
 
@@ -314,28 +357,27 @@ public struct ModificationBuffer : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Playback()
     {
-
         // Loop over all sparset entities
-        for (var index = 0; index < _sparseSet._size; index++)
+        for (var index = 0; index < _sparseSet.Size; index++)
         {
             // Get wrapped entity
-            var wrappedEntity = _sparseSet._entities[index];
+            var wrappedEntity = _sparseSet.Entities[index];
             ref readonly var entity = ref wrappedEntity._entity;
             ref readonly var id = ref wrappedEntity._index;
             
             // Get entity chunk
-            ref readonly var chunk = ref _world.GetChunk(in entity);
+            ref readonly var chunk = ref World.GetChunk(in entity);
             var chunkIndex = chunk.EntityIdToIndex[entity.EntityId];
             
             // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
-            for (var i = 0; i < _sparseSet._usedSize; i++)
+            for (var i = 0; i < _sparseSet.UsedSize; i++)
             {
-                var used = _sparseSet._used[i];
-                var sparseArray = _sparseSet._components[used];
+                var used = _sparseSet.Used[i];
+                var sparseArray = _sparseSet.Components[used];
                 if(!sparseArray.Has(id)) continue;
 
-                var chunkArray = chunk.GetArray(sparseArray._type);
-                Array.Copy(sparseArray._components, id, chunkArray, chunkIndex, 1);
+                var chunkArray = chunk.GetArray(sparseArray.Type);
+                Array.Copy(sparseArray.Components, id, chunkArray, chunkIndex, 1);
             }
         }
         

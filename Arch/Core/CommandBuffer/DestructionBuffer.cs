@@ -12,7 +12,15 @@ namespace Arch.Core.CommandBuffer;
 /// </summary>
 public struct DestructionBuffer : IDisposable
 {
-    internal World _world;
+    
+    /// <summary>
+    /// The world this buffer playbacks to.
+    /// </summary>
+    public World World { get; }
+    
+    /// <summary>
+    /// The internal list of entities to destroy upon playback. 
+    /// </summary>
     internal List<Entity> _destroy;
 
     /// <summary>
@@ -22,7 +30,7 @@ public struct DestructionBuffer : IDisposable
     /// <param name="initCapacity">The initial capacity.</param>
     public DestructionBuffer(World world, int initCapacity = 64)
     {
-        _world = world;
+        World = world;
         _destroy = new List<Entity>(initCapacity);
     }
 
@@ -47,7 +55,7 @@ public struct DestructionBuffer : IDisposable
     public void Playback()
     {
         foreach (var entity in _destroy)
-            _world.Destroy(in entity);
+            World.Destroy(in entity);
         
         Dispose();
     }

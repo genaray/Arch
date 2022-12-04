@@ -30,16 +30,27 @@ public readonly struct StructuralEntity
 internal class StructuralSparseArray : IDisposable
 {
 
-    internal Type _type;
-    internal int _size;
-    internal int[] _entities;
+    /// <summary>
+    /// The type this array stores.
+    /// </summary>
+    public Type Type { get; }
+    
+    /// <summary>
+    /// The total size.
+    /// </summary>
+    public int Size { get; private set; }
+    
+    /// <summary>
+    /// The entities / indexes. 
+    /// </summary>
+    public int[] Entities;
 
     public StructuralSparseArray(Type type, int capacity = 64)
     {
-        _type = type;
-        _size = 0;
-        _entities = new int[capacity];
-        Array.Fill(_entities, -1);
+        Type = type;
+        Size = 0;
+        Entities = new int[capacity];
+        Array.Fill(Entities, -1);
     }
 
     /// <summary>
@@ -49,18 +60,18 @@ internal class StructuralSparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        lock (_type)
+        lock (Type)
         {
             // Resize entities
-            if (index >= _entities.Length)
+            if (index >= Entities.Length)
             {
-                var lenght = _entities.Length;
-                Array.Resize(ref _entities, index + 1);
-                Array.Fill(_entities, -1, lenght, index-lenght);
+                var lenght = Entities.Length;
+                Array.Resize(ref Entities, index + 1);
+                Array.Fill(Entities, -1, lenght, index-lenght);
             }
 
-            _entities[index] = _size;
-            _size++;
+            Entities[index] = Size;
+            Size++;
         }
     }
     
@@ -72,7 +83,7 @@ internal class StructuralSparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(int index)
     {
-        return index < _entities.Length && _entities[index] != -1;
+        return index < Entities.Length && Entities[index] != -1;
     }
     
     /// <summary>
@@ -80,7 +91,7 @@ internal class StructuralSparseArray : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _size = 0;
+        Size = 0;
     }
 }
 
@@ -89,24 +100,44 @@ internal class StructuralSparseArray : IDisposable
 /// </summary>
 internal class StructuralSparseSet : IDisposable
 {
-
-    internal int _initialCapacity;
+    /// <summary>
+    /// The initial capacity of this set. 
+    /// </summary>
+    public int InitialCapacity { get; }
     
-    internal int _size;                            // Amount of entities
-    internal List<StructuralEntity> _entities;
+    /// <summary>
+    /// The amount of entities.
+    /// </summary>
+    public int Size { get; private set; }         
     
-    internal int[] _used;                          // Stores all used component indexes in a tightly packed array [5,1,10]
-    internal int _usedSize;                        // Amount of different components
-    internal StructuralSparseArray[] _components;  // The components as a sparset so we can easily acess them via component ids
+    /// <summary>
+    /// All entities within this set. 
+    /// </summary>
+    public List<StructuralEntity> Entities { get; private set; }
+    
+    /// <summary>
+    /// Stores all used component indexes in a tightly packed array [5,1,10]
+    /// </summary>
+    public int[] Used;      
+    
+    /// <summary>
+    /// How many sparse arrays are actually in here. 
+    /// </summary>
+    public int UsedSize { get; private set; }  
+    
+    /// <summary>
+    /// The components / sparse arrays. 
+    /// </summary>
+    public StructuralSparseArray[] Components;  // The components as a sparset so we can easily acess them via component ids
 
-    internal object _createLock = new();
-    internal object _setLock = new();
+    private readonly object _createLock = new();
+    private readonly object _setLock = new();
     
     public StructuralSparseSet(int capacity = 64)
     {
-        _initialCapacity = capacity;
-        _entities = new List<StructuralEntity>(capacity);
-        _components = Array.Empty<StructuralSparseArray>();
+        InitialCapacity = capacity;
+        Entities = new List<StructuralEntity>(capacity);
+        Components = Array.Empty<StructuralSparseArray>();
     }
 
     /// <summary>
@@ -119,9 +150,9 @@ internal class StructuralSparseSet : IDisposable
     {
         lock (_createLock)
         {
-            var id = _size;
-            _entities.Add(new StructuralEntity(entity, id));
-            _size++;
+            var id = Size;
+            Entities.Add(new StructuralEntity(entity, id));
+            Size++;
             return id;
         }
     }
@@ -140,18 +171,18 @@ internal class StructuralSparseSet : IDisposable
         lock (_setLock)
         {
             // Allocate new sparsearray for component and resize arrays 
-            if (id >= _components.Length)
+            if (id >= Components.Length)
             {
-                Array.Resize(ref _used, _usedSize + 1);
-                Array.Resize(ref _components, id + 1);
+                Array.Resize(ref Used, UsedSize + 1);
+                Array.Resize(ref Components, id + 1);
 
-                _components[id] = new StructuralSparseArray(typeof(T), _initialCapacity);
-                _used[_usedSize] = id;
-                _usedSize++;
+                Components[id] = new StructuralSparseArray(typeof(T), InitialCapacity);
+                Used[UsedSize] = id;
+                UsedSize++;
             }
         }
 
-        var array = _components[id];
+        var array = Components[id];
         lock(array){ if (!array.Has(index)) array.Add(index); }
     }
 
@@ -166,7 +197,7 @@ internal class StructuralSparseSet : IDisposable
     public bool Has<T>(int index)
     {
         var id = ComponentMeta<T>.Id;
-        var array = _components[id];
+        var array = Components[id];
         return array.Has(index);
     }
     
@@ -176,9 +207,9 @@ internal class StructuralSparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        _size = 0;
-        _entities.Clear();
-        foreach (var sparset in _components)
+        Size = 0;
+        Entities.Clear();
+        foreach (var sparset in Components)
             sparset?.Dispose();
     }
 }
@@ -189,13 +220,16 @@ internal class StructuralSparseSet : IDisposable
 public struct StructuralBuffer : IDisposable
 {
 
-    internal World _world;
+    /// <summary>
+    /// The world this buffer playbacks to. 
+    /// </summary>
+    public World World { get; }
+
+    private StructuralSparseSet _adds;
+    private StructuralSparseSet _removes;
     
-    internal StructuralSparseSet _adds;
-    internal StructuralSparseSet _removes;
-    
-    internal PooledList<Type> _addTypes;
-    internal PooledList<Type> _removeTypes;
+    private PooledList<Type> _addTypes;
+    private PooledList<Type> _removeTypes;
 
     /// <summary>
     /// Creates a structural buffer.
@@ -204,7 +238,7 @@ public struct StructuralBuffer : IDisposable
     /// <param name="capacity">The initial capacity, grows if it was filled.</param>
     public StructuralBuffer(World world, int capacity = 64)
     {
-        _world = world;
+        World = world;
         _adds = new StructuralSparseSet(capacity);
         _removes = new StructuralSparseSet(capacity);
         _addTypes = new PooledList<Type>(8);
@@ -263,34 +297,34 @@ public struct StructuralBuffer : IDisposable
     public void Playback()
     {
         // Playback adds
-        for (var index = 0; index < _adds._size; index++)
+        for (var index = 0; index < _adds.Size; index++)
         {
-            var wrappedEntity = _adds._entities[index];
-            for (var i = 0; i < _adds._usedSize; i++)
+            var wrappedEntity = _adds.Entities[index];
+            for (var i = 0; i < _adds.UsedSize; i++)
             {
-                ref var usedIndex = ref _adds._used[i];
-                ref var sparseSet = ref _adds._components[usedIndex];
+                ref var usedIndex = ref _adds.Used[i];
+                ref var sparseSet = ref _adds.Components[usedIndex];
                 if(!sparseSet.Has(wrappedEntity._index)) continue;
 
-                _addTypes.Add(sparseSet._type);
+                _addTypes.Add(sparseSet.Type);
             }
-            _world.Add(in wrappedEntity._entity, (IList<Type>)_addTypes);
+            World.Add(in wrappedEntity._entity, (IList<Type>)_addTypes);
             _addTypes.Clear();
         }
         
         // Playback removes 
-        for (var index = 0; index < _removes._size; index++)
+        for (var index = 0; index < _removes.Size; index++)
         {
-            var wrappedEntity = _removes._entities[index];
-            for (var i = 0; i < _removes._usedSize; i++)
+            var wrappedEntity = _removes.Entities[index];
+            for (var i = 0; i < _removes.UsedSize; i++)
             {
-                ref var usedIndex = ref _removes._used[i];
-                ref var sparseSet = ref _removes._components[usedIndex];
+                ref var usedIndex = ref _removes.Used[i];
+                ref var sparseSet = ref _removes.Components[usedIndex];
                 if(!sparseSet.Has(wrappedEntity._index)) continue;
 
-                _removeTypes.Add(sparseSet._type);
+                _removeTypes.Add(sparseSet.Type);
             }
-            _world.Remove(in wrappedEntity._entity, _removeTypes);
+            World.Remove(in wrappedEntity._entity, _removeTypes);
             _removeTypes.Clear();
         }
         Dispose();
