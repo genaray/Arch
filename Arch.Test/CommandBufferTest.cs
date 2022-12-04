@@ -133,7 +133,7 @@ public partial class CommandBufferTest
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler.JobScheduler("Test");
+        _jobScheduler = new JobScheduler.JobScheduler("CommandBuffer");
     }
 
     [OneTimeTearDown]
@@ -181,7 +181,6 @@ public partial class CommandBufferTest
         buffer.Playback();
         
         Assert.AreEqual(2000, world.Size);
-
         World.Destroy(world);
     }
     

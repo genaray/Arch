@@ -106,7 +106,7 @@ internal class StructuralSparseSet : IDisposable
     {
         _initialCapacity = capacity;
         _entities = new List<StructuralEntity>(capacity);
-        _components = new StructuralSparseArray[ComponentRegistry.Size];
+        _components = Array.Empty<StructuralSparseArray>();
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ internal class StructuralSparseSet : IDisposable
         }
 
         var array = _components[id];
-        lock(_setLock) if(!array.Has(index)) array.Add(index);
+        lock(array){ if (!array.Has(index)) array.Add(index); }
     }
 
     

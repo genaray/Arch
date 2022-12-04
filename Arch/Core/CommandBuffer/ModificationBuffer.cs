@@ -159,7 +159,7 @@ internal class SparseSet : IDisposable
 
         _usedSize = 0;
         _used = Array.Empty<int>();
-        _components = new SparseArray[ComponentRegistry.Size];
+        _components = Array.Empty<SparseArray>();
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ internal class SparseSet : IDisposable
 
         // Add and set to sparsearray
         var array = _components[id];
-        lock (array._type) if (!array.Has(index)) array.Add(index);
+        lock (array) { if (!array.Has(index)) array.Add(index); }
         array.Set(index, in component);
     }
 
