@@ -5,6 +5,17 @@ namespace Arch.Test;
 [TestFixture]
 public class QueryTest
 {
+    
+    private JobScheduler.JobScheduler _jobScheduler;
+    private World _world;
+
+    private readonly Type[] _entityGroup = { typeof(Transform), typeof(Rotation) };
+    private readonly Type[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+
+    private readonly QueryDescription _withoutAiQuery = new() { All = new[] { typeof(Transform) }, Any = new[] { typeof(Rotation) }, None = new[] { typeof(Ai) } };
+    private readonly QueryDescription _allQuery = new() { All = new[] { typeof(Transform), typeof(Rotation) }, Any = new[] { typeof(Ai) } };
+
+    
     [OneTimeSetUp]
     public void Setup()
     {
@@ -16,17 +27,7 @@ public class QueryTest
     {
         _jobScheduler.Dispose();
     }
-
-    private JobScheduler.JobScheduler _jobScheduler;
-    private World _world;
-
-    private readonly Type[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private readonly Type[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-
-    private readonly QueryDescription _withoutAiQuery = new() { All = new[] { typeof(Transform) }, Any = new[] { typeof(Rotation) }, None = new[] { typeof(Ai) } };
-
-    private readonly QueryDescription _allQuery = new() { All = new[] { typeof(Transform), typeof(Rotation) }, Any = new[] { typeof(Ai) } };
-
+    
     [Test]
     public void AllQuery()
     {

@@ -220,9 +220,22 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
+    /// Returns the <see cref="Chunk"/> for the passed <see cref="Entity"/> within this archetype.
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <returns>A referecene to the chunk in which the passed entity is stored in.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref Chunk GetChunk(in Entity entity)
+    {
+        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        return ref Chunks[chunkIndex];
+    }
+
+    /// <summary>
     ///     Returns a <see cref="Enumerator{T}" /> for <see cref="Chunks" /> to iterate over all chunks in this archetype.
     /// </summary>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator<Chunk> GetEnumerator()
     {
         return new Enumerator<Chunk>(Chunks.AsSpan(), Size);

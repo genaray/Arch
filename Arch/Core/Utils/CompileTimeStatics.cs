@@ -41,10 +41,10 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Add(Type type)
     {
-        if (Has(type)) return Get(type);
+        if (TryGet(type, out var id)) return id;
 
         // Register and assign component id
-        var id = Size;
+        id = Size;
         TypeIds.Add(type, id);
 
         Size++;
@@ -79,9 +79,9 @@ public static class ComponentRegistry
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Get<T>()
+    public static bool TryGet<T>(out int index)
     {
-        return Get(typeof(T));
+        return TryGet(typeof(T), out index);
     }
 
     /// <summary>
@@ -90,9 +90,9 @@ public static class ComponentRegistry
     /// <param name="type"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Get(Type type)
+    public static bool TryGet(Type type, out int id)
     {
-        return TypeIds[type];
+        return TypeIds.TryGetValue(type, out id);
     }
 }
 
@@ -119,10 +119,16 @@ public static class ComponentMeta<T>
 /// <typeparam name="T"></typeparam>
 public static class ComponentMeta
 {
+    
+    /// <summary>
+    /// Returns the components id, based on its type. 
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int Id(Type type)
     {
-        return ComponentRegistry.Has(type) ? ComponentRegistry.Get(type) : ComponentRegistry.Add(type);
+        return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
     
     /// <summary>
@@ -218,6 +224,7 @@ public static class JobMeta<T> where T : class, new()
     }
 }
 
+// TODO : Based on the hash of each Group we can easily Map a Group<T,T,T..> to another Group... Like Group<int, byte> to Group<byte,int> since they are the same based on the hash actually. 
 public static class Group
 {
     internal static int Id;

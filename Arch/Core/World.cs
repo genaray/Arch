@@ -400,7 +400,7 @@ public partial class World
     /// <param name="group"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Archetype GetOrCreate(Type[] types)
+    internal Archetype GetOrCreate(Type[] types)
     {
         if (TryGetArchetype(types, out var archetype)) return archetype;
 
@@ -502,14 +502,50 @@ public partial class World
     /// </summary>
     internal List<IJob> JobsCache { get; set; }
     
-
     /// <summary>
     ///     Queries for the passed <see cref="QueryDescription" /> and calls the passed action on all found entities.
+    ///     Runs multithreaded. 
     /// </summary>
     /// <param name="queryDescription">The description</param>
     /// <param name="forEntity">A call back which passes the entity</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
+    public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
+    {
+        var foreachJob = new ForEachJob();
+        foreachJob.ForEach = forEntity;
+        ParallelChunkQuery(in queryDescription, foreachJob);
+    }
+    
+        /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the <see cref="IForEach.Update" /> method implemented in the struct <see cref="T" />.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    {
+        var iForEachJob = new IForEachJob<T>();
+        ParallelChunkQuery(in queryDescription, iForEachJob);
+    }
+
+    /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the <see cref="IForEach.Update" /> method implemented in the struct <see cref="T" />.
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="iForEach">The struct implementing <see cref="IForEach" /> to define the logic for each entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
+    {
+        ParallelChunkQuery(in queryDescription, in iForEach);
+    }
+
+    /// <summary>
+    ///     Queries for the passed <see cref="QueryDescription" /> and calls the passed action on all found entities.
+    ///     Runs multithreaded. 
+    /// </summary>
+    /// <param name="queryDescription">The description</param>
+    /// <param name="forEntity">A call back which passes the entity</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
  
         // Job scheduler needs to be initialized
@@ -657,9 +693,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly Chunk GetChunk(in Entity entity)
     {
-        var archetype = EntityToArchetype[entity.EntityId];
-        var chunkIndex = archetype.EntityIdToChunkIndex[entity.EntityId];
-        return ref archetype.Chunks[chunkIndex];
+        var archetype = GetArchetype(in entity);
+        return ref archetype.GetChunk(in entity);
     }
     
     /// <summary>
@@ -730,6 +765,33 @@ public partial class World{
 
         Move(in entity, oldArchetype, newArchetype);
     }
+
+    /// <summary>
+    /// Adds an list of components to the entity. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(in Entity entity, IList<Type> components)
+    {
+        var oldArchetype = EntityToArchetype[entity.EntityId];
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length+components.Count];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        // Add ids from array to all ids 
+        for (var index = 0; index < components.Count; index++)
+        {
+            var type = components[index];
+            ids[oldArchetype.Types.Length + index] = ComponentMeta.Id(type);
+        }
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
+
+        Move(in entity, oldArchetype, newArchetype);
+    }
     
     /// <summary>
     /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
@@ -773,6 +835,32 @@ public partial class World{
         
         if (!TryGetArchetype(ids, out var newArchetype))
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
+
+        Move(in entity, oldArchetype, newArchetype);
+    }
+    
+    /// <summary>
+    /// Adds an Component <see cref="T"/> to the entity and moves it to the new archetype. 
+    /// </summary>
+    /// <param name="entity">The entity.</param>
+    /// <param name="cmp">The component value.</param>
+    /// <typeparam name="T">The Component.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove(in Entity entity, IList<Type> types)
+    { 
+        var oldArchetype = EntityToArchetype[entity.EntityId];
+
+        // Create a stack array with all component we now search an archetype for. 
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        foreach (var type in types)
+            ids.Remove(ComponentMeta.Id(type));
+        
+        ids = ids[..^types.Count];
+        
+        if (!TryGetArchetype(ids, out var newArchetype))
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
 
         Move(in entity, oldArchetype, newArchetype);
     }
