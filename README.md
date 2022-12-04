@@ -106,7 +106,7 @@ var entity = world.Create(archetype);
 
 world.Destroy(in entity);
 ```
-> Entity creation/deletion should not happen during a Query ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart) can be used for this ! :) 
+> Entity creation/deletion should not happen during a Query ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this ! :) 
 
 ## Component
 
@@ -130,7 +130,7 @@ entity.Remove<Velocity>();                         // Removes an velocity compon
 entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component and moves the entity back to the previous archetype. 
 ```
 
-> Structural entity changes should not happen during a Query or Iteration ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart) can be used for this ! :) 
+> Structural entity changes should not happen during a Query or Iteration ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this ! :) 
 
 ## System aka. Query
 
