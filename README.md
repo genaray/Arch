@@ -6,16 +6,12 @@
 
 A highperformance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data oriented programming.    
 
-### Features
-
 - 🚀 **_FAST_** > Best cache efficiency, fastest iteration and allocation speed. Arch plays in the same league as C++ or Rust ECS ! 
 - 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark) !
 - 🤏 **_BARE MINIMUM_** >  Not bloated, its small and only provides the essentials for you ! 
 - ☕️ **_SIMPLE_** >  Promotes a clean, minimal and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki) !
 - 💪 _**MAINTAINED**_ > Its actively being worked on, maintained and supported ! 
-
-Supports .NetStandard 2.1, .Net Core 6 and 7.  
-Since .NetStandard is supported, you may also use it with Unity or Godot. 
+- 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot !
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
 ```console
