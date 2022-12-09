@@ -320,7 +320,7 @@ public struct ModificationBuffer : IDisposable
     /// </summary>
     /// <param name="world">The world this buffer playbacks to.</param>
     /// <param name="capacity">The initial capcity, grows once it was reached.</param>
-    internal ModificationBuffer(World world, int capacity = 64)
+    public ModificationBuffer(World world, int capacity = 64)
     {
         World = world;
         _sparseSet = new SparseSet(capacity);
