@@ -8,12 +8,12 @@
 
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.0.15</Version>
+        <Version>1.0.17</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Performance improvements and dozends of new generic overloads for acessing entities, worlds, archetypes and chunks. 
+            Bug fixes, Creation and Modification Buffers constructor is now public and useable for everyone. 
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 

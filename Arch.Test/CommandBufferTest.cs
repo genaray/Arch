@@ -169,14 +169,12 @@ public partial class CommandBufferTest
         for (var index = 0; index < 1000; index++)
             world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
         
-                
         world.ParallelQuery(in _queryDescription, (in Entity entity1) => {
             
             var entity = buffer.Create(_group);
             buffer.Set(in entity, new Transform{ X = 10 });
             buffer.Set(in entity, new Rotation{ W = 10 });
         });
-
 
         buffer.Playback();
         
