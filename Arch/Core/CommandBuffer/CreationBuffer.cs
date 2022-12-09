@@ -153,7 +153,7 @@ public struct CreationBuffer
     /// </summary>
     /// <param name="world">The world this playbacks to.</param>
     /// <param name="initialCapacity">The initial capacity, grows once it was reached.</param>
-    internal CreationBuffer(World world, int initialCapacity = 64)
+    public CreationBuffer(World world, int initialCapacity = 64)
     {
         World = world;
         InitialCapacity = initialCapacity;
