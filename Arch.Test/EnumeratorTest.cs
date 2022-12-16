@@ -44,7 +44,7 @@ public class EnumeratorTest
         foreach (ref var chunk in archetype)
             counter++;
 
-        Assert.AreEqual(10000 / Archetype.CalculateEntitiesPerChunk(_group), counter);
+        Assert.AreEqual(10000 /archetype.CalculateEntitiesPerChunk(_group), counter);
     }
 
     [Test]

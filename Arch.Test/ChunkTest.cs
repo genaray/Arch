@@ -12,7 +12,7 @@ public class ChunkTest
     [Test]
     public void ArchetypeSet()
     {
-        _chunk = new Chunk(Archetype.CalculateEntitiesPerChunk(_types), _types);
+        _chunk = new Chunk(1000, _types);
 
         for (var index = 0; index < _chunk.Capacity; index++)
         {
@@ -32,7 +32,7 @@ public class ChunkTest
     [Test]
     public void ArchetypeRemove()
     {
-        _chunk = new Chunk(Archetype.CalculateEntitiesPerChunk(_types), _types);
+        _chunk = new Chunk(1000, _types);
 
         for (var index = 0; index < _chunk.Capacity; index++)
         {
@@ -57,7 +57,7 @@ public class ChunkTest
     [Test]
     public void ArchetypeRemoveAll()
     {
-        _chunk = new Chunk(Archetype.CalculateEntitiesPerChunk(_types), _types);
+        _chunk = new Chunk(1000, _types);
 
         for (var index = 0; index < 5; index++)
         {
@@ -85,7 +85,7 @@ public class ChunkTest
     [Test]
     public void ArchetypeRemoveAndSetAgain()
     {
-        _chunk = new Chunk(Archetype.CalculateEntitiesPerChunk(_types), _types);
+        _chunk = new Chunk(1000, _types);
 
         var newEntity = new Entity(1, 0, 0);
         var newEntityTwo = new Entity(2, 0, 0);

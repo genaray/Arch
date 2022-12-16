@@ -3,17 +3,31 @@ using Arch.Core.Utils;
 
 namespace Arch.Test;
 
+internal struct HeavyComponent
+{
+    private decimal one;
+    private decimal second;
+    private decimal third;
+    private decimal forth;
+    private decimal fifth;
+    private decimal sixt;
+    private decimal seventh;
+    private decimal eigth;
+    private decimal ninth;
+}
+
 [TestFixture]
 public class ArchetypeTest
 {
     private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private readonly ComponentType[] _heavyGroup = { typeof(Transform), typeof(Rotation), typeof(HeavyComponent) };
 
     [Test]
     public void CreateChunk()
     {
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(_group);
+        var entities = archetype.CalculateEntitiesPerChunk(_group);
 
         for (var index = 0; index < entities; index++)
         {
@@ -23,12 +37,19 @@ public class ArchetypeTest
 
         Assert.AreEqual(1, archetype.Size);
     }
+    
+    [Test]
+    public void ScaleChunkCapacity()
+    {
+        var archetype = new Archetype(_heavyGroup);
+        Assert.AreEqual(Archetype.BaseSize * 2, archetype.ChunkSize);  // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
+    }
 
     [Test]
     public void CreateMultipleChunk()
     {
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(_group) * 2;
+        var entities = archetype.CalculateEntitiesPerChunk(_group) * 2;
 
         for (var index = 0; index < entities; index++)
         {
@@ -43,7 +64,7 @@ public class ArchetypeTest
     public void AllocateFor()
     {
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(_group) * 10;
+        var entities = archetype.CalculateEntitiesPerChunk(_group) * 10;
         archetype.Reserve(entities);
 
         for (var index = 0; index < entities; index++)
@@ -60,7 +81,7 @@ public class ArchetypeTest
     public void RemoveFromChunkWithReplacement()
     {
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(_group) + 50;
+        var entities = archetype.CalculateEntitiesPerChunk(_group) + 50;
 
         for (var index = 0; index < entities; index++)
         {
@@ -74,8 +95,7 @@ public class ArchetypeTest
         Assert.AreEqual(2, archetype.Capacity);
         Assert.AreEqual(entities - 50, archetype.Chunks[0].Size);
         Assert.AreEqual(49, archetype.Chunks[1].Size);
-        Assert.AreEqual(Archetype.CalculateEntitiesPerChunk(_group) + 50 - 1,
-            archetype.Chunks[0].Entities[0].EntityId); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        Assert.AreEqual(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1,archetype.Chunks[0].Entities[0].EntityId); // Last entity from second chunk now replaced the removed entity and is in the first chunk
         Assert.AreEqual(0, archetype.EntityIdToChunkIndex[493]); // Archetype knows that the moved entity is not in a different chunk 
     }
 
@@ -83,7 +103,7 @@ public class ArchetypeTest
     public void RemoveChunk()
     {
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(_group) + 1;
+        var entities = archetype.CalculateEntitiesPerChunk(_group) + 1;
 
         for (var index = 0; index < entities; index++)
         {
@@ -96,8 +116,7 @@ public class ArchetypeTest
         Assert.AreEqual(1, archetype.Size);
         Assert.AreEqual(1, archetype.Capacity);
         Assert.AreEqual(entities - 1, archetype.Chunks[0].Size);
-        Assert.AreEqual(Archetype.CalculateEntitiesPerChunk(_group),
-            archetype.Chunks[0].Entities[0].EntityId); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        Assert.AreEqual(archetype.CalculateEntitiesPerChunk(_group),archetype.Chunks[0].Entities[0].EntityId); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     [Test]

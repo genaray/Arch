@@ -13,11 +13,13 @@ namespace Arch.Core;
 /// </summary>
 public sealed unsafe partial class Archetype
 {
-    public const int TotalCapacity = 16000; // 16KB, fits perfectly into one L1 Cache
+    internal const int BaseSize = 16000; // 16KB Chunk size
 
     internal Archetype(params ComponentType[] types)
     {
         Types = types;
+
+        ChunkSize = MinimumRequiredChunkSize(types);
         EntitiesPerChunk = CalculateEntitiesPerChunk(types);
 
         // The bitmask/set 
@@ -76,6 +78,17 @@ public sealed unsafe partial class Archetype
     public int EntitiesPerChunk { get; }
 
     /// <summary>
+    /// The actual chunk size of each chunk of this archetype, based on <see cref="MinimumRequiredChunkSize"/>
+    /// </summary>
+    public int ChunkSize { get; } = BaseSize;
+    
+    /// <summary>
+    /// The minimum amount of entities per chunk in this archetype.
+    /// 
+    /// </summary>
+    public int MinimumAmountOfEntitiesPerChunk { get; } = 100; 
+
+    /// <summary>
     /// Searches for the next free <see cref="Chunk"/> to insert an <see cref="Entity"/> and returns its index. 
     /// </summary>
     /// <returns></returns>
@@ -104,7 +117,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(in Entity entity)
     {
-
+        
         // Get next available chunk which has free space... 
         var nextChunkIndex = NextChunkIndex();
         if (nextChunkIndex != -1)
@@ -240,24 +253,37 @@ public sealed unsafe partial class Archetype
     {
         return new Enumerator<Chunk>(Chunks.AsSpan(), Size);
     }
-
-    /// <summary>
-    ///     Calculates how many entities with the types fit into one chunk.
-    /// </summary>
-    /// <param name="types"></param>
-    /// <returns></returns>
-    public static int CalculateEntitiesPerChunk(ComponentType[] types)
-    {
-        return TotalCapacity / (sizeof(Entity) + types.ToByteSize());
-    }
 }
 
 
 /// <summary>
 ///     Adds capacity related methods.
 /// </summary>
-public sealed partial class Archetype
+public sealed unsafe partial class Archetype
 {
+    
+    /// <summary>
+    ///     Returns the minimum required chunk size in kilobytes which is required to fit the <see cref="MinimumAmountOfEntitiesPerChunk"/> into it.
+    ///     Always a multiple of <see cref="BaseSize"/>.
+    /// </summary>
+    /// <param name="types"></param>
+    /// <returns></returns>
+    public int MinimumRequiredChunkSize(ComponentType[] types)
+    {
+        var minimumEntities = (sizeof(Entity)+types.ToByteSize()) * MinimumAmountOfEntitiesPerChunk;
+        return (int)Math.Ceiling((float)minimumEntities / BaseSize) * BaseSize;
+    }
+    
+    /// <summary>
+    ///     Calculates how many entities with the types fit into one chunk.
+    /// </summary>
+    /// <param name="types"></param>
+    /// <returns></returns>
+    public int CalculateEntitiesPerChunk(ComponentType[] types)
+    {
+        return ChunkSize / (sizeof(Entity) + types.ToByteSize());
+    }
+    
     /// <summary>
     ///     Sets the capacity and either makes the internal <see cref="Chunks" /> and <see cref="EntityIdToChunkIndex" /> arrays bigger or smaller.
     /// </summary>
