@@ -33,7 +33,7 @@ internal class StructuralSparseArray : IDisposable
     /// <summary>
     /// The type this array stores.
     /// </summary>
-    public Type Type { get; }
+    public ComponentType Type { get; }
     
     /// <summary>
     /// The total size.
@@ -45,7 +45,7 @@ internal class StructuralSparseArray : IDisposable
     /// </summary>
     public int[] Entities;
 
-    public StructuralSparseArray(Type type, int capacity = 64)
+    public StructuralSparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
         Size = 0;
@@ -60,7 +60,7 @@ internal class StructuralSparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        lock (Type)
+        lock (this)
         {
             // Resize entities
             if (index >= Entities.Length)
@@ -166,7 +166,7 @@ internal class StructuralSparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
 
         lock (_setLock)
         {
@@ -196,7 +196,7 @@ internal class StructuralSparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(int index)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         var array = Components[id];
         return array.Has(index);
     }
@@ -228,8 +228,8 @@ public struct StructuralBuffer : IDisposable
     private StructuralSparseSet _adds;
     private StructuralSparseSet _removes;
     
-    private PooledList<Type> _addTypes;
-    private PooledList<Type> _removeTypes;
+    private PooledList<ComponentType> _addTypes;
+    private PooledList<ComponentType> _removeTypes;
 
     /// <summary>
     /// Creates a structural buffer.
@@ -241,8 +241,8 @@ public struct StructuralBuffer : IDisposable
         World = world;
         _adds = new StructuralSparseSet(capacity);
         _removes = new StructuralSparseSet(capacity);
-        _addTypes = new PooledList<Type>(8);
-        _removeTypes = new PooledList<Type>(8);
+        _addTypes = new PooledList<ComponentType>(8);
+        _removeTypes = new PooledList<ComponentType>(8);
     }
 
     /// <summary>
@@ -308,7 +308,7 @@ public struct StructuralBuffer : IDisposable
 
                 _addTypes.Add(sparseSet.Type);
             }
-            World.Add(in wrappedEntity._entity, (IList<Type>)_addTypes);
+            World.Add(in wrappedEntity._entity, (IList<ComponentType>)_addTypes);
             _addTypes.Clear();
         }
         

@@ -19,17 +19,19 @@ public static class GroupExtensions
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            types.Append($"typeof(T{index}),");
+            types.Append($"Component<T{index}>.ComponentType,");
 
         var template = $@"
 public static class Group<{generics}>
 {{
     internal static readonly int Id;
-    internal static readonly Type[] Types;
+    internal static readonly ComponentType[] Types;
+    internal static readonly int Hash;
 
     static Group(){{
         Id = Group.Id++;
-        Types = new Type[]{{{types}}};
+        Types = new ComponentType[]{{{types}}};
+        Hash = Component.GetHashCode(Types);
     }}
 }}
 ";

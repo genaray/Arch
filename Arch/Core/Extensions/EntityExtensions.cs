@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
@@ -35,7 +36,7 @@ public static partial class EntityExtensions
     /// <param name="entity">The entity</param>
     /// <returns>An array of components types.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Type[] GetComponentTypes(this in Entity entity)
+    public static ComponentType[] GetComponentTypes(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
         return world.GetComponentTypes(in entity);

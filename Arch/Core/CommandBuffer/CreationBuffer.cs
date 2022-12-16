@@ -17,7 +17,7 @@ internal class LinearArchetype
     /// <summary>
     /// The types this archetype stores. 
     /// </summary>
-    public Type[] Types { get; }
+    public ComponentType[] Types { get; }
     
     /// <summary>
     /// The size, how many entities this archetype stores. 
@@ -39,7 +39,7 @@ internal class LinearArchetype
     /// </summary>
     private readonly int[] _lookupArray; 
 
-    internal LinearArchetype(Type[] types, int capacity = 64)
+    internal LinearArchetype(ComponentType[] types, int capacity = 64)
     {
         Types = types;
         
@@ -100,7 +100,7 @@ internal class LinearArchetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T component)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         var arrayIndex = _lookupArray[id];
         var components = Components[arrayIndex];
         var array = Unsafe.As<T[]>(components);
@@ -166,12 +166,12 @@ public struct CreationBuffer
     /// <param name="types"></param>
     /// <param name="archetype"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void GetOrCreateArchetype(Type[] types, out LinearArchetype archetype)
+    internal void GetOrCreateArchetype(ComponentType[] types, out LinearArchetype archetype)
     {
         // Create new archetype, requires a lock. 
         lock (_archetypes)
         {
-            var hash = ComponentMeta.GetHashCode(types);
+            var hash = Component.GetHashCode(types);
             if (_archetypes.TryGetValue(hash, out archetype)) return;
 
             archetype = new LinearArchetype(types, InitialCapacity);
@@ -185,7 +185,7 @@ public struct CreationBuffer
     /// <param name="types"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public BufferedEntity Create(Type[] types)
+    public BufferedEntity Create(ComponentType[] types)
     {
         GetOrCreateArchetype(types, out var archetype);
         var archetypeIndex = archetype.Add();

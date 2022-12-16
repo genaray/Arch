@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Arch.Core;
+using Arch.Core.Utils;
 using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
@@ -13,7 +14,7 @@ namespace Arch.Benchmark;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class ArchetypeIterationBenchmark
 {
-    private readonly Type[] _group = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
 
     [Params(10000, 100000, 1000000)] public int Amount;
 

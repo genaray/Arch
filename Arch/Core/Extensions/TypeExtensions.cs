@@ -8,8 +8,6 @@ namespace Arch.Core.Extensions;
 
 public static class TypeExtensions
 {
-    
-    public static Dictionary<Type, Func<bool>> IsReferenceOrContainsReferenceCache { get; set; } = new(256);
 
     /// <summary>
     /// Converts the types to their component ids and writes them into the span.
@@ -17,13 +15,13 @@ public static class TypeExtensions
     /// <param name="types">The types array.</param>
     /// <param name="ids">The span in which the type component ids should be written.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteComponentIds(this Type[] types, Span<int> ids)
+    public static void WriteComponentIds(this ComponentType[] types, Span<int> ids)
     {
-        var typeSpan = new Span<Type>(types);
+        var typeSpan = new Span<ComponentType>(types);
         for (var index = 0; index < typeSpan.Length; index++)
         {
-            var t = typeSpan[index];
-            ids[index] = ComponentMeta.Id(t);
+            ref var t = ref typeSpan[index];
+            ids[index] = t.Id;
         }
     }
     
@@ -34,15 +32,14 @@ public static class TypeExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ToByteSize(this Type[] types)
+    public static int ToByteSize(this ComponentType[] types)
     {
         var size = 0;
         foreach (var type in types)
         {
-            if (!type.IsValueType)
-                throw new ArgumentException("Cant determine size of non value type.");
-
-            size += Marshal.SizeOf(type);
+            var typeSize = type.ByteSize;
+            typeSize = typeSize != 1 ? typeSize : 0;  // Ignore tag components 
+            size += typeSize;
         }
 
         return size;
@@ -55,14 +52,13 @@ public static class TypeExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int[] ToLookupArray(this Type[] types)
+    public static int[] ToLookupArray(this ComponentType[] types)
     {
-        
         // Get max component id
         var max = 0;
         foreach (var type in types)
         {
-            var componentId = ComponentMeta.Id(type);
+            var componentId = type.Id;
             if (componentId >= max) max = componentId;
         }
 
@@ -71,8 +67,8 @@ public static class TypeExtensions
         Array.Fill(array, -1);  // -1 Since that indicates no component is in that index since components start at zero we can not use zero here. 
         for(var index = 0; index < types.Length; index++)
         {
-            var type = types[index];
-            var componentId = ComponentMeta.Id(type);
+            ref var type = ref types[index];
+            var componentId = type.Id;
             array[componentId] = index;
         }
         return array;

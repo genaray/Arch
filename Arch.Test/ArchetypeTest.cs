@@ -1,12 +1,13 @@
 using Arch.Core;
+using Arch.Core.Utils;
 
 namespace Arch.Test;
 
 [TestFixture]
 public class ArchetypeTest
 {
-    private readonly Type[] _group = { typeof(Transform), typeof(Rotation) };
-    private readonly Type[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
 
     [Test]
     public void CreateChunk()

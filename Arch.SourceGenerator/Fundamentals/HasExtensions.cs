@@ -20,7 +20,7 @@ public static class HasExtensions
         
         var getIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            getIds.AppendLine($"var t{index}ComponentId = ComponentMeta<T{index}>.Id;");
+            getIds.AppendLine($"var t{index}ComponentId = Component<T{index}>.ComponentType.Id;");
         
         var boundChecks = new StringBuilder();
         for (var index = 0; index <= amount; index++)
@@ -60,7 +60,7 @@ public bool Has<{generics}>()
         
         var getIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            getIds.AppendLine($"var t{index}ComponentId = ComponentMeta<T{index}>.Id;");
+            getIds.AppendLine($"var t{index}ComponentId = Component<T{index}>.ComponentType.Id;");
         
         var isSet = new StringBuilder();
         for (var index = 0; index <= amount; index++)

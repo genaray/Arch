@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
@@ -29,33 +30,14 @@ public partial struct Chunk
     /// </summary>
     /// <param name="capacity"></param>
     /// <param name="types"></param>
-    internal Chunk(int capacity, params Type[] types)
-    {
-        // Calculate capacity & init arrays
-        Size = 0;
-        Capacity = capacity;
-
-        Entities = new Entity[Capacity];
-        Components = new Array[types.Length];
-
-        // Init mapping
-        ComponentIdToArrayIndex = types.ToLookupArray();
-        EntityIdToIndex = new Dictionary<int, int>(Capacity);
-
-        // Allocate arrays and map 
-        for (var index = 0; index < types.Length; index++)
-        {
-            var type = types[index];
-            Components[index] = Array.CreateInstance(type, Capacity);
-        }
-    }
+    internal Chunk(int capacity, params ComponentType[] types) : this(capacity, types.ToLookupArray(), types) { }
     
     /// <summary>
     ///     Allocates enough space for the passed amount of entities with all its components.
     /// </summary>
     /// <param name="capacity"></param>
     /// <param name="types"></param>
-    internal Chunk(int capacity, int[] componentIdToArrayIndex, params Type[] types)
+    internal Chunk(int capacity, int[] componentIdToArrayIndex, params ComponentType[] types)
     {
         // Calculate capacity & init arrays
         Size = 0;
@@ -84,9 +66,6 @@ public partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in Entity entity)
     {
-        if (Size >= Capacity)
-            return;
-
         EntityIdToIndex[entity.EntityId] = Size;
         Entities[Size] = entity;
         Size++;
@@ -128,9 +107,8 @@ public partial struct Chunk
     [Pure]
     public bool Has<T>()
     {
-        var id = ComponentMeta<T>.Id;
-        if (id >= ComponentIdToArrayIndex.Length) return false;
-        return ComponentIdToArrayIndex[id] != 1;
+        var id = Component<T>.ComponentType.Id;
+        return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
     }
 
     /// <summary>
@@ -252,8 +230,7 @@ public partial struct Chunk
     [Pure]
     private int Index<T>()
     {
-        var id = ComponentMeta<T>.Id;
-        if (id >= ComponentIdToArrayIndex.Length) return -1;
+        var id = Component<T>.ComponentType.Id;
         return ComponentIdToArrayIndex[id];
     }
 
@@ -350,7 +327,7 @@ public partial struct Chunk
     [Pure]
     public bool Has(Type t)
     {
-        var id = ComponentMeta.Id(t);
+        var id = Component.GetComponentType(t).Id;
         if (id >= ComponentIdToArrayIndex.Length) return false;
         return ComponentIdToArrayIndex[id] != -1;
     }
@@ -364,7 +341,7 @@ public partial struct Chunk
     [Pure]
     private int Index(Type type)
     {
-        var id = ComponentMeta.Id(type);
+        var id = Component.GetComponentType(type).Id;
         if (id >= ComponentIdToArrayIndex.Length) return -1;
         return ComponentIdToArrayIndex[id];
     }

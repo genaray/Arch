@@ -1,4 +1,5 @@
 using Arch.Core;
+using Arch.Core.Utils;
 
 namespace Arch.Test;
 
@@ -6,7 +7,7 @@ namespace Arch.Test;
 public class ChunkTest
 {
     private Chunk _chunk;
-    private readonly Type[] _types = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
 
     [Test]
     public void ArchetypeSet()

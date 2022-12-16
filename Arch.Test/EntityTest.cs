@@ -11,12 +11,11 @@ public partial class EntityTest
     public void Setup()
     {
         _world = World.Create();
-        _group = new[] { typeof(Transform), typeof(Rotation) };
         _entity = _world.Create(_group);
     }
 
     private World _world;
-    private Type[] _group;
+    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private Entity _entity;
 
     [Test]

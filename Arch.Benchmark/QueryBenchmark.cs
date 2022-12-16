@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Utils;
 using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
@@ -14,7 +15,7 @@ namespace Arch.Benchmark;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class QueryBenchmark
 {
-    private readonly Type[] _group = { typeof(Transform), typeof(Velocity) };
+    private readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
 
     [Params(10000, 100000, 1000000)] public int Amount;
 

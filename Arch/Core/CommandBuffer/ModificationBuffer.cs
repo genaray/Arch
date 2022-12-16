@@ -17,7 +17,7 @@ internal class SparseArray : IDisposable
     /// <summary>
     /// The type this sparsearray stores as an contignous array.
     /// </summary>
-    public Type Type { get; }
+    public ComponentType Type { get; }
 
     /// <summary>
     /// The capacity.
@@ -39,7 +39,7 @@ internal class SparseArray : IDisposable
     /// </summary>
     public Array Components { get; private set; }
 
-    public SparseArray(Type type, int capacity = 64)
+    public SparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
 
@@ -57,7 +57,7 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(int index)
     {
-        lock (Type)
+        lock (this)
         {
             // Resize entities
             if (index >= Entities.Length)
@@ -111,7 +111,7 @@ internal class SparseArray : IDisposable
     /// <typeparam name="T"></typeparam>
     public void Set<T>(int index, in T component)
     { 
-        lock (Type)
+        lock (this)
         {
             GetArray<T>()[Entities[index]] = component;   
         }
@@ -228,7 +228,7 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T component)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         lock (_setLock)
         {
             // Allocate new sparsearray for new component type 
@@ -259,7 +259,7 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(int index)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         var array = Components[id];
         return array.Has(index);
     }
@@ -273,7 +273,7 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Get<T>(int index)
     {
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         var array = Components[id];
         return array.Get<T>(index);
     }

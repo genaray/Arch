@@ -12,10 +12,10 @@ namespace Arch.Core;
 /// </summary>
 public struct QueryDescription : IEquatable<QueryDescription>
 {
-    public Type[] All = Array.Empty<Type>();
-    public Type[] Any = Array.Empty<Type>();
-    public Type[] None = Array.Empty<Type>();
-    public Type[] Exclusive = Array.Empty<Type>();
+    public ComponentType[] All = Array.Empty<ComponentType>();
+    public ComponentType[] Any = Array.Empty<ComponentType>();
+    public ComponentType[] None = Array.Empty<ComponentType>();
+    public ComponentType[] Exclusive = Array.Empty<ComponentType>();
 
     public QueryDescription()
     {
@@ -23,10 +23,10 @@ public struct QueryDescription : IEquatable<QueryDescription>
 
     public bool Equals(QueryDescription other)
     {
-        var allHash = ComponentMeta.GetHashCode(All);
-        var anyHash = ComponentMeta.GetHashCode(Any);
-        var noneHash = ComponentMeta.GetHashCode(None);
-        return allHash == ComponentMeta.GetHashCode(other.All) && anyHash == ComponentMeta.GetHashCode(other.Any) && noneHash == ComponentMeta.GetHashCode(other.None);
+        var allHash = Component.GetHashCode(All);
+        var anyHash = Component.GetHashCode(Any);
+        var noneHash = Component.GetHashCode(None);
+        return allHash == Component.GetHashCode(other.All) && anyHash == Component.GetHashCode(other.Any) && noneHash == Component.GetHashCode(other.None);
     }
 
     public override bool Equals(object obj)
@@ -86,18 +86,19 @@ public readonly struct Query : IEquatable<Query>
             "If Any, All or None have items then Exclusive may not have any items"
         );
 
+        // Conver to bitsets
         _all = description.All.ToBitSet();
         _any = description.Any.ToBitSet();
         _none = description.None.ToBitSet();
         _exclusive = description.Exclusive.ToBitSet();
 
+        // Handle exclusive
         if (description.Exclusive.Length != 0)
             _isExclusive = true;
 
-        QueryDescription = description;
-
         // Otherwhise a any value of 0 always returns false somehow
         if (description.Any.Length == 0) _any.SetAll();
+        QueryDescription = description;
     }
 
     /// <summary>
@@ -108,10 +109,7 @@ public readonly struct Query : IEquatable<Query>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Valid(BitSet bitset)
     {
-        if (_isExclusive)
-            return _exclusive.Exclusive(bitset);
-
-        return _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
+        return _isExclusive ? _exclusive.Exclusive(bitset) : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
     }
 
     /// <summary>

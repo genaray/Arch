@@ -1,21 +1,20 @@
 using Arch.Core;
+using Arch.Core.Utils;
 
 namespace Arch.Test;
 
 public class EnumeratorTest
 {
-    private QueryDescription _description;
-    private Type[] _group;
-    private Type[] _otherGroup;
+
+    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private QueryDescription _description = new() { All = _group };
 
     private World _world;
 
     [OneTimeSetUp]
     public void Setup()
     {
-        _group = new[] { typeof(Transform), typeof(Rotation) };
-        _otherGroup = new[] { typeof(Transform), typeof(Rotation), typeof(Ai) };
-
         _world = World.Create();
         _world.Reserve(_group, 10000);
         _world.Reserve(_otherGroup, 10000);
@@ -25,8 +24,6 @@ public class EnumeratorTest
 
         for (var index = 0; index < 10000; index++)
             _world.Create(_otherGroup);
-
-        _description = new QueryDescription { All = _group };
     }
 
     [Test]
@@ -69,6 +66,6 @@ public class EnumeratorTest
         foreach (ref var chunk in query.GetChunkIterator())
             counter++;
 
-        Assert.AreEqual(41, counter);
+        Assert.AreEqual(40, counter);
     }
 }

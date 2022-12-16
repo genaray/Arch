@@ -15,7 +15,7 @@ public sealed unsafe partial class Archetype
 {
     public const int TotalCapacity = 16000; // 16KB, fits perfectly into one L1 Cache
 
-    internal Archetype(params Type[] types)
+    internal Archetype(params ComponentType[] types)
     {
         Types = types;
         EntitiesPerChunk = CalculateEntitiesPerChunk(types);
@@ -31,7 +31,7 @@ public sealed unsafe partial class Archetype
     /// <summary>
     ///     The types with which the <see cref="BitSet" /> was created.
     /// </summary>
-    public Type[] Types { get; }
+    public ComponentType[] Types { get; }
 
     /// <summary>
     ///     The bitmask for querying, contains the component flags set for this archetype.
@@ -201,7 +201,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>()
     { 
-        var id = ComponentMeta<T>.Id;
+        var id = Component<T>.ComponentType.Id;
         return BitSet.IsSet(id);
     }
 
@@ -246,7 +246,7 @@ public sealed unsafe partial class Archetype
     /// </summary>
     /// <param name="types"></param>
     /// <returns></returns>
-    public static int CalculateEntitiesPerChunk(Type[] types)
+    public static int CalculateEntitiesPerChunk(ComponentType[] types)
     {
         return TotalCapacity / (sizeof(Entity) + types.ToByteSize());
     }

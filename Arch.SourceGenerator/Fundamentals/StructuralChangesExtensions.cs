@@ -22,7 +22,7 @@ public static class StructuralChangesExtensions
 
         var setIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            setIds.AppendLine($"ids[^{index+1}] = ComponentMeta<T{index}>.Id;");
+            setIds.AppendLine($"ids[^{index+1}] = Component<T{index}>.ComponentType.Id;");
         
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
@@ -66,7 +66,7 @@ public void Add<{generics}>(in Entity entity, {parameters})
 
         var removes = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            removes.AppendLine($"ids.Remove(ComponentMeta<T{index}>.Id);");
+            removes.AppendLine($"ids.Remove(Component<T{index}>.ComponentType.Id);");
         
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)

@@ -27,12 +27,8 @@ public partial class WorldTest
 
     private World _world;
 
-    private readonly Type[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private readonly Type[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-
-    private QueryDescription _withoutAiQuery = new() { All = new[] { typeof(Transform) }, Any = new[] { typeof(Rotation) }, None = new[] { typeof(Ai) } };
-
-    private QueryDescription _withAiQuery = new() { All = new[] { typeof(Transform), typeof(Rotation) }, Any = new[] { typeof(Ai) } };
+    private readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
 
     [Test]
     public void Create()
@@ -60,7 +56,7 @@ public partial class WorldTest
     [Test]
     public void DestroyAll()
     {
-        var query = new QueryDescription { All = new[] { typeof(Transform) } };
+        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
 
         var entities = new List<Entity>();
         _world.GetEntities(query, entities);
@@ -127,8 +123,8 @@ public partial class WorldTest
     [Test]
     public void MultipleArchetypesTest()
     {
-        var archTypes1 = new[] { typeof(Transform) };
-        var archTypes2 = new[] { typeof(Transform) };
+        var archTypes1 = new ComponentType[] { typeof(Transform) };
+        var archTypes2 = new ComponentType[] { typeof(Transform) };
   
         var entity1 = _world.Create(archTypes1);
         var entity2 = _world.Create(archTypes2);
@@ -141,7 +137,7 @@ public partial class WorldTest
     {
         var world = World.Create();
 
-        var archTypes = new[] { typeof(Transform) };
+        var archTypes = new ComponentType[] { typeof(Transform) };
         var query = new QueryDescription { All = archTypes };
 
         var entity = world.Create(archTypes);

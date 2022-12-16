@@ -10,9 +10,9 @@ namespace Arch.Test;
 public partial class CommandBufferTest
 {
 
-    private static readonly Type[] _group = { typeof(Transform), typeof(Rotation) };
-    private static readonly Type[] _secondGroup = { typeof(Transform), typeof(Rotation), typeof(Ai), typeof(int) };
-    private readonly QueryDescription _queryDescription = new QueryDescription { All = _group };
+    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private static readonly ComponentType[] _secondGroup = { typeof(Transform), typeof(Rotation), typeof(Ai), typeof(int) };
+    private readonly QueryDescription _queryDescription = new(){ All = _group };
 
     [Test]
     public void CommandBufferSparseSet()

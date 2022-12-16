@@ -10,11 +10,11 @@ public class ComparerTest
     public void Test()
     {
 
-        var array1 = new Type[] { typeof(int), typeof(byte) };
-        var array2 = new Type[] { typeof(int), typeof(byte) };
-        var array3 = new Type[] { typeof(byte), typeof(int) };
+        ComponentType[] array1 = { typeof(int), typeof(byte) };
+        ComponentType[] array2 = { typeof(int), typeof(byte) };
+        ComponentType[] array3 = { typeof(byte), typeof(int) };
         
-        Assert.AreEqual(ComponentMeta.GetHashCode(array1), ComponentMeta.GetHashCode(array2));
-        Assert.AreEqual(ComponentMeta.GetHashCode(array1), ComponentMeta.GetHashCode(array3));
+        Assert.AreEqual(Component.GetHashCode(array1), Component.GetHashCode(array2));
+        Assert.AreEqual(Component.GetHashCode(array1), Component.GetHashCode(array3));
     }
 }

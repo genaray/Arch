@@ -1,4 +1,5 @@
 using Arch.Core;
+using Arch.Core.Utils;
 
 namespace Arch.Test;
 
@@ -9,11 +10,11 @@ public class QueryTest
     private JobScheduler.JobScheduler _jobScheduler;
     private World _world;
 
-    private readonly Type[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private readonly Type[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private static readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
+    private static readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
 
-    private readonly QueryDescription _withoutAiQuery = new() { All = new[] { typeof(Transform) }, Any = new[] { typeof(Rotation) }, None = new[] { typeof(Ai) } };
-    private readonly QueryDescription _allQuery = new() { All = new[] { typeof(Transform), typeof(Rotation) }, Any = new[] { typeof(Ai) } };
+    private readonly QueryDescription _withoutAiQuery = new() { All = new ComponentType[] { typeof(Transform) }, Any = new ComponentType[] { typeof(Rotation) }, None = new ComponentType[] { typeof(Ai) } };
+    private readonly QueryDescription _allQuery = new() { All = new ComponentType[] { typeof(Transform), typeof(Rotation) }, Any = new ComponentType[] { typeof(Ai) } };
 
     
     [OneTimeSetUp]
@@ -31,7 +32,7 @@ public class QueryTest
     [Test]
     public void AllQuery()
     {
-        var query = new QueryDescription { All = new[] { typeof(Transform) } };
+        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -45,7 +46,7 @@ public class QueryTest
     [Test]
     public void AnyQuery()
     {
-        var query = new QueryDescription { Any = new[] { typeof(Transform) } };
+        var query = new QueryDescription { Any = new ComponentType[] { typeof(Transform) } };
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -59,7 +60,7 @@ public class QueryTest
     [Test]
     public void NoneQuery()
     {
-        var query = new QueryDescription { None = new[] { typeof(Transform) } };
+        var query = new QueryDescription { None = new ComponentType[] { typeof(Transform) } };
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -73,7 +74,7 @@ public class QueryTest
     [Test]
     public void ExclusiveQuery()
     {
-        var exclusiveGroup = new[] { typeof(Transform), typeof(Rotation) };
+        var exclusiveGroup = new ComponentType[] { typeof(Transform), typeof(Rotation) };
         var query = new QueryDescription { Exclusive = exclusiveGroup };
 
         _world = World.Create();

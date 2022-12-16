@@ -9,6 +9,7 @@ using Collections.Pooled;
 using JobScheduler;
 using Microsoft.Extensions.ObjectPool;
 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
+using Component = Arch.Core.Utils.Component;
 
 [assembly: InternalsVisibleTo("Arch.Test")]
 [assembly: InternalsVisibleTo("Arch.Benchmark")]
@@ -182,7 +183,7 @@ public partial class World
     /// <param name="types">The archetype, the entities components</param>
     /// <param name="amount">The amount of entities we wanna allocate in one go</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reserve(Type[] types, int amount)
+    public void Reserve(ComponentType[] types, int amount)
     {
         var archetype = GetOrCreate(types);
         archetype.Reserve(amount);
@@ -199,7 +200,7 @@ public partial class World
     /// <param name="types">The group of components this entity should have, its archetype</param>
     /// <returns>The created entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Entity Create(params Type[] types)
+    public Entity Create(params ComponentType[] types)
     {
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
@@ -375,9 +376,9 @@ public partial class World
     /// <param name="archetype">The archetype with those entities</param>
     /// <returns>True if such an <see cref="Archetype" /> exists</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetArchetype(Type[] types, out Archetype archetype)
+    public bool TryGetArchetype(ComponentType[] types, out Archetype archetype)
     {
-        var hash = ComponentMeta.GetHashCode(types); 
+        var hash = Component.GetHashCode(types); 
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
     
@@ -390,7 +391,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetArchetype(Span<int> ids, out Archetype archetype)
     {
-        var hash = ComponentMeta.GetHashCode(ids); 
+        var hash = Component.GetHashCode(ids); 
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
 
@@ -400,13 +401,13 @@ public partial class World
     /// <param name="group"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Archetype GetOrCreate(Type[] types)
+    internal Archetype GetOrCreate(ComponentType[] types)
     {
         if (TryGetArchetype(types, out var archetype)) return archetype;
 
         archetype = new Archetype(types);
         
-        var hash = ComponentMeta.GetHashCode(types);
+        var hash = Component.GetHashCode(types);
         GroupToArchetype[hash] = archetype;
         Archetypes.Add(archetype);
         return archetype;
@@ -703,7 +704,7 @@ public partial class World
     /// <param name="entity">The entity</param>
     /// <returns>An array of components types.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Type[] GetComponentTypes(in Entity entity)
+    public ComponentType[] GetComponentTypes(in Entity entity)
     {
         var archetype = EntityToArchetype[entity.EntityId];
         return archetype.Types;
@@ -758,7 +759,7 @@ public partial class World{
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
         oldArchetype.Types.WriteComponentIds(ids);
-        ids[^1] = ComponentMeta<T>.Id;
+        ids[^1] = Component<T>.ComponentType.Id;
         
         if (!TryGetArchetype(ids, out var newArchetype))
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
@@ -772,7 +773,7 @@ public partial class World{
     /// <param name="entity">The entity.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(in Entity entity, IList<Type> components)
+    public void Add(in Entity entity, IList<ComponentType> components)
     {
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
@@ -784,7 +785,7 @@ public partial class World{
         for (var index = 0; index < components.Count; index++)
         {
             var type = components[index];
-            ids[oldArchetype.Types.Length + index] = ComponentMeta.Id(type);
+            ids[oldArchetype.Types.Length + index] = type.Id;
         }
         
         if (!TryGetArchetype(ids, out var newArchetype))
@@ -807,7 +808,7 @@ public partial class World{
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
         oldArchetype.Types.WriteComponentIds(ids);
-        ids[^1] = ComponentMeta<T>.Id;
+        ids[^1] = Component<T>.ComponentType.Id;
         
         if (!TryGetArchetype(ids, out var newArchetype))
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
@@ -830,7 +831,7 @@ public partial class World{
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length];
         oldArchetype.Types.WriteComponentIds(ids);
-        ids.Remove(ComponentMeta<T>.Id);
+        ids.Remove(Component<T>.ComponentType.Id);
         ids = ids[..^1];
         
         if (!TryGetArchetype(ids, out var newArchetype))
@@ -846,7 +847,7 @@ public partial class World{
     /// <param name="cmp">The component value.</param>
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove(in Entity entity, IList<Type> types)
+    public void Remove(in Entity entity, IList<ComponentType> types)
     { 
         var oldArchetype = EntityToArchetype[entity.EntityId];
 
@@ -855,7 +856,7 @@ public partial class World{
         oldArchetype.Types.WriteComponentIds(ids);
 
         foreach (var type in types)
-            ids.Remove(ComponentMeta.Id(type));
+            ids.Remove(type.Id);
         
         ids = ids[..^types.Count];
         

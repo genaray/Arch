@@ -1,9 +1,45 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
+
+/// <summary>
+/// Represents a component with its meta informations. 
+/// </summary>
+public readonly struct ComponentType
+{
+    public readonly int Id;
+    public readonly Type Type;
+
+    public readonly int ByteSize;
+    public readonly bool ZeroSized;
+
+    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
+    {
+        Id = id;
+        Type = type;
+        ByteSize = byteSize;
+        ZeroSized = zeroSized;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator ComponentType(Type value)
+    {
+        return Component.GetComponentType(value);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Type(ComponentType value)
+    {
+        return value.Type;
+    }
+}
 
 /// <summary>
 ///     A class which tracks all used components in this project.
@@ -15,10 +51,15 @@ public static class ComponentRegistry
     /// <summary>
     ///     A list of all registered components.
     /// </summary>
-    public static Dictionary<Type, int> TypeIds { get; } = new(256);
+    private static Dictionary<Type, ComponentType> _types { get; } = new(128);
 
     /// <summary>
-    ///     The amount of registered components.
+    /// Returns all registered types as a newly allocated array.
+    /// </summary>
+    public static ComponentType[] Types => _types.Values.ToArray();
+    
+    /// <summary>
+    /// The amount of registered components.
     /// </summary>
     public static int Size { get; set; }
 
@@ -28,7 +69,7 @@ public static class ComponentRegistry
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Add<T>()
+    public static ComponentType Add<T>()
     {
         return Add(typeof(T));
     }
@@ -39,16 +80,19 @@ public static class ComponentRegistry
     /// <param name="type"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Add(Type type)
+    public static ComponentType Add(Type type)
     {
-        if (TryGet(type, out var id)) return id;
-
+        
+        Debug.Assert(!type.IsValueType, $"Only value type components are useable, '{type.Name}' is not a primitive nor a struct.");
+        if (TryGet(type, out var meta)) return meta;
+        
         // Register and assign component id
-        id = Size;
-        TypeIds.Add(type, id);
+        var size = Marshal.SizeOf(type);
+        meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
+        _types.Add(type, meta);
 
         Size++;
-        return id;
+        return meta;
     }
 
     /// <summary>
@@ -70,7 +114,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has(Type type)
     {
-        return TypeIds.ContainsKey(type);
+        return _types.ContainsKey(type);
     }
 
     /// <summary>
@@ -79,9 +123,9 @@ public static class ComponentRegistry
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryGet<T>(out int index)
+    public static bool TryGet<T>(out ComponentType componentType)
     {
-        return TryGet(typeof(T), out index);
+        return TryGet(typeof(T), out componentType);
     }
 
     /// <summary>
@@ -90,9 +134,9 @@ public static class ComponentRegistry
     /// <param name="type"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryGet(Type type, out int id)
+    public static bool TryGet(Type type, out ComponentType componentType)
     {
-        return TypeIds.TryGetValue(type, out id);
+        return _types.TryGetValue(type, out componentType);
     }
 }
 
@@ -101,14 +145,12 @@ public static class ComponentRegistry
 ///     Gets created once during its first use and than provides informations like a compile static class.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public static class ComponentMeta<T>
+public static class Component<T>
 {
-    public static readonly int Id;
-
-    //FNV-1 64 bit hash
-    static ComponentMeta()
+    public static readonly ComponentType ComponentType;
+    static Component()
     {
-        Id = ComponentRegistry.Add<T>();
+        ComponentType = ComponentRegistry.Add<T>();
     }
 }
 
@@ -117,7 +159,7 @@ public static class ComponentMeta<T>
 ///     Gets created once during its first use and than provides informations like a compile static class.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public static class ComponentMeta
+public static class Component
 {
     
     /// <summary>
@@ -126,7 +168,7 @@ public static class ComponentMeta
     /// <param name="type"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Id(Type type)
+    public static ComponentType GetComponentType(Type type)
     {
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
@@ -137,7 +179,7 @@ public static class ComponentMeta
     /// <param name="obj"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetHashCode(params Type[] obj)
+    public static int GetHashCode(params ComponentType[] obj)
     {
         
         // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
@@ -146,7 +188,7 @@ public static class ComponentMeta
             int hash = 0;
             foreach(var type in obj)
             {
-                int x = Id(type)+1;
+                int x = type.Id+1;
 
                 x ^= x >> 17;
                 x *= 830770091;   // 0xed5ad4bb
