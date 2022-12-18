@@ -428,7 +428,7 @@ public partial struct Chunk
         }
 
         // Remove last entity from this chunk, we do not need to copy anything again since its already the last entity
-        if(EntityIdToIndex != chunk.EntityIdToIndex) chunk.EntityIdToIndex.Remove(lastEntity.EntityId);
+        if(EntityIdToIndex != chunk.EntityIdToIndex) chunk.EntityIdToIndex.Remove(lastEntity.EntityId);  // If we target the same chunk, do not remove it, since it was updated before
         chunk.Size--;
         return lastEntity.EntityId;
     }
