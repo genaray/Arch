@@ -418,11 +418,9 @@ public partial struct Chunk
         // Remove last entity from the other chunk, decrease size 
         chunk.EntityIdToIndex.Remove(lastEntity.EntityId);
         chunk.Size--;
-        
-        // Remove replaced entity accordingly 
-        var replacedEntityId = Entities[index].EntityId;
 
-        // Replace index entity with the last entity from 
+        // Replace index entity with the last entity from the other chunk
+        var replacedEntityId = Entities[index].EntityId;
         Entities[index] = lastEntity;
         EntityIdToIndex[lastEntity.EntityId] = index;
 

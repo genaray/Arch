@@ -144,8 +144,10 @@ public sealed unsafe partial class Archetype
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         var index = chunk.EntityIdToIndex[entity.EntityId];
         var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(index, ref LastChunk);
+        
+        // Update the mapping of the moved entity and removed the removed entity. 
+        EntityIdToChunkIndex[movedEntityId] = chunkIndex;
         EntityIdToChunkIndex.Remove(entity.EntityId);
-        if(entity.EntityId != movedEntityId) EntityIdToChunkIndex[movedEntityId] = chunkIndex;  // Same entity moved ? Do not update mapping, since its already in the same chunk.
 
         // Trim when last chunk is now empty and we havent reached the last chunk yet
         if (LastChunk.Size != 0 || Size <= 1) return false;
