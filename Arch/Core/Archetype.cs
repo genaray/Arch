@@ -141,30 +141,15 @@ public sealed unsafe partial class Archetype
         var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
         ref var chunk = ref Chunks[chunkIndex];
 
-        // If its the last chunk, simply remove the entity
-        if (chunkIndex == Size-1)
-        {
-            chunk.Remove(entity);
-            EntityIdToChunkIndex.Remove(entity.EntityId);
-
-            if (chunk.Size != 0 || chunkIndex == 0) return false;
-
-            // Remove last unused chunk & resize to free memory
-            EnsureOrTrimCapacity(Size - 1);
-            Capacity--;
-            Size--;
-            return true;
-        }
-
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         var index = chunk.EntityIdToIndex[entity.EntityId];
         var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(index, ref LastChunk);
         EntityIdToChunkIndex.Remove(entity.EntityId);
-        EntityIdToChunkIndex[movedEntityId] = chunkIndex;
+        if(entity.EntityId != movedEntityId) EntityIdToChunkIndex[movedEntityId] = chunkIndex;
 
-        if (LastChunk.Size != 0) return false;
-
-        // Remove last unused chunk & resize to free memory
+        // Trim when last chunk is now empty and we havent reached the last chunk yet
+        if (LastChunk.Size != 0 || Size <= 1) return false;
+        
         EnsureOrTrimCapacity(Size - 1);
         Capacity--;
         Size--;
@@ -285,7 +270,7 @@ public sealed unsafe partial class Archetype
         else if(newCapacity < Capacity)
         {
             // Always keep capacity for atleast one chunk
-            if (newCapacity <= 0) newCapacity = 1;
+            newCapacity = newCapacity <= 0 ? 1 : newCapacity;
 
             // Decrease chunk size
             var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);

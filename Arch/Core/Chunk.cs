@@ -155,6 +155,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Removes an <see cref="Entity" /> from this chunk and all its components.
+    ///     Copies the last entity from the chunk to the removed position. This way we always have a contignous chunk without holes in it. 
     /// </summary>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -426,8 +427,9 @@ public partial struct Chunk
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
 
-        // Remove last entity from this chunk
-        chunk.Remove(lastEntity);
+        // Remove last entity from this chunk, we do not need to copy anything again since its already the last entity
+        if(EntityIdToIndex != chunk.EntityIdToIndex) chunk.EntityIdToIndex.Remove(lastEntity.EntityId);
+        chunk.Size--;
         return lastEntity.EntityId;
     }
 }
