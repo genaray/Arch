@@ -415,8 +415,14 @@ public partial struct Chunk
         var lastIndex = chunk.Size - 1;
         var lastEntity = chunk.Entities[lastIndex];
 
-        // Replace index entity with the last entity from 
+        // Remove last entity from the other chunk, decrease size 
+        chunk.EntityIdToIndex.Remove(lastEntity.EntityId);
+        chunk.Size--;
+        
+        // Remove replaced entity accordingly 
         var replacedEntityId = Entities[index].EntityId;
+
+        // Replace index entity with the last entity from 
         Entities[index] = lastEntity;
         EntityIdToIndex[lastEntity.EntityId] = index;
 
@@ -427,12 +433,9 @@ public partial struct Chunk
             var desArray = Components[i];
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
-
-        // Remove replaced entity and the last entity from the other chunk 
-        if (EntityIdToIndex != chunk.EntityIdToIndex) chunk.EntityIdToIndex.Remove(lastEntity.EntityId); // If we target the same chunk, do not remove it, since it was updated before
-        EntityIdToIndex.Remove(replacedEntityId);
         
-        chunk.Size--;
+        // Remove replaced entity accordingly 
+        EntityIdToIndex.Remove(replacedEntityId);
         return lastEntity.EntityId;
     }
 }
