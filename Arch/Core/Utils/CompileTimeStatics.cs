@@ -83,7 +83,7 @@ public static class ComponentRegistry
     public static ComponentType Add(Type type)
     {
         
-        Debug.Assert(!type.IsValueType, $"Only value type components are useable, '{type.Name}' is not a primitive nor a struct.");
+        Debug.Assert(type.IsValueType, $"Only value type components are useable, '{type.Name}' is not a primitive nor a struct.");
         if (TryGet(type, out var meta)) return meta;
         
         // Register and assign component id

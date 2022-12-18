@@ -68,8 +68,8 @@ public partial class WorldTest
         }
 
         Assert.AreEqual(0, _world.Size);
-        Assert.AreEqual(0, _world.Archetypes[0].Size);
-        Assert.AreEqual(0, _world.Archetypes[1].Size);
+        Assert.AreEqual(1, _world.Archetypes[0].Size);
+        Assert.AreEqual(1, _world.Archetypes[1].Size);
     }
     
     [Test]

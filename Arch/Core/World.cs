@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
@@ -216,9 +217,8 @@ public partial class World
         // Resize map & Array to fit all potential new entities
         if (createdChunk)
         {
-            var requiredCapacity = Capacity + archetype.EntitiesPerChunk;
-            EntityToArchetype.EnsureCapacity(requiredCapacity);
-            Capacity = requiredCapacity;
+            Capacity += archetype.EntitiesPerChunk;
+            EntityToArchetype.EnsureCapacity(Capacity);
         }
 
         // Map
@@ -405,11 +405,17 @@ public partial class World
     {
         if (TryGetArchetype(types, out var archetype)) return archetype;
 
+        // Create archetype
         archetype = new Archetype(types);
-        
         var hash = Component.GetHashCode(types);
+        
         GroupToArchetype[hash] = archetype;
         Archetypes.Add(archetype);
+
+        // Archetypes always allocate one single chunk upon construction
+        Capacity += archetype.EntitiesPerChunk; 
+        EntityToArchetype.EnsureCapacity(Capacity);
+        
         return archetype;
     }
 }
