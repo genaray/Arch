@@ -82,8 +82,8 @@ public partial class WorldTest
         var recycledEntity = localWorld.Create(_entityGroup);
         var newEntity = localWorld.Create(_entityGroup);
 
-        Assert.AreEqual(entity.EntityId, recycledEntity.EntityId);
-        Assert.AreNotEqual(recycledEntity.EntityId, newEntity.EntityId);
+        Assert.AreEqual(entity.Id, recycledEntity.Id);
+        Assert.AreNotEqual(recycledEntity.Id, newEntity.Id);
 
         World.Destroy(localWorld);
     }
@@ -98,7 +98,7 @@ public partial class WorldTest
 
         // Remove
         for (var index = 0; index < 500; index++)
-            _world.Destroy(new Entity(index, _world.Id, 0));
+            _world.Destroy(new Entity(index, _world.Id));
         var after = _world.Size;
 
         Assert.AreEqual(before, after);

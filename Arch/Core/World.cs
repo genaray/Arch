@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -17,30 +18,25 @@ using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
 
+#if PURE_ECS
+
 /// <summary>
 ///     Represents an entity in our world.
 /// </summary>
-[StructLayout(Layout.Sequential)]
 public readonly struct Entity : IEquatable<Entity>
 {
     // The id of this entity in the world, not in the archetype
-    public readonly int EntityId;
-    public readonly byte WorldId;
-    private readonly byte _pad;
-    public readonly ushort Version;
+    public readonly int Id;
+    public static Entity Null => new(-1, 0);
 
-    public static readonly Entity Null = new(-1, 0, 0);
-
-    internal Entity(int entityId, byte worldId, ushort version)
+    internal Entity(int id, int worldId)
     {
-        EntityId = entityId;
-        WorldId = worldId;
-        Version = version;
+        Id = id;
     }
 
     public bool Equals(Entity other)
     {
-        return EntityId == other.EntityId && WorldId == other.WorldId && Version == other.Version;
+        return Id == other.Id;
     }
 
     public override bool Equals(object obj)
@@ -54,9 +50,7 @@ public readonly struct Entity : IEquatable<Entity>
         {
             // Overflow is fine, just wrap
             var hash = 17;
-            hash = hash * 23 + EntityId;
-            hash = hash * 23 + WorldId;
-            hash = hash * 23 + Version;
+            hash = hash * 23 + Id;
             return hash;
         }
     }
@@ -73,8 +67,77 @@ public readonly struct Entity : IEquatable<Entity>
 
     public override string ToString()
     {
-        return $"{nameof(EntityId)}: {EntityId}, {nameof(WorldId)}: {WorldId}, {nameof(Version)}: {Version}";
+        return $"{nameof(Id)}: {Id}";
     }
+}
+
+#else 
+
+/// <summary>
+///     Represents an entity in our world.
+/// </summary>
+public readonly struct Entity : IEquatable<Entity>
+{
+    // The id of this entity in the world, not in the archetype
+    public readonly int Id;
+    public readonly int WorldId;
+    
+    public static Entity Null => new(-1, 0);
+
+    internal Entity(int id, int worldId)
+    {
+        Id = id;
+        WorldId = worldId;
+    }
+
+    public bool Equals(Entity other)
+    {
+        return Id == other.Id && WorldId == other.WorldId;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Entity other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            // Overflow is fine, just wrap
+            var hash = 17;
+            hash = hash * 23 + Id;
+            hash = hash * 23 + WorldId;
+            return hash;
+        }
+    }
+
+    public static bool operator ==(Entity left, Entity right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Entity left, Entity right)
+    {
+        return !left.Equals(right);
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(Id)}: {Id}, {nameof(WorldId)}: {WorldId}";
+    }
+}
+#endif
+
+
+/// <summary>
+/// Stores a bunch of informations about an entity for incredible fast lookups and slimmer entities themself. 
+/// </summary>
+public struct EntityInfo
+{
+    public int ChunkIndex;
+    public Archetype Archetype;
+    public short Version;
 }
 
 /// <summary>
@@ -97,18 +160,22 @@ public delegate void ForEach(in Entity entity);
 /// </summary>
 public partial class World
 {
-    internal World(byte id)
+    internal World(int id)
     {
         this.Id = id;
 
+        // Mapping
         GroupToArchetype = new PooledDictionary<int, Archetype>(8);
-        EntityToArchetype = new PooledDictionary<int, Archetype>(0);
 
+        // Entity stuff
         Archetypes = new PooledList<Archetype>(8);
+        EntityInfo = new PooledDictionary<int, EntityInfo>(256);
         RecycledIds = new PooledQueue<int>(256);
 
+        // Query
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
 
+        // Multithreading/Jobs
         JobHandles = new PooledList<JobHandle>(Environment.ProcessorCount);
         JobsCache = new List<IJob>(Environment.ProcessorCount);
     }
@@ -121,7 +188,7 @@ public partial class World
     /// <summary>
     ///     The world id
     /// </summary>
-    public byte Id { get; }
+    public int Id { get; }
 
     /// <summary>
     ///     The size of the world, the amount of <see cref="Entities" />.
@@ -132,12 +199,22 @@ public partial class World
     ///     The total capacity for entities and their components.
     /// </summary>
     public int Capacity { get; private set; }
+    
+    /// <summary>
+    /// The higest active entity id, used for trimming the <see cref="EntityInfo"/>
+    /// </summary>
+    public int HighestEntityId { get; private set; }
 
     /// <summary>
     ///     All registered <see cref="Archetypes" /> in this world.
     ///     Should not be modified.
     /// </summary>
     public PooledList<Archetype> Archetypes { get; }
+    
+    /// <summary>
+    /// A lookup array for instant acess to a certain entities information.
+    /// </summary>
+    public PooledDictionary<int, EntityInfo> EntityInfo { get; }
 
     /// <summary>
     ///     Recycled entity ids.
@@ -156,10 +233,10 @@ public partial class World
     public static World Create()
     {
         var worldSize = Worlds.Count;
-        if (worldSize >= byte.MaxValue)
+        if (worldSize >= int.MaxValue)
             throw new Exception("Can not create world, there can only be 255 existing worlds.");
 
-        var world = new World((byte)worldSize);
+        var world = new World(worldSize);
         Worlds.Add(world);
 
         return world;
@@ -176,7 +253,7 @@ public partial class World
         world.Size = 0;
         world.RecycledIds.Clear();
         world.Archetypes.Clear();
-        world.EntityToArchetype.Clear();
+        world.EntityInfo.Clear();
         world.GroupToArchetype.Clear();
     }
 
@@ -192,7 +269,7 @@ public partial class World
         archetype.Reserve(amount);
 
         var requiredCapacity = Capacity + amount;
-        EntityToArchetype.EnsureCapacity(requiredCapacity);
+        EntityInfo.EnsureCapacity(requiredCapacity);
         Capacity = requiredCapacity;
     }
 
@@ -210,7 +287,7 @@ public partial class World
         var id = recycle ? recycledId : Size;
 
         // Create new entity and put it to the back of the array
-        var entity = new Entity(id, Id, 0);
+        var entity = new Entity(id, Id);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(types);
@@ -220,12 +297,12 @@ public partial class World
         if (createdChunk)
         {
             Capacity += archetype.EntitiesPerChunk;
-            EntityToArchetype.EnsureCapacity(Capacity);
+            EntityInfo.EnsureCapacity(Capacity);
         }
 
         // Map
-        EntityToArchetype[id] = archetype;
-
+        EntityInfo.Add(id, new EntityInfo{ Version = 0, Archetype = archetype, ChunkIndex = 0});
+        
         Size++;
         return entity;
     }
@@ -240,17 +317,21 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move(in Entity entity, Archetype from, Archetype to)
     {
-        
         from.Move(in entity, to, out var created, out var destroyed);
-        EntityToArchetype[entity.EntityId] = to;
         
+        // Update mapping
+        var entityInfo = EntityInfo[entity.Id];
+        entityInfo.Archetype = to;
+        EntityInfo[entity.Id] = entityInfo;
+        
+        // Calculate the entity difference between the moved archetypes to allocate more space accordingly. 
         var difference = 0;
         if (created) difference += to.EntitiesPerChunk;
         if (destroyed) difference -= from.EntitiesPerChunk;
         Capacity += difference;
         
-        if (difference >= 0) EntityToArchetype.EnsureCapacity(Capacity);
-        else EntityToArchetype.TrimExcess(Capacity);
+        if (difference >= 0) EntityInfo.EnsureCapacity(Capacity);
+        else EntityInfo.TrimExcess(Capacity);
     }
     
     /// <summary>
@@ -266,14 +347,14 @@ public partial class World
         var destroyedChunk = archetype.Remove(in entity);
 
         // Recycle id && Remove mapping
-        RecycledIds.Enqueue(entity.EntityId);
-        EntityToArchetype.Remove(entity.EntityId);
+        RecycledIds.Enqueue(entity.Id);
+        EntityInfo.Remove(entity.Id);
 
         // Resizing and releasing memory 
         if (destroyedChunk)
         {
-            EntityToArchetype.TrimExcess();
-            Capacity = EntityToArchetype.Count;
+            Capacity -= archetype.EntitiesPerChunk;
+            EntityInfo.TrimExcess(Capacity);
         }
 
         Size--;
@@ -365,11 +446,6 @@ public partial class World
     ///     A map which assigns a archetype to each group for fast acess.
     /// </summary>
     internal PooledDictionary<int, Archetype> GroupToArchetype { get; set; }
-    
-    /// <summary>
-    ///     A map which maps each entity to its archetype for fast acess of its components
-    /// </summary>
-    internal PooledDictionary<int, Archetype> EntityToArchetype { get; set; }
 
     /// <summary>
     ///     Returns a <see cref="Archetype"/> by its structure represented as a type array.
@@ -416,7 +492,7 @@ public partial class World
 
         // Archetypes always allocate one single chunk upon construction
         Capacity += archetype.EntitiesPerChunk; 
-        EntityToArchetype.EnsureCapacity(Capacity);
+        EntityInfo.EnsureCapacity(Capacity);
         
         return archetype;
     }
@@ -614,7 +690,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T cmp = default)
     {
-        var archetype = EntityToArchetype[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
         archetype.Set(in entity, in cmp);
     }
     
@@ -627,7 +703,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(in Entity entity)
     {  
-        var archetype = EntityToArchetype[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
         return archetype.Has<T>();
     }
     
@@ -640,7 +716,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(in Entity entity)
     {
-        var archetype = EntityToArchetype[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
         return ref archetype.Get<T>(in entity);
     }
     
@@ -658,7 +734,7 @@ public partial class World
         component = default;
         if (!Has<T>(in entity)) return false;
 
-        var archetype = EntityToArchetype[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
         component = archetype.Get<T>(entity);
         return true;
     }
@@ -679,7 +755,19 @@ public partial class World
     public bool IsAlive(in Entity entity)
     {
         var world = Worlds[entity.WorldId];
-        return world.EntityToArchetype.ContainsKey(entity.EntityId);
+        return entity.Id < world.EntityInfo.Count && world.EntityInfo[entity.Id].Archetype != null;
+    }
+    
+    /// <summary>
+    ///     Returns true if the passed entity is alive.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns>True if the entity is alive in its world.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public short Version(in Entity entity)
+    {
+        var world = Worlds[entity.WorldId];
+        return world.EntityInfo[entity.Id].Version;
     }
     
     /// <summary>
@@ -691,7 +779,7 @@ public partial class World
     public Archetype GetArchetype(in Entity entity)
     {
         var world = Worlds[entity.WorldId];
-        return world.EntityToArchetype[entity.EntityId];
+        return world.EntityInfo[entity.Id].Archetype;
     }
 
     /// <summary>
@@ -714,7 +802,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ComponentType[] GetComponentTypes(in Entity entity)
     {
-        var archetype = EntityToArchetype[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
         return archetype.Types;
     }
 
@@ -728,13 +816,13 @@ public partial class World
     public object[] GetAllComponents(in Entity entity)
     {
         // Get archetype and chunk
-        var archetype = EntityToArchetype[entity.EntityId];
-        var chunkIndex = archetype.EntityIdToChunkIndex[entity.EntityId];
+        var archetype = EntityInfo[entity.Id].Archetype;
+        var chunkIndex = archetype.EntityIdToChunkIndex[entity.Id];
         var chunk = archetype.Chunks[chunkIndex];
         var components = chunk.Components;
 
         // Loop over components, collect and returns them
-        var entityIndex = chunk.EntityIdToIndex[entity.EntityId];
+        var entityIndex = chunk.EntityIdToIndex[entity.Id];
         var cmps = new object[components.Length];
 
         for (var index = 0; index < components.Length; index++)
@@ -762,7 +850,7 @@ public partial class World{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity)
     {
-        var oldArchetype = EntityToArchetype[entity.EntityId];
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
@@ -783,7 +871,7 @@ public partial class World{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in Entity entity, IList<ComponentType> components)
     {
-        var oldArchetype = EntityToArchetype[entity.EntityId];
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length+components.Count];
@@ -811,7 +899,7 @@ public partial class World{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T cmp)
     {  
-        var oldArchetype = EntityToArchetype[entity.EntityId];
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length+1];
@@ -834,7 +922,7 @@ public partial class World{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     { 
-        var oldArchetype = EntityToArchetype[entity.EntityId];
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length];
@@ -857,7 +945,7 @@ public partial class World{
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(in Entity entity, IList<ComponentType> types)
     { 
-        var oldArchetype = EntityToArchetype[entity.EntityId];
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for. 
         Span<int> ids = stackalloc int[oldArchetype.Types.Length];

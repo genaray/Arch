@@ -8,6 +8,8 @@ public class LookupArray<T>
     private int _bucketSize;
     private T[][] _bucketArray;
 
+    public int Count => _bucketArray.Length * _bucketSize;
+
     public LookupArray(int bucketSize, int capacity = 64)
     {
         _bucketSize = bucketSize;
@@ -30,9 +32,20 @@ public class LookupArray<T>
             _bucketArray[i] = new T[_bucketSize];
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess(int newCapacity)
+    {
+        var length = _bucketArray.Length;
+        var buckets = (int)Math.Ceiling((float)newCapacity / _bucketSize);
+        Array.Resize(ref _bucketArray, buckets);
+
+        for (var i = length; i < _bucketArray.Length; i++)
+            _bucketArray[i] = new T[_bucketSize];
+    }
+    
     public ref T this[int i]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _bucketArray[(int)Math.Floor((float)i / _bucketSize)][i % _bucketSize];
+        get => ref _bucketArray[((int)Math.Floor((float)i / _bucketSize))][i % _bucketSize];
     }
 }

@@ -61,7 +61,7 @@ public void Set<{generics}>(in int index, {parameters})
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Set<{generics}>(in Entity entity, {parameters})
 {{
-    var entityIndex = EntityIdToIndex[entity.EntityId];
+    var entityIndex = EntityIdToIndex[entity.Id];
     {arrays}
     {sets}
 }}
@@ -89,7 +89,7 @@ public void Set<{generics}>(in Entity entity, {parameters})
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Set<{generics}>(in Entity entity, {parameters})
 {{
-    var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+    var chunkIndex = EntityIdToChunkIndex[entity.Id];
     ref var chunk = ref Chunks[chunkIndex];
     chunk.Set<{generics}>(in entity, {insertParameters});
 }}
@@ -117,7 +117,7 @@ public void Set<{generics}>(in Entity entity, {parameters})
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Set<{generics}>(in Entity entity, {parameters})
 {{
-    var archetype = EntityToArchetype[entity.EntityId];
+    var archetype = EntityInfo[entity.Id].Archetype;
     archetype.Set<{generics}>(in entity, {insertParams});
 }}
 ";

@@ -33,7 +33,7 @@ public static class StructuralChangesExtensions
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Add<{generics}>(in Entity entity, {parameters})
 {{
-    var oldArchetype = EntityToArchetype[entity.EntityId];
+    var oldArchetype = EntityInfo[entity.Id].Archetype;
 
     // Create a stack array with all component we now search an archetype for. 
     Span<int> ids = stackalloc int[oldArchetype.Types.Length + {amount+1}];
@@ -77,7 +77,7 @@ public void Add<{generics}>(in Entity entity, {parameters})
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Remove<{generics}>(in Entity entity)
 {{
-    var oldArchetype = EntityToArchetype[entity.EntityId];
+    var oldArchetype = EntityInfo[entity.Id].Archetype;
 
     // Create a stack array with all component we now search an archetype for. 
     Span<int> ids = stackalloc int[oldArchetype.Types.Length];

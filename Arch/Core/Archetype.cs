@@ -108,7 +108,7 @@ public sealed unsafe partial class Archetype
         if (lastChunk.Size != lastChunk.Capacity)
         {
             lastChunk.Add(in entity);
-            EntityIdToChunkIndex[entity.EntityId] = Size-1;
+            EntityIdToChunkIndex[entity.Id] = Size-1;
 
             if (lastChunk.Size == lastChunk.Capacity && Size < Capacity) Size++; 
             return false;
@@ -122,7 +122,7 @@ public sealed unsafe partial class Archetype
         EnsureOrTrimCapacity(Size + 1);
 
         Chunks[Size] = newChunk;
-        EntityIdToChunkIndex[entity.EntityId] = Size;
+        EntityIdToChunkIndex[entity.Id] = Size;
 
         // Add chunk & map entity
         Capacity++;
@@ -138,16 +138,16 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(in Entity entity)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        var chunkIndex = EntityIdToChunkIndex[entity.Id];
         ref var chunk = ref Chunks[chunkIndex];
 
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
-        var index = chunk.EntityIdToIndex[entity.EntityId];
+        var index = chunk.EntityIdToIndex[entity.Id];
         var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(index, ref LastChunk);
         
         // Update the mapping of the moved entity and removed the removed entity. 
         EntityIdToChunkIndex[movedEntityId] = chunkIndex;
-        EntityIdToChunkIndex.Remove(entity.EntityId);
+        EntityIdToChunkIndex.Remove(entity.Id);
 
         // Trim when last chunk is now empty and we havent reached the last chunk yet
         if (LastChunk.Size != 0 || Size <= 1) return false;
@@ -167,7 +167,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T cmp)
     { 
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        var chunkIndex = EntityIdToChunkIndex[entity.Id];
         ref var chunk = ref Chunks[chunkIndex];
         chunk.Set(in entity, in cmp);
     }
@@ -193,7 +193,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(in Entity entity)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        var chunkIndex = EntityIdToChunkIndex[entity.Id];
         ref var chunk = ref Chunks[chunkIndex];
         return ref chunk.Get<T>(in entity);
     }
@@ -206,7 +206,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Chunk GetChunk(in Entity entity)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+        var chunkIndex = EntityIdToChunkIndex[entity.Id];
         return ref Chunks[chunkIndex];
     }
 
@@ -352,14 +352,14 @@ public sealed partial class Archetype
     {
         created = toArchetype.Add(in entity);
         
-        var oldChunkIndex = EntityIdToChunkIndex[entity.EntityId];
-        var newChunkIndex = toArchetype.EntityIdToChunkIndex[entity.EntityId];
+        var oldChunkIndex = EntityIdToChunkIndex[entity.Id];
+        var newChunkIndex = toArchetype.EntityIdToChunkIndex[entity.Id];
 
         ref var oldChunk = ref Chunks[oldChunkIndex];
         ref var newChunk = ref toArchetype.Chunks[newChunkIndex];
 
-        var oldIndex = oldChunk.EntityIdToIndex[entity.EntityId];
-        var newIndex = newChunk.EntityIdToIndex[entity.EntityId];
+        var oldIndex = oldChunk.EntityIdToIndex[entity.Id];
+        var newIndex = newChunk.EntityIdToIndex[entity.Id];
         oldChunk.CopyToDifferent(oldIndex, ref newChunk, newIndex);
         
         destroyed = Remove(in entity);

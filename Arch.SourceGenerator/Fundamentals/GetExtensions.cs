@@ -118,7 +118,7 @@ public References<{generics}> Get<{generics}>(in int index)
 [Pure]
 public References<{generics}> Get<{generics}>(in Entity entity)
 {{
-    var entityIndex = EntityIdToIndex[entity.EntityId];
+    var entityIndex = EntityIdToIndex[entity.Id];
     {getArrays}
     {gets}
     return new References<{generics}>({inParams});
@@ -144,7 +144,7 @@ public References<{generics}> Get<{generics}>(in Entity entity)
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public References<{generics}> Get<{generics}>(in Entity entity)
 {{
-    var chunkIndex = EntityIdToChunkIndex[entity.EntityId];
+    var chunkIndex = EntityIdToChunkIndex[entity.Id];
     ref var chunk = ref Chunks[chunkIndex];
     return chunk.Get<{generics}>(in entity);
 }}
@@ -169,7 +169,7 @@ public References<{generics}> Get<{generics}>(in Entity entity)
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public References<{generics}> Get<{generics}>(in Entity entity)
 {{
-    var archetype = EntityToArchetype[entity.EntityId];
+    var archetype = EntityInfo[entity.Id].Archetype;
     return archetype.Get<{generics}>(in entity);
 }}
 ";

@@ -20,11 +20,11 @@ public partial class CommandBufferTest
         
         var mySet = new SparseSet();
         
-        var first = mySet.Create(new Entity(0, 0, 0));
+        var first = mySet.Create(new Entity(0, 0));
         mySet.Set(first, new Transform{ X = 10, Y = 10});
         var transform = mySet.Get<Transform>(first);
         
-        var second = mySet.Create(new Entity(0, 0, 0));
+        var second = mySet.Create(new Entity(0, 0));
         mySet.Set(second, new Rotation{ X = 10, Y = 10});
         var rotation = mySet.Get<Rotation>(second);
         

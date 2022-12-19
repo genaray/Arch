@@ -96,7 +96,7 @@ public bool Has<{generics}>()
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public bool Has<{generics}>(in Entity entity)
 {{
-    var archetype = EntityToArchetype[entity.EntityId];
+    var archetype = EntityInfo[entity.Id].Archetype;
     return archetype.Has<{generics}>();
 }}
 ";

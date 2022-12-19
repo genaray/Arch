@@ -66,7 +66,7 @@ public partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in Entity entity)
     {
-        EntityIdToIndex[entity.EntityId] = Size;
+        EntityIdToIndex[entity.Id] = Size;
         Entities[Size] = entity;
         Size++;
     }
@@ -94,7 +94,7 @@ public partial struct Chunk
     public void Set<T>(in Entity entity, in T cmp)
     { 
         var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[entity.EntityId];
+        var entityIndex = EntityIdToIndex[entity.Id];
         array[entityIndex] = cmp;
     } 
 
@@ -120,7 +120,7 @@ public partial struct Chunk
     [Pure]
     public bool Has(in Entity entity)
     {
-        return EntityIdToIndex.ContainsKey(entity.EntityId);
+        return EntityIdToIndex.ContainsKey(entity.Id);
     }
     
     /// <summary>
@@ -149,7 +149,7 @@ public partial struct Chunk
     public ref T Get<T>(in Entity entity)
     {
         var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[entity.EntityId];
+        var entityIndex = EntityIdToIndex[entity.Id];
         return ref array[entityIndex];
     } 
 
@@ -162,13 +162,13 @@ public partial struct Chunk
     public void Remove(in Entity entity)
     {
         // Current entity
-        var entityId = entity.EntityId;
+        var entityId = entity.Id;
         var index = EntityIdToIndex[entityId];
 
         // Last entity in archetype. 
         var lastIndex = Size - 1;
         var lastEntity = Entities[lastIndex];
-        var lastEntityId = lastEntity.EntityId;
+        var lastEntityId = lastEntity.Id;
 
         // Copy last entity to replace the removed one
         Entities[index] = lastEntity;
@@ -416,13 +416,13 @@ public partial struct Chunk
         var lastEntity = chunk.Entities[lastIndex];
 
         // Remove last entity from the other chunk, decrease size 
-        chunk.EntityIdToIndex.Remove(lastEntity.EntityId);
+        chunk.EntityIdToIndex.Remove(lastEntity.Id);
         chunk.Size--;
 
         // Replace index entity with the last entity from the other chunk
-        var replacedEntityId = Entities[index].EntityId;
+        var replacedEntityId = Entities[index].Id;
         Entities[index] = lastEntity;
-        EntityIdToIndex[lastEntity.EntityId] = index;
+        EntityIdToIndex[lastEntity.Id] = index;
 
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
@@ -434,6 +434,6 @@ public partial struct Chunk
         
         // Remove replaced entity accordingly 
         EntityIdToIndex.Remove(replacedEntityId);
-        return lastEntity.EntityId;
+        return lastEntity.Id;
     }
 }

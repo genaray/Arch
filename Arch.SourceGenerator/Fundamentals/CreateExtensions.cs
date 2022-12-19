@@ -32,7 +32,7 @@ public Entity Create<{generics}>({parameters})
     var id = recycle ? recycledId : Size;
 
     // Create new entity and put it to the back of the array
-    var entity = new Entity(id, Id, 0);
+    var entity = new Entity(id, Id);
 
     // Add to archetype & mapping
     var archetype = GetOrCreate(types);
@@ -43,13 +43,12 @@ public Entity Create<{generics}>({parameters})
     // Resize map & Array to fit all potential new entities
     if (createdChunk)
     {{
-        var requiredCapacity = Capacity + archetype.EntitiesPerChunk;
-        EntityToArchetype.EnsureCapacity(requiredCapacity);
-        Capacity = requiredCapacity;
+        Capacity += archetype.EntitiesPerChunk;
+        EntityInfo.EnsureCapacity(Capacity);
     }}
 
     // Map
-    EntityToArchetype[id] = archetype;
+    EntityInfo[id] = new EntityInfo{{ Version = 0, Archetype = archetype, ChunkIndex = 0}};
 
     Size++;
     return entity;

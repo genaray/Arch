@@ -6,6 +6,9 @@ namespace Arch.Core.Extensions;
 
 public static partial class EntityExtensions
 {
+
+#if !PURE_ECS
+
     /// <summary>
     ///     Returns the <see cref="Archetype" /> in which the <see cref="Entity" /> and its components are stored in.
     /// </summary>
@@ -65,6 +68,18 @@ public static partial class EntityExtensions
     {
         var world = World.Worlds[entity.WorldId];
         return world.IsAlive(in entity);
+    }
+    
+    /// <summary>
+    ///     Returns true if the passed entity is alive.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns>True if the entity is alive in its world.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static short Version(this in Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Version(in entity);
     }
 
     /// <summary>
@@ -148,4 +163,6 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.Remove<T>(in entity);
     }
+    
+#endif
 }
