@@ -23,113 +23,23 @@ namespace Arch.Core;
 /// <summary>
 ///     Represents an entity in our world.
 /// </summary>
-public readonly struct Entity : IEquatable<Entity>
+[SkipLocalsInit]
+public readonly record struct Entity(int Id)
 {
-    // The id of this entity in the world, not in the archetype
-    public readonly int Id;
-    public static readonly Entity Null = new(-1, 0);
+    public static readonly Entity Null = new(-1);
+};
 
-    internal Entity(int id, int worldId)
-    {
-        Id = id;
-    }
-
-    public bool Equals(Entity other)
-    {
-        return Id == other.Id;
-    }
-
-    public override bool Equals(object obj)
-    {
-        return obj is Entity other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            // Overflow is fine, just wrap
-            var hash = 17;
-            hash = hash * 23 + Id;
-            return hash;
-        }
-    }
-
-    public static bool operator ==(Entity left, Entity right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(Entity left, Entity right)
-    {
-        return !left.Equals(right);
-    }
-
-    public override string ToString()
-    {
-        return $"{nameof(Id)}: {Id}";
-    }
-}
-
-#else 
+#else
 
 /// <summary>
 ///     Represents an entity in our world.
 /// </summary>
-public readonly struct Entity : IEquatable<Entity>
+[SkipLocalsInit]
+public readonly record struct Entity(int Id, int WorldId)
 {
-    // The id of this entity in the world, not in the archetype
-    public readonly int Id;
-    public readonly int WorldId;
-    
-    /// <summary>
-    /// A null entity. 
-    /// </summary>
     public static readonly Entity Null = new(-1, 0);
+};
 
-    internal Entity(int id, int worldId)
-    {
-        Id = id;
-        WorldId = worldId;
-    }
-
-    public bool Equals(Entity other)
-    {
-        return Id == other.Id && WorldId == other.WorldId;
-    }
-
-    public override bool Equals(object obj)
-    {
-        return obj is Entity other && Equals(other);
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            // Overflow is fine, just wrap
-            var hash = 17;
-            hash = hash * 23 + Id;
-            hash = hash * 23 + WorldId;
-            return hash;
-        }
-    }
-
-    public static bool operator ==(Entity left, Entity right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(Entity left, Entity right)
-    {
-        return !left.Equals(right);
-    }
-
-    public override string ToString()
-    {
-        return $"{nameof(Id)}: {Id}, {nameof(WorldId)}: {WorldId}";
-    }
-}
 #endif
 
 
