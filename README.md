@@ -56,7 +56,7 @@ public class Game {
   * [Entity](#entity)
   * [Component](#component)
   * [System aka. Query](#system-aka-query)
-  * [Outlook](#outlook)
+  * [More Features and Outlook](#more-features-and-outlook)
 - [Performance](#performance)
   * [Benchmark](#benchmark)
 - [Contributing](#contributing)
@@ -164,7 +164,7 @@ The `world.Query` method than smartly searches for entities having both a `Posit
 Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If thats set, it will ignore `All`, `Any` and `None` and only target entities with a exactly defined set of components. Its also important to know that there are multiple different overloads to perform such a query.
 > The less you query in terms of components and the size of components... the faster the query is !
 
-## More features & Outlook
+## More features and Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
 However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
