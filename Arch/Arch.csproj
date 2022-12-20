@@ -28,7 +28,7 @@
         <LangVersion>11</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Copyright>Apache2.0</Copyright>
-        <PackageLicenseUrl>https://github.com/genaray/Arch/blob/master/LICENSE.MD</PackageLicenseUrl>
+        <PackageLicenseUrl></PackageLicenseUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
