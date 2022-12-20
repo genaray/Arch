@@ -33,7 +33,7 @@ public class Game {
     public static void Main(string[] args) {
         
         var world = World.Create();
-        var query = new QueryDescription{ All = { typeof(Position), typeof(Velocity) } };  // Query all entities with Position AND Velocity components
+        var query = new QueryDescription{ All = new ComponentType[]{ typeof(Position), typeof(Velocity) } };  // Query all entities with Position AND Velocity components
 
         // Create entities
         for (var index = 0; index < 1000; index++) 
@@ -101,7 +101,7 @@ var otherEntity = world.Create<Transform, Collider, PowerUp>(... optional);
 
 or
 
-var archetype = new []{ typeof(Position), typeof(Velocity), ... };
+var archetype = new ComponentType[]{ typeof(Position), typeof(Velocity), ... };
 var entity = world.Create(archetype);
 
 world.Destroy(in entity);
@@ -141,9 +141,9 @@ This is performed by using the world ( remember, it manages your created entitie
 ```csharp
 // Define a description of which entities you want to query
 var query = new QueryDescription {
-    All = new []{ typeof(Position), typeof(Velocity) },   // Should have all specified components
-    Any = new []{ typeof(Player), typeof(Projectile) },   // Should have any of those
-    None = new []{ typeof(AI) }                           // Should have none of those
+    All = new ComponentType[]{ typeof(Position), typeof(Velocity) },   // Should have all specified components
+    Any = new ComponentType[]{ typeof(Player), typeof(Projectile) },   // Should have any of those
+    None = new ComponentType[]{ typeof(AI) }                           // Should have none of those
 };
 
 // Execute the query
@@ -164,7 +164,7 @@ The `world.Query` method than smartly searches for entities having both a `Posit
 Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If thats set, it will ignore `All`, `Any` and `None` and only target entities with a exactly defined set of components. Its also important to know that there are multiple different overloads to perform such a query.
 > The less you query in terms of components and the size of components... the faster the query is !
 
-## Outlook
+## More features & Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
 However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
@@ -177,6 +177,7 @@ Theres more to explore, for example...
 - Parallel / Multithreaded Queries
 - Enumerators
 - CommandBuffers
+- Pure ECS
 - More api 
 
 
@@ -198,23 +199,23 @@ public struct Velocity { float x; float y; }
 
 The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
 
-|            Method |  Amount |          Mean |         Error |      StdDev | Allocated |
-|------------------ |-------- |--------------:|--------------:|------------:|----------:|
-|             Query |   10000 |     20.648 us |    16.4985 us |   0.9043 us |         - |
-|       EntityQuery |   10000 |     17.791 us |     1.1502 us |   0.0630 us |         - |
-|       StructQuery |   10000 |      7.517 us |     5.6294 us |   0.3086 us |         - |
-| StructEntityQuery |   10000 |      7.851 us |     0.9644 us |   0.0529 us |         - |
-|   PureEntityQuery |   10000 |    513.765 us |   297.3252 us |  16.2974 us |         - |
-|             Query |  100000 |    199.354 us |     0.8275 us |   0.0454 us |         - |
-|       EntityQuery |  100000 |    200.223 us |    23.0012 us |   1.2608 us |         - |
-|       StructQuery |  100000 |     75.616 us |    46.9128 us |   2.5714 us |         - |
-| StructEntityQuery |  100000 |     79.390 us |     8.5673 us |   0.4696 us |         - |
-|   PureEntityQuery |  100000 |  5,032.846 us | 2,116.4383 us | 116.0091 us |         - |
-|             Query | 1000000 |  2,257.803 us |    52.4331 us |   2.8740 us |         - |
-|       EntityQuery | 1000000 |  2,661.399 us |    74.9702 us |   4.1094 us |         - |
-|       StructQuery | 1000000 |  1,556.662 us |   734.0822 us |  40.2375 us |         - |
-| StructEntityQuery | 1000000 |  1,746.782 us |   627.7881 us |  34.4112 us |         - |
-|   PureEntityQuery | 1000000 | 50,894.500 us | 1,944.0534 us | 106.5601 us |         - |
+|            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
+|------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
+|  WorldEntityQuery |   10000 |    147.660 us |    13.2838 us |   0.7281 us |            746 |         - |
+|             Query |   10000 |     20.159 us |     1.4188 us |   0.0778 us |            103 |         - |
+|       EntityQuery |   10000 |     17.711 us |     1.1311 us |   0.0620 us |             49 |         - |
+|       StructQuery |   10000 |      7.767 us |     0.1572 us |   0.0086 us |              7 |         - |
+| StructEntityQuery |   10000 |      7.338 us |     1.7188 us |   0.0942 us |             12 |         - |
+|  WorldEntityQuery |  100000 |  1,726.959 us | 3,058.5935 us | 167.6518 us |         11,761 |         - |
+|             Query |  100000 |    203.555 us |     4.6038 us |   0.2523 us |          2,977 |         - |
+|       EntityQuery |  100000 |    228.222 us |    17.4030 us |   0.9539 us |          2,708 |         - |
+|       StructQuery |  100000 |    115.466 us |     8.8355 us |   0.4843 us |          2,726 |         - |
+| StructEntityQuery |  100000 |     76.823 us |     2.1875 us |   0.1199 us |          2,544 |         - |
+|  WorldEntityQuery | 1000000 | 20,419.798 us | 4,491.2760 us | 246.1820 us |         90,624 |         - |
+|             Query | 1000000 |  2,679.153 us |    35.1696 us |   1.9278 us |         28,579 |         - |
+|       EntityQuery | 1000000 |  2,462.296 us |   322.4767 us |  17.6760 us |         28,113 |         - |
+|       StructQuery | 1000000 |  1,514.479 us |   296.5311 us |  16.2539 us |         29,723 |         - |
+| StructEntityQuery | 1000000 |  1,483.142 us |   329.9446 us |  18.0854 us |         31,272 |         - |
 
 # Contributing
 
