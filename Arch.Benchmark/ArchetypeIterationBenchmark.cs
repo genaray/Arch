@@ -33,12 +33,12 @@ public class ArchetypeIterationBenchmark
         for (var index = 0; index < Amount; index++)
         {
             var entity = new Entity(index, 0);
-            _globalArchetype.Add(in entity);
+            _globalArchetype.Add(in entity, out var slot);
 
             var t = new Transform();
             var r = new Rotation();
-            _globalArchetype.Set(entity, t);
-            _globalArchetype.Set(entity, r);
+            _globalArchetype.Set(ref slot, t);
+            _globalArchetype.Set(ref slot, r);
         }
     }
 

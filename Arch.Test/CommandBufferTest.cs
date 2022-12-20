@@ -69,10 +69,10 @@ public partial class CommandBufferTest
 
         var entities = new List<Entity>();
         world.GetEntities(in _queryDescription, entities);
-        Assert.AreEqual(10, entities[0].Get<Transform>().X);
-        Assert.AreEqual(10, entities[0].Get<Rotation>().W);
-        Assert.AreEqual(10, entities[1].Get<Transform>().X);
-        Assert.AreEqual(10, entities[1].Get<Rotation>().W);
+        Assert.AreEqual(10, world.Get<Transform>(entities[0]).X);
+        Assert.AreEqual(10, world.Get<Rotation>(entities[0]).W);
+        Assert.AreEqual(10, world.Get<Transform>(entities[1]).X);
+        Assert.AreEqual(10, world.Get<Rotation>(entities[1]).W);
         
         World.Destroy(world);
     }
@@ -90,8 +90,8 @@ public partial class CommandBufferTest
 
         buffer.Playback();
         
-        Assert.AreEqual(10, entity.Get<Transform>().X);
-        Assert.AreEqual(10, entity.Get<Rotation>().X);
+        Assert.AreEqual(10, world.Get<Transform>(entity).X);
+        Assert.AreEqual(10, world.Get<Rotation>(entity).X);
         
         World.Destroy(world);
     }
@@ -115,8 +115,8 @@ public partial class CommandBufferTest
         
         buffer.Playback();
         
-        Assert.AreEqual(true, entity.Has<Ai, int>());
-        Assert.AreEqual(false, secondEntity.Has<Ai, int>());
+        Assert.AreEqual(true, world.Has<Ai,int>(entity));
+        Assert.AreEqual(false, world.Has<Ai,int>(secondEntity));
         
 
         World.Destroy(world);
@@ -208,8 +208,8 @@ public partial class CommandBufferTest
         // Make sure all 10k entities have the updated components
         foreach (var entity in entities)
         {
-            Assert.AreEqual(20, entity.Get<Transform>().X);   
-            Assert.AreEqual(20, entity.Get<Rotation>().X);   
+            Assert.AreEqual(20, world.Get<Transform>(entity).X);   
+            Assert.AreEqual(20, world.Get<Rotation>(entity).X);   
         }
         
         World.Destroy(world);
@@ -240,7 +240,7 @@ public partial class CommandBufferTest
 
         // Make sure all 10k entities have the updated components
         foreach (var entity in entities)
-            Assert.AreEqual(true, entity.Has<Ai, int>());
+            Assert.AreEqual(true, world.Has<Ai,int>(entity));
         
         World.Destroy(world);
     }

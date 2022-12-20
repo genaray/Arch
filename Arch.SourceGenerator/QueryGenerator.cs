@@ -79,10 +79,8 @@ public class QueryGenerator : IIncrementalGenerator
                
                 public partial struct Chunk{{
                     {new StringBuilder().AppendChunkHases(10)}
-                    {new StringBuilder().AppendChunkIndexGets(10)}
-                    {new StringBuilder().AppendChunkGets(10)}
+                    {new StringBuilder().AppendChunkIndexGets(10)}        
                     {new StringBuilder().AppendChunkIndexSets(10)}
-                    {new StringBuilder().AppendChunkSets(10)}
                 }}
 
                 public partial class Archetype{{
@@ -101,11 +99,13 @@ public class QueryGenerator : IIncrementalGenerator
                 }}
 
                public static partial class EntityExtensions{{
+                #if !PURE_ECS
                     {new StringBuilder().AppendEntityHases(10)}
                     {new StringBuilder().AppendEntitySets(10)}
                     {new StringBuilder().AppendEntityGets(10)}
                     {new StringBuilder().AppendEntityAdds(10)}
                     {new StringBuilder().AppendEntityRemoves(10)}
+                #endif
                 }}
             ");
             

@@ -36,9 +36,9 @@ public Entity Create<{generics}>({parameters})
 
     // Add to archetype & mapping
     var archetype = GetOrCreate(types);
-    var createdChunk = archetype.Add(in entity);
+    var createdChunk = archetype.Add(in entity, out var slot);
 
-    archetype.Set<{generics}>(in entity, {inParameters});
+    archetype.Set<{generics}>(ref slot, {inParameters});
 
     // Resize map & Array to fit all potential new entities
     if (createdChunk)
@@ -48,7 +48,7 @@ public Entity Create<{generics}>({parameters})
     }}
 
     // Map
-    EntityInfo[id] = new EntityInfo{{ Version = 0, Archetype = archetype, ChunkIndex = 0}};
+    EntityInfo[id] = new EntityInfo{{ Version = 0, Archetype = archetype, Slot = slot}};
 
     Size++;
     return entity;

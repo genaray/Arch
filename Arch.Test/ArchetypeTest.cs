@@ -32,7 +32,7 @@ public class ArchetypeTest
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity);
+            archetype.Add(entity, out _);
         }
 
         Assert.AreEqual(1, archetype.Size);
@@ -54,7 +54,7 @@ public class ArchetypeTest
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity);
+            archetype.Add(entity, out _);
         }
 
         Assert.AreEqual(2, archetype.Size);
@@ -70,7 +70,7 @@ public class ArchetypeTest
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity);
+            archetype.Add(entity, out _);
         }
 
         Assert.AreEqual(10, archetype.Size);
@@ -86,17 +86,17 @@ public class ArchetypeTest
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity);
+            archetype.Add(entity, out _);
         }
 
-        archetype.Remove(new Entity(0, 0));
+        var slot = new Slot(0, 0);
+        archetype.Remove(ref slot, out _);
 
         Assert.AreEqual(2, archetype.Size);
         Assert.AreEqual(2, archetype.Capacity);
         Assert.AreEqual(entities - 50, archetype.Chunks[0].Size);
         Assert.AreEqual(49, archetype.Chunks[1].Size);
         Assert.AreEqual(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1,archetype.Chunks[0].Entities[0].Id); // Last entity from second chunk now replaced the removed entity and is in the first chunk
-        Assert.AreEqual(0, archetype.EntityIdToChunkIndex[493]); // Archetype knows that the moved entity is not in a different chunk 
     }
 
     [Test]
@@ -108,10 +108,11 @@ public class ArchetypeTest
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity);
+            archetype.Add(entity, out _);
         }
 
-        archetype.Remove(new Entity(0, 0));
+        var slot = new Slot(0, 0);
+        archetype.Remove(ref slot, out _);
 
         Assert.AreEqual(1, archetype.Size);
         Assert.AreEqual(1, archetype.Capacity);
@@ -126,19 +127,22 @@ public class ArchetypeTest
         var otherArchetype = new Archetype(_otherGroup);
 
         var entity = new Entity(1, 0);
-        archetype.Add(entity);
-        otherArchetype.Add(new Entity(2, 0));
+        var otherEntity = new Entity(2, 0);
+        archetype.Add(entity, out var entityOneSlot);
+        otherArchetype.Add(otherEntity, out var entityTwoSlot);
         
-        archetype.Set(in entity, new Transform{ X = 10, Y = 10});
-        archetype.Set(in entity, new Rotation{ X = 10, Y = 10});
-        
-        archetype.Move(in entity, otherArchetype, out var created, out var destroyed);
-        
+        archetype.Set(ref entityOneSlot, new Transform{ X = 10, Y = 10});
+        archetype.Set(ref entityOneSlot, new Rotation{ X = 10, Y = 10});
+
+        otherArchetype.Add(entity, out var newSlot);
+        archetype.CopyTo(otherArchetype, ref entityOneSlot, ref newSlot);
+        archetype.Remove(ref entityOneSlot, out var replacedEntityId);
+    
         Assert.AreEqual(0, archetype.Chunks[0].Size);
         Assert.AreEqual(2, otherArchetype.Chunks[0].Size);
-        Assert.AreEqual(10, otherArchetype.Get<Transform>(in entity).X);
-        Assert.AreEqual(10, otherArchetype.Get<Transform>(in entity).Y);
-        Assert.AreEqual(10, otherArchetype.Get<Rotation>(in entity).X);
-        Assert.AreEqual(10, otherArchetype.Get<Rotation>(in entity).Y);
+        Assert.AreEqual(10, otherArchetype.Get<Transform>(ref newSlot).X);
+        Assert.AreEqual(10, otherArchetype.Get<Transform>(ref newSlot).Y);
+        Assert.AreEqual(10, otherArchetype.Get<Rotation>(ref newSlot).X);
+        Assert.AreEqual(10, otherArchetype.Get<Rotation>(ref newSlot).Y);
     }
 }

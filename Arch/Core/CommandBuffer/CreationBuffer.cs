@@ -223,8 +223,9 @@ public struct CreationBuffer
             for (var i = 0; i < commandBufferArchetype.Size; i++)
             {
                 var entity = World.Create(commandBufferArchetype.Types);
-                ref var chunk = ref archetype.GetChunk(in entity);
-                var entityIndex = chunk.EntityIdToIndex[entity.Id];
+                var entityInfo = World.EntityInfo[entity.Id];
+                ref var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
+                var entityIndex = entityInfo.Slot.Index;
                 
                 // Move/Copy components to the new chunk
                 for (var j = 0; j < components.Length; j++)

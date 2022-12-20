@@ -44,7 +44,7 @@ public class EnumeratorTest
         foreach (ref var chunk in archetype)
             counter++;
 
-        Assert.AreEqual(10000 /archetype.CalculateEntitiesPerChunk(_group), counter);
+        Assert.AreEqual((int)Math.Ceiling((float)10000/archetype.CalculateEntitiesPerChunk(_group)), counter);
     }
 
     [Test]
@@ -66,6 +66,8 @@ public class EnumeratorTest
         foreach (ref var chunk in query.GetChunkIterator())
             counter++;
 
-        Assert.AreEqual(40, counter);
+        var archetype1ChunkCount = _world.Archetypes[0].Size;
+        var archetype2ChunkCount = _world.Archetypes[1].Size;
+        Assert.AreEqual(archetype1ChunkCount+archetype2ChunkCount, counter);
     }
 }

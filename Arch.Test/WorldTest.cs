@@ -7,6 +7,12 @@ namespace Arch.Test;
 [TestFixture]
 public partial class WorldTest
 {
+    
+    private World _world;
+
+    private readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    
     [SetUp]
     public void Setup()
     {
@@ -25,11 +31,6 @@ public partial class WorldTest
         World.Destroy(_world);
     }
 
-    private World _world;
-
-    private readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-
     [Test]
     public void Create()
     {
@@ -37,7 +38,7 @@ public partial class WorldTest
         var entity = _world.Create(_entityGroup);
 
         Assert.AreEqual(size + 1, _world.Size);
-        Assert.True(entity.IsAlive());
+        Assert.True(_world.IsAlive(in entity));
     }
 
     [Test]
@@ -50,7 +51,7 @@ public partial class WorldTest
 
         Assert.AreEqual(worldSizeBefore, _world.Size);
         Assert.Less(worldSizeBefore, worldSizeAfter);
-        Assert.False(entity.IsAlive());
+        Assert.False(_world.IsAlive(in entity));
     }
     
     [Test]
@@ -129,7 +130,7 @@ public partial class WorldTest
         var entity1 = _world.Create(archTypes1);
         var entity2 = _world.Create(archTypes2);
         
-        Assert.AreEqual(entity1.GetArchetype(), entity2.GetArchetype());
+        Assert.AreEqual(_world.GetArchetype(in entity1), _world.GetArchetype(in entity2));
     }
 
     [Test]
@@ -183,9 +184,9 @@ public partial class WorldTest
         _world.Remove<Transform>(in entity);
         _world.Remove<Transform>(in entity2);
         
-        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
-        Assert.AreEqual(1, entity.GetArchetype().Size);
-        Assert.AreEqual(2, entity.GetArchetype().Chunks[0].Size);
+        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
+        Assert.AreEqual(1,_world.GetArchetype(in entity).Size);
+        Assert.AreEqual(2,_world.GetArchetype(in entity).Chunks[0].Size);
     }
     
     [Test]
@@ -197,8 +198,8 @@ public partial class WorldTest
         _world.Add<Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
-        Assert.AreEqual(entity.GetArchetype(), arch);
+        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
+        Assert.AreEqual(_world.GetArchetype(in entity), arch);
     }
 }
 
@@ -215,7 +216,7 @@ public partial class WorldTest
         var entity = _world.Create(new Transform(), new Rotation());
 
         Assert.AreEqual(size + 1, _world.Size);
-        Assert.True(entity.IsAlive());
+        Assert.True(_world.IsAlive(in entity));
     }
     
     [Test]
@@ -242,9 +243,9 @@ public partial class WorldTest
         _world.Remove<Rotation, Ai>(in entity);
         _world.Remove<Rotation, Ai>(in entity2);
         
-        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
-        Assert.AreEqual(1, entity.GetArchetype().Size);
-        Assert.AreEqual(2, entity.GetArchetype().Chunks[0].Size);
+        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
+        Assert.AreEqual(1, _world.GetArchetype(in entity).Size);
+        Assert.AreEqual(2, _world.GetArchetype(in entity).Chunks[0].Size);
     }
     
     [Test]
@@ -256,7 +257,7 @@ public partial class WorldTest
         _world.Add<Rotation, Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.AreEqual(entity.GetArchetype(), entity2.GetArchetype());
-        Assert.AreEqual(entity.GetArchetype(), arch);
+        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
+        Assert.AreEqual(_world.GetArchetype(in entity), arch);
     }
 }

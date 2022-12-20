@@ -15,14 +15,14 @@ namespace Arch.Benchmark;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class QueryBenchmark
 {
-    private readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
 
     [Params(10000, 100000, 1000000)] public int Amount;
 
     private JobScheduler.JobScheduler _jobScheduler;
-    private QueryDescription _queryDescription;
+    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
+    private QueryDescription _queryDescription = new(){ All = _group };
 
-    private World _world;
+    private static World _world;
 
     [GlobalSetup]
     public void Setup()
@@ -35,11 +35,8 @@ public class QueryBenchmark
         for (var index = 0; index < Amount; index++)
         {
             var entity = _world.Create(_group);
-            entity.Set(new Transform { X = 0, Y = 0 });
-            entity.Set(new Velocity { X = 1, Y = 1 });
+            _world.Set(in entity, new Transform { X = 0, Y = 0 }, new Velocity { X = 1, Y = 1 });
         }
-
-        _queryDescription = new QueryDescription { All = _group };
     }
 
     [GlobalCleanup]
@@ -48,6 +45,34 @@ public class QueryBenchmark
         //_jobScheduler.Dispose();
     }
 
+    [Benchmark]
+    public void WorldEntityQuery()
+    {
+        _world.Query(in _queryDescription, static (in Entity entity) =>
+        {
+            var refs = _world.Get<Transform, Velocity>(in entity);
+
+            refs.t0.X += refs.t1.X;
+            refs.t0.Y += refs.t1.Y;
+        });
+    }
+    
+#if !PURE_ECS
+    
+    [Benchmark]
+    public void EntityExtensionQuery()
+    {
+        _world.Query(in _queryDescription, (in Entity entity) =>{  
+ 
+            var refs = entity.Get<Transform, Velocity>();
+            
+            refs.t0.X += refs.t1.X;
+            refs.t0.Y += refs.t1.Y;
+        });
+    }
+    
+#endif
+    
     [Benchmark]
     public void Query()
     {
@@ -81,20 +106,7 @@ public class QueryBenchmark
         var vel = new VelocityEntityUpdate();
         _world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
-
-    [Benchmark]
-    public void PureEntityQuery()
-    {
-        _world.Query(in _queryDescription, (in Entity entity) =>
-        {
-            ref var t = ref entity.Get<Transform>();
-            ref var v = ref entity.Get<Velocity>();
-
-            t.X += v.X;
-            t.Y += v.Y;
-        });
-    }
-
+    
     public struct VelocityUpdate : IForEach<Transform, Velocity>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

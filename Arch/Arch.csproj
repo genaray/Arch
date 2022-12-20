@@ -22,8 +22,18 @@
         <RepositoryType>git</RepositoryType>
         <IsPackable>true</IsPackable>
 
-        <LangVersion>preview</LangVersion>
+        <LangVersion>11</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Copyright>Apache2.0</Copyright>
+        <PackageLicenseUrl>https://github.com/genaray/Arch/blob/master/LICENSE.MD</PackageLicenseUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACE;</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

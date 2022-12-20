@@ -47,8 +47,7 @@ public class ChunkTest
 
         // Get last one, remove first one
         var last = _chunk.Entities[_chunk.Size - 1];
-        var first = new Entity(0, 0);
-        _chunk.Remove(in first);
+        _chunk.Remove(0);
 
         // Check if the first one was replaced with the last one correctly 
         Assert.AreEqual(_chunk.Entities[0].Id, last.Id);
@@ -73,8 +72,7 @@ public class ChunkTest
         // Backward delete all since forward does not work while keeping the array dense
         for (var index = _chunk.Size - 1; index >= 0; index--)
         {
-            ref var toRemove = ref _chunk.Entities[index];
-            _chunk.Remove(in toRemove);
+            _chunk.Remove(index);
         }
 
         // Check if the first one was replaced with the last one correctly 
@@ -90,10 +88,10 @@ public class ChunkTest
         var newEntity = new Entity(1, 0);
         var newEntityTwo = new Entity(2, 0);
 
-        _chunk.Add(in newEntity);
+        var firstIndex = _chunk.Add(in newEntity);
         _chunk.Add(in newEntityTwo);
 
-        _chunk.Remove(in newEntity);
+        _chunk.Remove(firstIndex);
         _chunk.Add(in newEntity);
 
         // Check if the first one was replaced with the last one correctly 

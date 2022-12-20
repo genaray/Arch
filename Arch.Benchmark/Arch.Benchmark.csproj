@@ -10,6 +10,11 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <Optimize>false</Optimize>
+        <DefineConstants>TRACE;</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,7 +23,7 @@
 
     <ItemGroup>
         <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.2" />
         <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
         <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
     </ItemGroup>

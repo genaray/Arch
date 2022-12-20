@@ -83,7 +83,7 @@ public ref struct References<{generics}>
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 [Pure]
-public References<{generics}> Get<{generics}>(in int index)
+public References<{generics}> Get<{generics}>(scoped in int index)
 {{
     {getArrays}
     {gets}
@@ -93,41 +93,7 @@ public References<{generics}> Get<{generics}>(in int index)
 
         return sb.AppendLine(template);
     }
-    
-    public static StringBuilder AppendChunkGets(this StringBuilder sb, int amount)
-    {
-        for (var index = 1; index < amount; index++)
-            sb.AppendChunkGet(index);
-        
-        return sb;
-    }
-    
-    public static StringBuilder AppendChunkGet(this StringBuilder sb, int amount)
-    {
 
-        var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getArrays = new StringBuilder().GetChunkArrays(amount);
-        var inParams = new StringBuilder().InsertGenericParams(amount);
-        
-        var gets = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-            gets.AppendLine($"ref var t{index}Component = ref t{index}Array[entityIndex];");
-        
-        var template = $@"
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
-[Pure]
-public References<{generics}> Get<{generics}>(in Entity entity)
-{{
-    var entityIndex = EntityIdToIndex[entity.Id];
-    {getArrays}
-    {gets}
-    return new References<{generics}>({inParams});
-}}
-";
-
-        return sb.AppendLine(template);
-    }
-    
     public static StringBuilder AppendArchetypeGets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
@@ -142,11 +108,10 @@ public References<{generics}> Get<{generics}>(in Entity entity)
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public References<{generics}> Get<{generics}>(in Entity entity)
+internal unsafe References<{generics}> Get<{generics}>(scoped ref Slot slot)
 {{
-    var chunkIndex = EntityIdToChunkIndex[entity.Id];
-    ref var chunk = ref Chunks[chunkIndex];
-    return chunk.Get<{generics}>(in entity);
+    ref var chunk = ref GetChunk(slot.ChunkIndex);
+    return chunk.Get<{generics}>(slot.Index);
 }}
 ";
 
@@ -169,8 +134,9 @@ public References<{generics}> Get<{generics}>(in Entity entity)
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public References<{generics}> Get<{generics}>(in Entity entity)
 {{
-    var archetype = EntityInfo[entity.Id].Archetype;
-    return archetype.Get<{generics}>(in entity);
+    var entityInfo = EntityInfo[entity.Id];
+    var archetype = entityInfo.Archetype;
+    return archetype.Get<{generics}>(ref entityInfo.Slot);
 }}
 ";
 

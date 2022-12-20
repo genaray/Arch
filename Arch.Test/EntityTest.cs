@@ -4,6 +4,8 @@ using Arch.Core.Utils;
 
 namespace Arch.Test;
 
+#if !PURE_ECS
+
 [TestFixture]
 public partial class EntityTest
 {
@@ -80,3 +82,5 @@ public partial class EntityTest
         Assert.True(_entity.Has<Transform, Rotation>());
     }
 }
+
+#endif

@@ -43,8 +43,8 @@ public void Add<{generics}>(in Entity entity, {parameters})
     if (!TryGetArchetype(ids, out var newArchetype))
         newArchetype = GetOrCreate(oldArchetype.Types.Add({types}));
 
-    Move(in entity, oldArchetype, newArchetype);
-    newArchetype.Set<{generics}>(in entity, {inParameters});
+    Move(in entity, oldArchetype, newArchetype, out var newSlot);
+    newArchetype.Set<{generics}>(ref newSlot, {inParameters});
 }}
 ";
 
@@ -88,7 +88,7 @@ public void Remove<{generics}>(in Entity entity)
     if (!TryGetArchetype(ids, out var newArchetype))
         newArchetype = GetOrCreate(oldArchetype.Types.Remove({types}));
 
-    Move(in entity, oldArchetype, newArchetype);
+    Move(in entity, oldArchetype, newArchetype, out _);
 }}
 ";
 

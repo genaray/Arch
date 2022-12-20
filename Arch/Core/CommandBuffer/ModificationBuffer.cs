@@ -366,8 +366,10 @@ public struct ModificationBuffer : IDisposable
             ref readonly var id = ref wrappedEntity._index;
             
             // Get entity chunk
-            ref readonly var chunk = ref World.GetChunk(in entity);
-            var chunkIndex = chunk.EntityIdToIndex[entity.Id];
+            var entityInfo = World.EntityInfo[entity.Id];
+            var archetype = entityInfo.Archetype;
+            ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
+            var chunkIndex = entityInfo.Slot.Index;
             
             // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
             for (var i = 0; i < _sparseSet.UsedSize; i++)

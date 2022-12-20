@@ -21,12 +21,5 @@ public class Benchmark
         
         // Use : dotnet run -c Release --framework net7.0 -- --job short --filter *IterationBenchmark*
         BenchmarkSwitcher.FromAssembly(typeof(Benchmark).Assembly).Run(args, config);
-
-        /*
-        var queryB = new QueryBenchmark { Amount = 10000 };
-        queryB.Setup();
-        for(var index = 0; index < 1000000; index++)
-            queryB.StructQuery();
-        queryB.Cleanup();*/
     }
 }

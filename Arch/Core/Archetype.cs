@@ -1,12 +1,27 @@
 using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
 namespace Arch.Core;
+
+/// <summary>
+/// A entity slot inside the archetype.
+/// </summary>
+internal struct Slot
+{
+    public int Index;        // The entity index inside the chunk
+    public int ChunkIndex;   // The chunk index inside the archetype 
+    public Slot(int index, int chunkIndex)
+    {
+        Index = index;
+        ChunkIndex = chunkIndex;
+    }
+}
 
 /// <summary>
 ///     An archetype, stores all <see cref="Entity" />'s with the same set of components, tightly packed in <see cref="Chunks" />.
@@ -28,7 +43,6 @@ public sealed unsafe partial class Archetype
         ComponentIdToArrayIndex = types.ToLookupArray();
         
         // Setup arrays and mappings
-        EntityIdToChunkIndex = new PooledDictionary<int, int>(EntitiesPerChunk);
         Chunks = ArrayPool<Chunk>.Shared.Rent(1);
         Chunks[0] = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, types);
 
@@ -51,11 +65,6 @@ public sealed unsafe partial class Archetype
     /// Stored here since it reduces the amount of memory, better than every chunk having one of these. 
     /// </summary>
     public int[] ComponentIdToArrayIndex { get; }
-
-    /// <summary>
-    ///     For mapping the entity id to the chunk it is in.
-    /// </summary>
-    public PooledDictionary<int, int> EntityIdToChunkIndex { get; }
 
     /// <summary>
     ///     A array of active chunks within this archetype.
@@ -101,30 +110,30 @@ public sealed unsafe partial class Archetype
     /// <param name="entity">The entity to add to this archetype</param>
     /// <returns>True if a new chunk was created</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Add(in Entity entity)
+    internal bool Add(in Entity entity, out Slot slot)
     {
-
+        // Fill existing chunk
         ref var lastChunk = ref LastChunk;
         if (lastChunk.Size != lastChunk.Capacity)
         {
-            lastChunk.Add(in entity);
-            EntityIdToChunkIndex[entity.Id] = Size-1;
+            slot.Index = lastChunk.Add(in entity);
+            slot.ChunkIndex = Size - 1;
 
-            if (lastChunk.Size == lastChunk.Capacity && Size < Capacity) Size++; 
+            // Chunk full, use existing capacity 
+            if (lastChunk.Size == lastChunk.Capacity && Size < Capacity) Size++;
             return false;
         }
         
         // Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, Types);
-        newChunk.Add(in entity);
-
-        // Resize chunks
+        slot.Index = newChunk.Add(in entity);
+        slot.ChunkIndex = Size;
+        
+        // Resize chunks & map entity
         EnsureOrTrimCapacity(Size + 1);
-
         Chunks[Size] = newChunk;
-        EntityIdToChunkIndex[entity.Id] = Size;
 
-        // Add chunk & map entity
+        // Increase capacity
         Capacity++;
         Size++;
         return true;
@@ -136,19 +145,12 @@ public sealed unsafe partial class Archetype
     /// <param name="entity"></param>
     /// <returns>True if a chunk was destroyed</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Remove(in Entity entity)
+    internal bool Remove(ref Slot slot, out int movedEntityId)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.Id];
-        ref var chunk = ref Chunks[chunkIndex];
-
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
-        var index = chunk.EntityIdToIndex[entity.Id];
-        var movedEntityId = chunk.ReplaceIndexWithLastEntityFrom(index, ref LastChunk);
+        ref var chunk = ref Chunks[slot.ChunkIndex];
+        movedEntityId = chunk.Transfer(slot.Index, ref LastChunk);
         
-        // Update the mapping of the moved entity and removed the removed entity. 
-        EntityIdToChunkIndex[movedEntityId] = chunkIndex;
-        EntityIdToChunkIndex.Remove(entity.Id);
-
         // Trim when last chunk is now empty and we havent reached the last chunk yet
         if (LastChunk.Size != 0 || Size <= 1) return false;
         
@@ -165,11 +167,10 @@ public sealed unsafe partial class Archetype
     /// <param name="cmp">The component</param>
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T cmp)
-    { 
-        var chunkIndex = EntityIdToChunkIndex[entity.Id];
-        ref var chunk = ref Chunks[chunkIndex];
-        chunk.Set(in entity, in cmp);
+    internal void Set<T>(ref Slot slot, in T cmp)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.Set(slot.Index, in cmp);
     }
 
     /// <summary>
@@ -191,12 +192,12 @@ public sealed unsafe partial class Archetype
     /// <typeparam name="T">The type</typeparam>
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Get<T>(in Entity entity)
+    internal unsafe ref T Get<T>(scoped ref Slot slot)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.Id];
-        ref var chunk = ref Chunks[chunkIndex];
-        return ref chunk.Get<T>(in entity);
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        return ref chunk.Get<T>(in slot.Index);
     }
+
 
     /// <summary>
     /// Returns the <see cref="Chunk"/> for the passed <see cref="Entity"/> within this archetype.
@@ -204,10 +205,9 @@ public sealed unsafe partial class Archetype
     /// <param name="entity">The entity.</param>
     /// <returns>A referecene to the chunk in which the passed entity is stored in.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref Chunk GetChunk(in Entity entity)
+    public ref Chunk GetChunk(scoped in int index)
     {
-        var chunkIndex = EntityIdToChunkIndex[entity.Id];
-        return ref Chunks[chunkIndex];
+        return ref Chunks[index];
     }
 
     /// <summary>
@@ -265,9 +265,6 @@ public sealed unsafe partial class Archetype
             Array.Copy(Chunks, newChunks, Size);
             ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;
-
-            // Increase mapping
-            EntityIdToChunkIndex.EnsureCapacity(newCapacity * EntitiesPerChunk);
         }
         else if(newCapacity < Capacity)
         {
@@ -279,9 +276,6 @@ public sealed unsafe partial class Archetype
             Array.Copy(Chunks, newChunks, Size-1);
             ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;
-
-            // Decrease mapping
-            EntityIdToChunkIndex.TrimExcess(newCapacity * EntitiesPerChunk);
         }
     }
 
@@ -293,7 +287,7 @@ public sealed unsafe partial class Archetype
     /// <param name="entity"></param>
     /// <returns>True if a new chunk was created</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Reserve(in int amount)
+    internal void Reserve(in int amount)
     {
         // Put into the last partial empty chunk 
         if (Size > 0)
@@ -302,7 +296,7 @@ public sealed unsafe partial class Archetype
             ref var lastChunk = ref LastChunk;
             var freeSpots = lastChunk.Capacity - lastChunk.Size;
             var neededSpots = amount - freeSpots;
-            var neededChunks = neededSpots / EntitiesPerChunk;
+            var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
 
             // Set capacity and insert new empty chunks
             EnsureOrTrimCapacity(Capacity + neededChunks);
@@ -348,20 +342,11 @@ public sealed partial class Archetype
     /// <param name="created">If there was a new chunk created in the <see cref="toArchetype"/>.</param>
     /// <param name="destroyed">If there was a chunk destroyed in this archetype.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Move(in Entity entity, Archetype toArchetype, out bool created, out bool destroyed)
+    internal void CopyTo(Archetype to, ref Slot fromSlot, ref Slot toSlot)
     {
-        created = toArchetype.Add(in entity);
-        
-        var oldChunkIndex = EntityIdToChunkIndex[entity.Id];
-        var newChunkIndex = toArchetype.EntityIdToChunkIndex[entity.Id];
-
-        ref var oldChunk = ref Chunks[oldChunkIndex];
-        ref var newChunk = ref toArchetype.Chunks[newChunkIndex];
-
-        var oldIndex = oldChunk.EntityIdToIndex[entity.Id];
-        var newIndex = newChunk.EntityIdToIndex[entity.Id];
-        oldChunk.CopyToDifferent(oldIndex, ref newChunk, newIndex);
-        
-        destroyed = Remove(in entity);
+        // Copy items from old to new chunk 
+        ref var oldChunk = ref GetChunk(fromSlot.ChunkIndex);
+        ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
+        oldChunk.CopyToDifferent(ref newChunk, fromSlot.Index, toSlot.Index);
     }
 }

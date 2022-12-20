@@ -37,39 +37,7 @@ public void Set<{generics}>(in int index, {parameters})
 
         return sb.AppendLine(template);
     }
-    
-    public static StringBuilder AppendChunkSets(this StringBuilder sb, int amount)
-    {
-        for (var index = 1; index < amount; index++)
-            sb.AppendChunkSet(index);
-        
-        return sb;
-    }
-    
-    public static StringBuilder AppendChunkSet(this StringBuilder sb, int amount)
-    {
 
-        var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var parameters = new StringBuilder().GenericInParams(amount);
-        var arrays = new StringBuilder().GetChunkArrays(amount);
-        
-        var sets = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-            sets.AppendLine($"t{index}Array[entityIndex] = t{index}Component;");
-
-        var template = $@"
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Set<{generics}>(in Entity entity, {parameters})
-{{
-    var entityIndex = EntityIdToIndex[entity.Id];
-    {arrays}
-    {sets}
-}}
-";
-
-        return sb.AppendLine(template);
-    }
-    
     public static StringBuilder AppendArchetypeSets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
@@ -87,11 +55,10 @@ public void Set<{generics}>(in Entity entity, {parameters})
             
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Set<{generics}>(in Entity entity, {parameters})
+internal void Set<{generics}>(ref Slot slot, {parameters})
 {{
-    var chunkIndex = EntityIdToChunkIndex[entity.Id];
-    ref var chunk = ref Chunks[chunkIndex];
-    chunk.Set<{generics}>(in entity, {insertParameters});
+    ref var chunk = ref GetChunk(slot.ChunkIndex);
+    chunk.Set<{generics}>(slot.Index, {insertParameters});
 }}
 ";
 
@@ -117,8 +84,9 @@ public void Set<{generics}>(in Entity entity, {parameters})
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Set<{generics}>(in Entity entity, {parameters})
 {{
-    var archetype = EntityInfo[entity.Id].Archetype;
-    archetype.Set<{generics}>(in entity, {insertParams});
+    var entityInfo = EntityInfo[entity.Id];
+    var archetype = entityInfo.Archetype;
+    archetype.Set<{generics}>(ref entityInfo.Slot, {insertParams});
 }}
 ";
 

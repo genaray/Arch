@@ -48,9 +48,6 @@ public partial struct Chunk
 
         // Init mapping
         ComponentIdToArrayIndex = componentIdToArrayIndex;
-        EntityIdToIndex = new Dictionary<int, int>(Capacity);
-
-        // Allocate arrays and map 
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
@@ -64,11 +61,11 @@ public partial struct Chunk
     /// </summary>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(in Entity entity)
+    internal int Add(in Entity entity)
     {
-        EntityIdToIndex[entity.Id] = Size;
         Entities[Size] = entity;
         Size++;
+        return Size-1;
     }
     
     /// <summary>
@@ -83,20 +80,6 @@ public partial struct Chunk
         var array = GetSpan<T>();
         array[index] = cmp;
     }
-    
-    /// <summary>
-    ///     Sets an component into the fitting component array for an <see cref="Entity" />.
-    /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <param name="cmp">The component</param>
-    /// <typeparam name="T">The type</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T cmp)
-    { 
-        var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[entity.Id];
-        array[entityIndex] = cmp;
-    } 
 
     /// <summary>
     ///     Checks wether this chunk contains an array of the type.
@@ -110,18 +93,6 @@ public partial struct Chunk
         var id = Component<T>.ComponentType.Id;
         return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
     }
-
-    /// <summary>
-    ///     Checks wether this chunk contains an certain entity.
-    /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public bool Has(in Entity entity)
-    {
-        return EntityIdToIndex.ContainsKey(entity.Id);
-    }
     
     /// <summary>
     ///     Returns an component from the fitting component array by its index.
@@ -131,27 +102,11 @@ public partial struct Chunk
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T Get<T>(in int index)
+    public ref T Get<T>(scoped in int index)
     {
         var array = GetSpan<T>();
         return ref array[index];
-    } 
-
-    
-    /// <summary>
-    ///     Returns an component from the fitting component array for an entity
-    /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>The component</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public ref T Get<T>(in Entity entity)
-    {
-        var array = GetSpan<T>();
-        var entityIndex = EntityIdToIndex[entity.Id];
-        return ref array[entityIndex];
-    } 
+    }
 
     /// <summary>
     ///     Removes an <see cref="Entity" /> from this chunk and all its components.
@@ -159,20 +114,13 @@ public partial struct Chunk
     /// </summary>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove(in Entity entity)
+    internal void Remove(in int index)
     {
-        // Current entity
-        var entityId = entity.Id;
-        var index = EntityIdToIndex[entityId];
-
         // Last entity in archetype. 
         var lastIndex = Size - 1;
-        var lastEntity = Entities[lastIndex];
-        var lastEntityId = lastEntity.Id;
-
+      
         // Copy last entity to replace the removed one
-        Entities[index] = lastEntity;
-
+        Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
             var array = Components[i];
@@ -180,8 +128,6 @@ public partial struct Chunk
         }
 
         // Update the mapping
-        EntityIdToIndex[lastEntityId] = index;
-        EntityIdToIndex.Remove(entityId);
         Size--;
     }
 
@@ -199,11 +145,6 @@ public partial struct Chunk
     ///     A map to get the index of a component array inside <see cref="Components" />.
     /// </summary>
     public readonly int[] ComponentIdToArrayIndex { [Pure] get; }
-
-    /// <summary>
-    ///     A map used to get the array indexes of a certain <see cref="Entity" />.
-    /// </summary>
-    public readonly Dictionary<int, int> EntityIdToIndex { [Pure] get; }
 
     /// <summary>
     ///     The current size/occupation of this chunk.
@@ -372,7 +313,9 @@ public partial struct Chunk
     /// </summary>
     /// <param name="index">The entity index</param>
     /// <param name="toChunk">A similar structured chunk where the entity by its index will move to.</param>
-    public void CopyToSimilar(int index, ref Chunk toChunk, int toIndex)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal void CopyToSimilar(int index, ref Chunk toChunk, int toIndex)
     {
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
@@ -388,7 +331,9 @@ public partial struct Chunk
     /// </summary>
     /// <param name="index">The entity index</param>
     /// <param name="toChunk">A different structured chunk where the entity by its index will move to.</param>
-    public void CopyToDifferent(int index, ref Chunk toChunk, int toIndex)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal void CopyToDifferent(ref Chunk toChunk, int index, int toIndex)
     {
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
@@ -409,22 +354,14 @@ public partial struct Chunk
     /// <param name="chunk"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public int ReplaceIndexWithLastEntityFrom(int index, ref Chunk chunk)
+    internal int Transfer(int index, ref Chunk chunk)
     {
         // Get last entity
         var lastIndex = chunk.Size - 1;
         var lastEntity = chunk.Entities[lastIndex];
 
-        // Remove last entity from the other chunk, decrease size 
-        chunk.EntityIdToIndex.Remove(lastEntity.Id);
-        chunk.Size--;
-
         // Replace index entity with the last entity from the other chunk
-        var replacedEntityId = Entities[index].Id;
         Entities[index] = lastEntity;
-        EntityIdToIndex[lastEntity.Id] = index;
-
-        // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
             var sourceArray = chunk.Components[i];
@@ -432,8 +369,7 @@ public partial struct Chunk
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
         
-        // Remove replaced entity accordingly 
-        EntityIdToIndex.Remove(replacedEntityId);
+        chunk.Size--;
         return lastEntity.Id;
     }
 }
