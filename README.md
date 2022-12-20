@@ -86,7 +86,7 @@ var world = World.Create();
 World.Destroy(world);
 ```
 
-There can be up to 255 worlds in total. 
+There can be up to `2,147,483,647` possible worlds with up to `2,147,483,647` entities each. 
 
 ## Entity
 
