@@ -20,14 +20,16 @@ namespace Arch.Core;
 /// <summary>
 ///     Represents an entity in our world.
 /// </summary>
+[StructLayout(Layout.Sequential)]
 public readonly struct Entity : IEquatable<Entity>
 {
     // The id of this entity in the world, not in the archetype
     public readonly int EntityId;
     public readonly byte WorldId;
+    private readonly byte _pad;
     public readonly ushort Version;
 
-    public static Entity Null => new(-1, 0, 0);
+    public static readonly Entity Null = new(-1, 0, 0);
 
     internal Entity(int entityId, byte worldId, ushort version)
     {
