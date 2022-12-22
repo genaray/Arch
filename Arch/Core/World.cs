@@ -354,8 +354,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
+        // we need to cache the ID because it will get overrided
+        // during the next operations
+        var id = entity.Id;
+
         // Remove from archetype
-        var entityInfo = EntityInfo[entity.Id];
+        var entityInfo = EntityInfo[id];
         var archetype = entityInfo.Archetype;
         var destroyedChunk = archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
 
@@ -363,10 +367,10 @@ public partial class World
         var movedEntityInfo = EntityInfo[movedEntityId];
         movedEntityInfo.Slot = entityInfo.Slot;
         EntityInfo[movedEntityId] = movedEntityInfo;
-        
+
         // Recycle id && Remove mapping
-        RecycledIds.Enqueue(entity.Id);
-        EntityInfo.Remove(entity.Id);
+        RecycledIds.Enqueue(id);
+        EntityInfo.Remove(id);
 
         // Resizing and releasing memory 
         if (destroyedChunk)
