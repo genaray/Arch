@@ -13,11 +13,10 @@ public partial class CommandBufferTest
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _secondGroup = { typeof(Transform), typeof(Rotation), typeof(Ai), typeof(int) };
     private readonly QueryDescription _queryDescription = new(){ All = _group };
-
+    
     [Test]
     public void CommandBufferSparseSet()
     {
-        
         var mySet = new SparseSet();
         
         var first = mySet.Create(new Entity(0, 0));
@@ -31,94 +30,80 @@ public partial class CommandBufferTest
         Assert.AreEqual(10, transform.X);
         Assert.AreEqual(10, rotation.X);
     }
-    
-    [Test]
-    public void DestructionBuffer()
-    {
-        var world = World.Create();
-        var buffer = new DestructionBuffer(world, 1000);
-        for (var index = 0; index < 1000; index++)
-            world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
-        
-        Assert.AreEqual(1000, world.Size);
-        
-        world.Query(in _queryDescription, buffer.Destroy);
-        buffer.Playback();
-        
-        Assert.AreEqual(0, world.Size);
-        World.Destroy(world);
-    }
-    
-    [Test]
-    public void CreationBuffer()
-    {
-        var world = World.Create();
-        var buffer = new CreationBuffer(world);
-        
-        var entity = buffer.Create(_group);
-        buffer.Set(in entity, new Transform{ X = 10 });
-        buffer.Set(in entity, new Rotation{ W = 10 });
-        
-        var secondEntity = buffer.Create(_group);
-        buffer.Set(in secondEntity, new Transform{ X = 10 });
-        buffer.Set(in secondEntity, new Rotation{ W = 10 });
-        
-        buffer.Playback();
-        
-        Assert.AreEqual(2, world.Size);
 
-        var entities = new List<Entity>();
-        world.GetEntities(in _queryDescription, entities);
-        Assert.AreEqual(10, world.Get<Transform>(entities[0]).X);
-        Assert.AreEqual(10, world.Get<Rotation>(entities[0]).W);
-        Assert.AreEqual(10, world.Get<Transform>(entities[1]).X);
-        Assert.AreEqual(10, world.Get<Rotation>(entities[1]).W);
+    [Test]
+    public void CommandBufferForExistingEntity()
+    {
+        var world = World.Create();
+        var commandBuffer = new CommandBuffer(world);
+
+        var entity = world.Create(new ComponentType[] {typeof(Transform), typeof(Rotation), typeof(int) });
+        commandBuffer.Set(in entity, new Transform{ X = 20, Y = 20});
+        commandBuffer.Add(in entity, new Ai());
+        commandBuffer.Remove<int>(in entity);
+
+        commandBuffer.Playback();
+        Assert.AreEqual(20, world.Get<Transform>(in entity).X);
+        Assert.AreEqual(20, world.Get<Transform>(in entity).Y);
+        Assert.IsTrue(world.Has<Ai>(in entity));
+        Assert.IsFalse(world.Has<int>(in entity));
         
         World.Destroy(world);
     }
     
     [Test]
-    public void ModificationBuffer()
+    public void CommandBuffer()
     {
         var world = World.Create();
-        var buffer = new ModificationBuffer(world);
+        var commandBuffer = new CommandBuffer(world);
 
-        var entity = world.Create(_group);
-        var bufferedEntity = buffer.Modify(in entity);
-        buffer.Set(in bufferedEntity, new Transform{ X = 10 });
-        buffer.Set(in bufferedEntity, new Rotation{ X = 10 });
+        var entity = commandBuffer.Create(new ComponentType[] {typeof(Transform), typeof(Rotation), typeof(int) });
+        commandBuffer.Set(in entity, new Transform{ X = 20, Y = 20});
+        commandBuffer.Add(in entity, new Ai());
+        commandBuffer.Remove<int>(in entity);
 
-        buffer.Playback();
-        
-        Assert.AreEqual(10, world.Get<Transform>(entity).X);
-        Assert.AreEqual(10, world.Get<Rotation>(entity).X);
+        commandBuffer.Playback();
+
+        entity = new Entity(0, 0);
+        Assert.AreEqual(20, world.Get<Transform>(in entity).X);
+        Assert.AreEqual(20, world.Get<Transform>(in entity).Y);
+        Assert.IsTrue(world.Has<Ai>(in entity));
+        Assert.IsFalse(world.Has<int>(in entity));
         
         World.Destroy(world);
     }
     
     [Test]
-    public void StructuralBuffer()
+    public void CommandBufferCombined()
     {
         var world = World.Create();
-        var buffer = new StructuralBuffer(world);
-        
-        var entity = world.Create(_group);
-        var secondEntity = world.Create(_secondGroup);
-        
-        var addToEntity = buffer.BatchAdd(in entity);
-        buffer.Add<Ai>(in addToEntity);
-        buffer.Add<int>(in addToEntity);
-        
-        var removeFromEntity = buffer.BatchRemove(in secondEntity);
-        buffer.Remove<Ai>(in removeFromEntity);
-        buffer.Remove<int>(in removeFromEntity);
-        
-        buffer.Playback();
-        
-        Assert.AreEqual(true, world.Has<Ai,int>(entity));
-        Assert.AreEqual(false, world.Has<Ai,int>(secondEntity));
-        
+        var commandBuffer = new CommandBuffer(world);
 
+        var entity = world.Create(new ComponentType[] {typeof(Transform), typeof(Rotation), typeof(int) });
+        var bufferedEntity = commandBuffer.Create(new ComponentType[] {typeof(Transform), typeof(Rotation), typeof(int) });
+        
+        commandBuffer.Set(in entity, new Transform{ X = 20, Y = 20});
+        commandBuffer.Add(in entity, new Ai());
+        commandBuffer.Remove<int>(in entity);
+        
+        commandBuffer.Set(in bufferedEntity, new Transform{ X = 20, Y = 20});
+        commandBuffer.Add(in bufferedEntity, new Ai());
+        commandBuffer.Remove<int>(in bufferedEntity);
+
+        commandBuffer.Playback();
+
+        bufferedEntity = new Entity(1, 0);
+        
+        Assert.AreEqual(20, world.Get<Transform>(in entity).X);
+        Assert.AreEqual(20, world.Get<Transform>(in entity).Y);
+        Assert.IsTrue(world.Has<Ai>(in entity));
+        Assert.IsFalse(world.Has<int>(in entity));
+        
+        Assert.AreEqual(20, world.Get<Transform>(in bufferedEntity).X);
+        Assert.AreEqual(20, world.Get<Transform>(in bufferedEntity).Y);
+        Assert.IsTrue(world.Has<Ai>(in bufferedEntity));
+        Assert.IsFalse(world.Has<int>(in bufferedEntity));
+        
         World.Destroy(world);
     }
 }
@@ -140,108 +125,5 @@ public partial class CommandBufferTest
     public void Teardown()
     {
         _jobScheduler.Dispose();
-    }
-
-    
-    [Test]
-    public void ParallelDestructionBuffer()
-    {
-        
-        var world = World.Create();
-        var buffer = new DestructionBuffer(world, 1000);
-        for (var index = 0; index < 1000; index++)
-            world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
-        
-        Assert.AreEqual(1000, world.Size);
-        
-        world.ParallelQuery(in _queryDescription, buffer.Destroy);
-        buffer.Playback();
-        
-        Assert.AreEqual(0, world.Size);
-        World.Destroy(world);
-    }
-    
-    [Test]
-    public void ParallelCreationBuffer()
-    {
-        var world = World.Create();
-        var buffer = new CreationBuffer(world);
-        for (var index = 0; index < 1000; index++)
-            world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
-        
-        world.ParallelQuery(in _queryDescription, (in Entity entity1) => {
-            
-            var entity = buffer.Create(_group);
-            buffer.Set(in entity, new Transform{ X = 10 });
-            buffer.Set(in entity, new Rotation{ W = 10 });
-        });
-
-        buffer.Playback();
-        
-        Assert.AreEqual(2000, world.Size);
-        World.Destroy(world);
-    }
-    
-    [Test]
-    public void ParallelModificationBuffer()
-    {
-
-        // Create buffer and world, populate world
-        var world = World.Create();
-        var buffer = new ModificationBuffer(world);
-        for (var index = 0; index < 10000; index++)
-            world.Create(new Transform{ X = 10}, new Rotation{ W = 10});
-        
-        // Modify all existing entities 
-        world.ParallelQuery(in _queryDescription, (in Entity entity) => {
-            
-            var bufferedEntity = buffer.Modify(in entity);
-            buffer.Set(in bufferedEntity, new Transform{ X = 20 });
-            buffer.Set(in bufferedEntity, new Rotation{ X = 20 });
-        });
-
-        buffer.Playback();
-
-        var entities = new List<Entity>(10000);
-        world.GetEntities(in _queryDescription, entities);
-
-        // Make sure all 10k entities have the updated components
-        foreach (var entity in entities)
-        {
-            Assert.AreEqual(20, world.Get<Transform>(entity).X);   
-            Assert.AreEqual(20, world.Get<Rotation>(entity).X);   
-        }
-        
-        World.Destroy(world);
-    }
-    
-    [Test]
-    public void ParallelStructuralBuffer()
-    {
-        
-        var world = World.Create();
-        var buffer = new StructuralBuffer(world);
-        
-        for (var index = 0; index < 10000; index++)
-            world.Create<Transform, Rotation>();
-        
-        // Modify all existing entities 
-        world.ParallelQuery(in _queryDescription, (in Entity entity) => {
-            
-            var addToEntity = buffer.BatchAdd(in entity);
-            buffer.Add<Ai>(in addToEntity);
-            buffer.Add<int>(in addToEntity);
-        });
-        
-        buffer.Playback();
-        
-        var entities = new List<Entity>(10000);
-        world.GetEntities(in _queryDescription, entities);
-
-        // Make sure all 10k entities have the updated components
-        foreach (var entity in entities)
-            Assert.AreEqual(true, world.Has<Ai,int>(entity));
-        
-        World.Destroy(world);
     }
 }
