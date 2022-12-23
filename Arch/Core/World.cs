@@ -414,7 +414,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 list.Add(entity);
@@ -539,7 +539,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 forEntity(entity);
@@ -562,7 +562,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 t.Update(in entity);
@@ -584,7 +584,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 iForEach.Update(in entity);

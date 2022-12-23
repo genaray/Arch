@@ -31,7 +31,7 @@ public struct ForEachJob<{generics}> : IChunkJob {{
 
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
             {getComponents}
             ForEach({insertParams});
@@ -70,7 +70,7 @@ public struct ForEachWithEntityJob<{generics}> : IChunkJob {{
         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             {getComponents}
@@ -109,7 +109,7 @@ public struct IForEachJob<T,{generics}> : IChunkJob where T : struct, IForEach<{
 
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
             {getComponents}
             ForEach.Update({insertParams});
@@ -148,7 +148,7 @@ public struct IForEachWithEntityJob<T,{generics}> : IChunkJob where T : struct, 
         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
         {getFirstElement}
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             {getComponents}
