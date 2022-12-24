@@ -58,7 +58,7 @@ public ref struct QueryArchetypeEnumerator
     private readonly Query _query;
     private readonly Span<Archetype> _archetypes;
 
-    private int _index;
+    internal int _index;
     private readonly int _size;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,13 +126,80 @@ public readonly ref struct QueryArchetypeIterator
 public ref struct QueryChunkEnumerator
 {
     private QueryArchetypeEnumerator _archetypeEnumerator;
+    private int _index;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        _index = -1;
+        _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            --_index;
+
+            // We reached the end, next archetype
+            if (_index >= 0) return true;
+            if (!_archetypeEnumerator.MoveNext()) return false;
+            _index = _archetypeEnumerator.Current.Size-1;
+
+            return true;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+        _archetypeEnumerator.Reset();
+    }
+
+    public readonly ref Chunk Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _archetypeEnumerator.Current.GetChunk(_index);
+    }
+}
+
+/// <summary>
+///     A implementation of the <see cref="QueryChunkEnumerator" /> in order to use it in a foreach loop.
+/// </summary>
+public readonly ref struct QueryChunkIterator
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryChunkIterator(Query query, Span<Archetype> archetypes)
+    {
+        this._query = query;
+        this._archetypes = archetypes;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryChunkEnumerator GetEnumerator()
+    {
+        return new QueryChunkEnumerator(_query, _archetypes);
+    }
+}
+
+/// <summary>
+///     A enumerator to iterate over <see cref="Chunk" />'s fitting the <see cref="Query" />.
+/// </summary>
+public ref struct QueryEntityEnumerator
+{
+    private QueryArchetypeEnumerator _archetypeEnumerator;
     private Span<Chunk> _chunks;
 
     private int _index;
     private int _size;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
+    public QueryEntityEnumerator(Query query, Span<Archetype> archetypes)
     {
         _index = -1;
         _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
@@ -175,13 +242,13 @@ public ref struct QueryChunkEnumerator
 /// <summary>
 ///     A implementation of the <see cref="QueryChunkEnumerator" /> in order to use it in a foreach loop.
 /// </summary>
-public readonly ref struct QueryChunkIterator
+public readonly ref struct QueryEntityIterator
 {
     private readonly Query _query;
     private readonly Span<Archetype> _archetypes;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkIterator(Query query, Span<Archetype> archetypes)
+    public QueryEntityIterator(Query query, Span<Archetype> archetypes)
     {
         this._query = query;
         this._archetypes = archetypes;
@@ -220,7 +287,7 @@ public ref struct RangeEnumerator
         if (i <= 0) return _perJob;
         if (i == _jobs - 1)
         {
-            var amount = (int)Math.Ceiling((float)(_size % _jobs))+1;
+            var amount = (int)Math.Ceiling((float)(_size % _jobs))+_perJob;
             return amount > 0 ? amount : 1;
         }
         return _perJob;

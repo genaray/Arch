@@ -1,19 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
 namespace Arch.Core.CommandBuffer;
 
-
-
+/// <summary>
+/// Represents a creation command for an entity. 
+/// </summary>
 public struct CreateCommand
 {
     public int Index;
     public ComponentType[] Types;
 }
 
+/// <summary>
+/// Information about a buffered entity for fast acess to its internal storages. 
+/// </summary>
 public struct BufferedEntityInfo
 {
     public int Index;
@@ -61,7 +66,7 @@ public class CommandBuffer : IDisposable
     /// <summary>
     /// Add commands
     /// </summary>
-    internal SparseSet _adds;
+    internal StructuralSparseSet _adds;
     
     /// <summary>
     /// Remove commands
@@ -83,67 +88,127 @@ public class CommandBuffer : IDisposable
         _bufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
         _creates = new PooledList<CreateCommand>(initialCapacity);
         _sets = new SparseSet(initialCapacity);
-        _adds = new SparseSet(initialCapacity);
+        _adds = new StructuralSparseSet(initialCapacity);
         _removes = new StructuralSparseSet(initialCapacity);
         _destroys = new PooledList<int>(initialCapacity);
         _addTypes = new PooledList<ComponentType>(16);
         _removeTypes = new PooledList<ComponentType>(16);
     }
 
+    /// <summary>
+    /// Registers a new entity into the command buffer and returns its info struct. 
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="info"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Register(in Entity entity, out BufferedEntityInfo info)
     {
         var setIndex = _sets.Create(in entity);
         var addIndex = _adds.Create(in entity);
         var removeIndex = _removes.Create(in entity);
-        info = new BufferedEntityInfo{ Index = Size, SetIndex = setIndex, AddIndex = addIndex, RemoveIndex = removeIndex};
-        
+        info = new BufferedEntityInfo { Index = Size, SetIndex = setIndex, AddIndex = addIndex, RemoveIndex = removeIndex };
+
         _entities.Add(entity);
         _bufferedEntityInfo.Add(entity.Id, info);
         Size++;
     }
     
+    /// <summary>
+    /// Buffers a create command for a certain entity. Will be created upon playback.
+    /// </summary>
+    /// <param name="types">Its archetype.</param>
+    /// <returns>The buffered entity with a negative id.</returns>#
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(ComponentType[] types)
     {
-        var entity = new Entity(-Math.Abs(Size-1), World.Id);
-        Register(entity, out _);
-        
-        var command = new CreateCommand { Index = Size-1, Types = types };
-        _creates.Add(command);
-        return entity;
+        lock (this)
+        {
+            var entity = new Entity(-Math.Abs(Size-1), World.Id);
+            Register(entity, out _);
+            
+            var command = new CreateCommand { Index = Size-1, Types = types };
+            _creates.Add(command);
+            return entity;
+        }
     }
 
+    /// <summary>
+    /// Buffers a destroy command for the passed entity. Will be destroyed upon playback.
+    /// </summary>
+    /// <param name="entity">The entity to destroy.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
-        if(!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            Register(entity, out info);
-        
-        _destroys.Add(info.Index);
+        lock (this)
+        {
+            if (!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
+                Register(entity, out info);
+            _destroys.Add(info.Index);
+        }
     }
 
+    /// <summary>
+    /// Buffers a set command for the passed entity. Will be set upon playback.
+    /// </summary>
+    /// <param name="entity">The entity on which we wanna set a component.</param>
+    /// <param name="component">The component instance</param>
+    /// <typeparam name="T">The generic type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T component)
     {
-        if(!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            Register(entity, out info);
+        BufferedEntityInfo info;
+        lock (this)
+        {
+            if(!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
+                Register(entity, out info);   
+        }
 
         _sets.Set(info.SetIndex, in component);
     }
 
+    /// <summary>
+    /// Buffers a add command for the passed entity. Will be set upon playback.
+    /// </summary>
+    /// <param name="entity">The entity which we wanna add a component to.</param>
+    /// <param name="component">The component instance.</param>
+    /// <typeparam name="T">The generic type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T component)
     {
-        if(!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            Register(entity, out info);
+        BufferedEntityInfo info;
+        lock (this)
+        {
+            if(!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
+                Register(entity, out info);   
+        }
 
-        _adds.Set(info.AddIndex, in component);
+        _adds.Set<T>(info.AddIndex);
+        _sets.Set(info.SetIndex, in component);
     }
 
+    /// <summary>
+    /// Buffers a remove command for the passed entity. Will be set upon playback.
+    /// </summary>
+    /// <param name="entity">The entity which we wanna remove a component from.</param>
+    /// <typeparam name="T">The generic type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     {
-        if(!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            Register(entity, out info);
+        BufferedEntityInfo info;
+        lock (this)
+        {
+            if (!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
+                Register(entity, out info);
+        }
 
         _removes.Set<T>(info.RemoveIndex);
     }
 
+    /// <summary>
+    /// Playbacks all recorded operations and modifies the world.
+    /// Should only happen on the mainthread. 
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Playback()
     {
         
@@ -228,6 +293,7 @@ public class CommandBuffer : IDisposable
             World.Destroy(_entities[cmd]);
         }
 
+        // Reset 
         Size = 0;
         _entities?.Clear();
         _bufferedEntityInfo?.Clear();
@@ -240,6 +306,9 @@ public class CommandBuffer : IDisposable
         _removeTypes?.Clear();
     }
 
+    /// <summary>
+    /// Disposes this command buffer. 
+    /// </summary>
     public void Dispose()
     {
         _entities?.Dispose();

@@ -85,7 +85,12 @@ public sealed unsafe partial class Archetype
     ///     Indicates how many full chunks are currently being used.
     ///     Partial empty chunks do not count.
     /// </summary>
-    public int Size { get; private set; }
+    public int Size
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+        get; 
+        private set;
+    }
 
     /// <summary>
     ///     The amount of entities fitting in each chunk.
