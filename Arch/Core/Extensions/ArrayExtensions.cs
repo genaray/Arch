@@ -68,24 +68,20 @@ public static class ArrayExtensions
         
         if (target == null)
             return null;
-        
-        var result = new T[target.Length - items.Length];
+
+        var result = new List<T>(target.ToArray());
         var targetSpan = target.AsSpan();
-        var resultSpan = result.AsSpan();
-        
+
         var offset = 0;
         for (var index = 0; index < targetSpan.Length; index++)
         {
             ref var currentItem = ref targetSpan[index];
-            if (items.Contains(currentItem))
-            {
-                offset++;
-                continue;
+            if (items.Contains(currentItem)) {
+                result.Remove(currentItem);
             }
-            resultSpan[index - offset] = currentItem;
         }
         
-        return result;
+        return result.ToArray();
     }
     
     /// <summary>

@@ -354,10 +354,9 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
-        // we need to cache the ID because it will get overrided
-        // during the next operations
+        // Cache id since in Entity is basically ref readonly entity. 
         var id = entity.Id;
-
+        
         // Remove from archetype
         var entityInfo = EntityInfo[id];
         var archetype = entityInfo.Archetype;
