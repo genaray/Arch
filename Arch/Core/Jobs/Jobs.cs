@@ -58,7 +58,7 @@ public struct ForEachJob : IChunkJob
         var chunkSize = chunk.Size;
         ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             ForEach(in entity);
@@ -79,7 +79,7 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
         var chunkSize = chunk.Size;
         ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
 
-        for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             ForEach.Update(in entity);

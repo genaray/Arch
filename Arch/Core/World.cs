@@ -366,7 +366,7 @@ public partial class World
         var movedEntityInfo = EntityInfo[movedEntityId];
         movedEntityInfo.Slot = entityInfo.Slot;
         EntityInfo[movedEntityId] = movedEntityInfo;
-        
+
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(id);
         EntityInfo.Remove(id);
@@ -413,7 +413,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 list.Add(entity);
@@ -538,7 +538,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 forEntity(entity);
@@ -561,7 +561,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 t.Update(in entity);
@@ -583,7 +583,7 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++)
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 iForEach.Update(in entity);
@@ -700,7 +700,7 @@ public partial class World
 /// </summary>
 public partial class World
 {
-    
+
     /// <summary>
     /// Sets a component for the passed <see cref="Entity"/>.
     /// This replaces the previous values. 
@@ -714,7 +714,7 @@ public partial class World
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Set(ref entityInfo.Slot, in cmp);
     }
-    
+
     /// <summary>
     ///     Returns true if the <see cref="Entity" /> has a certain component assigned.
     /// </summary>
@@ -723,11 +723,11 @@ public partial class World
     /// <returns>True if it exists for that entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(in Entity entity)
-    {  
+    {
         var archetype = EntityInfo[entity.Id].Archetype;
         return archetype.Has<T>();
     }
-    
+
     /// <summary>
     /// Returns a component reference from the <see cref="Entity"/>.
     /// </summary>
@@ -740,7 +740,7 @@ public partial class World
         var entityInfo = EntityInfo[entity.Id];
         return ref entityInfo.Archetype.Get<T>(ref entityInfo.Slot);
     }
-    
+
     /// <summary>
     ///     Returns the component if it exists for that entity.
     ///     In case of a struct it will only returns a copy.
@@ -758,6 +758,25 @@ public partial class World
         var entityInfo = EntityInfo[entity.Id];
         component = entityInfo.Archetype.Get<T>(ref entityInfo.Slot);
         return true;
+    }
+
+    /// <summary>
+    ///     Returns the component if it exists for that entity.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="exists">True if the component exists</param>
+    /// <returns>The reference to the component or a nullref</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T TryGetRef<T>(in Entity entity, out bool exists)
+    {
+        if (!(exists = Has<T>(in entity)))
+        {
+            return ref Unsafe.NullRef<T>();
+        }
+
+        var entityInfo = EntityInfo[entity.Id];
+        return ref entityInfo.Archetype.Get<T>(ref entityInfo.Slot);
     }
 }
 

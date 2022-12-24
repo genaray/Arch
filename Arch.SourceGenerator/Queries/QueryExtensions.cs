@@ -113,7 +113,7 @@ foreach (ref var chunk in query.GetChunkIterator()) {{
 
     {getFirstElement}
 
-    for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
         {getComponents}
         forEach({insertParams});
@@ -160,7 +160,7 @@ foreach (ref var chunk in query.GetChunkIterator()) {{
     ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
     {getFirstElement}
 
-    for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
         ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
         {getComponents}
