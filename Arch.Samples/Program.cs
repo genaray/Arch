@@ -8,6 +8,10 @@ using Arch.Samples;
 // Its not a full demonstration of all features. 
 // Hit "delete" to remove velocity from all entities
 
+// Disclaimer : 
+// You can spawn in to 1 million entities, then the performance starts dropping.
+// The bottleneck is not the ECS framework, its actually the rendering ( Monogame Spritebatch ).
+
 Console.WriteLine("Sample App starts...");
 var game = new Game();
 game.Run();
