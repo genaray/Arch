@@ -92,7 +92,7 @@ public partial class World{{
             
             {getFirstElement}
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
                 {getComponents}
                 iForEach.Update({insertParams});
@@ -146,7 +146,7 @@ public partial class World{{
             
             {getFirstElement}
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
                 {getComponents}
                 t.Update({insertParams});
@@ -201,7 +201,7 @@ public partial class World{{
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
             {getFirstElement}
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 {getComponents}
@@ -257,7 +257,7 @@ public partial class World{{
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
             {getFirstElement}
 
-            for (var entityIndex = 0; entityIndex < chunkSize; entityIndex++) {{
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 {getComponents}
