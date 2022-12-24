@@ -1,5 +1,6 @@
 using System.Numerics;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -80,10 +81,7 @@ public class Game : Microsoft.Xna.Framework.Game
         {
             // Query for velocity entities and remove their velocity to make them stop moving. 
             var queryDesc = new QueryDescription { All = new ComponentType[] { typeof(Velocity) } };
-            var query = _world.Query(in queryDesc);
-            foreach (ref var chunk in query.GetChunkIterator())
-                for (var index = chunk.Size - 1; index >= 0; index--)
-                    _world.Remove<Velocity>(in chunk.Entities[index]);
+            _world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
         }
         
         _movementSystem.Update(in gameTime);
