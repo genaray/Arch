@@ -137,6 +137,21 @@ public static partial class EntityExtensions
     }
     
     /// <summary>
+    ///     Returns the component if it exists for that entity.
+    ///     In case of a struct it will only returns a copy.
+    /// </summary>
+    /// <param name="entity">The entity</param>
+    /// <typeparam name="T">The component type</typeparam>
+    /// <param name="component">The component itself</param>
+    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return ref world.TryGetRef<T>(in entity, out exists);
+    }
+    
+    /// <summary>
     ///     Adds a component to the existing entity.
     /// </summary>
     /// <param name="entity">The entity</param>
