@@ -261,3 +261,14 @@ public partial class WorldTest
         Assert.AreEqual(_world.GetArchetype(in entity), arch);
     }
 }
+
+// Tests if operations during query performed sucessfull
+public partial class WorldTest
+{
+
+    [Test]
+    public void QueryAndCreate()
+    {
+        
+    }
+}

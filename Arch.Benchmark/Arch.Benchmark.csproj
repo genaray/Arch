@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DefineConstants>TRACE</DefineConstants>
+      <DefineConstants>TRACE;PURE_ECS</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

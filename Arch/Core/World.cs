@@ -536,11 +536,11 @@ public partial class World
         foreach (ref var chunk in query.GetChunkIterator())
         {
             var chunkSize = chunk.Size;
-            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(chunk.Entities, chunkSize-1);
 
-            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            for (var entityIndex = 0; entityIndex < chunkSize; ++entityIndex)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                ref readonly var entity = ref Unsafe.Subtract(ref entityLastElement, entityIndex);
                 forEntity(entity);
             }
         }
