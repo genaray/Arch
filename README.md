@@ -13,7 +13,7 @@ A high performance C# based Archetype & Chunks [Entity Component System](https:/
 - 💪 _**MAINTAINED**_ > It's actively being worked on, maintained and supported ! 
 - 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
-Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
+Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
 ```console
 dotnet add PROJECT package Arch --version 1.1.0
 ```
@@ -27,8 +27,8 @@ It's not ! Arch does everything for you, you only need to define the entities an
 ```csharp
 public class Game {
 
-    public struct Position { public float x, y; }
-    public struct Velocity { public float dx, dy; }
+    record struct Position(float X, float Y);
+    record struct Velocity(float Dx, float Dy);
     
     public static void Main(string[] args) {
         
@@ -41,8 +41,8 @@ public class Game {
         
         // Query and modify entities ( There also alternatives without lambdas ;) ) 
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
-            pos.x += vel.dx;
-            pos.y += vel.dy;
+            pos.X += vel.Dx;
+            pos.Y += vel.Dy;
         });
     }
 }
