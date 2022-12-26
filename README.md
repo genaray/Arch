@@ -29,10 +29,10 @@ It's not ! Arch does everything for you, you only need to define the entities an
 public struct Position{ float X, Y };
 public struct Velocity{ float Dx, Dy };
 
-public class Game {
-    
-    public static void Main(string[] args) {
-        
+public class Game 
+{
+    public static void Main(string[] args) 
+    {     
         // Create world and entities with position and velocity.
         var world = World.Create();
         for (var index = 0; index < 1000; index++) 
