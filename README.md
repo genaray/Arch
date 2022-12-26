@@ -4,14 +4,14 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
 ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
-A highperformance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data oriented programming.    
+A high performance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data oriented programming.    
 
-- 🚀 **_FAST_** > Best cache efficiency, iteration and allocation speed. Plays in the same league as C++/Rust ECS Libs ! 
-- 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark) !
-- 🤏 **_BARE MINIMUM_** >  Not bloated, its small and only provides the essentials for you ! 
-- ☕️ **_SIMPLE_** >  Promotes a clean, minimal and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki) !
-- 💪 _**MAINTAINED**_ > Its actively being worked on, maintained and supported ! 
-- 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot !
+- 🚀 **_FAST_** > Best cache efficiency, iteration and allocation speed. Plays in the same league as C++/Rust ECS Libs! 
+- 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark)!
+- 🤏 **_BARE MINIMUM_** >  Not bloated, it's small and only provides the essentials for you! 
+- ☕️ **_SIMPLE_** >  Promotes a clean, minimal and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki)!
+- 💪 _**MAINTAINED**_ > It's actively being worked on, maintained and supported ! 
+- 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today ! 
 ```console
@@ -20,9 +20,9 @@ dotnet add PROJECT package Arch --version 1.1.0
 
 # Code Sample
 
-Enough spoken, lets take a look at some code. Arch is bare minimum, easy to use and efficient. Lets say we want to create some game entities and make them move based on their velocity, sounds complicated ?
+Enough spoken, let's take a look at some code. Arch is bare minimum, easy to use and efficient. You want to create some game entities and make them move based on their velocity... sounds complicated?
 
-Its not ! Arch does everything for you, you only need to define the entities and the logic.
+It's not ! Arch does everything for you, you only need to define the entities and the logic.
 
 ```csharp
 public class Game {
@@ -50,7 +50,7 @@ public class Game {
 
 # Contents
 
-- [Quickstart](#quickstart)
+- [Quick start](#quick-start)
   * [ECS](#ecs)
   * [World](#world)
   * [Entity](#entity)
@@ -61,23 +61,23 @@ public class Game {
   * [Benchmark](#benchmark)
 - [Contributing](#contributing)
 
-# Quickstart
+# Quick start
 
-I bet you dont wanna read tons of documentations, theory and other boring stuff right ?  
-Lets just ignore all that deep knowledge and jump in directly to get something done. 
-> For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wiki) !
+I bet you don't want to read tons of documentations, theory and other boring stuff right?  
+Let's just ignore all that deep knowledge and jump in directly to get something done. 
+> For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wiki)!
 
 ## ECS
 
-Entity Component System (ECS) is a software architectural pattern mostly used for the representation of game world objects or data oriented design in general. An ECS comprises entities composed from components of data, with systems or queries which operate on entities' components.  
+Entity Component System (ECS) is a software architectural pattern mostly used for the representation of game world objects or data oriented design in general. An ECS comprises entities composed of components of data, with systems or queries which operate on entities' components.  
 
 ECS follows the principle of composition over inheritance, meaning that every entity is defined not by a type hierarchy, but by the components that are associated with it.
 
 ## World
 
 The world acts as a management class for all its entities, it contains methods to create, destroy and query them and handles all the internal mechanics.  
-Therefore it is the most important class, you will use the world heavily.  
-Multiple worlds can be used in parallel, each instance and its entities are completly encapsulated from other worlds. Currently worlds and their content can not interact with each other, however this feature is already planned. 
+Therefore, it is the most important class, you will use the world heavily.  
+Multiple worlds can be used in parallel, each instance and its entities are completely encapsulated from other worlds. Currently, worlds and their content can not interact with each other, however this feature is already planned. 
 
 Worlds are created and destroyed like this...
 
@@ -90,8 +90,8 @@ There can be up to `2,147,483,647` possible worlds with up to `2,147,483,647` en
 
 ## Entity
 
-A entity represents your game entity.   
-It is a simple struct with some metadata acting as a key to acess and manage its components.  
+An entity represents your game entity.   
+It is a simple struct with some metadata acting as a key to access and manage its components.  
 
 Entities are being created by a world and will "live" in the world in which they were created.  
 When an entity is being created, you need to specify the components it will have. Components are basically the additional data or structure the entity will have. This is called "Archetype". 
@@ -106,7 +106,7 @@ var entity = world.Create(archetype);
 
 world.Destroy(in entity);
 ```
-> Entity creation/deletion should not happen during a Query ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this ! :) 
+> Entity creation/deletion should not happen during a Query! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this! :) 
 
 ## Component
 
@@ -134,9 +134,9 @@ entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component
 
 ## System aka. Query
 
-Queries aka. Systems are used to iterate over a set of entities to apply logic and behaviour based on their components. 
+Queries aka. Systems are used to iterate over a set of entities to apply logic and behavior based on their components. 
 
-This is performed by using the world ( remember, it manages your created entities ) and by defining a description of which entities we want to iterate over. 
+This is performed by using the world (remember, it manages your created entities) and by defining a description of which entities we want to iterate over. 
 
 ```csharp
 // Define a description of which entities you want to query
@@ -156,40 +156,39 @@ world.Query(in query, (ref Position pos, ref Velocity vel) => {
 });
 ```
 
-In the example above we want to move our entities based on their `Position` and `Velocity` components. 
-To perform this operation we need to iterate over all entities having both a `Position` and `Velocity` component (`All`). We also want that our entity either is a `Player` or a `Projectile` (`Any`). However, we do not want to iterate and perform that calculation on entities which are controlled by an `AI` (`None`). 
+In the example above, we want to move our entities based on their `Position` and `Velocity` components. 
+To perform this operation, we need to iterate over all entities having both a `Position` and `Velocity` component (`All`). We also want that our entity either is a `Player` or a `Projectile` (`Any`). However, we do not want to iterate and perform that calculation on entities which are controlled by an `AI` (`None`). 
 
-The `world.Query` method than smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile` and no `AI` component and executes the defined logic for all of those fitting entities. 
+The `world.Query` method then smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile` and no `AI` component and executes the defined logic for all of those fitting entities. 
 
-Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If thats set, it will ignore `All`, `Any` and `None` and only target entities with a exactly defined set of components. Its also important to know that there are multiple different overloads to perform such a query.
+Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If that's set, it will ignore `All`, `Any` and `None` and only target entities with an exactly defined set of components. It's also important to know that there are multiple different overloads to perform such a query.
 > The less you query in terms of components and the size of components... the faster the query is !
 
 ## More features and Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
 However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
-Theres more to explore, for example...
+There's more to explore, for example...
 
 - Bulk Entity Adding
-- Highperformance Queries
+- High performance Queries
 - Archetypes
 - Chunks
 - Parallel / Multithreaded Queries
 - Enumerators
 - CommandBuffers
 - Pure ECS
-- More api 
-
+- More API 
 
 # Performance
-Well... its fast, like REALLY fast.  
-However the iteration speed depends, the less you query, the faster it is.  
-This rule targets the amount of queried components aswell as their size.  
+Well... it's fast, like REALLY fast.  
+However, the iteration speed depends, the less you query, the faster it is.  
+This rule targets the amount of queried components as well as their size.  
 
-Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among the fastest ecs frameworks in terms of allocation and iteration. 
+Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among the fastest ECS frameworks in terms of allocation and iteration. 
 
 ## Benchmark
-The current Benchmark tested a bunch of different iterations and acess techniques. However the most interesting one is the `QueryBenchmark`. 
+The current Benchmark tested a bunch of different iterations and access techniques. However, the most interesting one is the `QueryBenchmark`. 
 It tests `world.Query` against `world.HPQuery` and a `world.Query(in desc, (in Entity) => { entity.Get<T>... }` variant. 
 
 ```CSHARP
@@ -197,7 +196,7 @@ public struct Transform{ float x; float y; float z; }
 public struct Velocity { float x; float y; }
 ```
 
-The used structs are actually quite big, the smaller the components, the faster the query. However i wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
+The used structs are actually quite big, the smaller the components, the faster the query. However, i wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
 
 |            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
@@ -219,5 +218,5 @@ The used structs are actually quite big, the smaller the components, the faster 
 
 # Contributing
 
-I will accept contributions, especially bugfixes, performance improvements and new features.
-New features however should not harm its performance, if they do they should be wrapped within predecessor variables for enabling/disabling them. 
+I will accept contributions, especially bug fixes, performance improvements and new features.
+New features however should not harm its performance, if they do, they should be wrapped within predecessor variables for enabling/disabling them. 
