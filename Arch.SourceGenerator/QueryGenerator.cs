@@ -54,18 +54,6 @@ public class QueryGenerator : IIncrementalGenerator
             jobs.AppendIForEachJobs(25);
             jobs.AppendIForEachWithEntityJobs(25);
 
-            var queries = CodeBuilder.Create("Arch.Core")
-                .AddNamespaceImport("System")
-                .AddNamespaceImport("System.Runtime.CompilerServices")
-                .AddNamespaceImport("CommunityToolkit.HighPerformance;")
-                .AddNamespaceImport("JobScheduler")
-                .AddNamespaceImport("Arch.Core.Utils")
-                .AddClass("World").MakePublicClass();
-            queries.AppendQueryMethods(25);
-            queries.AppendEntityQueryMethods(25);
-            queries.AppendParallelQuerys(25);
-            queries.AppendParallelEntityQuerys(25);
-
             var acessors = new StringBuilder();
             acessors.AppendLine("using System;");
             acessors.AppendLine("using System.Runtime.CompilerServices;");
@@ -97,6 +85,16 @@ public class QueryGenerator : IIncrementalGenerator
                     {new StringBuilder().AppendWorldSets(25)}
                     {new StringBuilder().AppendWorldAdds(25)}    
                     {new StringBuilder().AppendWorldRemoves(25)}
+
+                    {new StringBuilder().AppendQueryMethods(25)}
+                    {new StringBuilder().AppendEntityQueryMethods(25)}
+                    {new StringBuilder().AppendParallelQuerys(25)}
+                    {new StringBuilder().AppendParallelEntityQuerys(25)}
+
+                    {new StringBuilder().AppendQueryInterfaceMethods(25)}
+                    {new StringBuilder().AppendEntityQueryInterfaceMethods(25)}
+                    {new StringBuilder().AppendHpParallelQuerys(25)}
+                    {new StringBuilder().AppendHpeParallelQuerys(25)}
                 }}
 
                public static partial class EntityExtensions{{
@@ -116,18 +114,6 @@ public class QueryGenerator : IIncrementalGenerator
                     {new StringBuilder().AppendQueryDescriptionWithExclusives(25)}
                 }}
             ");
-            
-            var hpQueries = new StringBuilder();
-            hpQueries.AppendLine("using System;");
-            hpQueries.AppendLine("using System.Runtime.CompilerServices;");
-            hpQueries.AppendLine("using JobScheduler;");
-            hpQueries.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
-            hpQueries.AppendLine("using Arch.Core.Utils;");
-            hpQueries.AppendLine("namespace Arch.Core;");
-            hpQueries.AppendQueryInterfaceMethods(25);
-            hpQueries.AppendEntityQueryInterfaceMethods(25);
-            hpQueries.AppendHpParallelQuerys(25);
-            hpQueries.AppendHpeParallelQuerys(25);
 
             initializationContext.AddSource("CompileTimeStatics.g.cs",
                 CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
@@ -143,15 +129,9 @@ public class QueryGenerator : IIncrementalGenerator
 
             initializationContext.AddSource("Jobs.g.cs",
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("World.g.cs",
-                CSharpSyntaxTree.ParseText(queries.Build()).GetRoot().NormalizeWhitespace().ToFullString());
-
+            
             initializationContext.AddSource("Acessors.g.cs",
                 CSharpSyntaxTree.ParseText(acessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-            
-            initializationContext.AddSource("QueryInterfacesWorld.g.cs",
-                CSharpSyntaxTree.ParseText(hpQueries.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         });
     }
 }

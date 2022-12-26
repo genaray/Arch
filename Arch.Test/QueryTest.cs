@@ -137,10 +137,10 @@ public class QueryTest
 
         var queryCount = 0;
         _world.Query(in _withoutAiQuery, (in Entity entity, ref Transform t) => { queryCount++; });
-
+   
         var otherQueryCount = 0;
         _world.Query(in _allQuery, (ref Rotation rot) => { otherQueryCount++; });
-
+ 
         Assert.AreEqual(queryCount, 100);
         Assert.AreEqual(otherQueryCount, 100);
     }

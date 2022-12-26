@@ -6,139 +6,114 @@ namespace ArchSourceGenerator;
 
 public static class StringBuilderParallelQueryExtensions
 {
-    public static void AppendProperties(this ClassBuilder builder, string name, int amount)
+
+    public static StringBuilder AppendParallelQuerys(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-        {
-            var propertyBuilder = builder.AddProperty($"{name}{index}", Accessibility.Internal);
-            propertyBuilder.SetType<object>();
-            propertyBuilder.UseAutoProps(); 
-        }
-    }
-    
-    public static void AppendParallelQuerys(this ClassBuilder builder, int amount)
-    {
-        for (var index = 0; index < amount; index++)
-            builder.AppendParallelQuery(index);
+            sb.AppendParallelQuery(index);
+        return sb;
     }
 
-    public static void AppendParallelQuery(this ClassBuilder builder, int amount)
+    public static StringBuilder AppendParallelQuery(this StringBuilder sb, int amount)
     {
-        var methodBuilder = builder.AddMethod("ParallelQuery").MakePublicMethod().WithReturnType("void");
-        methodBuilder.AddParameter("in QueryDescription", "description");
-        methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var template =
+            $@"
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{generics}> forEach){{
+    var innerJob = new ForEachJob<{generics}>();
+    innerJob.ForEach = forEach;
 
-        var generics = new StringBuilder().Generic(amount).ToString();
-        methodBuilder.AddParameter($"ForEach{generics}", "forEach");
+    var pool = JobMeta<ChunkIterationJob<ForEachJob<{generics}>>>.Pool;
+    var query = Query(in description);
+    foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
-        for (var index = 0; index <= amount; index++)
-            methodBuilder.AddGeneric($"T{index}");
+        var archetypeSize = archetype.Size;
+        var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+        foreach (var range in part) {{
+        
+            var job = pool.Get();
+            job.Start = range.Start;
+            job.Size = range.Length;
+            job.Chunks = archetype.Chunks;
+            job.Instance = innerJob;
+            JobsCache.Add(job);
+        }}
 
-        methodBuilder.WithBody(writer =>
-        {
-            var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        IJob.Schedule(JobsCache, JobHandles);
+        JobScheduler.JobScheduler.Instance.Flush();
+        JobHandle.Complete(JobHandles);
+        JobHandle.Return(JobHandles);
 
-            var template =
-                $@"
-var innerJob = new ForEachJob<{generics}>();
-innerJob.ForEach = forEach;
+        // Return jobs to pool
+        for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-var pool = JobMeta<ChunkIterationJob<ForEachJob<{generics}>>>.Pool;
-var query = Query(in description);
-foreach (ref var archetype in query.GetArchetypeIterator()) {{
+            var job = Unsafe.As<ChunkIterationJob<ForEachJob<{generics}>>>(JobsCache[jobIndex]);
+            pool.Return(job);
+        }}
 
-    var archetypeSize = archetype.Size;
-    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-    foreach (var range in part) {{
-    
-        var job = pool.Get();
-        job.Start = range.Start;
-        job.Size = range.Length;
-        job.Chunks = archetype.Chunks;
-        job.Instance = innerJob;
-        JobsCache.Add(job);
+        JobHandles.Clear();
+        JobsCache.Clear();
     }}
-
-    IJob.Schedule(JobsCache, JobHandles);
-    JobScheduler.JobScheduler.Instance.Flush();
-    JobHandle.Complete(JobHandles);
-    JobHandle.Return(JobHandles);
-
-    // Return jobs to pool
-    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
-
-        var job = Unsafe.As<ChunkIterationJob<ForEachJob<{generics}>>>(JobsCache[jobIndex]);
-        pool.Return(job);
-    }}
-
-    JobHandles.Clear();
-    JobsCache.Clear();
 }}
 ";
-            writer.AppendLine(template);
-        });
+        sb.AppendLine(template);
+        return sb;
     }
 
-    public static void AppendParallelEntityQuerys(this ClassBuilder builder, int amount)
+    public static StringBuilder AppendParallelEntityQuerys(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-            builder.AppendParallelEntityQuery(index);
+            sb.AppendParallelEntityQuery(index);
+        return sb;
     }
 
-    public static void AppendParallelEntityQuery(this ClassBuilder builder, int amount)
+    public static StringBuilder AppendParallelEntityQuery(this StringBuilder sb, int amount)
     {
-        var methodBuilder = builder.AddMethod("ParallelQuery").MakePublicMethod().WithReturnType("void");
-        methodBuilder.AddParameter("in QueryDescription", "description");
-        methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
-
-        var generics = new StringBuilder().Generic(amount).ToString();
-        methodBuilder.AddParameter($"ForEachWithEntity{generics}", "forEach");
-
-        for (var index = 0; index <= amount; index++)
-            methodBuilder.AddGeneric($"T{index}");
-
-        methodBuilder.WithBody(writer =>
-        {
-            var generics = new StringBuilder().GenericWithoutBrackets(amount);
-
-            var template =
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var template =
                 $@"
-var innerJob = new ForEachWithEntityJob<{generics}>();
-innerJob.ForEach = forEach;
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach){{
 
-var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>.Pool;
-var query = Query(in description);
-foreach (ref var archetype in query.GetArchetypeIterator()) {{
+    var innerJob = new ForEachWithEntityJob<{generics}>();
+    innerJob.ForEach = forEach;
 
-    var archetypeSize = archetype.Size;
-    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-    foreach (var range in part) {{
-    
-        var job = pool.Get();
-        job.Start = range.Start;
-        job.Size = range.Length;
-        job.Chunks = archetype.Chunks;
-        job.Instance = innerJob;
-        JobsCache.Add(job);
+    var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>.Pool;
+    var query = Query(in description);
+    foreach (ref var archetype in query.GetArchetypeIterator()) {{
+
+        var archetypeSize = archetype.Size;
+        var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+        foreach (var range in part) {{
+        
+            var job = pool.Get();
+            job.Start = range.Start;
+            job.Size = range.Length;
+            job.Chunks = archetype.Chunks;
+            job.Instance = innerJob;
+            JobsCache.Add(job);
+        }}
+
+        IJob.Schedule(JobsCache, JobHandles);
+        JobScheduler.JobScheduler.Instance.Flush();
+        JobHandle.Complete(JobHandles);
+        JobHandle.Return(JobHandles);
+
+        // Return jobs to pool
+        for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
+
+            var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>(JobsCache[jobIndex]);
+            pool.Return(job);
+        }}
+
+        JobHandles.Clear();
+        JobsCache.Clear();
     }}
-
-    IJob.Schedule(JobsCache, JobHandles);
-    JobScheduler.JobScheduler.Instance.Flush();
-    JobHandle.Complete(JobHandles);
-    JobHandle.Return(JobHandles);
-
-    // Return jobs to pool
-    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
-
-        var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>(JobsCache[jobIndex]);
-        pool.Return(job);
-    }}
-
-    JobHandles.Clear();
-    JobsCache.Clear();
 }}
 ";
-            writer.AppendLine(template);
-        });
+
+        sb.AppendLine(template);
+        return sb;
     }
 }
