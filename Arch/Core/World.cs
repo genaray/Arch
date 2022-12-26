@@ -302,7 +302,7 @@ public partial class World
             Capacity += archetype.EntitiesPerChunk;
             EntityInfo.EnsureCapacity(Capacity);
         }
-
+        
         // Map
         EntityInfo.Add(id, new EntityInfo{ Version = 0, Archetype = archetype, Slot = slot});
         

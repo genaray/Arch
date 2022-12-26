@@ -5,6 +5,7 @@ using Arch.Test;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
+using CommunityToolkit.HighPerformance;
 
 namespace Arch.Benchmark;
 
@@ -21,9 +22,8 @@ public class ArchetypeIterationTechniquesBenchmark
     public int Amount;
 
     private Consumer _consumer;
-
     private Archetype _globalArchetype;
-
+    
     [GlobalSetup]
     public void Setup()
     {
@@ -43,7 +43,7 @@ public class ArchetypeIterationTechniquesBenchmark
             _globalArchetype.Set(ref slot, r);
         }
     }
-
+/*
     [Benchmark]
     public void IterationNormalTwoComponents()
     {
@@ -251,6 +251,62 @@ public class ArchetypeIterationTechniquesBenchmark
 
                 _consumer.Consume(currentTransform);
                 _consumer.Consume(currentRotation);
+            }
+        }
+    }*/
+
+    [Benchmark]
+    public void IterationBackwardsUnsafeAdd()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        {
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var chunkSize = currentChunk.Size;
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(currentChunk.Entities);
+
+            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            {
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                _consumer.Consume(entity);
+            }
+        }
+    }
+    
+    [Benchmark]
+    public void IterationBackwardsUnsafeSubstract()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        {
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var chunkSize = currentChunk.Size;
+            ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(currentChunk.Entities, chunkSize-1);
+
+            for (var entityIndex = 0; entityIndex < chunkSize; ++entityIndex)
+            {
+                ref readonly var entity = ref Unsafe.Subtract(ref entityLastElement, entityIndex);
+                _consumer.Consume(entity);
+            }
+        }
+    }
+    
+    [Benchmark]
+    public void IterationBackwardsLoop()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        {
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var chunkSize = currentChunk.Size;
+            
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(currentChunk.Entities);
+            ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(currentChunk.Entities, chunkSize-1);
+
+            while (Unsafe.IsAddressGreaterThan(ref entityLastElement, ref entityFirstElement))
+            {
+                _consumer.Consume(in entityLastElement);
+                entityLastElement = ref Unsafe.Subtract(ref entityLastElement, 1);
             }
         }
     }

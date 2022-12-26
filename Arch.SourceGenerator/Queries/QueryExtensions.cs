@@ -54,7 +54,7 @@ public static class StringBuilderQueryExtensions
     {
         var generics = new List<string>();
 
-        for (var index = 0; index <= 10; index++)
+        for (var index = 0; index <= amount; index++)
         {
             generics.Add($"T{index}");
             var delegateInfo = new DelegateInfo { Name = "ForEach", Generics = generics, ReturnType = "void" };
@@ -68,7 +68,7 @@ public static class StringBuilderQueryExtensions
     {
         var generics = new List<string>();
 
-        for (var index = 0; index <= 10; index++)
+        for (var index = 0; index <= amount; index++)
         {
             generics.Add($"T{index}");
             var delegateInfo = new DelegateInfo { Name = "ForEachWithEntity", Generics = generics, Params = new[] { "in Entity entity" }, ReturnType = "void" };

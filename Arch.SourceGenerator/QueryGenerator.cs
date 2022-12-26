@@ -22,37 +22,37 @@ public class QueryGenerator : IIncrementalGenerator
             var compileTimeStatics = new StringBuilder();
             compileTimeStatics.AppendLine("using System;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
-            compileTimeStatics.AppendGroups(10);
+            compileTimeStatics.AppendGroups(25);
             
             var delegates = new StringBuilder();
             delegates.AppendLine("using System;");
             delegates.AppendLine("namespace Arch.Core;");
-            delegates.AppendForEachDelegates(10);
-            delegates.AppendForEachEntityDelegates(10);
+            delegates.AppendForEachDelegates(25);
+            delegates.AppendForEachEntityDelegates(25);
 
             var interfaces = new StringBuilder();
             interfaces.AppendLine("using System;");
             interfaces.AppendLine("using System.Runtime.CompilerServices;");
             interfaces.AppendLine("namespace Arch.Core;");
-            interfaces.AppendInterfaces(10);
-            interfaces.AppendEntityInterfaces(10);
+            interfaces.AppendInterfaces(25);
+            interfaces.AppendEntityInterfaces(25);
             
             var references = new StringBuilder();
             references.AppendLine("using System;");
             references.AppendLine("using System.Runtime.CompilerServices;");
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("namespace Arch.Core;");
-            references.AppendReferences(10);
+            references.AppendReferences(25);
 
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
             jobs.AppendLine("using System.Runtime.CompilerServices;");
             jobs.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             jobs.AppendLine("namespace Arch.Core;");
-            jobs.AppendForEachJobs(10);
-            jobs.AppendEntityForEachJobs(10);
-            jobs.AppendIForEachJobs(10);
-            jobs.AppendIForEachWithEntityJobs(10);
+            jobs.AppendForEachJobs(25);
+            jobs.AppendEntityForEachJobs(25);
+            jobs.AppendIForEachJobs(25);
+            jobs.AppendIForEachWithEntityJobs(25);
 
             var queries = CodeBuilder.Create("Arch.Core")
                 .AddNamespaceImport("System")
@@ -61,10 +61,10 @@ public class QueryGenerator : IIncrementalGenerator
                 .AddNamespaceImport("JobScheduler")
                 .AddNamespaceImport("Arch.Core.Utils")
                 .AddClass("World").MakePublicClass();
-            queries.AppendQueryMethods(10);
-            queries.AppendEntityQueryMethods(10);
-            queries.AppendParallelQuerys(10);
-            queries.AppendParallelEntityQuerys(10);
+            queries.AppendQueryMethods(25);
+            queries.AppendEntityQueryMethods(25);
+            queries.AppendParallelQuerys(25);
+            queries.AppendParallelEntityQuerys(25);
 
             var acessors = new StringBuilder();
             acessors.AppendLine("using System;");
@@ -78,33 +78,33 @@ public class QueryGenerator : IIncrementalGenerator
             acessors.AppendLine($@"
                
                 public partial struct Chunk{{
-                    {new StringBuilder().AppendChunkHases(10)}
-                    {new StringBuilder().AppendChunkIndexGets(10)}        
-                    {new StringBuilder().AppendChunkIndexSets(10)}
+                    {new StringBuilder().AppendChunkHases(25)}
+                    {new StringBuilder().AppendChunkIndexGets(25)}        
+                    {new StringBuilder().AppendChunkIndexSets(25)}
                 }}
 
                 public partial class Archetype{{
-                    {new StringBuilder().AppendArchetypeHases(10)}
-                    {new StringBuilder().AppendArchetypeGets(10)}
-                    {new StringBuilder().AppendArchetypeSets(10)}
+                    {new StringBuilder().AppendArchetypeHases(25)}
+                    {new StringBuilder().AppendArchetypeGets(25)}
+                    {new StringBuilder().AppendArchetypeSets(25)}
                 }}
             
                 public partial class World{{
-                    {new StringBuilder().AppendCreates(10)}
-                    {new StringBuilder().AppendWorldHases(10)}
-                    {new StringBuilder().AppendWorldGets(10)}
-                    {new StringBuilder().AppendWorldSets(10)}
-                    {new StringBuilder().AppendWorldAdds(10)}    
-                    {new StringBuilder().AppendWorldRemoves(10)}
+                    {new StringBuilder().AppendCreates(25)}
+                    {new StringBuilder().AppendWorldHases(25)}
+                    {new StringBuilder().AppendWorldGets(25)}
+                    {new StringBuilder().AppendWorldSets(25)}
+                    {new StringBuilder().AppendWorldAdds(25)}    
+                    {new StringBuilder().AppendWorldRemoves(25)}
                 }}
 
                public static partial class EntityExtensions{{
                 #if !PURE_ECS
-                    {new StringBuilder().AppendEntityHases(10)}
-                    {new StringBuilder().AppendEntitySets(10)}
-                    {new StringBuilder().AppendEntityGets(10)}
-                    {new StringBuilder().AppendEntityAdds(10)}
-                    {new StringBuilder().AppendEntityRemoves(10)}
+                    {new StringBuilder().AppendEntityHases(25)}
+                    {new StringBuilder().AppendEntitySets(25)}
+                    {new StringBuilder().AppendEntityGets(25)}
+                    {new StringBuilder().AppendEntityAdds(25)}
+                    {new StringBuilder().AppendEntityRemoves(25)}
                 #endif
                 }}
             ");
@@ -116,10 +116,10 @@ public class QueryGenerator : IIncrementalGenerator
             hpQueries.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             hpQueries.AppendLine("using Arch.Core.Utils;");
             hpQueries.AppendLine("namespace Arch.Core;");
-            hpQueries.AppendQueryInterfaceMethods(10);
-            hpQueries.AppendEntityQueryInterfaceMethods(10);
-            hpQueries.AppendHpParallelQuerys(10);
-            hpQueries.AppendHpeParallelQuerys(10);
+            hpQueries.AppendQueryInterfaceMethods(25);
+            hpQueries.AppendEntityQueryInterfaceMethods(25);
+            hpQueries.AppendHpParallelQuerys(25);
+            hpQueries.AppendHpeParallelQuerys(25);
 
             initializationContext.AddSource("CompileTimeStatics.g.cs",
                 CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
