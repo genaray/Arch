@@ -38,9 +38,7 @@ public class MovementSystem : SystemBase<GameTime>
     /// Defines a query, a description of which entitys we target.
     /// This is based upon their component composition. To update all entity positions, we only need entities with Position AND Velocit components. 
     /// </summary>
-    private readonly QueryDescription _entitiesToMove = new() {
-        All = new ComponentType[]{ typeof(Position), typeof(Velocity) }
-    };
+    private readonly QueryDescription _entitiesToMove = new QueryDescription().WithAll<Position, Velocity>();
 
     /// <summary>
     /// A inlined struct implementation of movement logic.
@@ -112,9 +110,7 @@ public class ColorSystem : SystemBase<GameTime>
     /// <summary>
     /// Targeting all entities with a sprite component. 
     /// </summary>
-    private readonly QueryDescription _entitiesToChangeColor = new() {
-        All = new ComponentType[]{ typeof(Sprite) }
-    };
+    private readonly QueryDescription _entitiesToChangeColor = new QueryDescription().WithAll<Sprite>();
     
     /// <summary>
     /// Gets called once per frame
@@ -142,9 +138,7 @@ public class DrawSystem : SystemBase<GameTime>
     /// <summary>
     /// Targets all entities with a position and sprite
     /// </summary>
-    private readonly QueryDescription _entitiesToDraw = new() {
-        All = new ComponentType[]{ typeof(Position), typeof(Sprite) }
-    };
+    private readonly QueryDescription _entitiesToDraw = new QueryDescription().WithAll<Position, Sprite>();
     
     /// <summary>
     /// Gets called once per frame

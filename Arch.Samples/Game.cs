@@ -80,7 +80,7 @@ public class Game : Microsoft.Xna.Framework.Game
         if (Keyboard.GetState().IsKeyDown(Keys.Delete))
         {
             // Query for velocity entities and remove their velocity to make them stop moving. 
-            var queryDesc = new QueryDescription { All = new ComponentType[] { typeof(Velocity) } };
+            var queryDesc = new QueryDescription().WithAll<Velocity>();
             _world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
         }
         
