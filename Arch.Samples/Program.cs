@@ -13,5 +13,7 @@ using Arch.Samples;
 // The bottleneck is not the ECS framework, its actually the rendering ( Monogame Spritebatch ).
 
 Console.WriteLine("Sample App starts...");
-var game = new Game();
+using var game = new Game();
 game.Run();
+
+Environment.Exit(0);

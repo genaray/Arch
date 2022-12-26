@@ -90,7 +90,7 @@ public class MovementSystem : SystemBase<GameTime>
     {
         // Iterates over all entities ( based on the passed QueryDescription ), acesses their Position and Velocity Components and updates them.
         // Highperformance and inlined calls for maximum effiency. 
-        var movementJob = new Move(time.ElapsedGameTime.Milliseconds);
+        var movementJob = new Move((float) time.ElapsedGameTime.TotalMilliseconds);
         World.HPParallelQuery<Move, Position, Velocity>(in _entitiesToMove, ref movementJob);
         
         // Iterates over the same entities, acesses the same components. But executes the "Bounce" struct. 
@@ -123,9 +123,9 @@ public class ColorSystem : SystemBase<GameTime>
     {
         _gameTime = time;
         World.Query(in _entitiesToChangeColor, (ref Sprite sprite) => {
-            sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.Milliseconds * 0.08);
-            sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.Milliseconds * 0.08);
-            sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.Milliseconds * 0.08);
+            sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
+            sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
+            sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
         });
     }
 }
