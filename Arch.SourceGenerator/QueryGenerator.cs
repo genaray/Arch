@@ -73,6 +73,7 @@ public class QueryGenerator : IIncrementalGenerator
             acessors.AppendLine("using Arch.Core.Utils;");
             acessors.AppendLine("using System.Diagnostics.Contracts;");
             acessors.AppendLine("using Arch.Core.Extensions;");
+            acessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
             acessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             acessors.AppendLine("namespace Arch.Core;");
             acessors.AppendLine($@"
@@ -106,6 +107,13 @@ public class QueryGenerator : IIncrementalGenerator
                     {new StringBuilder().AppendEntityAdds(25)}
                     {new StringBuilder().AppendEntityRemoves(25)}
                 #endif
+                }}
+
+                public partial struct QueryDescription{{
+                    {new StringBuilder().AppendQueryDescriptionWithAlls(25)}
+                    {new StringBuilder().AppendQueryDescriptionWithAnys(25)}
+                    {new StringBuilder().AppendQueryDescriptionWithNones(25)}
+                    {new StringBuilder().AppendQueryDescriptionWithExclusives(25)}
                 }}
             ");
             
