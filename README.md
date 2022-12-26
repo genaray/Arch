@@ -37,7 +37,7 @@ public class Game {
 
         // Create entities
         for (var index = 0; index < 1000; index++) 
-            var entity = world.Create(new Position{ x = 0, y = 0}, new Velocity{ dx = 1, dy = 1});
+            var entity = world.Create(new Position(0,0), new Velocity(1,1));
         
         // Query and modify entities ( There also alternatives without lambdas ;) ) 
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
