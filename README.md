@@ -24,22 +24,22 @@ Enough spoken, let's take a look at some code. Arch is bare minimum, easy to use
 
 It's not ! Arch does everything for you, you only need to define the entities and the logic.
 
-```csharp
-public class Game {
+```cs
+// Components ( ignore the formatting, this saves space )
+public struct Position{ float X, Y };
+public struct Velocity{ float Dx, Dy };
 
-    record struct Position(float X, float Y);
-    record struct Velocity(float Dx, float Dy);
+public class Game {
     
     public static void Main(string[] args) {
         
+        // Create world and entities with position and velocity.
         var world = World.Create();
-        var query = new QueryDescription{ All = new ComponentType[]{ typeof(Position), typeof(Velocity) } };  // Query all entities with Position AND Velocity components
-
-        // Create entities
         for (var index = 0; index < 1000; index++) 
-            var entity = world.Create(new Position(0,0), new Velocity(1,1));
+            world.Create(new Position{ X = 0, Y = 0}, new Velocity{ Dx = 1, Dy = 1});
         
-        // Query and modify entities ( There also alternatives without lambdas ;) ) 
+        // Query and modify entities ( There are also alternatives without lambdas ;) ) 
+        var query = new QueryDescription{ All = new ComponentType[]{ typeof(Position), typeof(Velocity) } }; // Targets entities with Position AND Velocity.
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
             pos.X += vel.Dx;
             pos.Y += vel.Dy;
