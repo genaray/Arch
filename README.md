@@ -10,7 +10,7 @@ A high performance C# based Archetype & Chunks [Entity Component System](https:/
 - 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark)!
 - 🤏 **_BARE MINIMUM_** >  Not bloated, it's small and only provides the essentials for you! 
 - ☕️ **_SIMPLE_** >  Promotes a clean, minimal and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki)!
-- 💪 _**MAINTAINED**_ > It's actively being worked on, maintained and supported ! 
+- 💪 _**MAINTAINED**_ > It's actively being worked on, maintained and supported! 
 - 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
@@ -20,9 +20,8 @@ dotnet add PROJECT package Arch --version 1.1.0
 
 # Code Sample
 
-Enough spoken, let's take a look at some code. Arch is bare minimum, easy to use and efficient. You want to create some game entities and make them move based on their velocity... sounds complicated?
-
-It's not ! Arch does everything for you, you only need to define the entities and the logic.
+Arch is bare minimum, easy to use and efficient. Let's say you want to create some game entities and make them move based on their velocity... sounds complicated?
+It's not! Arch does everything for you, you only need to define the entities and the logic.
 
 ```cs
 // Components ( ignore the formatting, this saves space )
@@ -119,18 +118,18 @@ A small example could look like this...
 ```csharp
 var entity = world.Create<Position, Velocity>();
 
-ref var position = ref entity.Get<Position>();    // Get reference to the position
-position.x++;                                     // Update x
-position.y++;                                     // Update y
+ref var position = ref entity.Get<Position>();    // Get reference to the position.
+position.x++;                                     // Update x.
+position.y++;                                     // Update y.
 
-if(entity.Has<Position>())                        // Make sure that entity has a position ( Optional )
-    entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position 
+if(entity.Has<Position>())                        // Make sure that entity has a position (Optional).
+    entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position .
 
 entity.Remove<Velocity>();                         // Removes an velocity component and moves it to a new archetype.
 entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component and moves the entity back to the previous archetype. 
 ```
 
-> Structural entity changes should not happen during a Query or Iteration ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this ! :) 
+> Structural entity changes should not happen during a Query or Iteration! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this! :) 
 
 ## System aka. Query
 
@@ -162,12 +161,12 @@ To perform this operation, we need to iterate over all entities having both a `P
 The `world.Query` method then smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile` and no `AI` component and executes the defined logic for all of those fitting entities. 
 
 Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If that's set, it will ignore `All`, `Any` and `None` and only target entities with an exactly defined set of components. It's also important to know that there are multiple different overloads to perform such a query.
-> The less you query in terms of components and the size of components... the faster the query is !
+> The less you query in terms of components and the size of components... the faster the query is!
 
 ## More features and Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
-However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
+However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki)! 
 There's more to explore, for example...
 
 - Bulk Entity Adding
