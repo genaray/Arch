@@ -131,18 +131,22 @@ public class ArchetypeTest
         archetype.Add(entity, out var entityOneSlot);
         otherArchetype.Add(otherEntity, out var entityTwoSlot);
         
-        archetype.Set(ref entityOneSlot, new Transform{ X = 10, Y = 10});
-        archetype.Set(ref entityOneSlot, new Rotation{ X = 10, Y = 10});
+        archetype.Set(ref entityOneSlot, new Transform{ X = 1, Y = 2});
+        archetype.Set(ref entityOneSlot, new Rotation{ X = 3, Y = 4});
 
         otherArchetype.Add(entity, out var newSlot);
         archetype.CopyTo(otherArchetype, ref entityOneSlot, ref newSlot);
         archetype.Remove(ref entityOneSlot, out var replacedEntityId);
-    
+
+        ref var xx = ref otherArchetype.Get<Transform>(ref newSlot);
+        ref var yy = ref otherArchetype.Get<Rotation>(ref newSlot);
+
+
         Assert.AreEqual(0, archetype.Chunks[0].Size);
         Assert.AreEqual(2, otherArchetype.Chunks[0].Size);
-        Assert.AreEqual(10, otherArchetype.Get<Transform>(ref newSlot).X);
-        Assert.AreEqual(10, otherArchetype.Get<Transform>(ref newSlot).Y);
-        Assert.AreEqual(10, otherArchetype.Get<Rotation>(ref newSlot).X);
-        Assert.AreEqual(10, otherArchetype.Get<Rotation>(ref newSlot).Y);
+        Assert.AreEqual(1, otherArchetype.Get<Transform>(ref newSlot).X);
+        Assert.AreEqual(2, otherArchetype.Get<Transform>(ref newSlot).Y);
+        Assert.AreEqual(3, otherArchetype.Get<Rotation>(ref newSlot).X);
+        Assert.AreEqual(4, otherArchetype.Get<Rotation>(ref newSlot).Y);
     }
 }

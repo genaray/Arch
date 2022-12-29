@@ -283,7 +283,7 @@ public class CommandBuffer : IDisposable
                 if(!sparseArray.Has(id)) continue;
 
                 var chunkArray = chunk.GetArray(sparseArray.Type);
-                Array.Copy(sparseArray.Components, id, chunkArray, chunkIndex, 1);
+                Array.Copy(sparseArray.Components.Array, id, chunkArray, chunkIndex, 1);
             }
         }
         

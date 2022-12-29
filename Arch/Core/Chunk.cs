@@ -16,10 +16,12 @@ public sealed class ComponentArray<T> where T : IComponent
     private T[] _array;
 
     public T[] Array => _array;
+    public Type ElementType { get; }
 
-    public ComponentArray(int size)
+    public ComponentArray(Type type, int size)
     {
         _array = new T[size];
+        ElementType = type;
     }
 
     public ref T GetComponenet(int index) => ref _array[index];
@@ -67,7 +69,7 @@ public partial struct Chunk
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
-            Components[index] = new ComponentArray<IComponent>(Capacity);
+            Components[index] = new ComponentArray<IComponent>(types[index], Capacity);
         }
     }
 
@@ -355,7 +357,7 @@ public partial struct Chunk
         for (var i = 0; i < Components.Length; i++)
         {
             var sourceArray = Components[i].Array;
-            var sourceType = sourceArray.GetType().GetElementType();
+            var sourceType = Components[i].ElementType;
 
             if (!toChunk.Has(sourceType)) continue;
             

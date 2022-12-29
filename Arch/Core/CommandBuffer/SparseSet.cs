@@ -37,7 +37,7 @@ internal class SparseArray : IDisposable
     /// <summary>
     /// The component array of <see cref="Type"/>. 
     /// </summary>
-    public Array Components { get; private set; }
+    public ComponentArray<IComponent> Components { get; private set; }
 
     public SparseArray(ComponentType type, int capacity = 64)
     {
@@ -47,7 +47,7 @@ internal class SparseArray : IDisposable
         Size = 0;
         Entities = new int[Capacity];
         Array.Fill(Entities, -1);
-        Components = Array.CreateInstance(type, Capacity);
+        Components = new ComponentArray<IComponent>(type, Capacity);
     }
 
     /// <summary>
@@ -71,11 +71,11 @@ internal class SparseArray : IDisposable
             Size++;
 
             // Resize components
-            if (Size < Components.Length) return;
+            if (Size < Components.Array.Length) return;
 
             Capacity = Capacity <= 0 ? 1 : Capacity;
-            var array = Array.CreateInstance(Type, Capacity * 2);
-            Components.CopyTo(array, 0);
+            var array = new ComponentArray<IComponent>(Type, Capacity * 2);
+            Components.Array.CopyTo(array.Array, 0);
             Components = array;
             Capacity *= 2;
         }
@@ -100,7 +100,7 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T[] GetArray<T>()
     {
-        return Unsafe.As<T[]>(Components);
+        return Unsafe.As<T[]>(Components.Array);
     }
 
     /// <summary>
