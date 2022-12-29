@@ -1,6 +1,3 @@
-using System;
-using System.Runtime.CompilerServices;
-
 namespace Arch.Core.Utils;
 
 /// <summary>
@@ -8,7 +5,7 @@ namespace Arch.Core.Utils;
 /// </summary>
 public class BitSet
 {
-    private const int BitSize = sizeof(uint) * 8 - 1;
+    private const int BitSize = (sizeof(uint) * 8) - 1;
     private const int ByteSize = 5; // log_2(BitSize + 1)
 
     private uint[] _bits;
@@ -31,7 +28,9 @@ public class BitSet
     {
         var b = index >> ByteSize;
         if (b >= _bits.Length)
+        {
             return false;
+        }
 
         return (_bits[b] & (1 << (index & BitSize))) != 0;
     }
@@ -45,7 +44,9 @@ public class BitSet
     {
         var b = index >> ByteSize;
         if (b >= _bits.Length)
+        {
             Array.Resize(ref _bits, b + 1);
+        }
 
         _bits[b] |= 1u << (index & BitSize);
     }
@@ -59,7 +60,9 @@ public class BitSet
     {
         var b = index >> ByteSize;
         if (b >= _bits.Length)
+        {
             return;
+        }
 
         _bits[b] &= ~(1u << (index & BitSize));
     }
@@ -72,7 +75,9 @@ public class BitSet
     {
         var count = _bits.Length;
         for (var i = 0; i < count; i++)
+        {
             _bits[i] = 0xffffffff;
+        }
     }
 
     /// <summary>
@@ -84,7 +89,6 @@ public class BitSet
         Array.Clear(_bits, 0, _bits.Length);
     }
 
-
     /// <summary>
     ///     Determines whether all of the bits in this instance are also set in the given bitset.
     /// </summary>
@@ -93,8 +97,10 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool All(BitSet other)
     {
-        if (other == null)
+        if (other is null)
+        {
             throw new ArgumentNullException("other");
+        }
 
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -103,14 +109,20 @@ public class BitSet
         {
             var bit = _bits[i];
             if ((bit & otherBits[i]) != bit)
+            {
                 return false;
+            }
         }
 
         // handle extra bits on our side that might just be all zero
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
+        {
             if (_bits[i] != 0)
+            {
                 return false;
+            }
+        }
 
         return true;
     }
@@ -123,8 +135,10 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
-        if (other == null)
+        if (other is null)
+        {
             throw new ArgumentNullException("other");
+        }
 
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -133,14 +147,20 @@ public class BitSet
         {
             var bit = _bits[i];
             if ((bit & otherBits[i]) != 0)
+            {
                 return true;
+            }
         }
 
         // handle extra bits on our side that might just be all zero
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
+        {
             if (_bits[i] != 0)
+            {
                 return false;
+            }
+        }
 
         return false;
     }
@@ -153,8 +173,10 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
-        if (other == null)
+        if (other is null)
+        {
             throw new ArgumentNullException("other");
+        }
 
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -163,18 +185,24 @@ public class BitSet
         {
             var bit = _bits[i];
             if ((bit & otherBits[i]) == 0)
+            {
                 return true;
+            }
         }
 
         // handle extra bits on our side that might just be all zero
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
+        {
             if (_bits[i] != 0)
+            {
                 return true;
+            }
+        }
 
         return false;
     }
-    
+
     /// <summary>
     ///     Determines whether all of the bits in this instance are also set in the given bitset.
     /// </summary>
@@ -183,8 +211,10 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Exclusive(BitSet other)
     {
-        if (other == null)
+        if (other is null)
+        {
             throw new ArgumentNullException("other");
+        }
 
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -193,14 +223,20 @@ public class BitSet
         {
             var bit = _bits[i];
             if ((bit ^ otherBits[i]) != 0)
+            {
                 return false;
+            }
         }
 
         // handle extra bits on our side that might just be all zero
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
+        {
             if (_bits[i] != 0)
+            {
                 return false;
+            }
+        }
 
         return true;
     }

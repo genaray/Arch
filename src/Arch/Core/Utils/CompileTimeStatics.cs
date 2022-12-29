@@ -1,25 +1,13 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
 
 /// <summary>
-/// Represents a component with its meta informations. 
+///     Represents a component with its meta informations.
 /// </summary>
 public readonly struct ComponentType
 {
-    public readonly int Id;
-    public readonly Type Type;
-
-    public readonly int ByteSize;
-    public readonly bool ZeroSized;
-
     public ComponentType(int id, Type type, int byteSize, bool zeroSized)
     {
         Id = id;
@@ -28,12 +16,18 @@ public readonly struct ComponentType
         ZeroSized = zeroSized;
     }
 
+    public readonly int Id;
+    public readonly Type Type;
+
+    public readonly int ByteSize;
+    public readonly bool ZeroSized;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ComponentType(Type value)
     {
         return Component.GetComponentType(value);
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Type(ComponentType value)
     {
@@ -51,13 +45,16 @@ public static class ComponentRegistry
     /// <summary>
     ///     A list of all registered components.
     /// </summary>
-    private static Dictionary<Type, ComponentType> _types { get; } = new(128);
+    private static readonly Dictionary<Type, ComponentType> _types = new(128);
 
     /// <summary>
     /// Returns all registered types as a newly allocated array.
     /// </summary>
-    public static ComponentType[] Types => _types.Values.ToArray();
-    
+    public static ComponentType[] Types
+    {
+        get => _types.Values.ToArray();
+    }
+
     /// <summary>
     /// The amount of registered components.
     /// </summary>
@@ -82,10 +79,12 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(Type type)
     {
-        
         Debug.Assert(type.IsValueType, $"Only value type components are useable, '{type.Name}' is not a primitive nor a struct.");
-        if (TryGet(type, out var meta)) return meta;
-        
+        if (TryGet(type, out var meta))
+        {
+            return meta;
+        }
+
         // Register and assign component id
         var size = Marshal.SizeOf(type);
         meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
@@ -147,11 +146,12 @@ public static class ComponentRegistry
 /// <typeparam name="T"></typeparam>
 public static class Component<T>
 {
-    public static readonly ComponentType ComponentType;
     static Component()
     {
         ComponentType = ComponentRegistry.Add<T>();
     }
+
+    public static readonly ComponentType ComponentType;
 }
 
 /// <summary>
@@ -161,7 +161,6 @@ public static class Component<T>
 /// <typeparam name="T"></typeparam>
 public static class Component
 {
-    
     /// <summary>
     /// Returns the components id, based on its type. 
     /// </summary>
@@ -172,23 +171,22 @@ public static class Component
     {
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
-    
+
     /// <summary>
-    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders. 
+    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders.
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(params ComponentType[] obj)
     {
-        
         // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
         unchecked
         {
             int hash = 0;
-            foreach(var type in obj)
+            foreach (var type in obj)
             {
-                int x = type.Id+1;
+                int x = type.Id + 1;
 
                 x ^= x >> 17;
                 x *= 830770091;   // 0xed5ad4bb
@@ -204,7 +202,7 @@ public static class Component
             return hash;
         }
     }
-    
+
     /// <summary>
     ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders. 
     /// </summary>
@@ -213,14 +211,13 @@ public static class Component
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<int> obj)
     {
-        
         // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
         unchecked
         {
             int hash = 0;
-            foreach(var type in obj)
+            foreach (var type in obj)
             {
-                int x = type+1;
+                int x = type + 1;
 
                 x ^= x >> 17;
                 x *= 830770091;   // 0xed5ad4bb
@@ -237,7 +234,6 @@ public static class Component
         }
     }
 }
-
 
 /// <summary>
 /// Compile static class that acts as a counter. 
@@ -253,7 +249,6 @@ public static class JobMeta
 /// <typeparam name="T"></typeparam>
 public static class JobMeta<T> where T : class, new()
 {
-
     public static readonly int Id;
     public static readonly DefaultObjectPolicy<T> Policy;
     public static readonly DefaultObjectPool<T> Pool;
@@ -271,4 +266,3 @@ public static class Group
 {
     internal static int Id;
 }
-

@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Arch.Samples;
+﻿using Arch.Samples;
 
 // Info : 
 // This sample demonstrates a example usage of arch. 

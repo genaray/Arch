@@ -1,4 +1,4 @@
-namespace Arch.Test;
+namespace Arch.Benchmarks;
 
 public struct Transform
 {
@@ -15,6 +15,4 @@ public struct Rotation
     public float X, Y, Z, W;
 }
 
-public struct Ai
-{
-}
+// public struct Ai { }

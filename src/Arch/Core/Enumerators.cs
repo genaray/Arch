@@ -1,5 +1,3 @@
-using System;
-using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 
 namespace Arch.Core;
@@ -17,16 +15,14 @@ public ref struct Enumerator<T>
 
     public Enumerator(Span<T> span)
     {
-        this._span = span;
-
+        _span = span;
         _index = -1;
         _size = span.Length;
     }
 
     public Enumerator(Span<T> span, int length)
     {
-        this._span = span;
-
+        _span = span;
         _index = -1;
         _size = length;
     }
@@ -58,28 +54,31 @@ public ref struct QueryArchetypeEnumerator
     private readonly Query _query;
     private readonly Span<Archetype> _archetypes;
 
-    internal int _index;
     private readonly int _size;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryArchetypeEnumerator(Query query, Span<Archetype> archetypes)
     {
-        this._query = query;
-        this._archetypes = archetypes;
-        _index = -1;
+        _query = query;
+        _archetypes = archetypes;
+        Index = -1;
         _size = archetypes.Length;
     }
+
+    internal int Index;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         unchecked
         {
-            while (++_index < _size)
+            while (++Index < _size)
             {
                 ref var archetype = ref Current;
                 if (archetype.Size > 0 && _query.Valid(archetype.BitSet))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -89,13 +88,13 @@ public ref struct QueryArchetypeEnumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
-        _index = -1;
+        Index = -1;
     }
 
     public readonly ref Archetype Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _archetypes[_index];
+        get => ref _archetypes[Index];
     }
 }
 
@@ -109,8 +108,8 @@ public readonly ref struct QueryArchetypeIterator
 
     public QueryArchetypeIterator(Query query, Span<Archetype> archetypes)
     {
-        this._query = query;
-        this._archetypes = archetypes;
+        _query = query;
+        _archetypes = archetypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,9 +142,17 @@ public ref struct QueryChunkEnumerator
             --_index;
 
             // We reached the end, next archetype
-            if (_index >= 0) return true;
-            if (!_archetypeEnumerator.MoveNext()) return false;
-            _index = _archetypeEnumerator.Current.Size-1;
+            if (_index >= 0)
+            {
+                return true;
+            }
+
+            if (!_archetypeEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            _index = _archetypeEnumerator.Current.Size - 1;
 
             return true;
         }
@@ -176,8 +183,8 @@ public readonly ref struct QueryChunkIterator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkIterator(Query query, Span<Archetype> archetypes)
     {
-        this._query = query;
-        this._archetypes = archetypes;
+        _query = query;
+        _archetypes = archetypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -213,8 +220,15 @@ public ref struct QueryEntityEnumerator
             _index++;
 
             // We reached the end, next archetype
-            if (_index < _size) return true;
-            if (!_archetypeEnumerator.MoveNext()) return false;
+            if (_index < _size)
+            {
+                return true;
+            }
+
+            if (!_archetypeEnumerator.MoveNext())
+            {
+                return false;
+            }
 
             ref var current = ref _archetypeEnumerator.Current;
             _chunks = new Span<Chunk>(current.Chunks);
@@ -250,8 +264,8 @@ public readonly ref struct QueryEntityIterator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryEntityIterator(Query query, Span<Archetype> archetypes)
     {
-        this._query = query;
-        this._archetypes = archetypes;
+        _query = query;
+        _archetypes = archetypes;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -275,7 +289,7 @@ public ref struct RangeEnumerator
 
     public RangeEnumerator(int threads, int size)
     {
-        this._size = size;
+        _size = size;
         _index = -1;
 
         JobExtensions.PartionateArray(threads, size, out _jobs, out _perJob);
@@ -284,12 +298,17 @@ public ref struct RangeEnumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int AmountForJob(int i)
     {
-        if (i <= 0) return _perJob;
+        if (i <= 0)
+        {
+            return _perJob;
+        }
+
         if (i == _jobs - 1)
         {
-            var amount = (int)Math.Ceiling((float)(_size % _jobs))+_perJob;
+            var amount = (int)Math.Ceiling((float)(_size % _jobs)) + _perJob;
             return amount > 0 ? amount : 1;
         }
+
         return _perJob;
     }
 
@@ -305,7 +324,10 @@ public ref struct RangeEnumerator
         _index = -1;
     }
 
-    public Range Current => new(_index * _perJob, AmountForJob(_index));
+    public Range Current
+    {
+        get => new(_index * _perJob, AmountForJob(_index));
+    }
 }
 
 /// <summary>
@@ -318,8 +340,8 @@ public readonly ref struct RangePartitioner
 
     public RangePartitioner(int threads, int size)
     {
-        this._threads = threads;
-        this._size = size;
+        _threads = threads;
+        _size = size;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

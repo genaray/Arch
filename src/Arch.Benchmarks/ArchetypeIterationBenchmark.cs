@@ -1,13 +1,7 @@
-using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Utils;
-using Arch.Test;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Engines;
 
-namespace Arch.Benchmark;
+namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
@@ -18,8 +12,8 @@ public class ArchetypeIterationBenchmark
 
     [Params(10000, 100000, 1000000)] public int Amount;
 
-    private Consumer _consumer;
-    private Archetype _globalArchetype;
+    private Consumer? _consumer;
+    private Archetype? _globalArchetype;
 
     [GlobalSetup]
     public void Setup()
@@ -128,7 +122,6 @@ public class ArchetypeIterationBenchmark
             }
         });
     }
-
 
     [Benchmark]
     public void IterationNormalEntityTwoComponents()

@@ -1,4 +1,3 @@
-using System;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
@@ -13,7 +12,9 @@ public static class BitSetExtensions
     public static BitSet ToBitSet(this ComponentType[] types)
     {
         if (types.Length == 0)
+        {
             return new BitSet();
+        }
 
         var bitSet = new BitSet();
         bitSet.SetBits(types);

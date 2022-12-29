@@ -1,28 +1,30 @@
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.Core.Utils;
 
-namespace Arch.Test;
+namespace Arch.Tests;
 
 [TestFixture]
 public partial class WorldTest
 {
-    
     private World _world;
 
     private readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
     private readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-    
+
     [SetUp]
     public void Setup()
     {
         _world = World.Create();
 
         for (var index = 0; index < 10000; index++)
+        {
             _world.Create(_entityGroup);
+        }
 
         for (var index = 0; index < 10000; index++)
+        {
             _world.Create(_entityAiGroup);
+        }
     }
 
     [TearDown]
@@ -37,7 +39,7 @@ public partial class WorldTest
         var size = _world.Size;
         var entity = _world.Create(_entityGroup);
 
-        Assert.AreEqual(size + 1, _world.Size);
+        Assert.That(_world.Size, Is.EqualTo(size + 1));
         Assert.True(_world.IsAlive(in entity));
     }
 
@@ -49,11 +51,11 @@ public partial class WorldTest
         var worldSizeAfter = _world.Size;
         _world.Destroy(in entity);
 
-        Assert.AreEqual(worldSizeBefore, _world.Size);
+        Assert.That(_world.Size, Is.EqualTo(worldSizeBefore));
         Assert.Less(worldSizeBefore, worldSizeAfter);
         Assert.False(_world.IsAlive(in entity));
     }
-    
+
     [Test]
     public void DestroyAll()
     {
@@ -68,11 +70,11 @@ public partial class WorldTest
             _world.Destroy(in entity);
         }
 
-        Assert.AreEqual(0, _world.Size);
-        Assert.AreEqual(1, _world.Archetypes[0].Size);
-        Assert.AreEqual(1, _world.Archetypes[1].Size);
+        Assert.That(_world.Size, Is.EqualTo(0));
+        Assert.That(_world.Archetypes[0].Size, Is.EqualTo(1));
+        Assert.That(_world.Archetypes[1].Size, Is.EqualTo(1));
     }
-    
+
     [Test]
     public void RecycleId()
     {
@@ -83,8 +85,8 @@ public partial class WorldTest
         var recycledEntity = localWorld.Create(_entityGroup);
         var newEntity = localWorld.Create(_entityGroup);
 
-        Assert.AreEqual(entity.Id, recycledEntity.Id);
-        Assert.AreNotEqual(recycledEntity.Id, newEntity.Id);
+        Assert.That(recycledEntity.Id, Is.EqualTo(entity.Id));
+        Assert.That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
 
         World.Destroy(localWorld);
     }
@@ -95,14 +97,19 @@ public partial class WorldTest
         // Add
         var before = _world.Size;
         for (var index = 0; index < 500; index++)
+        {
             _world.Create(_entityGroup);
+        }
 
         // Remove
         for (var index = 0; index < 500; index++)
+        {
             _world.Destroy(new Entity(index, _world.Id));
+        }
+
         var after = _world.Size;
 
-        Assert.AreEqual(before, after);
+        Assert.That(after, Is.EqualTo(before));
     }
 
     [Test]
@@ -113,24 +120,25 @@ public partial class WorldTest
 
         _world.Reserve(_entityGroup, 10000);
         for (var index = 0; index < 10000; index++)
+        {
             _world.Create(_entityGroup);
+        }
 
         Assert.Greater(_world.Size, beforeSize);
-        Assert.AreEqual(beforeSize + 10000, _world.Size);
-        Assert.AreEqual(beforeCapacity + 10000, _world.Capacity);
+        Assert.That(_world.Size, Is.EqualTo(beforeSize + 10000));
+        Assert.That(_world.Capacity, Is.EqualTo(beforeCapacity + 10000));
     }
-    
 
     [Test]
     public void MultipleArchetypesTest()
     {
         var archTypes1 = new ComponentType[] { typeof(Transform) };
         var archTypes2 = new ComponentType[] { typeof(Transform) };
-  
+
         var entity1 = _world.Create(archTypes1);
         var entity2 = _world.Create(archTypes2);
-        
-        Assert.AreEqual(_world.GetArchetype(in entity1), _world.GetArchetype(in entity2));
+
+        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity1)));
     }
 
     [Test]
@@ -160,21 +168,21 @@ public partial class WorldTest
 // Get, Set, Has, Remove, Add
 public partial class WorldTest
 {
-    
+
     [Test]
     public void SetGetAndHas()
     {
 
         var entity = _world.Create(_entityGroup);
         Assert.True(_world.Has<Transform>(in entity));
-        
-        _world.Set(entity, new Transform{ X = 10, Y = 10});
+
+        _world.Set(entity, new Transform { X = 10, Y = 10 });
         ref var transform = ref _world.Get<Transform>(in entity);
-        
-        Assert.AreEqual(10, transform.X);
-        Assert.AreEqual(10, transform.Y);
+
+        Assert.That(transform.X, Is.EqualTo(10));
+        Assert.That(transform.Y, Is.EqualTo(10));
     }
-    
+
     [Test]
     public void Remove()
     {
@@ -183,12 +191,12 @@ public partial class WorldTest
         var entity2 = _world.Create(_entityGroup);
         _world.Remove<Transform>(in entity);
         _world.Remove<Transform>(in entity2);
-        
-        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
-        Assert.AreEqual(1,_world.GetArchetype(in entity).Size);
-        Assert.AreEqual(2,_world.GetArchetype(in entity).Chunks[0].Size);
+
+        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        Assert.That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
+        Assert.That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
-    
+
     [Test]
     public void Add()
     {
@@ -198,8 +206,8 @@ public partial class WorldTest
         _world.Add<Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
-        Assert.AreEqual(_world.GetArchetype(in entity), arch);
+        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        Assert.That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
     }
 }
 
@@ -215,17 +223,17 @@ public partial class WorldTest
         var size = _world.Size;
         var entity = _world.Create(new Transform(), new Rotation());
 
-        Assert.AreEqual(size + 1, _world.Size);
+        Assert.That(_world.Size, Is.EqualTo(size + 1));
         Assert.True(_world.IsAlive(in entity));
     }
-    
+
     [Test]
     public void GeneratedSetGetAndHas()
     {
-        var entity = _world.Create(new Transform{ X = 10, Y = 10}, new Rotation{ X = 10, Y = 10});
+        var entity = _world.Create(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
         Assert.True(_world.Has<Transform, Rotation>(in entity));
-        
-        _world.Set(entity, new Transform{ X = 20, Y = 20}, new Rotation{ X = 20, Y = 20});
+
+        _world.Set(entity, new Transform { X = 20, Y = 20 }, new Rotation { X = 20, Y = 20 });
         var references = _world.Get<Transform, Rotation>(in entity);
 
         Assert.AreEqual(20, references.t0.X);
@@ -233,7 +241,7 @@ public partial class WorldTest
         Assert.AreEqual(20, references.t1.X);
         Assert.AreEqual(20, references.t1.Y);
     }
-    
+
     [Test]
     public void GeneratedRemove()
     {
@@ -242,12 +250,12 @@ public partial class WorldTest
         var entity2 = _world.Create(new Transform(), new Rotation(), new Ai());
         _world.Remove<Rotation, Ai>(in entity);
         _world.Remove<Rotation, Ai>(in entity2);
-        
-        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
-        Assert.AreEqual(1, _world.GetArchetype(in entity).Size);
-        Assert.AreEqual(2, _world.GetArchetype(in entity).Chunks[0].Size);
+
+        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        Assert.That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
+        Assert.That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
-    
+
     [Test]
     public void GeneratedAdd()
     {
@@ -257,8 +265,8 @@ public partial class WorldTest
         _world.Add<Rotation, Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.AreEqual(_world.GetArchetype(in entity), _world.GetArchetype(in entity2));
-        Assert.AreEqual(_world.GetArchetype(in entity), arch);
+        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        Assert.That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
     }
 }
 

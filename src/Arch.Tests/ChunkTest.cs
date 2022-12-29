@@ -1,7 +1,7 @@
 using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Test;
+namespace Arch.Tests;
 
 [TestFixture]
 public class ChunkTest
@@ -26,7 +26,7 @@ public class ChunkTest
         }
 
         // Make sure the amount fits
-        Assert.AreEqual(_chunk.Capacity, _chunk.Size);
+        Assert.That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
     }
 
     [Test]
@@ -50,7 +50,7 @@ public class ChunkTest
         _chunk.Remove(0);
 
         // Check if the first one was replaced with the last one correctly 
-        Assert.AreEqual(_chunk.Entities[0].Id, last.Id);
+        Assert.That(last.Id, Is.EqualTo(_chunk.Entities[0].Id));
     }
 
     [Test]
@@ -76,8 +76,8 @@ public class ChunkTest
         }
 
         // Check if the first one was replaced with the last one correctly 
-        Assert.AreEqual(_chunk.Size, 0);
-        Assert.AreEqual(_chunk.Entities[0].Id, 0); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+        Assert.That(_chunk.Size, Is.EqualTo(0));
+        Assert.That(_chunk.Entities[0].Id, Is.EqualTo(0)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
     }
 
     [Test]
@@ -95,8 +95,8 @@ public class ChunkTest
         _chunk.Add(in newEntity);
 
         // Check if the first one was replaced with the last one correctly 
-        Assert.AreEqual(_chunk.Size, 2);
-        Assert.AreEqual(_chunk.Entities[0].Id, 2); // Needs to be 1, because it will be the last one getting removed and being moved to that position
-        Assert.AreEqual(_chunk.Entities[1].Id, 1); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+        Assert.That(_chunk.Size, Is.EqualTo(2));
+        Assert.That(_chunk.Entities[0].Id, Is.EqualTo(2)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+        Assert.That(_chunk.Entities[1].Id, Is.EqualTo(1)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
     }
 }

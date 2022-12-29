@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
 public static class TypeExtensions
 {
-
     /// <summary>
     /// Converts the types to their component ids and writes them into the span.
     /// </summary>
@@ -24,7 +19,7 @@ public static class TypeExtensions
             ids[index] = t.Id;
         }
     }
-    
+
     /// <summary>
     ///     Calculates the byte sum of the types.
     /// </summary>
@@ -38,13 +33,13 @@ public static class TypeExtensions
         foreach (var type in types)
         {
             var typeSize = type.ByteSize;
-            typeSize = typeSize != 1 ? typeSize : 0;  // Ignore tag components 
+            typeSize = typeSize != 1 ? typeSize : 0; // Ignore tag components 
             size += typeSize;
         }
 
         return size;
     }
-    
+
     /// <summary>
     ///     Calculates the byte sum of the types.
     /// </summary>
@@ -59,18 +54,23 @@ public static class TypeExtensions
         foreach (var type in types)
         {
             var componentId = type.Id;
-            if (componentId >= max) max = componentId;
+            if (componentId >= max)
+            {
+                max = componentId;
+            }
         }
 
         // Create lookup table where the component-id points to the component index. 
-        var array = new int[max+1];
-        Array.Fill(array, -1);  // -1 Since that indicates no component is in that index since components start at zero we can not use zero here. 
-        for(var index = 0; index < types.Length; index++)
+        var array = new int[max + 1];
+        Array.Fill(array, -1); // -1 Since that indicates no component is in that index since components start at zero we can not use zero here. 
+
+        for (var index = 0; index < types.Length; index++)
         {
             ref var type = ref types[index];
             var componentId = type.Id;
             array[componentId] = index;
         }
+
         return array;
     }
 }

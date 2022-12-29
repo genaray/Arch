@@ -9,6 +9,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Nullable>enable</Nullable>
     <!--<TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
+
+    <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +22,8 @@
     <Using Include="System" />
     <Using Include="System.Collections" />
     <Using Include="System.Collections.Generic" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
     <Using Include="System.Runtime.CompilerServices" />

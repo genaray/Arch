@@ -16,6 +16,7 @@
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
     <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Threading" />
 
     <Using Include="NUnit.Framework" />
   </ItemGroup>

@@ -1,10 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text;
-using CodeGenHelpers;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
-namespace Arch.SourceGen;
+﻿namespace Arch.SourceGen;
 
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
@@ -64,56 +58,61 @@ public class QueryGenerator : IIncrementalGenerator
             acessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
             acessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             acessors.AppendLine("namespace Arch.Core;");
-            acessors.AppendLine($@"
-
-                public partial struct Chunk{{
-                    {new StringBuilder().AppendChunkHases(25)}
-                    {new StringBuilder().AppendChunkIndexGets(25)}
-                    {new StringBuilder().AppendChunkIndexSets(25)}
-                }}
-
-                public partial class Archetype{{
-                    {new StringBuilder().AppendArchetypeHases(25)}
-                    {new StringBuilder().AppendArchetypeGets(25)}
-                    {new StringBuilder().AppendArchetypeSets(25)}
-                }}
-
-                public partial class World{{
-                    {new StringBuilder().AppendCreates(25)}
-                    {new StringBuilder().AppendWorldHases(25)}
-                    {new StringBuilder().AppendWorldGets(25)}
-                    {new StringBuilder().AppendWorldSets(25)}
-                    {new StringBuilder().AppendWorldAdds(25)}
-                    {new StringBuilder().AppendWorldRemoves(25)}
-
-                    {new StringBuilder().AppendQueryMethods(25)}
-                    {new StringBuilder().AppendEntityQueryMethods(25)}
-                    {new StringBuilder().AppendParallelQuerys(25)}
-                    {new StringBuilder().AppendParallelEntityQuerys(25)}
-
-                    {new StringBuilder().AppendQueryInterfaceMethods(25)}
-                    {new StringBuilder().AppendEntityQueryInterfaceMethods(25)}
-                    {new StringBuilder().AppendHpParallelQuerys(25)}
-                    {new StringBuilder().AppendHpeParallelQuerys(25)}
-                }}
-
-               public static partial class EntityExtensions{{
+            acessors.AppendLine(
+                $$"""
+                public partial struct Chunk
+                {
+                    {{new StringBuilder().AppendChunkHases(25)}}
+                    {{new StringBuilder().AppendChunkIndexGets(25)}}
+                    {{new StringBuilder().AppendChunkIndexSets(25)}}
+                }
+                
+                public partial class Archetype
+                {
+                    {{new StringBuilder().AppendArchetypeHases(25)}}
+                    {{new StringBuilder().AppendArchetypeGets(25)}}
+                    {{new StringBuilder().AppendArchetypeSets(25)}}
+                }
+                
+                public partial class World
+                {
+                    {{new StringBuilder().AppendCreates(25)}}
+                    {{new StringBuilder().AppendWorldHases(25)}}
+                    {{new StringBuilder().AppendWorldGets(25)}}
+                    {{new StringBuilder().AppendWorldSets(25)}}
+                    {{new StringBuilder().AppendWorldAdds(25)}}
+                    {{new StringBuilder().AppendWorldRemoves(25)}}
+                
+                    {{new StringBuilder().AppendQueryMethods(25)}}
+                    {{new StringBuilder().AppendEntityQueryMethods(25)}}
+                    {{new StringBuilder().AppendParallelQuerys(25)}}
+                    {{new StringBuilder().AppendParallelEntityQuerys(25)}}
+                
+                    {{new StringBuilder().AppendQueryInterfaceMethods(25)}}
+                    {{new StringBuilder().AppendEntityQueryInterfaceMethods(25)}}
+                    {{new StringBuilder().AppendHpParallelQuerys(25)}}
+                    {{new StringBuilder().AppendHpeParallelQuerys(25)}}
+                }
+                
+                public static partial class EntityExtensions
+                {
                 #if !PURE_ECS
-                    {new StringBuilder().AppendEntityHases(25)}
-                    {new StringBuilder().AppendEntitySets(25)}
-                    {new StringBuilder().AppendEntityGets(25)}
-                    {new StringBuilder().AppendEntityAdds(25)}
-                    {new StringBuilder().AppendEntityRemoves(25)}
+                    {{new StringBuilder().AppendEntityHases(25)}}
+                    {{new StringBuilder().AppendEntitySets(25)}}
+                    {{new StringBuilder().AppendEntityGets(25)}}
+                    {{new StringBuilder().AppendEntityAdds(25)}}
+                    {{new StringBuilder().AppendEntityRemoves(25)}}
                 #endif
-                }}
-
-                public partial struct QueryDescription{{
-                    {new StringBuilder().AppendQueryDescriptionWithAlls(25)}
-                    {new StringBuilder().AppendQueryDescriptionWithAnys(25)}
-                    {new StringBuilder().AppendQueryDescriptionWithNones(25)}
-                    {new StringBuilder().AppendQueryDescriptionWithExclusives(25)}
-                }}
-            ");
+                }
+                
+                public partial struct QueryDescription
+                {
+                    {{new StringBuilder().AppendQueryDescriptionWithAlls(25)}}
+                    {{new StringBuilder().AppendQueryDescriptionWithAnys(25)}}
+                    {{new StringBuilder().AppendQueryDescriptionWithNones(25)}}
+                    {{new StringBuilder().AppendQueryDescriptionWithExclusives(25)}}
+                }
+                """);
 
             initializationContext.AddSource("CompileTimeStatics.g.cs",
                 CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

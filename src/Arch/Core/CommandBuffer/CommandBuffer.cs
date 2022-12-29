@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.CompilerServices;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
@@ -32,68 +28,67 @@ public struct BufferedEntityInfo
 /// </summary>
 public class CommandBuffer : IDisposable
 {
+    private readonly PooledList<ComponentType> _addTypes;
+    private readonly PooledList<ComponentType> _removeTypes;
+
+    public CommandBuffer(World world, int initialCapacity = 128)
+    {
+        World = world;
+        Entities = new PooledList<Entity>(initialCapacity);
+        BufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
+        Creates = new PooledList<CreateCommand>(initialCapacity);
+        Sets = new SparseSet(initialCapacity);
+        Adds = new StructuralSparseSet(initialCapacity);
+        Removes = new StructuralSparseSet(initialCapacity);
+        Destroys = new PooledList<int>(initialCapacity);
+        _addTypes = new PooledList<ComponentType>(16);
+        _removeTypes = new PooledList<ComponentType>(16);
+    }
 
     /// <summary>
     /// The world
     /// </summary>
     public World World { get; }
-    
+
     /// <summary>
     /// Amount of entities targeted by this buffer.
     /// </summary>
     public int Size { get; private set; }
-    
+
     /// <summary>
     /// Entities targeted by this buffer.
     /// </summary>
-    internal PooledList<Entity> _entities;
-    
+    internal PooledList<Entity> Entities { get; set; }
+
     /// <summary>
     /// Lookup
     /// </summary>
-    internal PooledDictionary<int, BufferedEntityInfo> _bufferedEntityInfo;
-    
+    internal PooledDictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
+
     /// <summary>
     /// Create commands
     /// </summary>
-    internal PooledList<CreateCommand> _creates;
-    
+    internal PooledList<CreateCommand> Creates { get; set; }
+
     /// <summary>
     /// Set commands
     /// </summary>
-    internal SparseSet _sets;
-    
+    internal SparseSet Sets { get; set; }
+
     /// <summary>
     /// Add commands
     /// </summary>
-    internal StructuralSparseSet _adds;
-    
+    internal StructuralSparseSet Adds { get; set; }
+
     /// <summary>
     /// Remove commands
     /// </summary>
-    internal StructuralSparseSet _removes;
-    
+    internal StructuralSparseSet Removes { get; set; }
+
     /// <summary>
     /// Destroy commands 
     /// </summary>
-    internal PooledList<int> _destroys;
-    
-    private PooledList<ComponentType> _addTypes;
-    private PooledList<ComponentType> _removeTypes;
-
-    public CommandBuffer(World world, int initialCapacity = 128)
-    {
-        World = world;
-        _entities = new PooledList<Entity>(initialCapacity);
-        _bufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
-        _creates = new PooledList<CreateCommand>(initialCapacity);
-        _sets = new SparseSet(initialCapacity);
-        _adds = new StructuralSparseSet(initialCapacity);
-        _removes = new StructuralSparseSet(initialCapacity);
-        _destroys = new PooledList<int>(initialCapacity);
-        _addTypes = new PooledList<ComponentType>(16);
-        _removeTypes = new PooledList<ComponentType>(16);
-    }
+    internal PooledList<int> Destroys { get; set; }
 
     /// <summary>
     /// Registers a new entity into the command buffer and returns its info struct. 
@@ -103,16 +98,23 @@ public class CommandBuffer : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Register(in Entity entity, out BufferedEntityInfo info)
     {
-        var setIndex = _sets.Create(in entity);
-        var addIndex = _adds.Create(in entity);
-        var removeIndex = _removes.Create(in entity);
-        info = new BufferedEntityInfo { Index = Size, SetIndex = setIndex, AddIndex = addIndex, RemoveIndex = removeIndex };
+        var setIndex = Sets.Create(in entity);
+        var addIndex = Adds.Create(in entity);
+        var removeIndex = Removes.Create(in entity);
 
-        _entities.Add(entity);
-        _bufferedEntityInfo.Add(entity.Id, info);
+        info = new BufferedEntityInfo
+        {
+            Index = Size,
+            SetIndex = setIndex,
+            AddIndex = addIndex,
+            RemoveIndex = removeIndex
+        };
+
+        Entities.Add(entity);
+        BufferedEntityInfo.Add(entity.Id, info);
         Size++;
     }
-    
+
     /// <summary>
     /// Buffers a create command for a certain entity. Will be created upon playback.
     /// </summary>
@@ -123,11 +125,12 @@ public class CommandBuffer : IDisposable
     {
         lock (this)
         {
-            var entity = new Entity(-Math.Abs(Size-1), World.Id);
+            var entity = new Entity(-Math.Abs(Size - 1), World.Id);
             Register(entity, out _);
-            
-            var command = new CreateCommand { Index = Size-1, Types = types };
-            _creates.Add(command);
+
+            var command = new CreateCommand { Index = Size - 1, Types = types };
+            Creates.Add(command);
+
             return entity;
         }
     }
@@ -141,9 +144,12 @@ public class CommandBuffer : IDisposable
     {
         lock (this)
         {
-            if (!_bufferedEntityInfo.TryGetValue(entity.Id, out var info))
+            if (!BufferedEntityInfo.TryGetValue(entity.Id, out var info))
+            {
                 Register(entity, out info);
-            _destroys.Add(info.Index);
+            }
+
+            Destroys.Add(info.Index);
         }
     }
 
@@ -159,11 +165,13 @@ public class CommandBuffer : IDisposable
         BufferedEntityInfo info;
         lock (this)
         {
-            if(!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
-                Register(entity, out info);   
+            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
+            {
+                Register(entity, out info);
+            }
         }
 
-        _sets.Set(info.SetIndex, in component);
+        Sets.Set(info.SetIndex, in component);
     }
 
     /// <summary>
@@ -178,12 +186,14 @@ public class CommandBuffer : IDisposable
         BufferedEntityInfo info;
         lock (this)
         {
-            if(!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
-                Register(entity, out info);   
+            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
+            {
+                Register(entity, out info);
+            }
         }
 
-        _adds.Set<T>(info.AddIndex);
-        _sets.Set(info.SetIndex, in component);
+        Adds.Set<T>(info.AddIndex);
+        Sets.Set(info.SetIndex, in component);
     }
 
     /// <summary>
@@ -197,11 +207,13 @@ public class CommandBuffer : IDisposable
         BufferedEntityInfo info;
         lock (this)
         {
-            if (!_bufferedEntityInfo.TryGetValue(entity.Id, out info))
+            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
+            {
                 Register(entity, out info);
+            }
         }
 
-        _removes.Set<T>(info.RemoveIndex);
+        Removes.Set<T>(info.RemoveIndex);
     }
 
     /// <summary>
@@ -211,97 +223,116 @@ public class CommandBuffer : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Playback()
     {
-        
         // Create recorded entities
-        foreach (var cmd in _creates)
+        foreach (var cmd in Creates)
         {
             var entity = World.Create(cmd.Types);
-            _entities[cmd.Index] = entity;
+            Entities[cmd.Index] = entity;
         }
 
         // Playback adds
-        for (var index = 0; index < _adds.Size; index++)
+        for (var index = 0; index < Adds.Size; index++)
         {
-            var wrappedEntity = _adds.Entities[index];
-            for (var i = 0; i < _adds.UsedSize; i++)
+            var wrappedEntity = Adds.Entities[index];
+            for (var i = 0; i < Adds.UsedSize; i++)
             {
-                ref var usedIndex = ref _adds.Used[i];
-                ref var sparseSet = ref _adds.Components[usedIndex];
-                if(!sparseSet.Has(wrappedEntity._index)) continue;
+                ref var usedIndex = ref Adds.Used[i];
+                ref var sparseSet = ref Adds.Components[usedIndex];
+
+                if (!sparseSet.Has(wrappedEntity.Index))
+                {
+                    continue;
+                }
 
                 _addTypes.Add(sparseSet.Type);
             }
-            
-            if(_addTypes.Count <= 0) continue;
 
-            var entityIndex = _bufferedEntityInfo[wrappedEntity._entity.Id].Index;
-            var entity = _entities[entityIndex];
+            if (_addTypes.Count <= 0)
+            {
+                continue;
+            }
+
+            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
+            var entity = Entities[entityIndex];
             World.Add(in entity, (IList<ComponentType>)_addTypes);
+
             _addTypes.Clear();
         }
-        
+
         // Playback removes 
-        for (var index = 0; index < _removes.Size; index++)
+        for (var index = 0; index < Removes.Size; index++)
         {
-            var wrappedEntity = _removes.Entities[index];
-            for (var i = 0; i < _removes.UsedSize; i++)
+            var wrappedEntity = Removes.Entities[index];
+            for (var i = 0; i < Removes.UsedSize; i++)
             {
-                ref var usedIndex = ref _removes.Used[i];
-                ref var sparseSet = ref _removes.Components[usedIndex];
-                if(!sparseSet.Has(wrappedEntity._index)) continue;
+                ref var usedIndex = ref Removes.Used[i];
+                ref var sparseSet = ref Removes.Components[usedIndex];
+                if (!sparseSet.Has(wrappedEntity.Index))
+                {
+                    continue;
+                }
 
                 _removeTypes.Add(sparseSet.Type);
             }
-            if(_removeTypes.Count <= 0) continue;
-            
-            var entityIndex = _bufferedEntityInfo[wrappedEntity._entity.Id].Index;
-            var entity = _entities[entityIndex];
+
+            if (_removeTypes.Count <= 0)
+            {
+                continue;
+            }
+
+            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
+            var entity = Entities[entityIndex];
             World.Remove(in entity, _removeTypes);
+
             _removeTypes.Clear();
         }
-        
+
         // Loop over all sparset entities
-        for (var index = 0; index < _sets.Size; index++)
+        for (var index = 0; index < Sets.Size; index++)
         {
             // Get wrapped entity
-            var wrappedEntity = _sets.Entities[index];
-            var entityIndex = _bufferedEntityInfo[wrappedEntity._entity.Id].Index;
-            var entity = _entities[entityIndex];
-            ref readonly var id = ref wrappedEntity._index;
-            
+            var wrappedEntity = Sets.Entities[index];
+            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
+            var entity = Entities[entityIndex];
+            ref readonly var id = ref wrappedEntity.Index;
+
             // Get entity chunk
             var entityInfo = World.EntityInfo[entity.Id];
             var archetype = entityInfo.Archetype;
             ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
             var chunkIndex = entityInfo.Slot.Index;
-            
+
             // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
-            for (var i = 0; i < _sets.UsedSize; i++)
+            for (var i = 0; i < Sets.UsedSize; i++)
             {
-                var used = _sets.Used[i];
-                var sparseArray = _sets.Components[used];
-                if(!sparseArray.Has(id)) continue;
+                var used = Sets.Used[i];
+                var sparseArray = Sets.Components[used];
+
+                if (!sparseArray.Has(id))
+                {
+                    continue;
+                }
 
                 var chunkArray = chunk.GetArray(sparseArray.Type);
                 Array.Copy(sparseArray.Components, id, chunkArray, chunkIndex, 1);
             }
         }
-        
+
         // Create recorded entities
-        foreach (var cmd in _destroys)
+        foreach (var cmd in Destroys)
         {
-            World.Destroy(_entities[cmd]);
+            World.Destroy(Entities[cmd]);
         }
 
         // Reset 
         Size = 0;
-        _entities?.Clear();
-        _bufferedEntityInfo?.Clear();
-        _creates?.Clear();
-        _sets?.Dispose();
-        _adds?.Dispose();
-        _removes?.Dispose();
-        _destroys?.Clear();
+        Entities?.Clear();
+        BufferedEntityInfo?.Clear();
+        Creates?.Clear();
+        Sets?.Dispose();
+        Adds?.Dispose();
+        Removes?.Dispose();
+        Destroys?.Clear();
         _addTypes?.Clear();
         _removeTypes?.Clear();
     }
@@ -311,13 +342,13 @@ public class CommandBuffer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _entities?.Dispose();
-        _bufferedEntityInfo?.Dispose();
-        _creates?.Dispose();
-        _sets?.Dispose();
-        _adds?.Dispose();
-        _removes?.Dispose();
-        _destroys?.Dispose();
+        Entities?.Dispose();
+        BufferedEntityInfo?.Dispose();
+        Creates?.Dispose();
+        Sets?.Dispose();
+        Adds?.Dispose();
+        Removes?.Dispose();
+        Destroys?.Dispose();
         _addTypes?.Dispose();
         _removeTypes?.Dispose();
     }

@@ -1,26 +1,19 @@
-using System;
-using System.Buffers;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Arch.Core.Utils;
-using Collections.Pooled;
 
 namespace Arch.Core.CommandBuffer;
-
 
 /// <summary>
 /// Represents an entity, combined to a internal sparset index id for fast lookups.
 /// </summary>
 public readonly struct StructuralEntity
 {
-    internal readonly Entity _entity;
-    internal readonly int _index;
+    internal readonly Entity Entity;
+    internal readonly int Index;
 
     public StructuralEntity(Entity entity, int index)
     {
-        _entity = entity;
-        this._index = index;
+        Entity = entity;
+        Index = index;
     }
 }
 
@@ -29,22 +22,6 @@ public readonly struct StructuralEntity
 /// </summary>
 internal class StructuralSparseArray : IDisposable
 {
-
-    /// <summary>
-    /// The type this array stores.
-    /// </summary>
-    public ComponentType Type { get; }
-    
-    /// <summary>
-    /// The total size.
-    /// </summary>
-    public int Size { get; private set; }
-    
-    /// <summary>
-    /// The entities / indexes. 
-    /// </summary>
-    public int[] Entities;
-
     public StructuralSparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
@@ -52,6 +29,21 @@ internal class StructuralSparseArray : IDisposable
         Entities = new int[capacity];
         Array.Fill(Entities, -1);
     }
+
+    /// <summary>
+    /// The type this array stores.
+    /// </summary>
+    public ComponentType Type { get; }
+
+    /// <summary>
+    /// The total size.
+    /// </summary>
+    public int Size { get; private set; }
+
+    /// <summary>
+    /// The entities / indexes. 
+    /// </summary>
+    public int[] Entities;
 
     /// <summary>
     /// Adds an entity to this sparse array.
@@ -67,14 +59,14 @@ internal class StructuralSparseArray : IDisposable
             {
                 var lenght = Entities.Length;
                 Array.Resize(ref Entities, index + 1);
-                Array.Fill(Entities, -1, lenght, index-lenght);
+                Array.Fill(Entities, -1, lenght, index - lenght);
             }
 
             Entities[index] = Size;
             Size++;
         }
     }
-    
+
     /// <summary>
     /// Returns true if this sparsearray contains an entity. 
     /// </summary>
@@ -85,7 +77,7 @@ internal class StructuralSparseArray : IDisposable
     {
         return index < Entities.Length && Entities[index] != -1;
     }
-    
+
     /// <summary>
     /// Disposes this array. 
     /// </summary>
@@ -100,45 +92,45 @@ internal class StructuralSparseArray : IDisposable
 /// </summary>
 internal class StructuralSparseSet : IDisposable
 {
-    /// <summary>
-    /// The initial capacity of this set. 
-    /// </summary>
-    public int InitialCapacity { get; }
-    
-    /// <summary>
-    /// The amount of entities.
-    /// </summary>
-    public int Size { get; private set; }         
-    
-    /// <summary>
-    /// All entities within this set. 
-    /// </summary>
-    public List<StructuralEntity> Entities { get; private set; }
-    
-    /// <summary>
-    /// Stores all used component indexes in a tightly packed array [5,1,10]
-    /// </summary>
-    public int[] Used;      
-    
-    /// <summary>
-    /// How many sparse arrays are actually in here. 
-    /// </summary>
-    public int UsedSize { get; private set; }  
-    
-    /// <summary>
-    /// The components / sparse arrays. 
-    /// </summary>
-    public StructuralSparseArray[] Components;  // The components as a sparset so we can easily acess them via component ids
-
     private readonly object _createLock = new();
     private readonly object _setLock = new();
-    
+
     public StructuralSparseSet(int capacity = 64)
     {
         InitialCapacity = capacity;
         Entities = new List<StructuralEntity>(capacity);
         Components = Array.Empty<StructuralSparseArray>();
     }
+
+    /// <summary>
+    /// The initial capacity of this set. 
+    /// </summary>
+    public int InitialCapacity { get; }
+
+    /// <summary>
+    /// The amount of entities.
+    /// </summary>
+    public int Size { get; private set; }
+
+    /// <summary>
+    /// All entities within this set. 
+    /// </summary>
+    public List<StructuralEntity> Entities { get; private set; }
+
+    /// <summary>
+    /// Stores all used component indexes in a tightly packed array [5,1,10]
+    /// </summary>
+    public int[] Used;
+
+    /// <summary>
+    /// How many sparse arrays are actually in here. 
+    /// </summary>
+    public int UsedSize { get; private set; }
+
+    /// <summary>
+    /// The components / sparse arrays. 
+    /// </summary>
+    public StructuralSparseArray[] Components; // The components as a sparset so we can easily acess them via component ids
 
     /// <summary>
     /// Creates an entity inside this sparset. 
@@ -152,7 +144,9 @@ internal class StructuralSparseSet : IDisposable
         {
             var id = Size;
             Entities.Add(new StructuralEntity(entity, id));
+
             Size++;
+
             return id;
         }
     }
@@ -161,7 +155,6 @@ internal class StructuralSparseSet : IDisposable
     /// Sets a component for an index. 
     /// </summary>
     /// <param name="index"></param>
-    /// <param name="component"></param>
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index)
@@ -177,16 +170,22 @@ internal class StructuralSparseSet : IDisposable
                 Array.Resize(ref Components, id + 1);
 
                 Components[id] = new StructuralSparseArray(typeof(T), InitialCapacity);
+
                 Used[UsedSize] = id;
                 UsedSize++;
             }
         }
 
         var array = Components[id];
-        lock(array){ if (!array.Has(index)) array.Add(index); }
+        lock (array)
+        {
+            if (!array.Has(index))
+            {
+                array.Add(index);
+            }
+        }
     }
 
-    
     /// <summary>
     /// Returns whether this index has a certain component or not. 
     /// </summary>
@@ -198,9 +197,10 @@ internal class StructuralSparseSet : IDisposable
     {
         var id = Component<T>.ComponentType.Id;
         var array = Components[id];
+
         return array.Has(index);
     }
-    
+
     /// <summary>
     /// Disposes this set. 
     /// </summary>
@@ -209,7 +209,10 @@ internal class StructuralSparseSet : IDisposable
     {
         Size = 0;
         Entities.Clear();
+
         foreach (var sparset in Components)
+        {
             sparset?.Dispose();
+        }
     }
 }

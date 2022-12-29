@@ -1,11 +1,6 @@
-using System;
 using System.Buffers;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
-using Collections.Pooled;
 
 namespace Arch.Core;
 
@@ -14,13 +9,14 @@ namespace Arch.Core;
 /// </summary>
 internal struct Slot
 {
-    public int Index;        // The entity index inside the chunk
-    public int ChunkIndex;   // The chunk index inside the archetype 
     public Slot(int index, int chunkIndex)
     {
         Index = index;
         ChunkIndex = chunkIndex;
     }
+
+    public int Index;      // The entity index inside the chunk
+    public int ChunkIndex; // The chunk index inside the archetype
 }
 
 /// <summary>
@@ -41,7 +37,7 @@ public sealed unsafe partial class Archetype
         // The bitmask/set 
         BitSet = types.ToBitSet();
         ComponentIdToArrayIndex = types.ToLookupArray();
-        
+
         // Setup arrays and mappings
         Chunks = ArrayPool<Chunk>.Shared.Rent(1);
         Chunks[0] = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, types);
@@ -74,7 +70,10 @@ public sealed unsafe partial class Archetype
     /// <summary>
     ///     Returns the last chunk from the <see cref="Chunks" />
     /// </summary>
-    public ref Chunk LastChunk => ref Chunks[Size-1];
+    public ref Chunk LastChunk
+    {
+        get => ref Chunks[Size - 1];
+    }
 
     /// <summary>
     ///     The chunk capacity, how many chunks are there in total.
@@ -87,8 +86,8 @@ public sealed unsafe partial class Archetype
     /// </summary>
     public int Size
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
-        get; 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get;
         private set;
     }
 
@@ -101,7 +100,7 @@ public sealed unsafe partial class Archetype
     /// The actual chunk size of each chunk of this archetype, based on <see cref="MinimumRequiredChunkSize"/>
     /// </summary>
     public int ChunkSize { get; } = BaseSize;
-    
+
     /// <summary>
     /// The minimum amount of entities per chunk in this archetype.
     /// 
@@ -125,15 +124,19 @@ public sealed unsafe partial class Archetype
             slot.ChunkIndex = Size - 1;
 
             // Chunk full, use existing capacity 
-            if (lastChunk.Size == lastChunk.Capacity && Size < Capacity) Size++;
+            if (lastChunk.Size == lastChunk.Capacity && Size < Capacity)
+            {
+                Size++;
+            }
+
             return false;
         }
-        
+
         // Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, ComponentIdToArrayIndex, Types);
         slot.Index = newChunk.Add(in entity);
         slot.ChunkIndex = Size;
-        
+
         // Resize chunks & map entity
         EnsureOrTrimCapacity(Size + 1);
         Chunks[Size] = newChunk;
@@ -143,7 +146,7 @@ public sealed unsafe partial class Archetype
         Size++;
         return true;
     }
-    
+
     /// <summary>
     ///     Removes an <see cref="Entity" /> from this chunk and all its components.
     /// </summary>
@@ -155,16 +158,19 @@ public sealed unsafe partial class Archetype
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         ref var chunk = ref Chunks[slot.ChunkIndex];
         movedEntityId = chunk.Transfer(slot.Index, ref LastChunk);
-        
+
         // Trim when last chunk is now empty and we havent reached the last chunk yet
-        if (LastChunk.Size != 0 || Size <= 1) return false;
-        
+        if (LastChunk.Size != 0 || Size <= 1)
+        {
+            return false;
+        }
+
         EnsureOrTrimCapacity(Size - 1);
         Capacity--;
         Size--;
         return true;
     }
-    
+
     /// <summary>
     ///     Sets an component into the fitting component array for an entity.
     /// </summary>
@@ -185,7 +191,7 @@ public sealed unsafe partial class Archetype
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>()
-    { 
+    {
         var id = Component<T>.ComponentType.Id;
         return BitSet.IsSet(id);
     }
@@ -202,7 +208,6 @@ public sealed unsafe partial class Archetype
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         return ref chunk.Get<T>(in slot.Index);
     }
-
 
     /// <summary>
     /// Returns the <see cref="Chunk"/> for the passed <see cref="Entity"/> within this archetype.
@@ -226,13 +231,11 @@ public sealed unsafe partial class Archetype
     }
 }
 
-
 /// <summary>
 ///     Adds capacity related methods.
 /// </summary>
 public sealed unsafe partial class Archetype
 {
-    
     /// <summary>
     ///     Returns the minimum required chunk size in kilobytes which is required to fit the <see cref="MinimumAmountOfEntitiesPerChunk"/> into it.
     ///     Always a multiple of <see cref="BaseSize"/>.
@@ -241,10 +244,10 @@ public sealed unsafe partial class Archetype
     /// <returns></returns>
     public int MinimumRequiredChunkSize(ComponentType[] types)
     {
-        var minimumEntities = (sizeof(Entity)+types.ToByteSize()) * MinimumAmountOfEntitiesPerChunk;
+        var minimumEntities = (sizeof(Entity) + types.ToByteSize()) * MinimumAmountOfEntitiesPerChunk;
         return (int)Math.Ceiling((float)minimumEntities / BaseSize) * BaseSize;
     }
-    
+
     /// <summary>
     ///     Calculates how many entities with the types fit into one chunk.
     /// </summary>
@@ -254,7 +257,7 @@ public sealed unsafe partial class Archetype
     {
         return ChunkSize / (sizeof(Entity) + types.ToByteSize());
     }
-    
+
     /// <summary>
     ///     Sets the capacity and either makes the internal <see cref="Chunks" /> and <see cref="EntityIdToChunkIndex" /> arrays bigger or smaller.
     /// </summary>
@@ -271,14 +274,14 @@ public sealed unsafe partial class Archetype
             ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;
         }
-        else if(newCapacity < Capacity)
+        else if (newCapacity < Capacity)
         {
             // Always keep capacity for atleast one chunk
             newCapacity = newCapacity <= 0 ? 1 : newCapacity;
 
             // Decrease chunk size
             var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-            Array.Copy(Chunks, newChunks, Size-1);
+            Array.Copy(Chunks, newChunks, Size - 1);
             ArrayPool<Chunk>.Shared.Return(Chunks, true);
             Chunks = newChunks;
         }
@@ -312,7 +315,11 @@ public sealed unsafe partial class Archetype
             }
 
             // If last chunk was full, add 
-            if (freeSpots == 0) Size++;
+            if (freeSpots == 0)
+            {
+                Size++;
+            }
+
             Capacity += neededChunks;
         }
         else
@@ -331,7 +338,6 @@ public sealed unsafe partial class Archetype
         }
     }
 }
-
 
 /// <summary>
 ///     Adds structural change related methods. 

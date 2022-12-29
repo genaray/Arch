@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
@@ -24,14 +20,14 @@ namespace Arch.Core;
 /// </summary>
 public partial struct Chunk
 {
-    
     /// <summary>
     ///     Allocates enough space for the passed amount of entities with all its components.
     /// </summary>
     /// <param name="capacity"></param>
     /// <param name="types"></param>
-    internal Chunk(int capacity, params ComponentType[] types) : this(capacity, types.ToLookupArray(), types) { }
-    
+    internal Chunk(int capacity, params ComponentType[] types)
+        : this(capacity, types.ToLookupArray(), types) { }
+
     /// <summary>
     ///     Allocates enough space for the passed amount of entities with all its components.
     /// </summary>
@@ -65,9 +61,10 @@ public partial struct Chunk
     {
         Entities[Size] = entity;
         Size++;
-        return Size-1;
+
+        return Size - 1;
     }
-    
+
     /// <summary>
     ///     Sets an component into the fitting component array at an index.
     /// </summary>
@@ -93,7 +90,7 @@ public partial struct Chunk
         var id = Component<T>.ComponentType.Id;
         return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
     }
-    
+
     /// <summary>
     ///     Returns an component from the fitting component array by its index.
     /// </summary>
@@ -118,7 +115,7 @@ public partial struct Chunk
     {
         // Last entity in archetype. 
         var lastIndex = Size - 1;
-      
+
         // Copy last entity to replace the removed one
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
@@ -162,7 +159,6 @@ public partial struct Chunk
 /// </summary>
 public partial struct Chunk
 {
-
     /// <summary>
     ///     Returns the index of the component array inside the structure of arrays.
     /// </summary>
@@ -259,7 +255,6 @@ public partial struct Chunk
 /// </summary>
 public partial struct Chunk
 {
-    
     /// <summary>
     ///     Checks wether this chunk contains an array of the type.
     /// </summary>
@@ -270,7 +265,11 @@ public partial struct Chunk
     public bool Has(Type t)
     {
         var id = Component.GetComponentType(t).Id;
-        if (id >= ComponentIdToArrayIndex.Length) return false;
+        if (id >= ComponentIdToArrayIndex.Length)
+        {
+            return false;
+        }
+
         return ComponentIdToArrayIndex[id] != -1;
     }
 
@@ -284,10 +283,14 @@ public partial struct Chunk
     private int Index(Type type)
     {
         var id = Component.GetComponentType(type).Id;
-        if (id >= ComponentIdToArrayIndex.Length) return -1;
+        if (id >= ComponentIdToArrayIndex.Length)
+        {
+            return -1;
+        }
+
         return ComponentIdToArrayIndex[id];
     }
-    
+
     /// <summary>
     ///     Returns the internal array for the passed component
     /// </summary>
@@ -307,7 +310,6 @@ public partial struct Chunk
 /// </summary>
 public partial struct Chunk
 {
-    
     /// <summary>
     /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a similar structured <see cref="Chunk"/>.
     /// </summary>
@@ -325,7 +327,7 @@ public partial struct Chunk
             Array.Copy(sourceArray, toIndex, desArray, index, 1);
         }
     }
-    
+
     /// <summary>
     /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a different structured <see cref="Chunk"/>.
     /// </summary>
@@ -341,8 +343,11 @@ public partial struct Chunk
             var sourceArray = Components[i];
             var sourceType = sourceArray.GetType().GetElementType();
 
-            if (!toChunk.Has(sourceType)) continue;
-            
+            if (!toChunk.Has(sourceType))
+            {
+                continue;
+            }
+
             var desArray = toChunk.GetArray(sourceType);
             Array.Copy(sourceArray, index, desArray, toIndex, 1);
         }
@@ -368,7 +373,7 @@ public partial struct Chunk
             var desArray = Components[i];
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
-        
+
         chunk.Size--;
         return lastEntity.Id;
     }

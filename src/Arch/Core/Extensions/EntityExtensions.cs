@@ -1,14 +1,10 @@
-using System;
-using System.Runtime.CompilerServices;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
 public static partial class EntityExtensions
 {
-
 #if !PURE_ECS
-
     /// <summary>
     ///     Returns the <see cref="Archetype" /> in which the <see cref="Entity" /> and its components are stored in.
     /// </summary>
@@ -69,7 +65,7 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         return world.IsAlive(in entity);
     }
-    
+
     /// <summary>
     ///     Returns true if the passed entity is alive.
     /// </summary>
@@ -90,7 +86,7 @@ public static partial class EntityExtensions
     /// <typeparam name="T">The component type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Set<T>(this in Entity entity, in T component)
-    { 
+    {
         var world = World.Worlds[entity.WorldId];
         world.Set(in entity, in component);
     }
@@ -135,14 +131,13 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         return world.TryGet(in entity, out component);
     }
-    
+
     /// <summary>
     ///     Returns the component if it exists for that entity.
     ///     In case of a struct it will only returns a copy.
     /// </summary>
     /// <param name="entity">The entity</param>
     /// <typeparam name="T">The component type</typeparam>
-    /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
@@ -150,13 +145,12 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         return ref world.TryGetRef<T>(in entity, out exists);
     }
-    
+
     /// <summary>
     ///     Adds a component to the existing entity.
     /// </summary>
     /// <param name="entity">The entity</param>
     /// <typeparam name="T">The component type</typeparam>
-    /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Add<T>(this in Entity entity, in T cmp = default)
@@ -164,13 +158,12 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.Add<T>(in entity);
     }
-    
+
     /// <summary>
-    ///     Removes an component from an entity. 
+    ///     Removes an component from an entity.
     /// </summary>
     /// <param name="entity">The entity</param>
     /// <typeparam name="T">The component type</typeparam>
-    /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Remove<T>(this in Entity entity)
@@ -178,6 +171,5 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.Remove<T>(in entity);
     }
-    
 #endif
 }

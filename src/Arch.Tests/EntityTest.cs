@@ -2,10 +2,9 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 
-namespace Arch.Test;
+namespace Arch.Tests;
 
 #if !PURE_ECS
-
 [TestFixture]
 public partial class EntityTest
 {
@@ -56,8 +55,8 @@ public partial class EntityTest
         _entity.Set(transform);
         ref var tramsformReference = ref _entity.Get<Transform>();
 
-        Assert.AreEqual(transform.X, tramsformReference.X);
-        Assert.AreEqual(transform.Y, tramsformReference.Y);
+        Assert.That(tramsformReference.X, Is.EqualTo(transform.X));
+        Assert.That(tramsformReference.Y, Is.EqualTo(transform.Y));
     }
 }
 
@@ -67,7 +66,7 @@ public partial class EntityTest
     [Test]
     public void GeneratedSetAndGet()
     {
-        _entity.Set(new Transform { X = 10, Y = 10 }, new Rotation{ X = 10, Y = 10});
+        _entity.Set(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
         var refs = _entity.Get<Transform, Rotation>();
 
         Assert.AreEqual(10, refs.t0.X);
@@ -82,5 +81,4 @@ public partial class EntityTest
         Assert.True(_entity.Has<Transform, Rotation>());
     }
 }
-
 #endif

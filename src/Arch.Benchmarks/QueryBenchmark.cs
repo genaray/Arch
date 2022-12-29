@@ -1,28 +1,20 @@
-using System.Runtime.CompilerServices;
 using Arch.Core;
-using Arch.Core.Extensions;
 using Arch.Core.Utils;
-using Arch.Test;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Engines;
-using BenchmarkDotNet.Jobs;
 
-namespace Arch.Benchmark;
+namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class QueryBenchmark
 {
-
     [Params(10000, 100000, 1000000)] public int Amount;
 
-    private JobScheduler.JobScheduler _jobScheduler;
+    private readonly JobScheduler.JobScheduler? _jobScheduler;
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
-    private QueryDescription _queryDescription = new(){ All = _group };
+    private QueryDescription _queryDescription = new() { All = _group };
 
-    private static World _world;
+    private static World? _world;
 
     [GlobalSetup]
     public void Setup()
@@ -56,23 +48,24 @@ public class QueryBenchmark
             refs.t0.Y += refs.t1.Y;
         });
     }
-    
+
 #if !PURE_ECS
-    
+
     [Benchmark]
     public void EntityExtensionQuery()
     {
-        _world.Query(in _queryDescription, (in Entity entity) =>{  
- 
+        _world.Query(in _queryDescription, (in Entity entity) =>
+        {
+
             var refs = entity.Get<Transform, Velocity>();
-            
+
             refs.t0.X += refs.t1.X;
             refs.t0.Y += refs.t1.Y;
         });
     }
-    
+
 #endif
-    
+
     [Benchmark]
     public void Query()
     {
@@ -106,7 +99,7 @@ public class QueryBenchmark
         var vel = new VelocityEntityUpdate();
         _world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
-    
+
     public struct VelocityUpdate : IForEach<Transform, Velocity>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

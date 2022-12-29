@@ -1,11 +1,6 @@
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
-using CommunityToolkit.HighPerformance.Buffers;
 
 namespace Arch.Core;
 
@@ -22,10 +17,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <summary>
     /// Creates a new instance. 
     /// </summary>
-    public QueryDescription()
-    {
-    }
-    
+    public QueryDescription() { }
+
     /// <summary>
     /// Includes the passed generic into the description.
     /// Replaces previous set ones. 
@@ -51,7 +44,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         Any = Group<T>.Types;
         return ref this;
     }
-    
+
     /// <summary>
     /// Includes the passed generic into the description.
     /// Replaces previous set ones. 
@@ -64,7 +57,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         None = Group<T>.Types;
         return ref this;
     }
-    
+
     /// <summary>
     /// Includes the passed generic into the description.
     /// Replaces previous set ones. 
@@ -97,9 +90,9 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         {
             // Overflow is fine, just wrap{
             var hash = 17;
-            hash = hash * 23 + All.GetHashCode();
-            hash = hash * 23 + Any.GetHashCode();
-            hash = hash * 23 + None.GetHashCode();
+            hash = (hash * 23) + All.GetHashCode();
+            hash = (hash * 23) + Any.GetHashCode();
+            hash = (hash * 23) + None.GetHashCode();
             return hash;
         }
     }
@@ -116,7 +109,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 }
 
 /// <summary>
-///     A constructed query used for translating the <see cref="QueryDescription" /> and validating <see cref="BitSet" />'s to find the right chunks.
+///     A constructed query used for translating the <see cref="_queryDescription" /> and validating <see cref="BitSet" />'s to find the right chunks.
 /// </summary>
 public readonly struct Query : IEquatable<Query>
 {
@@ -129,7 +122,7 @@ public readonly struct Query : IEquatable<Query>
 
     private readonly bool _isExclusive;
 
-    private QueryDescription QueryDescription { get; }
+    private readonly QueryDescription _queryDescription;
 
     internal Query(PooledList<Archetype> archetypes, QueryDescription description) : this()
     {
@@ -151,11 +144,17 @@ public readonly struct Query : IEquatable<Query>
 
         // Handle exclusive
         if (description.Exclusive.Length != 0)
+        {
             _isExclusive = true;
+        }
 
         // Otherwhise a any value of 0 always returns false somehow
-        if (description.Any.Length == 0) _any.SetAll();
-        QueryDescription = description;
+        if (description.Any.Length == 0)
+        {
+            _any.SetAll();
+        }
+
+        _queryDescription = description;
     }
 
     /// <summary>
@@ -172,7 +171,6 @@ public readonly struct Query : IEquatable<Query>
     /// <summary>
     ///     Returns a <see cref="QueryArchetypeIterator" /> which can be used to iterate over all fitting <see cref="Archetype" />'s for this query.
     /// </summary>
-    /// <param name="world"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryArchetypeIterator GetArchetypeIterator()
@@ -183,7 +181,6 @@ public readonly struct Query : IEquatable<Query>
     /// <summary>
     ///     Returns a <see cref="QueryChunkIterator" /> which can be used to iterate over all fitting <see cref="Chunk" />'s for this query.
     /// </summary>
-    /// <param name="world"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkIterator GetChunkIterator()
@@ -193,7 +190,7 @@ public readonly struct Query : IEquatable<Query>
 
     public bool Equals(Query other)
     {
-        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && Equals(_exclusive, other._exclusive) && QueryDescription.Equals(other.QueryDescription);
+        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && Equals(_exclusive, other._exclusive) && _queryDescription.Equals(other._queryDescription);
     }
 
     public override bool Equals(object obj)
@@ -205,11 +202,12 @@ public readonly struct Query : IEquatable<Query>
     {
         unchecked
         {
-            var hashCode = _any != null ? _any.GetHashCode() : 0;
-            hashCode = (hashCode * 397) ^ (_all != null ? _all.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (_none != null ? _none.GetHashCode() : 0);
+            var hashCode = _any is not null ? _any.GetHashCode() : 0;
+            hashCode = (hashCode * 397) ^ (_all is not null ? _all.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (_none is not null ? _none.GetHashCode() : 0);
             hashCode = (hashCode * 397) ^ (_exclusive?.GetHashCode() ?? 0);
-            hashCode = (hashCode * 397) ^ QueryDescription.GetHashCode();
+            hashCode = (hashCode * 397) ^ _queryDescription.GetHashCode();
+
             return hashCode;
         }
     }

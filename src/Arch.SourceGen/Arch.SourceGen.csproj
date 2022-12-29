@@ -27,10 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="1.6.20" PrivateAssets="all">
-      <IncludeAssets>runtime; build; native; contentFiles; analyzers; buildTransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" PrivateAssets="all" />
+    <PackageReference Include="AvantiPoint.CodeGenHelpers" Version="1.6.20" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" />
   </ItemGroup>
 
 </Project>

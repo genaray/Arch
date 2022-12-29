@@ -13,10 +13,13 @@
   <ItemGroup>
     <Using Include="System" />
     <Using Include="System.Collections" />
+    <Using Include="System.Collections.Concurrent" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
     <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
 
     <Using Include="BenchmarkDotNet.Attributes" />
     <Using Include="BenchmarkDotNet.Columns" />

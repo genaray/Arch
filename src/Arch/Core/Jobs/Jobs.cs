@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using JobScheduler;
 using Microsoft.Extensions.ObjectPool;
@@ -13,7 +12,7 @@ public class DefaultObjectPolicy<T> : IPooledObjectPolicy<T> where T : class, ne
 {
     public T Create()
     {
-        return new T();
+        return new();
     }
 
     public bool Return(T obj)
@@ -27,14 +26,14 @@ public class DefaultObjectPolicy<T> : IPooledObjectPolicy<T> where T : class, ne
 /// </summary>
 public readonly ref struct Range
 {
-    public readonly int Start;
-    public readonly int Length;
-
     public Range(int start, int length)
     {
-        this.Start = start;
-        this.Length = length;
+        Start = start;
+        Length = length;
     }
+
+    public readonly int Start;
+    public readonly int Length;
 }
 
 /// <summary>
@@ -93,22 +92,20 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
 /// </summary>
 public class ChunkIterationJob<T> : IJob where T : IChunkJob
 {
-    public Chunk[] Chunks;
-    public T Instance;
-    public int Size;
-
-    public int Start;
-
-    public ChunkIterationJob()
-    {
-    }
+    public ChunkIterationJob() { }
 
     public ChunkIterationJob(int start, int size, Chunk[] chunks)
     {
-        this.Start = start;
-        this.Size = size;
-        this.Chunks = chunks;
+        Start = start;
+        Size = size;
+        Chunks = chunks;
     }
+
+    public Chunk[] Chunks { get; set; }
+    public T Instance { get; set; }
+    public int Size { get; set; }
+
+    public int Start;
 
     public void Execute()
     {
@@ -121,5 +118,3 @@ public class ChunkIterationJob<T> : IJob where T : IChunkJob
         }
     }
 }
-
-
