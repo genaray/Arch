@@ -38,217 +38,218 @@ public class ArchetypeIterationTechniquesBenchmark
             _globalArchetype.Set(ref slot, r);
         }
     }
+
     /*
-        [Benchmark]
-        public void IterationNormalTwoComponents()
+    [Benchmark]
+    public void IterationNormalTwoComponents()
+    {
+        var chunks = _globalArchetype.Chunks;
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            var chunks = _globalArchetype.Chunks;
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetArray<Transform>();
+            var rotations = chunk.GetArray<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            for (var index = 0; index < chunk.Size; index++)
             {
-                ref var chunk = ref chunks[chunkIndex];
-                var transforms = chunk.GetArray<Transform>();
-                var rotations = chunk.GetArray<Rotation>();
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
 
-                for (var index = 0; index < chunk.Size; index++)
-                {
-                    ref var transform = ref transforms[index];
-                    ref var rotation = ref rotations[index];
-
-                    _consumer.Consume(transform);
-                    _consumer.Consume(rotation);
-                }
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationUnsafeAddTwoComponents()
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponents()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            ref var chunk = ref _globalArchetype.Chunks[0];
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var transforms = currentChunk.GetArray<Transform>();
+            var rotations = currentChunk.GetArray<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            ref var transform = ref transforms[0];
+            ref var rotation = ref rotations[0];
+
+            for (var index = 0; index < currentChunk.Size; index++)
             {
-                ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var transforms = currentChunk.GetArray<Transform>();
-                var rotations = currentChunk.GetArray<Rotation>();
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
 
-                ref var transform = ref transforms[0];
-                ref var rotation = ref rotations[0];
-
-                for (var index = 0; index < currentChunk.Size; index++)
-                {
-                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
-                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-
-                    _consumer.Consume(currentTransform);
-                    _consumer.Consume(currentRotation);
-                }
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationNormalTwoComponentsSpan()
+    [Benchmark]
+    public void IterationNormalTwoComponentsSpan()
+    {
+        var chunks = _globalArchetype.Chunks;
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            var chunks = _globalArchetype.Chunks;
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetSpan<Transform>();
+            var rotations = chunk.GetSpan<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            for (var index = 0; index < chunk.Size; index++)
             {
-                ref var chunk = ref chunks[chunkIndex];
-                var transforms = chunk.GetSpan<Transform>();
-                var rotations = chunk.GetSpan<Rotation>();
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
 
-                for (var index = 0; index < chunk.Size; index++)
-                {
-                    ref var transform = ref transforms[index];
-                    ref var rotation = ref rotations[index];
-
-                    _consumer.Consume(transform);
-                    _consumer.Consume(rotation);
-                }
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationUnsafeAddTwoComponentsSpan()
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponentsSpan()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            ref var chunk = ref _globalArchetype.Chunks[0];
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var transforms = currentChunk.GetSpan<Transform>();
+            var rotations = currentChunk.GetSpan<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            ref var transform = ref transforms[0];
+            ref var rotation = ref rotations[0];
+
+            for (var index = 0; index < currentChunk.Size; index++)
             {
-                ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var transforms = currentChunk.GetSpan<Transform>();
-                var rotations = currentChunk.GetSpan<Rotation>();
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
 
-                ref var transform = ref transforms[0];
-                ref var rotation = ref rotations[0];
-
-                for (var index = 0; index < currentChunk.Size; index++)
-                {
-                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
-                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-
-                    _consumer.Consume(currentTransform);
-                    _consumer.Consume(currentRotation);
-                }
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationNormalTwoComponentsUnsafeArray()
+    [Benchmark]
+    public void IterationNormalTwoComponentsUnsafeArray()
+    {
+        var chunks = _globalArchetype.Chunks;
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            var chunks = _globalArchetype.Chunks;
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetArrayUnsafe<Transform>();
+            var rotations = chunk.GetArrayUnsafe<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            for (var index = 0; index < chunk.Size; index++)
             {
-                ref var chunk = ref chunks[chunkIndex];
-                var transforms = chunk.GetArrayUnsafe<Transform>();
-                var rotations = chunk.GetArrayUnsafe<Rotation>();
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
 
-                for (var index = 0; index < chunk.Size; index++)
-                {
-                    ref var transform = ref transforms[index];
-                    ref var rotation = ref rotations[index];
-
-                    _consumer.Consume(transform);
-                    _consumer.Consume(rotation);
-                }
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationUnsafeAddTwoComponentsUnsafeArray()
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponentsUnsafeArray()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            ref var chunk = ref _globalArchetype.Chunks[0];
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var transforms = currentChunk.GetArrayUnsafe<Transform>();
+            var rotations = currentChunk.GetArrayUnsafe<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            ref var transform = ref transforms[0];
+            ref var rotation = ref rotations[0];
+
+            for (var index = 0; index < currentChunk.Size; index++)
             {
-                ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var transforms = currentChunk.GetArrayUnsafe<Transform>();
-                var rotations = currentChunk.GetArrayUnsafe<Rotation>();
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
 
-                ref var transform = ref transforms[0];
-                ref var rotation = ref rotations[0];
-
-                for (var index = 0; index < currentChunk.Size; index++)
-                {
-                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
-                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-
-                    _consumer.Consume(currentTransform);
-                    _consumer.Consume(currentRotation);
-                }
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationNormalTwoComponentsUnsafeSpan()
+    [Benchmark]
+    public void IterationNormalTwoComponentsUnsafeSpan()
+    {
+        var chunks = _globalArchetype.Chunks;
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            var chunks = _globalArchetype.Chunks;
+            ref var chunk = ref chunks[chunkIndex];
+            var transforms = chunk.GetSpanUnsafe<Transform>();
+            var rotations = chunk.GetSpanUnsafe<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            for (var index = 0; index < chunk.Size; index++)
             {
-                ref var chunk = ref chunks[chunkIndex];
-                var transforms = chunk.GetSpanUnsafe<Transform>();
-                var rotations = chunk.GetSpanUnsafe<Rotation>();
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
 
-                for (var index = 0; index < chunk.Size; index++)
-                {
-                    ref var transform = ref transforms[index];
-                    ref var rotation = ref rotations[index];
-
-                    _consumer.Consume(transform);
-                    _consumer.Consume(rotation);
-                }
+                _consumer.Consume(transform);
+                _consumer.Consume(rotation);
             }
         }
+    }
 
-        [Benchmark]
-        public void IterationUnsafeAddTwoComponentsUnsafeSpan()
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponentsUnsafeSpan()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
+
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            ref var chunk = ref _globalArchetype.Chunks[0];
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            var transforms = currentChunk.GetSpanUnsafe<Transform>();
+            var rotations = currentChunk.GetSpanUnsafe<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            ref var transform = ref transforms[0];
+            ref var rotation = ref rotations[0];
+
+            for (var index = 0; index < currentChunk.Size; index++)
             {
-                ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var transforms = currentChunk.GetSpanUnsafe<Transform>();
-                var rotations = currentChunk.GetSpanUnsafe<Rotation>();
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
 
-                ref var transform = ref transforms[0];
-                ref var rotation = ref rotations[0];
-
-                for (var index = 0; index < currentChunk.Size; index++)
-                {
-                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
-                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-
-                    _consumer.Consume(currentTransform);
-                    _consumer.Consume(currentRotation);
-                }
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
         }
+    }
 
+    [Benchmark]
+    public void IterationUnsafeAddTwoComponentsCompleteUnsafe()
+    {
+        ref var chunk = ref _globalArchetype.Chunks[0];
 
-        [Benchmark]
-        public void IterationUnsafeAddTwoComponentsCompleteUnsafe()
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
         {
-            ref var chunk = ref _globalArchetype.Chunks[0];
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            ref var transform = ref currentChunk.GetFirstUnsafe<Transform>();
+            ref var rotation = ref currentChunk.GetFirstUnsafe<Rotation>();
 
-            for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+            for (var index = 0; index < currentChunk.Size; index++)
             {
-                ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                ref var transform = ref currentChunk.GetFirstUnsafe<Transform>();
-                ref var rotation = ref currentChunk.GetFirstUnsafe<Rotation>();
+                ref var currentTransform = ref Unsafe.Add(ref transform, index);
+                ref var currentRotation = ref Unsafe.Add(ref rotation, index);
 
-                for (var index = 0; index < currentChunk.Size; index++)
-                {
-                    ref var currentTransform = ref Unsafe.Add(ref transform, index);
-                    ref var currentRotation = ref Unsafe.Add(ref rotation, index);
-
-                    _consumer.Consume(currentTransform);
-                    _consumer.Consume(currentRotation);
-                }
+                _consumer.Consume(currentTransform);
+                _consumer.Consume(currentRotation);
             }
-        }*/
+        }
+    }
+    */
 
     [Benchmark]
     public void IterationBackwardsUnsafeAdd()

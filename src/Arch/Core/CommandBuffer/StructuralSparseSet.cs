@@ -2,26 +2,47 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.CommandBuffer;
 
+// TODO: Documentation.
 /// <summary>
-/// Represents an entity, combined to a internal sparset index id for fast lookups.
+///     The <see cref="StructuralEntity"/> struct
+///     ...
 /// </summary>
 public readonly struct StructuralEntity
 {
-    internal readonly Entity Entity;
-    internal readonly int Index;
-
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="StructuralEntity"/> struct
+    ///     ...
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="index"></param>
     public StructuralEntity(Entity entity, int index)
     {
         Entity = entity;
         Index = index;
     }
+
+    // TODO: Documentation.
+    internal readonly Entity Entity;
+    internal readonly int Index;
 }
 
+// NOTE: Why not a generic type?
+// NOTE: Should this have a more descriptive name? `StructuralSparseArray` sounds too generic for something that's only for `ComponentType`s.
+// TODO: Documentation.
 /// <summary>
-/// A sparse array, an alternative to archetypes.
+///     The see <see cref="StructuralSparseArray"/> class
+///     ...
 /// </summary>
 internal class StructuralSparseArray : IDisposable
 {
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="StructuralSparseArray"/> class
+    ///     with the specified <see cref="ComponentType"/> and an optional initial <paramref name="capacity"/> (default: 64).
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="capacity"></param>
     public StructuralSparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
@@ -31,22 +52,24 @@ internal class StructuralSparseArray : IDisposable
     }
 
     /// <summary>
-    /// The type this array stores.
+    ///     Gets the <see cref="ComponentType"/> the <see cref="StructuralSparseArray"/> stores.
     /// </summary>
     public ComponentType Type { get; }
 
+    // NOTE: Should this be `Length` to follow the existing `Array` API?
     /// <summary>
-    /// The total size.
+    ///     Gets the total number of elements in the <see cref="StructuralSparseArray"/>.
     /// </summary>
     public int Size { get; private set; }
 
     /// <summary>
-    /// The entities / indexes. 
+    ///     Gets or sets the indices of the stored <see cref="Entity"/> instances.
     /// </summary>
     public int[] Entities;
 
+    // TODO: Documentation.
     /// <summary>
-    /// Adds an entity to this sparse array.
+    /// 
     /// </summary>
     /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,8 +90,10 @@ internal class StructuralSparseArray : IDisposable
         }
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns true if this sparsearray contains an entity. 
+    /// 
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
@@ -78,8 +103,9 @@ internal class StructuralSparseArray : IDisposable
         return index < Entities.Length && Entities[index] != -1;
     }
 
+    // NOTE: Does this even need to exist? It doesn't release any resources or anything. Not really what `IDisposable` is for.
     /// <summary>
-    /// Disposes this array. 
+    ///     Disposes the <see cref="StructuralSparseArray"/>.
     /// </summary>
     public void Dispose()
     {
@@ -87,14 +113,24 @@ internal class StructuralSparseArray : IDisposable
     }
 }
 
+// NOTE: Why not a generic type?
+// NOTE: Should this have a more descriptive name? `StructuralSparseSet` sounds too generic for something that's only for `Entity`s.
+// TODO: Documentation.
 /// <summary>
-/// A sparset which is an alternative to an archetype. Has some advantages, for example less copy around stuff and easier archetype changes. 
+///     The <see cref="StructuralSparseSet"/> class
+///     ...
 /// </summary>
 internal class StructuralSparseSet : IDisposable
 {
     private readonly object _createLock = new();
     private readonly object _setLock = new();
 
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="StructuralSparseSet"/> class
+    ///     with an optional initial <paramref name="capacity"/> (default: 64).
+    /// </summary>
+    /// <param name="capacity"></param>
     public StructuralSparseSet(int capacity = 64)
     {
         InitialCapacity = capacity;
@@ -102,38 +138,41 @@ internal class StructuralSparseSet : IDisposable
         Components = Array.Empty<StructuralSparseArray>();
     }
 
+    // NOTE: Should this be just `Capacity`?
     /// <summary>
-    /// The initial capacity of this set. 
+    ///     Gets the total number of elements the <see cref="StructuralSparseSet"/> can hold.
     /// </summary>
     public int InitialCapacity { get; }
 
+    // NOTE: Should this be `Count` to follow the existing `ICollection` API?
     /// <summary>
-    /// The amount of entities.
+    ///     Gets the total number of elements in the <see cref="StructuralSparseSet"/>.
     /// </summary>
     public int Size { get; private set; }
 
     /// <summary>
-    /// All entities within this set. 
+    ///     Gets a <see cref="List{T}"/> of all <see cref="StructuralEntity"/> instances in the <see cref="StructuralSparseSet"/>.
     /// </summary>
     public List<StructuralEntity> Entities { get; private set; }
 
     /// <summary>
-    /// Stores all used component indexes in a tightly packed array [5,1,10]
-    /// </summary>
-    public int[] Used;
-
-    /// <summary>
-    /// How many sparse arrays are actually in here. 
+    ///     Gets the total number of <see cref="StructuralSparseArray"/> instances in the <see cref="StructuralSparseSet"/>.
     /// </summary>
     public int UsedSize { get; private set; }
 
     /// <summary>
-    /// The components / sparse arrays. 
+    ///     Gets or sets an array containing used <see cref="StructuralSparseArray"/> indices.
     /// </summary>
-    public StructuralSparseArray[] Components; // The components as a sparset so we can easily acess them via component ids
+    public int[] Used;
 
     /// <summary>
-    /// Creates an entity inside this sparset. 
+    ///     Gets or sets an array containing <see cref="StructuralSparseArray"/> instances.
+    /// </summary>
+    public StructuralSparseArray[] Components; // The components as a `SparseSet` so we can easily access them via component IDs.
+
+    // TODO: Documentation.
+    /// <summary>
+    ///     Adds an <see cref="Entity"/> to the <see cref="StructuralSparseSet"/>.
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -151,11 +190,13 @@ internal class StructuralSparseSet : IDisposable
         }
     }
 
+    // NOTE: If `StructuralSparseSet` were generic, this could perhaps be an indexer (T this[int index]).
+    // TODO: Documentation.
     /// <summary>
-    /// Sets a component for an index. 
+    /// 
     /// </summary>
-    /// <param name="index"></param>
     /// <typeparam name="T"></typeparam>
+    /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index)
     {
@@ -186,11 +227,12 @@ internal class StructuralSparseSet : IDisposable
         }
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns whether this index has a certain component or not. 
+    /// 
     /// </summary>
     /// <param name="index"></param>
-    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(int index)
@@ -202,7 +244,7 @@ internal class StructuralSparseSet : IDisposable
     }
 
     /// <summary>
-    /// Disposes this set. 
+    ///     Disposes the <see cref="StructuralSparseSet"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()

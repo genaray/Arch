@@ -3,34 +3,52 @@ using Collections.Pooled;
 
 namespace Arch.Core.CommandBuffer;
 
+// NOTE: This can probably be a `record struct`.
 /// <summary>
-/// Represents a creation command for an entity. 
+///     The <see cref="CreateCommand"/> struct
+///     contains data for creating a new <see cref="Entity"/>.
 /// </summary>
 public struct CreateCommand
 {
+    // TODO: Documentation.
     public int Index;
     public ComponentType[] Types;
 }
 
+// NOTE: This can probably be a `record struct`.
 /// <summary>
-/// Information about a buffered entity for fast acess to its internal storages. 
+///     The <see cref="BufferedEntityInfo"/> struct
+///     contains data about a buffered <see cref="Entity"/>.
 /// </summary>
+/// <remarks>
+///     This struct's purpose is to speed up lookups into an <see cref="Entity"/>'s internal data.
+/// </remarks>
 public struct BufferedEntityInfo
 {
+    // TODO: Documentation.
     public int Index;
     public int SetIndex;
     public int AddIndex;
     public int RemoveIndex;
 }
 
+// TODO: Documentation.
 /// <summary>
-/// A command buffer to rule them all. 
+///     The <see cref="CommandBuffer"/> class
+///     ...
 /// </summary>
 public class CommandBuffer : IDisposable
 {
     private readonly PooledList<ComponentType> _addTypes;
     private readonly PooledList<ComponentType> _removeTypes;
 
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="CommandBuffer"/> class
+    ///     with the specified <see cref="Core.World"/> and an optional <paramref name="initialCapacity"/> (default: 128).
+    /// </summary>
+    /// <param name="world"></param>
+    /// <param name="initialCapacity"></param>
     public CommandBuffer(World world, int initialCapacity = 128)
     {
         World = world;
@@ -45,53 +63,30 @@ public class CommandBuffer : IDisposable
         _removeTypes = new PooledList<ComponentType>(16);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// The world
+    ///     Gets the <see cref="Core.World"/>.
     /// </summary>
     public World World { get; }
 
     /// <summary>
-    /// Amount of entities targeted by this buffer.
+    ///     Gets the amount of <see cref="Entity"/> instances targeted by this <see cref="CommandBuffer"/>.
     /// </summary>
     public int Size { get; private set; }
 
-    /// <summary>
-    /// Entities targeted by this buffer.
-    /// </summary>
+    // TODO: Documentation.
     internal PooledList<Entity> Entities { get; set; }
-
-    /// <summary>
-    /// Lookup
-    /// </summary>
     internal PooledDictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
-
-    /// <summary>
-    /// Create commands
-    /// </summary>
     internal PooledList<CreateCommand> Creates { get; set; }
-
-    /// <summary>
-    /// Set commands
-    /// </summary>
     internal SparseSet Sets { get; set; }
-
-    /// <summary>
-    /// Add commands
-    /// </summary>
     internal StructuralSparseSet Adds { get; set; }
-
-    /// <summary>
-    /// Remove commands
-    /// </summary>
     internal StructuralSparseSet Removes { get; set; }
-
-    /// <summary>
-    /// Destroy commands 
-    /// </summary>
     internal PooledList<int> Destroys { get; set; }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Registers a new entity into the command buffer and returns its info struct. 
+    ///     Registers a new <see cref="Entity"/> into the <see cref="CommandBuffer"/>.
+    ///     An <see langword="out"/> parameter contains its <see cref="Core.CommandBuffer.BufferedEntityInfo"/>.
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="info"></param>
@@ -115,11 +110,12 @@ public class CommandBuffer : IDisposable
         Size++;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Buffers a create command for a certain entity. Will be created upon playback.
+    /// 
     /// </summary>
-    /// <param name="types">Its archetype.</param>
-    /// <returns>The buffered entity with a negative id.</returns>#
+    /// <param name="types"></param>
+    /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(ComponentType[] types)
     {
@@ -135,10 +131,11 @@ public class CommandBuffer : IDisposable
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Buffers a destroy command for the passed entity. Will be destroyed upon playback.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity to destroy.</param>
+    /// <param name="entity">The <see cref="Entity"/> to destroy.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
@@ -153,12 +150,13 @@ public class CommandBuffer : IDisposable
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Buffers a set command for the passed entity. Will be set upon playback.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity on which we wanna set a component.</param>
-    /// <param name="component">The component instance</param>
-    /// <typeparam name="T">The generic type.</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="component"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T component)
     {
@@ -174,12 +172,13 @@ public class CommandBuffer : IDisposable
         Sets.Set(info.SetIndex, in component);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Buffers a add command for the passed entity. Will be set upon playback.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity which we wanna add a component to.</param>
-    /// <param name="component">The component instance.</param>
-    /// <typeparam name="T">The generic type.</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="component"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T component)
     {
@@ -196,11 +195,12 @@ public class CommandBuffer : IDisposable
         Sets.Set(info.SetIndex, in component);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Buffers a remove command for the passed entity. Will be set upon playback.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity which we wanna remove a component from.</param>
-    /// <typeparam name="T">The generic type.</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     {
@@ -217,20 +217,22 @@ public class CommandBuffer : IDisposable
     }
 
     /// <summary>
-    /// Playbacks all recorded operations and modifies the world.
-    /// Should only happen on the mainthread. 
+    ///     Plays back all recorded commands, modifying the world.
     /// </summary>
+    /// <remarks>
+    ///     This operation should only happen on the main thread.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Playback()
     {
-        // Create recorded entities
+        // Create recorded entities.
         foreach (var cmd in Creates)
         {
             var entity = World.Create(cmd.Types);
             Entities[cmd.Index] = entity;
         }
 
-        // Playback adds
+        // Play back additions.
         for (var index = 0; index < Adds.Size; index++)
         {
             var wrappedEntity = Adds.Entities[index];
@@ -259,7 +261,7 @@ public class CommandBuffer : IDisposable
             _addTypes.Clear();
         }
 
-        // Playback removes 
+        // Play back removals.
         for (var index = 0; index < Removes.Size; index++)
         {
             var wrappedEntity = Removes.Entities[index];
@@ -287,7 +289,7 @@ public class CommandBuffer : IDisposable
             _removeTypes.Clear();
         }
 
-        // Loop over all sparset entities
+        // Play back sets.
         for (var index = 0; index < Sets.Size; index++)
         {
             // Get wrapped entity
@@ -318,13 +320,13 @@ public class CommandBuffer : IDisposable
             }
         }
 
-        // Create recorded entities
+        // Play back destructions.
         foreach (var cmd in Destroys)
         {
             World.Destroy(Entities[cmd]);
         }
 
-        // Reset 
+        // Reset values.
         Size = 0;
         Entities?.Clear();
         BufferedEntityInfo?.Clear();
@@ -338,7 +340,7 @@ public class CommandBuffer : IDisposable
     }
 
     /// <summary>
-    /// Disposes this command buffer. 
+    ///     Disposes the <see cref="CommandBuffer"/>.
     /// </summary>
     public void Dispose()
     {

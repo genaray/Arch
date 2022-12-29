@@ -6,24 +6,26 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Arch.Samples;
 
+// TODO: Documentation?
 public class Game : Microsoft.Xna.Framework.Game
 {
-    // The world and a job scheduler for multithreading
+    // The world and a job scheduler for multithreading.
     private World _world;
     private JobScheduler.JobScheduler _jobScheduler;
 
-    // Our systems processing entities
+    // Our systems processing entities.
     private MovementSystem _movementSystem;
     private ColorSystem _colorSystem;
     private DrawSystem _drawSystem;
 
-    // Monogame stuff
+    // Monogame stuff.
     private readonly GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _texture2D;
 
     private Random _random;
 
+    // TODO: Documentation?
     public Game()
     {
         _graphics = new GraphicsDeviceManager(this);

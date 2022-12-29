@@ -2,10 +2,18 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
+// NOTE: Should this really be an extension class? Why not simply add these methods to the `BitSet` type directly?
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="BitSetExtensions"/> class
+///     ...
+/// </summary>
 public static class BitSetExtensions
 {
+    // NOTE: Should this be in `TypeExtensions`?
+    // TODO: Documentation.
     /// <summary>
-    ///     Creates a bitset/bitmask from a array of components.
+    /// 
     /// </summary>
     /// <param name="types"></param>
     /// <returns></returns>
@@ -22,8 +30,9 @@ public static class BitSetExtensions
         return bitSet;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Sets all bits according to the passed component types.
+    /// 
     /// </summary>
     /// <param name="bitSet"></param>
     /// <param name="types"></param>

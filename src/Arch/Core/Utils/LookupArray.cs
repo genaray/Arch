@@ -1,10 +1,23 @@
 namespace Arch.Core.Utils;
 
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="LookupArray{T}"/> class
+///     ...
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class LookupArray<T>
 {
     private readonly int _bucketSize;
     private T[][] _bucketArray;
 
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="LookupArray{T}"/> class
+    ///     ...
+    /// </summary>
+    /// <param name="bucketSize"></param>
+    /// <param name="capacity"></param>
     public LookupArray(int bucketSize, int capacity = 64)
     {
         _bucketSize = bucketSize;
@@ -16,11 +29,21 @@ public class LookupArray<T>
         }
     }
 
+    // NOTE: Should this be `Length` to follow the existing `Array` API?
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
     public int Count
     {
         get => _bucketArray.Length * _bucketSize;
     }
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="newCapacity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void EnsureCapacity(int newCapacity)
     {
@@ -39,6 +62,11 @@ public class LookupArray<T>
         }
     }
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="newCapacity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TrimExcess(int newCapacity)
     {
@@ -52,6 +80,12 @@ public class LookupArray<T>
         }
     }
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="i"></param>
+    /// <returns></returns>
     public ref T this[int i]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

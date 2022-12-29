@@ -1,9 +1,15 @@
 namespace Arch.Core.Extensions;
 
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="JobExtensions"/> class
+///     ...
+/// </summary>
 public class JobExtensions
 {
+    // TODO: Documentation.
     /// <summary>
-    ///     Partionates an array and returns how many threads with how many elements each is required for processing it.
+    /// 
     /// </summary>
     /// <param name="threadCount"></param>
     /// <param name="arraySize"></param>

@@ -2,11 +2,22 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.CommandBuffer;
 
+// NOTE: Why not a generic type?
+// NOTE: Should this have a more descriptive name? `SparseArray` sounds too generic for something that's only for `ComponentType`s.
+// TODO: Documentation.
 /// <summary>
-/// A sparse array, an alternative to archetypes.
+///     The see <see cref="SparseArray"/> class
+///     ...
 /// </summary>
 internal class SparseArray : IDisposable
 {
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SparseArray"/> class
+    ///     with the specified <see cref="ComponentType"/> and an optional initial <paramref name="capacity"/> (default: 64).
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="capacity"></param>
     public SparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
@@ -19,32 +30,34 @@ internal class SparseArray : IDisposable
     }
 
     /// <summary>
-    /// The type this sparsearray stores as an contignous array.
+    ///     Gets the <see cref="ComponentType"/> the <see cref="SparseArray"/> stores.
     /// </summary>
     public ComponentType Type { get; }
 
     /// <summary>
-    /// The capacity.
+    ///     Gets the total number of elements the <see cref="SparseArray"/> can hold without resizing.
     /// </summary>
     public int Capacity { get; private set; }
 
+    // NOTE: Should this be `Length` to follow the existing `Array` API?
     /// <summary>
-    /// The current size.
+    ///     Gets the total number of elements in the <see cref="SparseArray"/>.
     /// </summary>
     public int Size { get; private set; }
 
     /// <summary>
-    /// The stored entities / indexes.
+    ///     Gets or sets the indices of the stored <see cref="Entity"/> instances.
     /// </summary>
     public int[] Entities;
 
     /// <summary>
-    /// The component array of <see cref="Type"/>. 
+    ///     Gets an array of components contained by the <see cref="SparseArray"/>.
     /// </summary>
     public Array Components { get; private set; }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Adds an entity to this sparse array.
+    /// 
     /// </summary>
     /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,8 +92,10 @@ internal class SparseArray : IDisposable
         }
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns true if this sparsearray contains an entity. 
+    /// 
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
@@ -90,8 +105,10 @@ internal class SparseArray : IDisposable
         return index < Entities.Length && Entities[index] != -1;
     }
 
+    // NOTE: If `SparseArray` were generic, this wouldn't have to exist, perhaps?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns the sparsearray casted to a generic
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -101,12 +118,14 @@ internal class SparseArray : IDisposable
         return Unsafe.As<T[]>(Components);
     }
 
+    // NOTE: If `SparseArray` were generic, this could perhaps be an indexer (T this[int index]).
+    // TODO: Documentation.
     /// <summary>
-    /// Sets a component for the entity.
+    /// 
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     /// <param name="index"></param>
     /// <param name="component"></param>
-    /// <typeparam name="T"></typeparam>
     public void Set<T>(int index, in T component)
     {
         lock (this)
@@ -115,19 +134,23 @@ internal class SparseArray : IDisposable
         }
     }
 
+    // NOTE: Should this be `ElementAt` to follow other existing .NET APIs (Enumerable.ElementAt)?
+    // NOTE: If `SparseArray` were generic, this could perhaps be an indexer (T this[int index]).
+    // TODO: Documentation.
     /// <summary>
-    /// Returns a component for the entity. 
+    /// 
     /// </summary>
-    /// <param name="index"></param>
     /// <typeparam name="T"></typeparam>
+    /// <param name="index"></param>
     /// <returns></returns>
     public ref T Get<T>(int index)
     {
         return ref GetArray<T>()[Entities[index]];
     }
 
+    // NOTE: Does this even need to exist? It doesn't release any resources or anything. Not really what `IDisposable` is for.
     /// <summary>
-    /// Disposes this array. 
+    ///     Disposes the <see cref="SparseArray"/>.
     /// </summary>
     public void Dispose()
     {
@@ -135,30 +158,51 @@ internal class SparseArray : IDisposable
     }
 }
 
+// NOTE: Why not a generic type?
+// NOTE: Should this have a more descriptive name? `SparseSet` sounds too generic for something that's only for `Entity`s.
+// TODO: Tight array like in the structural `SparseSet` to avoid unnecessary iterations!!
+// TODO: Documentation.
 /// <summary>
-/// A sparset which is an alternative to an archetype. Has some advantages, for example less copy around stuff and easier archetype changes.
-/// TODO : Tight array like in the structural sparset to avoid uncessecary iterations !! 
+///     The <see cref="SparseSet"/> class
+///     ...
 /// </summary>
 internal class SparseSet : IDisposable
 {
+    // NOTE: Does this really need to be nested?
+    // TODO: Documentation.
     /// <summary>
-    /// Represents an entity, combined to a internal sparset index id for fast lookups.
+    ///     The <see cref="WrappedEntity"/> struct
+    ///     ...
     /// </summary>
     internal readonly struct WrappedEntity
     {
-        internal readonly Entity Entity;
-        internal readonly int Index;
-
+        // TODO: Documentation.
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="WrappedEntity"/> struct
+        ///     ...
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="index"></param>
         public WrappedEntity(Entity entity, int index)
         {
             Entity = entity;
             Index = index;
         }
+
+        // TODO: Documentation.
+        internal readonly Entity Entity;
+        internal readonly int Index;
     }
 
-    private readonly object _createLock = new();              // Lock for create operations
-    private readonly object _setLock = new();                 // Lock for set operations
+    private readonly object _createLock = new(); // Lock for create operations
+    private readonly object _setLock = new();    // Lock for set operations
 
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SparseSet"/> class
+    ///     with an optional initial <paramref name="capacity"/> (default: 64).
+    /// </summary>
+    /// <param name="capacity"></param>
     public SparseSet(int capacity = 64)
     {
         InitialCapacity = capacity;
@@ -169,38 +213,41 @@ internal class SparseSet : IDisposable
         Components = Array.Empty<SparseArray>();
     }
 
+    // NOTE: Should this be just `Capacity`?
     /// <summary>
-    /// The initial capacity of this set. 
+    ///     Gets the total number of elements the <see cref="SparseSet"/> can hold.
     /// </summary>
     public int InitialCapacity { get; }
 
+    // NOTE: Should this be `Count` to follow the existing `ICollection` API?
     /// <summary>
-    /// The size, how many entities are stored in this set.
+    ///     Gets the total number of elements in the <see cref="SparseSet"/>.
     /// </summary>
     public int Size { get; private set; }
 
     /// <summary>
-    /// A list of all entities. 
+    ///     Gets a <see cref="List{T}"/> of all <see cref="WrappedEntity"/> instances in the <see cref="SparseSet"/>.
     /// </summary>
     public List<WrappedEntity> Entities { get; }
 
     /// <summary>
-    /// The amount of sparse arrays in this set.
+    ///     Gets the total number of <see cref="SparseArray"/> instances in the <see cref="SparseSet"/>.
     /// </summary>
     public int UsedSize { get; private set; }
 
     /// <summary>
-    /// Tight packed array pointing to used sparse arrays for iteration
+    ///     Gets or sets an array containing used <see cref="SparseArray"/> indices.
     /// </summary>
     public int[] Used;
 
     /// <summary>
-    /// The sparse arrays. 
+    ///     Gets or sets an array containing <see cref="SparseArray"/> instances.
     /// </summary>
     public SparseArray[] Components;
 
+    // TODO: Documentation.
     /// <summary>
-    /// Creates an entity inside this sparset. 
+    ///     Adds an <see cref="Entity"/> to the <see cref="SparseSet"/>.
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -218,19 +265,21 @@ internal class SparseSet : IDisposable
         }
     }
 
+    // NOTE: If `SparseSet` were generic, this could perhaps be an indexer (T this[int index]).
+    // TODO: Documentation.
     /// <summary>
-    /// Sets a component for an index. 
+    /// 
     /// </summary>
+    /// <typeparam name="T"></typeparam>
     /// <param name="index"></param>
     /// <param name="component"></param>
-    /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T component)
     {
         var id = Component<T>.ComponentType.Id;
         lock (_setLock)
         {
-            // Allocate new sparsearray for new component type 
+            // Allocate new `SparseArray` for new component type.
             if (id >= Components.Length)
             {
                 Array.Resize(ref Components, id + 1);
@@ -243,7 +292,7 @@ internal class SparseSet : IDisposable
             }
         }
 
-        // Add and set to sparsearray
+        // Add and set to `SparseArray`.
         var array = Components[id];
         lock (array)
         {
@@ -256,11 +305,12 @@ internal class SparseSet : IDisposable
         array.Set(index, in component);
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns whether this index has a certain component or not. 
+    /// 
     /// </summary>
     /// <param name="index"></param>
-    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(int index)
@@ -271,11 +321,14 @@ internal class SparseSet : IDisposable
         return array.Has(index);
     }
 
+    // NOTE: Should this be `ElementAt` to follow other existing .NET APIs (Enumerable.ElementAt)?
+    // NOTE: If `SparseSet` were generic, this could perhaps be an indexer (T this[int index]).
+    // TODO: Documentation.
     /// <summary>
-    /// Returns a component for the index. 
+    /// 
     /// </summary>
-    /// <param name="index"></param>
     /// <typeparam name="T"></typeparam>
+    /// <param name="index"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T Get<T>(int index)
@@ -287,7 +340,7 @@ internal class SparseSet : IDisposable
     }
 
     /// <summary>
-    /// Disposes this set. 
+    ///     Disposes the <see cref="SparseSet"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()

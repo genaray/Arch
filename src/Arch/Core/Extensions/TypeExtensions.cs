@@ -2,13 +2,21 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
+// NOTE: Should this be `ComponentTypeExtensions`?
+// NOTE: Should this really be an extension class? Why not simply add these methods to the `ComponentType` type directly?
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="TypeExtensions"/> class
+///     ...
+/// </summary>
 public static class TypeExtensions
 {
+    // TODO: Documentation.
     /// <summary>
-    /// Converts the types to their component ids and writes them into the span.
+    /// 
     /// </summary>
-    /// <param name="types">The types array.</param>
-    /// <param name="ids">The span in which the type component ids should be written.</param>
+    /// <param name="types"></param>
+    /// <param name="ids"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteComponentIds(this ComponentType[] types, Span<int> ids)
     {
@@ -20,12 +28,12 @@ public static class TypeExtensions
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Calculates the byte sum of the types.
+    /// 
     /// </summary>
-    /// <param name="types">The types array</param>
+    /// <param name="types"></param>
     /// <returns></returns>
-    /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int ToByteSize(this ComponentType[] types)
     {
@@ -40,16 +48,16 @@ public static class TypeExtensions
         return size;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Calculates the byte sum of the types.
+    /// 
     /// </summary>
-    /// <param name="types">The types array</param>
+    /// <param name="types"></param>
     /// <returns></returns>
-    /// <exception cref="ArgumentException">Throws an exception if one type is not a value type</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int[] ToLookupArray(this ComponentType[] types)
     {
-        // Get max component id
+        // Get maximum component ID.
         var max = 0;
         foreach (var type in types)
         {
@@ -60,9 +68,9 @@ public static class TypeExtensions
             }
         }
 
-        // Create lookup table where the component-id points to the component index. 
+        // Create lookup table where the component ID points to the component index.
         var array = new int[max + 1];
-        Array.Fill(array, -1); // -1 Since that indicates no component is in that index since components start at zero we can not use zero here. 
+        Array.Fill(array, -1);
 
         for (var index = 0; index < types.Length; index++)
         {

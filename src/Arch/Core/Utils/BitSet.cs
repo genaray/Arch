@@ -1,11 +1,15 @@
 namespace Arch.Core.Utils;
 
+// NOTE: Can this be replaced with `System.Collections.BitArray`?
+// NOTE: If not, can it at least mirror that type's API?
 /// <summary>
-///     A resizable collection of bits.
+///     The <see cref="BitSet"/> class
+///     represents a resizable collection of bits.
 /// </summary>
 public class BitSet
 {
-    private const int BitSize = (sizeof(uint) * 8) - 1;
+    private const int BitSize = (sizeof(uint) * 8) - 1; // 31
+    // NOTE: Is a byte not 8 bits?
     private const int ByteSize = 5; // log_2(BitSize + 1)
 
     private uint[] _bits;
@@ -18,11 +22,12 @@ public class BitSet
         _bits = new uint[1];
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Determines whether the given bit is set.
+    /// 
     /// </summary>
-    /// <param name="index">The index of the bit to check.</param>
-    /// <returns><c>true</c> if the bit is set; otherwise, <c>false</c>.</returns>
+    /// <param name="index"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSet(int index)
     {
@@ -35,10 +40,11 @@ public class BitSet
         return (_bits[b] & (1 << (index & BitSize))) != 0;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Sets the bit at the given index.
+    /// 
     /// </summary>
-    /// <param name="index">The bit to set.</param>
+    /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetBit(int index)
     {
@@ -51,10 +57,11 @@ public class BitSet
         _bits[b] |= 1u << (index & BitSize);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Clears the bit at the given index.
+    /// 
     /// </summary>
-    /// <param name="index">The bit to clear.</param>
+    /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ClearBit(int index)
     {
@@ -67,8 +74,9 @@ public class BitSet
         _bits[b] &= ~(1u << (index & BitSize));
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Sets all bits.
+    /// 
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetAll()
@@ -80,8 +88,9 @@ public class BitSet
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Clears all bits.
+    /// 
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ClearAll()
@@ -89,11 +98,13 @@ public class BitSet
         Array.Clear(_bits, 0, _bits.Length);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Determines whether all of the bits in this instance are also set in the given bitset.
+    /// 
     /// </summary>
-    /// <param name="other">The bitset to check.</param>
-    /// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other" />; otherwise, <c>false</c>.</returns>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool All(BitSet other)
     {
@@ -114,7 +125,7 @@ public class BitSet
             }
         }
 
-        // handle extra bits on our side that might just be all zero
+        // Handle extra bits on our side that might just be all zero.
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
         {
@@ -127,11 +138,13 @@ public class BitSet
         return true;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Determines whether all of the bits in this instance are also set in the given bitset.
+    /// 
     /// </summary>
-    /// <param name="other">The bitset to check.</param>
-    /// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other" />; otherwise, <c>false</c>.</returns>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
@@ -152,7 +165,7 @@ public class BitSet
             }
         }
 
-        // handle extra bits on our side that might just be all zero
+        // Handle extra bits on our side that might just be all zero.
         var extra = _bits.Length - count;
         for (var i = count; i < extra; i++)
         {
@@ -165,11 +178,13 @@ public class BitSet
         return false;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Determines whether all of the bits in this instance are also set in the given bitset.
+    /// 
     /// </summary>
-    /// <param name="other">The bitset to check.</param>
-    /// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other" />; otherwise, <c>false</c>.</returns>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
@@ -203,11 +218,13 @@ public class BitSet
         return false;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Determines whether all of the bits in this instance are also set in the given bitset.
+    /// 
     /// </summary>
-    /// <param name="other">The bitset to check.</param>
-    /// <returns><c>true</c> if all of the bits in this instance are set in <paramref name="other" />; otherwise, <c>false</c>.</returns>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Exclusive(BitSet other)
     {
@@ -241,10 +258,11 @@ public class BitSet
         return true;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Returns a span to read the bitset.
+    /// 
     /// </summary>
-    /// <returns>A <see cref="ReadOnlySpan{T}"/> to read the bitset.</returns>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadOnlySpan<uint> AsSpan()
     {

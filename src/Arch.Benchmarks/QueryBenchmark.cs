@@ -19,7 +19,7 @@ public class QueryBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        //_jobScheduler = new JobScheduler.JobScheduler("Arch");
+        // _jobScheduler = new JobScheduler.JobScheduler("Arch");
 
         _world = World.Create();
         _world.Reserve(_group, Amount);
@@ -50,20 +50,17 @@ public class QueryBenchmark
     }
 
 #if !PURE_ECS
-
     [Benchmark]
     public void EntityExtensionQuery()
     {
         _world.Query(in _queryDescription, (in Entity entity) =>
         {
-
             var refs = entity.Get<Transform, Velocity>();
 
             refs.t0.X += refs.t1.X;
             refs.t0.Y += refs.t1.Y;
         });
     }
-
 #endif
 
     [Benchmark]

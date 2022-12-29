@@ -1,13 +1,23 @@
-using System.Diagnostics;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
 
+// TODO: Documentation. Be more specific about what a "component" truly is.
 /// <summary>
-///     Represents a component with its meta informations.
+///     The <see cref="ComponentType"/> struct
+///     represents a component with its meta information.
 /// </summary>
 public readonly struct ComponentType
 {
+    // TODO: Documentation.
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentType"/> struct
+    ///     ...
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="type"></param>
+    /// <param name="byteSize"></param>
+    /// <param name="zeroSized"></param>
     public ComponentType(int id, Type type, int byteSize, bool zeroSized)
     {
         Id = id;
@@ -16,18 +26,28 @@ public readonly struct ComponentType
         ZeroSized = zeroSized;
     }
 
+    // TODO: Documentation.
     public readonly int Id;
     public readonly Type Type;
-
     public readonly int ByteSize;
     public readonly bool ZeroSized;
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ComponentType(Type value)
     {
         return Component.GetComponentType(value);
     }
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="value"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Type(ComponentType value)
     {
@@ -35,20 +55,20 @@ public readonly struct ComponentType
     }
 }
 
+// TODO: Components should start at 1 instead, since the hash and `Chunk.Has` would work smoother that way.
 /// <summary>
-///     A class which tracks all used components in this project.
-///     Component-Ids start at 0 and each new used component will get an increased id.
-///     TODO : Probably components should start at 1 instead, since the hash and chunk.Has would work way smoother with it. 
+///     The <see cref="ComponentRegistry"/> class
+///     tracks all used components in the project.
+///     Component IDs start at 0 and increase by one for each new component.
 /// </summary>
 public static class ComponentRegistry
 {
-    /// <summary>
-    ///     A list of all registered components.
-    /// </summary>
     private static readonly Dictionary<Type, ComponentType> _types = new(128);
 
+    // NOTE: Could this be optimized by editing the array as values get added?
+    // TODO: Documentation.
     /// <summary>
-    /// Returns all registered types as a newly allocated array.
+    /// 
     /// </summary>
     public static ComponentType[] Types
     {
@@ -56,12 +76,13 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    /// The amount of registered components.
+    ///     Gets or sets the total number of registered components in the project.
     /// </summary>
     public static int Size { get; set; }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Adds a component.
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -71,8 +92,9 @@ public static class ComponentRegistry
         return Add(typeof(T));
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Adds a component.
+    /// 
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
@@ -94,8 +116,10 @@ public static class ComponentRegistry
         return meta;
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    ///     Checks if a component exists.
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -105,8 +129,10 @@ public static class ComponentRegistry
         return Has(typeof(T));
     }
 
+    // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
+    // TODO: Documentation.
     /// <summary>
-    ///     Checks if a component exists.
+    /// 
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
@@ -116,10 +142,12 @@ public static class ComponentRegistry
         return _types.ContainsKey(type);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns a component type id.
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <param name="componentType"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet<T>(out ComponentType componentType)
@@ -127,10 +155,12 @@ public static class ComponentRegistry
         return TryGet(typeof(T), out componentType);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns a component type id.
+    /// 
     /// </summary>
     /// <param name="type"></param>
+    /// <param name="componentType"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet(Type type, out ComponentType componentType)
@@ -139,30 +169,47 @@ public static class ComponentRegistry
     }
 }
 
+// TODO: Documentation.
 /// <summary>
-///     A class which provides information about a component.
-///     Gets created once during its first use and than provides informations like a compile static class.
+///     The <see cref="Component{T}"/> class
+///     provides information about a component.
 /// </summary>
 /// <typeparam name="T"></typeparam>
+/// <remarks>
+///     A <see cref="Component{T}"/> is created once during its first use.
+///     Subsequent uses access statically stored information.
+/// </remarks>
 public static class Component<T>
 {
+    // TODO: Documentation?
+    /// <summary>
+    /// 
+    /// </summary>
     static Component()
     {
         ComponentType = ComponentRegistry.Add<T>();
     }
 
+    // TODO: Documentation.
+    /// <summary>
+    /// 
+    /// </summary>
     public static readonly ComponentType ComponentType;
 }
 
 /// <summary>
-///     A class which provides information about a component.
-///     Gets created once during its first use and than provides informations like a compile static class.
+///     The <see cref="Component"/> class
+///     provides information about a component.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <remarks>
+///     A <see cref="Component"/> is created once during its first use.
+///     Subsequent uses access statically stored information.
+/// </remarks>
 public static class Component
 {
+    // TODO: Documentation.
     /// <summary>
-    /// Returns the components id, based on its type. 
+    /// 
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
@@ -172,15 +219,16 @@ public static class Component
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders.
+    /// 
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(params ComponentType[] obj)
     {
-        // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
+        // From https://stackoverflow.com/a/52172541.
         unchecked
         {
             int hash = 0;
@@ -203,15 +251,16 @@ public static class Component
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Calculates the Hash Code of a Type Array by using its component ids and ignores different orders. 
+    /// 
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<int> obj)
     {
-        // From https://stackoverflow.com/questions/28326965/good-hash-function-for-list-of-integers-where-order-doesnt-change-value
+        // From https://stackoverflow.com/a/52172541.
         unchecked
         {
             int hash = 0;
@@ -235,33 +284,48 @@ public static class Component
     }
 }
 
+// NOTE: Rename or reimplement this? An entire class just for counting something seems overkill.
+// TODO: Documentation.
 /// <summary>
-/// Compile static class that acts as a counter. 
+///     The <see cref="JobMeta"/> class
+///     ...
 /// </summary>
 public static class JobMeta
 {
     internal static int Id;
 }
 
+// TODO: Documentation.
 /// <summary>
-/// Compile static class that counts each generic overload, provides an id, a policy and a pool for it. 
+///     The <see cref="JobMeta{T}"/> class
+///     ...
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public static class JobMeta<T> where T : class, new()
 {
-    public static readonly int Id;
-    public static readonly DefaultObjectPolicy<T> Policy;
-    public static readonly DefaultObjectPool<T> Pool;
-
+    // TODO: Documentation?
+    /// <summary>
+    /// 
+    /// </summary>
     static JobMeta()
     {
         Id = JobMeta.Id++;
         Policy = new DefaultObjectPolicy<T>();
         Pool = new DefaultObjectPool<T>(Policy);
     }
+
+    // TODO: Documentation.
+    public static readonly int Id;
+    public static readonly DefaultObjectPolicy<T> Policy;
+    public static readonly DefaultObjectPool<T> Pool;
 }
 
-// TODO : Based on the hash of each Group we can easily Map a Group<T,T,T..> to another Group... Like Group<int, byte> to Group<byte,int> since they are the same based on the hash actually. 
+// TODO: Based on the hash of each `Group` we can easily Map a `Group<T, T, T, ...>` to another `Group`.
+//       E.g.: `Group<int, byte>` to `Group<byte, int>`, as they return the same hash.
+/// <summary>
+///     The <see cref="Group"/> class
+///     ...
+/// </summary>
 public static class Group
 {
     internal static int Id;

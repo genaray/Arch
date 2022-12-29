@@ -5,44 +5,41 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+// TODO: Documentation.
 /// <summary>
-///     Represents a chunk which stores <see cref="Entities" /> and their Components.
-///     Has a size of <see cref="TOTAL_CAPACITY" />, about 16KB memory and uses multiple arrays since low level memory allocation doesnt allow managed structs.
-///     Should nevertheless be cache friendly since the arrays fit perfectly into the cache upon iteration.
-///     ///
-///     <example>
-///         [
-///         [Health, Health, Health]
-///         [Transform, Transform, Transform]
-///         ...
-///         ]
-///     </example>
+///     The <see cref="Chunk"/> struct
+///     ...
 /// </summary>
 public partial struct Chunk
 {
+    // TODO: Documentation.
     /// <summary>
-    ///     Allocates enough space for the passed amount of entities with all its components.
+    ///     Initializes a new instance of the <see cref="Chunk"/> struct
+    ///     ...
     /// </summary>
     /// <param name="capacity"></param>
     /// <param name="types"></param>
     internal Chunk(int capacity, params ComponentType[] types)
         : this(capacity, types.ToLookupArray(), types) { }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Allocates enough space for the passed amount of entities with all its components.
+    ///     Initializes a new instance of the <see cref="Chunk"/> struct
+    ///     ...
     /// </summary>
     /// <param name="capacity"></param>
+    /// <param name="componentIdToArrayIndex"></param>
     /// <param name="types"></param>
     internal Chunk(int capacity, int[] componentIdToArrayIndex, params ComponentType[] types)
     {
-        // Calculate capacity & init arrays
+        // Calculate capacity and init arrays.
         Size = 0;
         Capacity = capacity;
 
         Entities = new Entity[Capacity];
         Components = new Array[types.Length];
 
-        // Init mapping
+        // Init mapping.
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
@@ -51,11 +48,12 @@ public partial struct Chunk
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Adds an <see cref="Entity" /> to this chunk.
-    ///     Increases the <see cref="Size" />.
+    /// 
     /// </summary>
     /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Add(in Entity entity)
     {
@@ -65,12 +63,13 @@ public partial struct Chunk
         return Size - 1;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Sets an component into the fitting component array at an index.
+    /// 
     /// </summary>
-    /// <param name="index">The index</param>
-    /// <param name="cmp">The component</param>
-    /// <typeparam name="T">The type</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="index"></param>
+    /// <param name="cmp"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in int index, in T cmp)
     {
@@ -78,11 +77,12 @@ public partial struct Chunk
         array[index] = cmp;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Checks wether this chunk contains an array of the type.
+    /// 
     /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool Has<T>()
@@ -91,12 +91,13 @@ public partial struct Chunk
         return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns an component from the fitting component array by its index.
+    /// 
     /// </summary>
-    /// <param name="index">The index</param>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>The component</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="index"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public ref T Get<T>(scoped in int index)
@@ -105,18 +106,18 @@ public partial struct Chunk
         return ref array[index];
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Removes an <see cref="Entity" /> from this chunk and all its components.
-    ///     Copies the last entity from the chunk to the removed position. This way we always have a contignous chunk without holes in it. 
+    /// 
     /// </summary>
-    /// <param name="entity"></param>
+    /// <param name="index"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Remove(in int index)
     {
-        // Last entity in archetype. 
+        // Last entity in archetype.
         var lastIndex = Size - 1;
 
-        // Copy last entity to replace the removed one
+        // Copy last entity to replace the removed one.
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
@@ -124,45 +125,25 @@ public partial struct Chunk
             Array.Copy(array, lastIndex, array, index, 1);
         }
 
-        // Update the mapping
+        // Update the mapping.
         Size--;
     }
 
-    /// <summary>
-    ///     The entities in this chunk.
-    /// </summary>
+    // TODO: Documentation.
     public readonly Entity[] Entities { [Pure] get; }
-
-    /// <summary>
-    ///     The entity components in this chunk.
-    /// </summary>
     public readonly Array[] Components { [Pure] get; }
-
-    /// <summary>
-    ///     A map to get the index of a component array inside <see cref="Components" />.
-    /// </summary>
     public readonly int[] ComponentIdToArrayIndex { [Pure] get; }
-
-    /// <summary>
-    ///     The current size/occupation of this chunk.
-    /// </summary>
     public int Size { [Pure] get; private set; }
-
-    /// <summary>
-    ///     The total capacity, how many entities fit in here.
-    /// </summary>
     public int Capacity { [Pure] get; }
 }
 
-/// <summary>
-///     Adds various generic acess methods to the chunk for acessing its internal arrays. 
-/// </summary>
 public partial struct Chunk
 {
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the index of the component array inside the structure of arrays.
+    /// 
     /// </summary>
-    /// <typeparam name="T">The component</typeparam>
+    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -172,11 +153,12 @@ public partial struct Chunk
         return ComponentIdToArrayIndex[id];
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the internal array for the passed component
+    /// 
     /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public T[] GetArray<T>()
@@ -185,11 +167,12 @@ public partial struct Chunk
         return Unsafe.As<T[]>(Components[index]);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns an span of the internal array for the passed component
+    /// 
     /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Span<T> GetSpan<T>()
@@ -197,8 +180,9 @@ public partial struct Chunk
         return new Span<T>(GetArray<T>(), 0, Size);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns a ref to the first element of the component array in an safe way.
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -206,15 +190,15 @@ public partial struct Chunk
     [Pure]
     public ref T GetFirst<T>()
     {
-        return ref GetSpan<T>()[0]; // Span to avoid bound checking for the [] operation
+        return ref GetSpan<T>()[0]; // Span, to avoid bound checking for the [] operation.
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns an the internal array for the passed component.
-    ///     Uses unsafe operations to avoid bound checks.
+    /// 
     /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public T[] GetArrayUnsafe<T>()
@@ -224,12 +208,12 @@ public partial struct Chunk
         return Unsafe.As<T[]>(array);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns an span to the internal array for the passed component.
-    ///     Uses unsafe operations to avoid bound checks.
+    /// 
     /// </summary>
-    /// <typeparam name="T">The component</typeparam>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Span<T> GetSpanUnsafe<T>()
@@ -237,8 +221,9 @@ public partial struct Chunk
         return new Span<T>(GetArrayUnsafe<T>());
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns a ref to the first element of the component array in an sunsafe way.
+    /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -250,16 +235,14 @@ public partial struct Chunk
     }
 }
 
-/// <summary>
-/// Adds various non generic methods to acess internals of the chunk. 
-/// </summary>
 public partial struct Chunk
 {
+    // TODO: Documentation.
     /// <summary>
-    ///     Checks wether this chunk contains an array of the type.
+    /// 
     /// </summary>
-    /// <typeparam name="T">The type</typeparam>
-    /// <returns>True if it does, false if it doesnt</returns>
+    /// <param name="t"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool Has(Type t)
@@ -273,10 +256,11 @@ public partial struct Chunk
         return ComponentIdToArrayIndex[id] != -1;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the index of the component array inside the structure of arrays.
+    /// 
     /// </summary>
-    /// <param name="type">The component type.</param>
+    /// <param name="type"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -291,11 +275,12 @@ public partial struct Chunk
         return ComponentIdToArrayIndex[id];
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the internal array for the passed component
+    /// 
     /// </summary>
-    /// <param name="type">The component type</param>
-    /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
+    /// <param name="type"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Array GetArray(Type type)
@@ -305,16 +290,15 @@ public partial struct Chunk
     }
 }
 
-/// <summary>
-/// Adds various utility methods to the chunk for moving entities and components. 
-/// </summary>
 public partial struct Chunk
 {
+    // TODO: Documentation.
     /// <summary>
-    /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a similar structured <see cref="Chunk"/>.
+    /// 
     /// </summary>
-    /// <param name="index">The entity index</param>
-    /// <param name="toChunk">A similar structured chunk where the entity by its index will move to.</param>
+    /// <param name="index"></param>
+    /// <param name="toChunk"></param>
+    /// <param name="toIndex"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     internal void CopyToSimilar(int index, ref Chunk toChunk, int toIndex)
@@ -328,11 +312,13 @@ public partial struct Chunk
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Moves an <see cref="Entity"/>  and its components ( by its index ) to a different structured <see cref="Chunk"/>.
+    /// 
     /// </summary>
-    /// <param name="index">The entity index</param>
-    /// <param name="toChunk">A different structured chunk where the entity by its index will move to.</param>
+    /// <param name="toChunk"></param>
+    /// <param name="index"></param>
+    /// <param name="toIndex"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     internal void CopyToDifferent(ref Chunk toChunk, int index, int toIndex)
@@ -353,10 +339,13 @@ public partial struct Chunk
         }
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Moves the last entity from the chunk into the current chunk and fills/replaces an index.
+    /// 
     /// </summary>
+    /// <param name="index"></param>
     /// <param name="chunk"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     internal int Transfer(int index, ref Chunk chunk)

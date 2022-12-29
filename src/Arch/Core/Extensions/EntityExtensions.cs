@@ -2,14 +2,21 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
 
+// NOTE: Should this really be an extension class? Why not simply add these methods to the `Entity` type directly?
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="EntityExtensions"/> class
+///     ...
+/// </summary>
 public static partial class EntityExtensions
 {
 #if !PURE_ECS
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the <see cref="Archetype" /> in which the <see cref="Entity" /> and its components are stored in.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity we wanna receive the <see cref="Archetype" /> from. </param>
-    /// <returns>The <see cref="Archetype" /> in which the entity and all its components are stored. </returns>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Archetype GetArchetype(this in Entity entity)
     {
@@ -17,11 +24,12 @@ public static partial class EntityExtensions
         return world.GetArchetype(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the <see cref="Chunk" /> in which the <see cref="Entity" /> is located in.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <returns>A reference to its chunk.</returns>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref readonly Chunk GetChunk(this in Entity entity)
     {
@@ -29,11 +37,12 @@ public static partial class EntityExtensions
         return ref world.GetChunk(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the component types which the passed <see cref="Entity" /> has assigned.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <returns>An array of components types.</returns>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType[] GetComponentTypes(this in Entity entity)
     {
@@ -41,12 +50,12 @@ public static partial class EntityExtensions
         return world.GetComponentTypes(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the components which the passed <see cref="Entity" /> has assigned.
-    ///     In case of struct components they will be boxed which causes memory allocations.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <returns>An array of components.</returns>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static object[] GetAllComponents(this in Entity entity)
     {
@@ -54,11 +63,12 @@ public static partial class EntityExtensions
         return world.GetAllComponents(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns true if the passed entity is alive.
+    /// 
     /// </summary>
     /// <param name="entity"></param>
-    /// <returns>True if the entity is alive in its world.</returns>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsAlive(this in Entity entity)
     {
@@ -66,11 +76,12 @@ public static partial class EntityExtensions
         return world.IsAlive(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns true if the passed entity is alive.
+    /// 
     /// </summary>
     /// <param name="entity"></param>
-    /// <returns>True if the entity is alive in its world.</returns>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static short Version(this in Entity entity)
     {
@@ -78,12 +89,13 @@ public static partial class EntityExtensions
         return world.Version(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Sets or updates a <see cref="Entity" />'s component.
+    /// 
     /// </summary>
-    /// <param name="entity">The <see cref="Entity" /></param>
-    /// <param name="component">A reference to the component</param>
-    /// <typeparam name="T">The component type</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="component"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Set<T>(this in Entity entity, in T component)
     {
@@ -91,12 +103,13 @@ public static partial class EntityExtensions
         world.Set(in entity, in component);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns true if the <see cref="Entity" /> has a certain component assigned.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <returns>True if it exists for that entity</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>(this in Entity entity)
     {
@@ -104,12 +117,13 @@ public static partial class EntityExtensions
         return world.Has<T>(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns a reference to the component of an <see cref="Entity" />.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <returns>A reference to the component</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T Get<T>(this in Entity entity)
     {
@@ -117,14 +131,14 @@ public static partial class EntityExtensions
         return ref world.Get<T>(entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the component if it exists for that entity.
-    ///     In case of a struct it will only returns a copy.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <param name="component">The component itself</param>
-    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="component"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet<T>(this in Entity entity, out T component)
     {
@@ -132,13 +146,14 @@ public static partial class EntityExtensions
         return world.TryGet(in entity, out component);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Returns the component if it exists for that entity.
-    ///     In case of a struct it will only returns a copy.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="exists"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
     {
@@ -146,12 +161,13 @@ public static partial class EntityExtensions
         return ref world.TryGetRef<T>(in entity, out exists);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Adds a component to the existing entity.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="cmp"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Add<T>(this in Entity entity, in T cmp = default)
     {
@@ -159,12 +175,12 @@ public static partial class EntityExtensions
         world.Add<T>(in entity);
     }
 
+    // TODO: Documentation.
     /// <summary>
-    ///     Removes an component from an entity.
+    /// 
     /// </summary>
-    /// <param name="entity">The entity</param>
-    /// <typeparam name="T">The component type</typeparam>
-    /// <returns>True if the component exists on the entity and could be returned.</returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Remove<T>(this in Entity entity)
     {

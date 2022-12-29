@@ -7,7 +7,7 @@ public class QueryGenerator : IIncrementalGenerator
     {
         if (!Debugger.IsAttached)
         {
-            //Debugger.Launch();
+            // Debugger.Launch();
         }
 
         context.RegisterPostInitializationOutput(initializationContext =>
@@ -48,17 +48,17 @@ public class QueryGenerator : IIncrementalGenerator
             jobs.AppendIForEachJobs(25);
             jobs.AppendIForEachWithEntityJobs(25);
 
-            var acessors = new StringBuilder();
-            acessors.AppendLine("using System;");
-            acessors.AppendLine("using System.Runtime.CompilerServices;");
-            acessors.AppendLine("using JobScheduler;");
-            acessors.AppendLine("using Arch.Core.Utils;");
-            acessors.AppendLine("using System.Diagnostics.Contracts;");
-            acessors.AppendLine("using Arch.Core.Extensions;");
-            acessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
-            acessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
-            acessors.AppendLine("namespace Arch.Core;");
-            acessors.AppendLine(
+            var accessors = new StringBuilder();
+            accessors.AppendLine("using System;");
+            accessors.AppendLine("using System.Runtime.CompilerServices;");
+            accessors.AppendLine("using JobScheduler;");
+            accessors.AppendLine("using Arch.Core.Utils;");
+            accessors.AppendLine("using System.Diagnostics.Contracts;");
+            accessors.AppendLine("using Arch.Core.Extensions;");
+            accessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
+            accessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
+            accessors.AppendLine("namespace Arch.Core;");
+            accessors.AppendLine(
                 $$"""
                 public partial struct Chunk
                 {
@@ -130,7 +130,7 @@ public class QueryGenerator : IIncrementalGenerator
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("Acessors.g.cs",
-                CSharpSyntaxTree.ParseText(acessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+                CSharpSyntaxTree.ParseText(accessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         });
     }
 }

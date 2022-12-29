@@ -1,13 +1,19 @@
 namespace Arch.Core.Extensions;
 
+// TODO: Documentation.
+/// <summary>
+///     The <see cref="ArrayExtensions"/> class
+///     ...
+/// </summary>
 public static class ArrayExtensions
 {
+    // TODO: Documentation.
     /// <summary>
-    /// Adds an element to an array and basically copies it. 
+    /// 
     /// </summary>
-    /// <param name="target">The target array</param>
-    /// <param name="item">The new item</param>
-    /// <typeparam name="T">The types</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <param name="items"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[]? Add<T>(this T[] target, params T[] items)
@@ -28,12 +34,13 @@ public static class ArrayExtensions
         return result;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Adds an element to an array and basically copies it. 
+    /// 
     /// </summary>
-    /// <param name="target">The target array</param>
-    /// <param name="item">The new item</param>
-    /// <typeparam name="T">The types</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <param name="items"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[]? Add<T>(this T[] target, IList<T> items)
@@ -54,12 +61,13 @@ public static class ArrayExtensions
         return result;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Removes an element to an array and shifts the other values.
+    /// 
     /// </summary>
-    /// <param name="target">The target array</param>
-    /// <param name="item">The new item</param>
-    /// <typeparam name="T">The types</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <param name="items"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[]? Remove<T>(this T[] target, params T[] items)
@@ -69,6 +77,7 @@ public static class ArrayExtensions
             return null;
         }
 
+        // NOTE: Why the `ToArray` call? Is `target` not already an array?
         var result = new List<T>(target.ToArray());
         var targetSpan = target.AsSpan();
 
@@ -84,12 +93,13 @@ public static class ArrayExtensions
         return result.ToArray();
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Removes an element to an array and shifts the other values.
+    /// 
     /// </summary>
-    /// <param name="target">The target array</param>
-    /// <param name="item">The new item</param>
-    /// <typeparam name="T">The types</typeparam>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <param name="items"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[]? Remove<T>(this T[] target, IList<T> items)
@@ -119,13 +129,13 @@ public static class ArrayExtensions
         return result;
     }
 
+    // TODO: Documentation.
     /// <summary>
-    /// Removes an element from an array and moves the other ones to its position. 
+    /// 
     /// </summary>
-    /// <param name="target">The target array</param>
-    /// <param name="item">The new item</param>
-    /// <typeparam name="T">The types</typeparam>
-    /// <returns></returns>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="target"></param>
+    /// <param name="item"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Remove<T>(this ref Span<T> target, T item)
     {
