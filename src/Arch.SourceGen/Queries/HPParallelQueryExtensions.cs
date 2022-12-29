@@ -1,37 +1,36 @@
 using System.Text;
-using CodeGenHelpers;
-using Microsoft.CodeAnalysis;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
-public static class StringBuilderParallelQueryExtensions
+public static class StringBuilderHpParallelQueryExtensions
 {
-
-    public static StringBuilder AppendParallelQuerys(this StringBuilder sb, int amount)
+    public static StringBuilder AppendHpParallelQuerys(this StringBuilder builder, int amount)
     {
         for (var index = 0; index < amount; index++)
-            sb.AppendParallelQuery(index);
-        return sb;
+            builder.AppendHpParallelQuery(index);
+
+        return builder;
     }
 
-    public static StringBuilder AppendParallelQuery(this StringBuilder sb, int amount)
+    public static void AppendHpParallelQuery(this StringBuilder builder, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template =
-            $@"
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{generics}> forEach){{
-    var innerJob = new ForEachJob<{generics}>();
-    innerJob.ForEach = forEach;
 
-    var pool = JobMeta<ChunkIterationJob<ForEachJob<{generics}>>>.Pool;
+        var template = $@"
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public void HPParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}>{{
+
+    var innerJob = new IForEachJob<T,{generics}>();
+    innerJob.ForEach = iForEach;
+
+    var pool = JobMeta<ChunkIterationJob<IForEachJob<T,{generics}>>>.Pool;
     var query = Query(in description);
     foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
         var archetypeSize = archetype.Size;
         var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
         foreach (var range in part) {{
-        
+
             var job = pool.Get();
             job.Start = range.Start;
             job.Size = range.Length;
@@ -48,7 +47,7 @@ public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{
         // Return jobs to pool
         for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-            var job = Unsafe.As<ChunkIterationJob<ForEachJob<{generics}>>>(JobsCache[jobIndex]);
+            var job = Unsafe.As<ChunkIterationJob<IForEachJob<T,{generics}>>>(JobsCache[jobIndex]);
             pool.Return(job);
         }}
 
@@ -57,36 +56,37 @@ public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{
     }}
 }}
 ";
-        sb.AppendLine(template);
-        return sb;
+
+        builder.AppendLine(template);
     }
 
-    public static StringBuilder AppendParallelEntityQuerys(this StringBuilder sb, int amount)
+    public static StringBuilder AppendHpeParallelQuerys(this StringBuilder builder, int amount)
     {
         for (var index = 0; index < amount; index++)
-            sb.AppendParallelEntityQuery(index);
-        return sb;
+            builder.AppendHpeParallelQuery(index);
+
+        return builder;
     }
 
-    public static StringBuilder AppendParallelEntityQuery(this StringBuilder sb, int amount)
+    public static void AppendHpeParallelQuery(this StringBuilder builder, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template =
-                $@"
+
+        var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach){{
+public void HPEParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}>{{
 
-    var innerJob = new ForEachWithEntityJob<{generics}>();
-    innerJob.ForEach = forEach;
+    var innerJob = new IForEachWithEntityJob<T,{generics}>();
+    innerJob.ForEach = iForEach;
 
-    var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>.Pool;
+    var pool = JobMeta<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>.Pool;
     var query = Query(in description);
     foreach (ref var archetype in query.GetArchetypeIterator()) {{
 
         var archetypeSize = archetype.Size;
         var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
         foreach (var range in part) {{
-        
+
             var job = pool.Get();
             job.Start = range.Start;
             job.Size = range.Length;
@@ -103,7 +103,7 @@ public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWi
         // Return jobs to pool
         for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++) {{
 
-            var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{generics}>>>(JobsCache[jobIndex]);
+            var job = Unsafe.As<ChunkIterationJob<IForEachWithEntityJob<T,{generics}>>>(JobsCache[jobIndex]);
             pool.Return(job);
         }}
 
@@ -113,7 +113,6 @@ public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWi
 }}
 ";
 
-        sb.AppendLine(template);
-        return sb;
+        builder.AppendLine(template);
     }
 }

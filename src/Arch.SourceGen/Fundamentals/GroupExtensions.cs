@@ -1,18 +1,18 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class GroupExtensions
 {
- 
+
     public static StringBuilder AppendGroups(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
             sb.AppendGroup(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendGroup(this StringBuilder sb, int amount)
     {
 

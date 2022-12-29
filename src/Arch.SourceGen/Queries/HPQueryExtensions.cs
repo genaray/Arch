@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public struct InterfaceInfo
 {
@@ -25,7 +25,7 @@ public static class StringBuilderHpQueryExtensions
 
         var interfaceTemplate = $@"
 public interface {interfaceInfo.Name}<{genericSb}>{{
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Update({paramSb});
 }}
@@ -82,13 +82,13 @@ public interface {interfaceInfo.Name}<{genericSb}>{{
 
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}>{{
-    
+
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}
-        
+
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
@@ -131,15 +131,15 @@ public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEac
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void HPQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEach<{generics}>{{
-    
+
     var t = new T();
 
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}
-        
+
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
@@ -152,7 +152,7 @@ public void HPQuery<T,{generics}>(in QueryDescription description) where T : str
 ";
             builder.AppendLine(methodTemplate);
         }
-        
+
         return builder;
     }
 
@@ -186,9 +186,9 @@ public void HPQuery<T,{generics}>(in QueryDescription description) where T : str
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}>{{
-    
+
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}
@@ -237,11 +237,11 @@ public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEa
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void HPEQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEachWithEntity<{generics}>{{
-    
+
     var t = new T();
 
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}

@@ -1,27 +1,27 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class HasExtensions
 {
-    
+
     public static StringBuilder AppendChunkHases(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendChunkHas(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendChunkHas(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        
+
         var getIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             getIds.AppendLine($"var t{index}ComponentId = Component<T{index}>.ComponentType.Id;");
-        
+
         var boundChecks = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             boundChecks.AppendLine($"if (t{index}ComponentId >= ComponentIdToArrayIndex.Length) return false;");
@@ -29,7 +29,7 @@ public static class HasExtensions
         var ifs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             ifs.AppendLine($"if (ComponentIdToArrayIndex[t{index}ComponentId] != 1) return false;");
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 [Pure]
@@ -44,33 +44,33 @@ public bool Has<{generics}>()
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendArchetypeHases(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendArchetypeHas(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendArchetypeHas(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        
+
         var getIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             getIds.AppendLine($"var t{index}ComponentId = Component<T{index}>.ComponentType.Id;");
-        
+
         var isSet = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             isSet.AppendLine($"BitSet.IsSet(t{index}ComponentId) &&");
         isSet.Length -= 4;
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public bool Has<{generics}>()
-{{ 
+{{
     {getIds}
     return {isSet};
 }}
@@ -78,15 +78,15 @@ public bool Has<{generics}>()
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendWorldHases(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendWorldHas(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendWorldHas(this StringBuilder sb, int amount)
     {
 
@@ -103,15 +103,15 @@ public bool Has<{generics}>(in Entity entity)
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendEntityHases(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendEntityHas(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendEntityHas(this StringBuilder sb, int amount)
     {
 

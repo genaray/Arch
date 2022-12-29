@@ -1,40 +1,40 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class GetExtensions
 {
-    
+
     public static StringBuilder AppendReferences(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
             sb.AppendReference(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendReference(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
-        
+
         var refStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             refStructs.AppendLine($"public Ref<T{index}> t{index};");
-        
+
         var references = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             references.AppendLine($"public ref T{index} t{index};");
-        
+
         var assignRefStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefStructs.AppendLine($"t{index} = new Ref<T{index}>(ref t{index}Component);");
-        
+
         var assignRefs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefs.AppendLine($"t{index} = ref t{index}Component;");
-        
+
 
         var template = $@"
 public ref struct References<{generics}>
@@ -52,7 +52,7 @@ public ref struct References<{generics}>
     {assignRefStructs}
 #else
     {assignRefs}
-#endif        
+#endif
 
     }}
 }}
@@ -60,15 +60,15 @@ public ref struct References<{generics}>
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendChunkIndexGets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendChunkIndexGet(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendChunkIndexGet(this StringBuilder sb, int amount)
     {
 
@@ -79,7 +79,7 @@ public ref struct References<{generics}>
         var gets = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             gets.AppendLine($"ref var t{index}Component = ref t{index}Array[index];");
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 [Pure]
@@ -98,10 +98,10 @@ public References<{generics}> Get<{generics}>(scoped in int index)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendArchetypeGet(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendArchetypeGet(this StringBuilder sb, int amount)
     {
 
@@ -117,15 +117,15 @@ internal unsafe References<{generics}> Get<{generics}>(scoped ref Slot slot)
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendWorldGets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendWorldGet(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendWorldGet(this StringBuilder sb, int amount)
     {
 
@@ -142,20 +142,20 @@ public References<{generics}> Get<{generics}>(in Entity entity)
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendEntityGets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendEntityGet(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendEntityGet(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public static References<{generics}> Get<{generics}>(this in Entity entity)

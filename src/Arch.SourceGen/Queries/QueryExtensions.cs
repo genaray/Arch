@@ -1,7 +1,7 @@
 using System.Text;
 using CodeGenHelpers;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class StringBuilderQueryExtensions
 {
@@ -11,40 +11,40 @@ public static class StringBuilderQueryExtensions
             sb.AppendForEachDelegate(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendForEachDelegate(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
-        var template = 
+        var template =
 $@"
 public delegate void ForEach<{generics}>({parameters});
 ";
         sb.Append(template);
         return sb;
     }
-    
+
     public static StringBuilder AppendForEachEntityDelegates(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
             sb.AppendForEachEntityDelegate(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendForEachEntityDelegate(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
-        var template = 
+        var template =
             $@"
 public delegate void ForEachWithEntity<{generics}>(in Entity entity, {parameters});
 ";
         sb.Append(template);
         return sb;
     }
-    
+
 
     public static StringBuilder AppendQueryMethods(this StringBuilder sb, int amount)
     {
@@ -67,7 +67,7 @@ public delegate void ForEachWithEntity<{generics}>(in Entity entity, {parameters
 public void Query<{generics}>(in QueryDescription description, ForEach<{generics}> forEach)
 {{
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}
@@ -107,7 +107,7 @@ public void Query<{generics}>(in QueryDescription description, ForEach<{generics
 public void Query<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach)
 {{
     var query = Query(in description);
-    foreach (ref var chunk in query.GetChunkIterator()) {{ 
+    foreach (ref var chunk in query.GetChunkIterator()) {{
 
         var chunkSize = chunk.Size;
         {getArrays}

@@ -1,18 +1,18 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class CreateExtensions
 {
-    
+
     public static StringBuilder AppendCreates(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
             sb.AppendCreate(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendCreate(this StringBuilder sb, int amount)
     {
 
@@ -24,7 +24,7 @@ public static class CreateExtensions
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public Entity Create<{generics}>({parameters})
 {{
-    
+
     var types = Group<{generics}>.Types;
 
     // Recycle id or increase

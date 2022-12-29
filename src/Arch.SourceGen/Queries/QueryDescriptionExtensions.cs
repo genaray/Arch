@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class QueryDescriptionExtensions
 {
@@ -10,12 +10,12 @@ public static class QueryDescriptionExtensions
             sb.AppendQueryDescriptionWithAll(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithAll(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template = 
+        var template =
 $@"
 [UnscopedRef]
 public ref QueryDescription WithAll<{generics}>()
@@ -27,19 +27,19 @@ public ref QueryDescription WithAll<{generics}>()
         sb.AppendLine(template);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithAnys(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendQueryDescriptionWithAny(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithAny(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template = 
+        var template =
             $@"
 [UnscopedRef]
 public ref QueryDescription WithAny<{generics}>()
@@ -51,19 +51,19 @@ public ref QueryDescription WithAny<{generics}>()
         sb.AppendLine(template);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithNones(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendQueryDescriptionWithNone(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithNone(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template = 
+        var template =
             $@"
 [UnscopedRef]
 public ref QueryDescription WithNone<{generics}>()
@@ -75,19 +75,19 @@ public ref QueryDescription WithNone<{generics}>()
         sb.AppendLine(template);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithExclusives(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendQueryDescriptionWithExclusive(index);
         return sb;
     }
-    
+
     public static StringBuilder AppendQueryDescriptionWithExclusive(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var template = 
+        var template =
             $@"
 [UnscopedRef]
 public ref QueryDescription WithExclusive<{generics}>()

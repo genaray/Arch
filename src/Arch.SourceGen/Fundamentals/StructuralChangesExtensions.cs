@@ -1,15 +1,15 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class StructuralChangesExtensions
 {
-    
+
     public static StringBuilder AppendWorldAdds(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendWorldAdd(index);
-        
+
         return sb;
     }
 
@@ -22,21 +22,21 @@ public static class StructuralChangesExtensions
 
         var setIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
-            setIds.AppendLine($"ids[^{index+1}] = Component<T{index}>.ComponentType.Id;");
-        
+            setIds.AppendLine($"ids[^{index + 1}] = Component<T{index}>.ComponentType.Id;");
+
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             types.AppendLine($"typeof(T{index}),");
         types.Length -= 3;
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Add<{generics}>(in Entity entity, {parameters})
 {{
     var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-    // Create a stack array with all component we now search an archetype for. 
-    Span<int> ids = stackalloc int[oldArchetype.Types.Length + {amount+1}];
+    // Create a stack array with all component we now search an archetype for.
+    Span<int> ids = stackalloc int[oldArchetype.Types.Length + {amount + 1}];
     oldArchetype.Types.WriteComponentIds(ids);
     {setIds}
 
@@ -48,14 +48,14 @@ public void Add<{generics}>(in Entity entity, {parameters})
 }}
 ";
 
-    return sb.AppendLine(template);
+        return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendWorldRemoves(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendWorldRemove(index);
-        
+
         return sb;
     }
 
@@ -67,23 +67,23 @@ public void Add<{generics}>(in Entity entity, {parameters})
         var removes = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             removes.AppendLine($"ids.Remove(Component<T{index}>.ComponentType.Id);");
-        
+
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             types.AppendLine($"typeof(T{index}),");
         types.Length -= 3;
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public void Remove<{generics}>(in Entity entity)
 {{
     var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-    // Create a stack array with all component we now search an archetype for. 
+    // Create a stack array with all component we now search an archetype for.
     Span<int> ids = stackalloc int[oldArchetype.Types.Length];
     oldArchetype.Types.WriteComponentIds(ids);
     {removes}
-    ids = ids[..^{amount+1}];
+    ids = ids[..^{amount + 1}];
 
     if (!TryGetArchetype(ids, out var newArchetype))
         newArchetype = GetOrCreate(oldArchetype.Types.Remove({types}));
@@ -94,12 +94,12 @@ public void Remove<{generics}>(in Entity entity)
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendEntityAdds(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendEntityAdd(index);
-        
+
         return sb;
     }
 
@@ -108,7 +108,7 @@ public void Remove<{generics}>(in Entity entity)
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
-        
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public static void Add<{generics}>(this in Entity entity, {parameters})
@@ -120,12 +120,12 @@ public static void Add<{generics}>(this in Entity entity, {parameters})
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendEntityRemoves(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
             sb.AppendEntityRemove(index);
-        
+
         return sb;
     }
 

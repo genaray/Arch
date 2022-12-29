@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class StringBuilderExtensions
 {
@@ -43,7 +43,7 @@ public static class StringBuilderExtensions
 
         return sb;
     }
-    
+
     public static StringBuilder GetLastGenericElements(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -67,7 +67,7 @@ public static class StringBuilderExtensions
         sb.Length--;
         return sb;
     }
-    
+
     public static StringBuilder InsertGenericParams(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -75,7 +75,7 @@ public static class StringBuilderExtensions
         sb.Length--;
         return sb;
     }
-    
+
     public static StringBuilder GenericInParams(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -83,7 +83,7 @@ public static class StringBuilderExtensions
         sb.Length--;
         return sb;
     }
-    
+
     public static StringBuilder GenericInDefaultParams(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -91,7 +91,7 @@ public static class StringBuilderExtensions
         sb.Length--;
         return sb;
     }
-    
+
     public static StringBuilder InsertGenericInParams(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -99,9 +99,9 @@ public static class StringBuilderExtensions
         sb.Length--;
         return sb;
     }
-    
+
     // World-----------
-    
+
     public static StringBuilder GetChunkArrays(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ArchSourceGenerator;
+namespace Arch.SourceGen;
 
 public static class StringBuilderChunkJobExtensions
 {
