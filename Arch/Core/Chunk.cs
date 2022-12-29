@@ -9,6 +9,23 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+public interface IComponent { }
+
+public sealed class ComponentArray<T> where T : IComponent
+{
+    private T[] _array;
+
+    public T[] Array => _array;
+
+    public ComponentArray(int size)
+    {
+        _array = new T[size];
+    }
+
+    public ref T GetComponenet(int index) => ref _array[index];
+}
+
+
 /// <summary>
 ///     Represents a chunk which stores <see cref="Entities" /> and their Components.
 ///     Has a size of <see cref="TOTAL_CAPACITY" />, about 16KB memory and uses multiple arrays since low level memory allocation doesnt allow managed structs.
@@ -44,14 +61,13 @@ public partial struct Chunk
         Capacity = capacity;
 
         Entities = new Entity[Capacity];
-        Components = new Array[types.Length];
+        Components = new ComponentArray<IComponent>[types.Length];
 
         // Init mapping
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
-            var type = types[index];
-            Components[index] = Array.CreateInstance(type, Capacity);
+            Components[index] = new ComponentArray<IComponent>(Capacity);
         }
     }
 
@@ -123,7 +139,7 @@ public partial struct Chunk
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
-            var array = Components[i];
+            var array = Components[i].Array;
             Array.Copy(array, lastIndex, array, index, 1);
         }
 
@@ -139,7 +155,7 @@ public partial struct Chunk
     /// <summary>
     ///     The entity components in this chunk.
     /// </summary>
-    public readonly Array[] Components { [Pure] get; }
+    public readonly ComponentArray<IComponent>[] Components { [Pure] get; }
 
     /// <summary>
     ///     A map to get the index of a component array inside <see cref="Components" />.
@@ -186,7 +202,7 @@ public partial struct Chunk
     public T[] GetArray<T>()
     {
         var index = Index<T>();
-        return Unsafe.As<T[]>(Components[index]);
+        return Unsafe.As<T[]>(Components[index].Array);
     }
 
     /// <summary>
@@ -225,7 +241,7 @@ public partial struct Chunk
     {
         var index = Index<T>();
         ref var array = ref Components.DangerousGetReferenceAt(index);
-        return Unsafe.As<T[]>(array);
+        return Unsafe.As<T[]>(array.Array);
     }
 
     /// <summary>
@@ -295,10 +311,10 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Array GetArray(Type type)
+    public IComponent[] GetArray(Type type)
     {
         var index = Index(type);
-        return Components[index];
+        return Components[index].Array;
     }
 }
 
@@ -320,8 +336,8 @@ public partial struct Chunk
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = Components[i];
-            var desArray = toChunk.Components[i];
+            var sourceArray = Components[i].Array;
+            var desArray = toChunk.Components[i].Array;
             Array.Copy(sourceArray, toIndex, desArray, index, 1);
         }
     }
@@ -338,7 +354,7 @@ public partial struct Chunk
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = Components[i];
+            var sourceArray = Components[i].Array;
             var sourceType = sourceArray.GetType().GetElementType();
 
             if (!toChunk.Has(sourceType)) continue;
@@ -364,8 +380,8 @@ public partial struct Chunk
         Entities[index] = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = chunk.Components[i];
-            var desArray = Components[i];
+            var sourceArray = chunk.Components[i].Array;
+            var desArray = Components[i].Array;
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
         

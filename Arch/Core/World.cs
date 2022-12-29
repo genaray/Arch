@@ -867,7 +867,7 @@ public partial class World
         for (var index = 0; index < components.Length; index++)
         {
             var componentArray = components[index];
-            var component = componentArray.GetValue(entityIndex);
+            ref var component = ref componentArray.GetComponenet(entityIndex);
             cmps[index] = component;
         }
 
