@@ -311,7 +311,7 @@ public partial struct Chunk
 public partial struct Chunk
 {
     /// <summary>
-    ///     Copies an entity at one index to another <see cref="Chunk"/>-index.
+    ///     Copies an <see cref="Entity"/> at one index to another <see cref="Chunk"/>-index.
     ///     Only works for similar structures <see cref="Chunk"/>'s.
     /// </summary>
     /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
@@ -331,7 +331,7 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Copies an entity at one index to another <see cref="Chunk"/>-index.
+    ///     Copies an <see cref="Entity"/> at one index to another <see cref="Chunk"/>-index.
     /// </summary>
     /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
     /// <param name="toChunk">The chunk we want to move it to.</param>
@@ -357,7 +357,7 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Transfers an entity at the index of this chunk to another chunk.
+    ///     Transfers an <see cref="Entity"/> at the index of this chunk to another chunk.
     /// </summary>
     /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
     /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
