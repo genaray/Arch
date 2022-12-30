@@ -15,7 +15,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
 ```console
-dotnet add PROJECT package Arch --version 1.1.0
+dotnet add PROJECT package Arch --version 1.1.1
 ```
 
 # Code Sample
@@ -38,7 +38,7 @@ public class Game
             world.Create(new Position{ X = 0, Y = 0}, new Velocity{ Dx = 1, Dy = 1});
         
         // Query and modify entities ( There are also alternatives without lambdas ;) ) 
-        var query = new QueryDescription{ All = new ComponentType[]{ typeof(Position), typeof(Velocity) } }; // Targets entities with Position AND Velocity.
+        var query = new QueryDescription().WithAll<Position,Velocity>(); // Targets entities with Position AND Velocity.
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
             pos.X += vel.Dx;
             pos.Y += vel.Dy;
@@ -105,7 +105,6 @@ var entity = world.Create(archetype);
 
 world.Destroy(in entity);
 ```
-> Entity creation/deletion should not happen during a Query! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this! :) 
 
 ## Component
 
@@ -129,8 +128,6 @@ entity.Remove<Velocity>();                         // Removes a velocity compone
 entity.Add<Velocity>(new Velocity{ X = 1, Y = 1);  // Adds a velocity component and moves the entity back to the previous archetype. 
 ```
 
-> Structural entity changes should not happen during a Query or Iteration! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this! :) 
-
 ## System aka. Query
 
 Queries aka. Systems are used to iterate over a set of entities to apply logic and behavior based on their components. 
@@ -139,11 +136,10 @@ This is performed by using the world (remember, it manages your created entities
 
 ```csharp
 // Define a description of which entities you want to query
-var query = new QueryDescription {
-    All = new ComponentType[]{ typeof(Position), typeof(Velocity) },   // Should have all specified components
-    Any = new ComponentType[]{ typeof(Player), typeof(Projectile) },   // Should have any of those
-    None = new ComponentType[]{ typeof(AI) }                           // Should have none of those
-};
+var query = new QueryDescription().    
+            WithAll<Position,Velocity>().      // Should have all specified components
+            WithAny<Player,Projectile>().      // Should have any of those
+            WithNone<AI>();                    // Should have none of those
 
 // Execute the query
 world.Query(in query, entity => { /* Do something */ });
