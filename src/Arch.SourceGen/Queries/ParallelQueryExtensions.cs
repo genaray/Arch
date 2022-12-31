@@ -23,11 +23,11 @@ public static class StringBuilderParallelQueryExtensions
             {
                 var innerJob = new ForEachJob<{{generics}}>();
                 innerJob.ForEach = forEach;
-            
+
                 var pool = JobMeta<ChunkIterationJob<ForEachJob<{{generics}}>>>.Pool;
                 var query = Query(in description);
                 foreach (ref var archetype in query.GetArchetypeIterator()) {
-            
+
                     var archetypeSize = archetype.Size;
                     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
                     foreach (var range in part)
@@ -39,19 +39,19 @@ public static class StringBuilderParallelQueryExtensions
                         job.Instance = innerJob;
                         JobsCache.Add(job);
                     }
-            
+
                     IJob.Schedule(JobsCache, JobHandles);
                     JobScheduler.JobScheduler.Instance.Flush();
                     JobHandle.Complete(JobHandles);
                     JobHandle.Return(JobHandles);
-            
+
                     // Return jobs to pool
                     for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
                     {
                         var job = Unsafe.As<ChunkIterationJob<ForEachJob<{{generics}}>>>(JobsCache[jobIndex]);
                         pool.Return(job);
                     }
-            
+
                     JobHandles.Clear();
                     JobsCache.Clear();
                 }
@@ -83,7 +83,7 @@ public static class StringBuilderParallelQueryExtensions
             {
                 var innerJob = new ForEachWithEntityJob<{{generics}}>();
                 innerJob.ForEach = forEach;
-            
+
                 var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>.Pool;
                 var query = Query(in description);
                 foreach (ref var archetype in query.GetArchetypeIterator())
@@ -99,19 +99,19 @@ public static class StringBuilderParallelQueryExtensions
                         job.Instance = innerJob;
                         JobsCache.Add(job);
                     }
-            
+
                     IJob.Schedule(JobsCache, JobHandles);
                     JobScheduler.JobScheduler.Instance.Flush();
                     JobHandle.Complete(JobHandles);
                     JobHandle.Return(JobHandles);
-            
+
                     // Return jobs to pool
                     for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
                     {
                         var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>(JobsCache[jobIndex]);
                         pool.Return(job);
                     }
-            
+
                     JobHandles.Clear();
                     JobsCache.Clear();
                 }

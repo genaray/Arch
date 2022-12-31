@@ -23,15 +23,15 @@ public static class StringBuilderChunkJobExtensions
             public struct ForEachJob<{{generics}}> : IChunkJob
             {
                 public ForEach<{{generics}}> ForEach;
-            
+
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     {{getFirstElement}}
-            
+
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                     {
                         {{getComponents}}
@@ -65,16 +65,16 @@ public static class StringBuilderChunkJobExtensions
             public struct ForEachWithEntityJob<{{generics}}> : IChunkJob
             {
                 public ForEachWithEntity<{{generics}}> ForEach;
-            
+
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                     {{getFirstElement}}
-            
+
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                     {
                         ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -110,15 +110,15 @@ public static class StringBuilderChunkJobExtensions
             public struct IForEachJob<T,{{generics}}> : IChunkJob where T : struct, IForEach<{{generics}}>
             {
                 public T ForEach;
-            
+
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     {{getFirstElement}}
-            
+
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                     {
                         {{getComponents}}
@@ -152,16 +152,16 @@ public static class StringBuilderChunkJobExtensions
             public struct IForEachWithEntityJob<T,{{generics}}> : IChunkJob where T : struct, IForEachWithEntity<{{generics}}>
             {
                 public T ForEach;
-            
+
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                     {{getFirstElement}}
-            
+
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                     {
                         ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);

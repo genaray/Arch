@@ -13,7 +13,7 @@ public static partial class EntityExtensions
 #if !PURE_ECS
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -26,7 +26,7 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -39,7 +39,7 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -52,7 +52,7 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -65,7 +65,7 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -78,7 +78,7 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -91,13 +91,13 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <param name="component"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Set<T>(this in Entity entity, in T component)
+    public static void Set<T>(this in Entity entity, in T component) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         world.Set(in entity, in component);
@@ -105,13 +105,13 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Has<T>(this in Entity entity)
+    public static bool Has<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return world.Has<T>(in entity);
@@ -119,13 +119,13 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T Get<T>(this in Entity entity)
+    public static ref T Get<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return ref world.Get<T>(entity);
@@ -133,14 +133,14 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <param name="component"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryGet<T>(this in Entity entity, out T component)
+    public static bool TryGet<T>(this in Entity entity, out T component) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return world.TryGet(in entity, out component);
@@ -148,14 +148,14 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <param name="exists"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
+    public static ref T TryGetRef<T>(this in Entity entity, out bool exists) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return ref world.TryGetRef<T>(in entity, out exists);
@@ -163,13 +163,13 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     /// <param name="cmp"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add<T>(this in Entity entity, in T cmp = default)
+    public static void Add<T>(this in Entity entity, in T cmp = default) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         world.Add<T>(in entity);
@@ -177,12 +177,12 @@ public static partial class EntityExtensions
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Remove<T>(this in Entity entity)
+    public static void Remove<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         world.Remove<T>(in entity);

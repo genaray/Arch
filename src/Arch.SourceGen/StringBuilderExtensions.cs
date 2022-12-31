@@ -33,6 +33,18 @@ public static class StringBuilderExtensions
         return sb;
     }
 
+    public static StringBuilder GenericConstraints(this StringBuilder sb, int amount)
+    {
+        for (var localIndex = 0; localIndex <= amount; localIndex++)
+        {
+            sb.Append($"where T{localIndex} : struct ");
+        }
+
+        sb.Length--;
+
+        return sb;
+    }
+
     public static StringBuilder GetGenericArrays(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)

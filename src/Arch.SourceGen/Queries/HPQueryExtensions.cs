@@ -96,9 +96,9 @@ public static class StringBuilderHpQueryExtensions
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
-                
+
                         {{getFirstElement}}
-                
+
                         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                         {
                             {{getComponents}}
@@ -114,40 +114,11 @@ public static class StringBuilderHpQueryExtensions
         // Methods with default T
         for (var index = 0; index <= amount; index++)
         {
-            var index1 = index;
-            var generics = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                generics.Append($"T{localIndex},");
-            }
-
-            generics.Length--;
-
-            var getArrays = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
-            }
-
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
-            }
-
-            var getComponents = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getComponents.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
-            }
-
-            var insertParams = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                insertParams.Append($"ref t{localIndex}Component,");
-            }
-
-            insertParams.Length--;
+            var generics = new StringBuilder().GenericWithoutBrackets(index);
+            var getArrays = new StringBuilder().GetGenericArrays(index);
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getComponents = new StringBuilder().GetGenericComponents(index);
+            var insertParams = new StringBuilder().InsertGenericParams(index);
 
             var template =
                 $$"""
@@ -155,15 +126,15 @@ public static class StringBuilderHpQueryExtensions
                 public void HPQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEach<{{generics}}>
                 {
                     var t = new T();
-                
+
                     var query = Query(in description);
                     foreach (ref var chunk in query.GetChunkIterator())
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
-                
+
                         {{getFirstElement}}
-                
+
                         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                         {
                             {{getComponents}}
@@ -183,40 +154,11 @@ public static class StringBuilderHpQueryExtensions
     {
         for (var index = 0; index <= amount; index++)
         {
-            var index1 = index;
-            var generics = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                generics.Append($"T{localIndex},");
-            }
-
-            generics.Length--;
-
-            var getArrays = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
-            }
-
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
-            }
-
-            var getComponents = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getComponents.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
-            }
-
-            var insertParams = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                insertParams.Append($"ref t{localIndex}Component,");
-            }
-
-            insertParams.Length--;
+            var generics = new StringBuilder().GenericWithoutBrackets(index);
+            var getArrays = new StringBuilder().GetGenericArrays(index);
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getComponents = new StringBuilder().GetGenericComponents(index);
+            var insertParams = new StringBuilder().InsertGenericParams(index);
 
             var template =
                 $$"""
@@ -228,10 +170,10 @@ public static class StringBuilderHpQueryExtensions
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
-                
+
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
-                
+
                         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                         {
                             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -248,40 +190,11 @@ public static class StringBuilderHpQueryExtensions
         // Methods with default T
         for (var index = 0; index <= amount; index++)
         {
-            var index1 = index;
-            var generics = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                generics.Append($"T{localIndex},");
-            }
-
-            generics.Length--;
-
-            var getArrays = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
-            }
-
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
-            }
-
-            var getComponents = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                getComponents.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
-            }
-
-            var insertParams = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-            {
-                insertParams.Append($"ref t{localIndex}Component,");
-            }
-
-            insertParams.Length--;
+            var generics = new StringBuilder().GenericWithoutBrackets(index);
+            var getArrays = new StringBuilder().GetGenericArrays(index);
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getComponents = new StringBuilder().GetGenericComponents(index);
+            var insertParams = new StringBuilder().InsertGenericParams(index);
 
             var template =
                 $$"""
@@ -289,16 +202,16 @@ public static class StringBuilderHpQueryExtensions
                 public void HPEQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEachWithEntity<{{generics}}>
                 {
                     var t = new T();
-                
+
                     var query = Query(in description);
                     foreach (ref var chunk in query.GetChunkIterator())
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
-                
+
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
-                
+
                         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                         {
                             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);

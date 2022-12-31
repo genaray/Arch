@@ -34,7 +34,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
@@ -45,7 +45,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
@@ -56,7 +56,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public override int GetHashCode()
@@ -72,7 +72,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="left"></param>
     /// <param name="right"></param>
@@ -84,7 +84,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="left"></param>
     /// <param name="right"></param>
@@ -96,7 +96,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public override string ToString()
@@ -119,7 +119,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static Entity Null { get; } = new(-1, 0);
 
@@ -138,7 +138,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="other"></param>
     /// <returns></returns>
@@ -149,7 +149,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
@@ -160,7 +160,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public override int GetHashCode()
@@ -177,7 +177,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="left"></param>
     /// <param name="right"></param>
@@ -189,7 +189,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="left"></param>
     /// <param name="right"></param>
@@ -201,7 +201,7 @@ public readonly struct Entity : IEquatable<Entity>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public override string ToString()
@@ -220,7 +220,7 @@ internal struct EntityInfo
 {
     // TODO: Documentation.
     public Slot Slot;           // Slot inside the archetype
-    public Archetype Archetype; // Archetype Index in World 
+    public Archetype Archetype; // Archetype Index in World
     public short Version;
 }
 
@@ -233,7 +233,7 @@ public interface IForEach
 {
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -294,7 +294,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
@@ -315,7 +315,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="world"></param>
     public static void Destroy(World world)
@@ -331,7 +331,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="types"></param>
     /// <param name="amount"></param>
@@ -348,7 +348,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="types"></param>
     /// <returns></returns>
@@ -382,7 +382,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="from"></param>
@@ -391,7 +391,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Move(in Entity entity, Archetype from, Archetype to, out Slot newSlot)
     {
-        // Copy entity to other archetype 
+        // Copy entity to other archetype
         var entityInfo = EntityInfo[entity.Id];
         var created = to.Add(in entity, out newSlot);
         from.CopyTo(to, ref entityInfo.Slot, ref newSlot);
@@ -407,7 +407,7 @@ public partial class World
         entityInfo.Slot = newSlot;
         EntityInfo[entity.Id] = entityInfo;
 
-        // Calculate the entity difference between the moved archetypes to allocate more space accordingly. 
+        // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
         var difference = 0;
         if (created)
         {
@@ -433,13 +433,13 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
-        // Cache id since in Entity is basically ref readonly entity. 
+        // Cache id since in Entity is basically ref readonly entity.
         var id = entity.Id;
 
         // Remove from archetype
@@ -447,7 +447,7 @@ public partial class World
         var archetype = entityInfo.Archetype;
         var destroyedChunk = archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
 
-        // Update info of moved entity which replaced the removed entity. 
+        // Update info of moved entity which replaced the removed entity.
         var movedEntityInfo = EntityInfo[movedEntityId];
         movedEntityInfo.Slot = entityInfo.Slot;
         EntityInfo[movedEntityId] = movedEntityInfo;
@@ -456,7 +456,7 @@ public partial class World
         RecycledIds.Enqueue(id);
         EntityInfo.Remove(id);
 
-        // Resizing and releasing memory 
+        // Resizing and releasing memory
         if (destroyedChunk)
         {
             Capacity -= archetype.EntitiesPerChunk;
@@ -468,14 +468,14 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Query Query(in QueryDescription queryDescription)
     {
-        // Looping over all archetypes, their chunks and their entities. 
+        // Looping over all archetypes, their chunks and their entities.
         if (QueryCache.TryGetValue(queryDescription, out var query))
         {
             return query;
@@ -489,7 +489,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <param name="list"></param>
@@ -512,7 +512,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <param name="archetypes"></param>
@@ -528,7 +528,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <param name="chunks"></param>
@@ -544,7 +544,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns></returns>
     public Enumerator<Archetype> GetEnumerator()
@@ -560,7 +560,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="types"></param>
     /// <param name="archetype"></param>
@@ -574,7 +574,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="ids"></param>
     /// <param name="archetype"></param>
@@ -588,7 +588,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="types"></param>
     /// <returns></returns>
@@ -619,7 +619,7 @@ public partial class World
 {
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <param name="forEntity"></param>
@@ -642,7 +642,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="queryDescription"></param>
@@ -667,7 +667,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="queryDescription"></param>
@@ -698,7 +698,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="queryDescription"></param>
     /// <param name="forEntity"></param>
@@ -715,7 +715,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="queryDescription"></param>
@@ -728,7 +728,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="queryDescription"></param>
@@ -741,7 +741,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="queryDescription"></param>
@@ -796,7 +796,7 @@ public partial class World
 {
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -810,7 +810,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -824,7 +824,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -838,7 +838,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -860,7 +860,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -883,7 +883,7 @@ public partial class World
 {
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -895,7 +895,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -907,7 +907,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -919,7 +919,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -932,7 +932,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -945,7 +945,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -977,7 +977,7 @@ public partial class World
 {
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -986,7 +986,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for. 
+        // Create a stack array with all component we now search an archetype for.
         Span<int> ids = stackalloc int[oldArchetype.Types.Length + 1];
         oldArchetype.Types.WriteComponentIds(ids);
         ids[^1] = Component<T>.ComponentType.Id;
@@ -1001,7 +1001,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="components"></param>
@@ -1010,11 +1010,11 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for. 
+        // Create a stack array with all component we now search an archetype for.
         Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Count];
         oldArchetype.Types.WriteComponentIds(ids);
 
-        // Add ids from array to all ids 
+        // Add ids from array to all ids
         for (var index = 0; index < components.Count; index++)
         {
             var type = components[index];
@@ -1031,7 +1031,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -1057,7 +1057,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="entity"></param>
@@ -1082,7 +1082,7 @@ public partial class World
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="entity"></param>
     /// <param name="types"></param>
