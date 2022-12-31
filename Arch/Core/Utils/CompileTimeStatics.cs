@@ -82,7 +82,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(Type type)
     {
-         if (TryGet(type, out var meta)) return meta;
+        if (TryGet(type, out var meta)) return meta;
         
         // Register and assign component id
         var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;

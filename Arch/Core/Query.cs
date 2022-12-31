@@ -190,6 +190,17 @@ public readonly struct Query : IEquatable<Query>
     {
         return new QueryChunkIterator(this, _archetypes.Span);
     }
+    
+    /// <summary>
+    ///     Returns a <see cref="QueryChunkIterator" /> which can be used to iterate over all fitting <see cref="Chunk" />'s for this query.
+    /// </summary>
+    /// <param name="world"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityIterator GetEntityIterator()
+    {
+        return new QueryEntityIterator(this, _archetypes.Span);
+    }
 
     public bool Equals(Query other)
     {

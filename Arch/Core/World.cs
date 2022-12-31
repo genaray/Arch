@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
 using JobScheduler;
 using Microsoft.Extensions.ObjectPool;
 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
@@ -134,16 +135,6 @@ public readonly struct Entity : IEquatable<Entity>
 
 
 /// <summary>
-/// Stores a bunch of informations about an entity for incredible fast lookups and slimmer entities themself. 
-/// </summary>
-internal struct EntityInfo
-{
-    public Slot Slot;             // Slot inside the archetype
-    public Archetype Archetype;   // Archetype Index in World 
-    public short Version;
-}
-
-/// <summary>
 ///     A interface which passes a <see cref="Entity" /> to execute logic on.
 /// </summary>
 public interface IForEach
@@ -156,6 +147,44 @@ public interface IForEach
 ///     A delegate passing an <see cref="Entity" /> to execute logic on it.
 /// </summary>
 public delegate void ForEach(in Entity entity);
+
+/// <summary>
+/// Stores references to an entity. 
+/// </summary>
+public ref struct EntityReference
+{
+    public int IndexInChunk;
+#if NETSTANDARD2_1 || NET6_0
+    public ReadOnlyRef<Chunk> Chunk;
+    public ReadOnlyRef<Entity> Entity;
+#else
+    public ref readonly Chunk Chunk;
+    public ref readonly Entity Entity;
+#endif
+
+    public EntityReference(in Chunk chunk, in int indexInChunk, in Entity entity)
+    {
+        IndexInChunk = indexInChunk;
+#if NETSTANDARD2_1 || NET6_0
+        Chunk = new ReadOnlyRef<Chunk>(in chunk);
+        Entity = new ReadOnlyRef<Entity>(in entity);
+#else
+        Chunk = ref chunk;
+        Entity = ref entity; 
+#endif
+
+    }
+}
+
+/// <summary>
+/// Stores a bunch of informations about an entity for incredible fast lookups and slimmer entities themself. 
+/// </summary>
+internal struct EntityInfo
+{
+    public Slot Slot;             // Slot inside the archetype
+    public Archetype Archetype;   // Archetype Index in World 
+    public short Version;
+}
 
 /// <summary>
 ///     A world contains multiple <see cref="Archetypes" />, <see cref="Entity" />'s and their components.

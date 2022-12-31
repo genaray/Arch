@@ -8,7 +8,7 @@ public class EnumeratorTest
 
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-    private QueryDescription _description = new() { All = _group };
+    private readonly QueryDescription _description = new() { All = _group };
 
     private World _world;
 
@@ -69,5 +69,16 @@ public class EnumeratorTest
         var archetype1ChunkCount = _world.Archetypes[0].Size;
         var archetype2ChunkCount = _world.Archetypes[1].Size;
         Assert.AreEqual(archetype1ChunkCount+archetype2ChunkCount, counter);
+    }
+    
+    [Test]
+    public void QueryEntityEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (var entity in query.GetEntityIterator())
+            counter++;
+        
+        Assert.AreEqual(20000, counter);
     }
 }

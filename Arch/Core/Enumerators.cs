@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 
@@ -192,17 +193,14 @@ public readonly ref struct QueryChunkIterator
 /// </summary>
 public ref struct QueryEntityEnumerator
 {
-    private QueryArchetypeEnumerator _archetypeEnumerator;
-    private Span<Chunk> _chunks;
-
+    private QueryChunkEnumerator _chunkEnumerator;
     private int _index;
-    private int _size;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryEntityEnumerator(Query query, Span<Archetype> archetypes)
     {
         _index = -1;
-        _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
+        _chunkEnumerator = new QueryChunkEnumerator(query, archetypes);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -210,16 +208,14 @@ public ref struct QueryEntityEnumerator
     {
         unchecked
         {
-            _index++;
+            --_index;
 
             // We reached the end, next archetype
-            if (_index < _size) return true;
-            if (!_archetypeEnumerator.MoveNext()) return false;
+            if (_index >= 0) return true;
+            if (!_chunkEnumerator.MoveNext()) return false;
 
-            ref var current = ref _archetypeEnumerator.Current;
-            _chunks = new Span<Chunk>(current.Chunks);
-            _index = 0;
-            _size = current.Size;
+            ref var current = ref _chunkEnumerator.Current;
+            _index = current.Size-1;
 
             return true;
         }
@@ -229,13 +225,19 @@ public ref struct QueryEntityEnumerator
     public void Reset()
     {
         _index = -1;
-        _archetypeEnumerator.Reset();
+        _chunkEnumerator.Reset();
     }
 
-    public readonly ref Chunk Current
+    public EntityReference Current
     {
+        [UnscopedRef]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _chunks[_index];
+        get
+        {
+            ref var current = ref _chunkEnumerator.Current;
+            ref var entity = ref _chunkEnumerator.Current.Entities[_index];
+            return new EntityReference(in current, in _index, in entity);
+        }
     }
 }
 
@@ -255,9 +257,9 @@ public readonly ref struct QueryEntityIterator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkEnumerator GetEnumerator()
+    public QueryEntityEnumerator GetEnumerator()
     {
-        return new QueryChunkEnumerator(_query, _archetypes);
+        return new QueryEntityEnumerator(_query, _archetypes);
     }
 }
 
