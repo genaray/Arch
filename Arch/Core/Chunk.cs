@@ -13,15 +13,14 @@ public sealed class ComponentArray
 {
     private byte[] _array;
 
-    //public byte[] Array => _array;
-
-    public ComponentType ElementType { get; }
-
     public ComponentArray(ComponentType type, int size)
     {
         _array = new byte[size];
         ElementType = type;
     }
+
+
+    public ComponentType ElementType { get; }
 
     public Span<T> GetSpan<T>() where T : struct => MemoryMarshal.Cast<byte, T>(_array);
 
