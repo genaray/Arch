@@ -13,7 +13,7 @@ public class QueryGenerator : IIncrementalGenerator
     {
         if (!Debugger.IsAttached)
         {
-            //Debugger.Launch();
+            Debugger.Launch();
         }
 
         context.RegisterPostInitializationOutput(initializationContext =>
@@ -54,17 +54,36 @@ public class QueryGenerator : IIncrementalGenerator
             jobs.AppendIForEachJobs(25);
             jobs.AppendIForEachWithEntityJobs(25);
 
-            var queries = CodeBuilder.Create("Arch.Core")
-                .AddNamespaceImport("System")
-                .AddNamespaceImport("System.Runtime.CompilerServices")
-                .AddNamespaceImport("CommunityToolkit.HighPerformance;")
-                .AddNamespaceImport("JobScheduler")
-                .AddNamespaceImport("Arch.Core.Utils")
-                .AddClass("World").MakePublicClass();
-            queries.AppendQueryMethods(25);
-            queries.AppendEntityQueryMethods(25);
-            queries.AppendParallelQuerys(25);
-            queries.AppendParallelEntityQuerys(25);
+            //var queries = CodeBuilder.Create("Arch.Core")
+            //    .AddNamespaceImport("System")
+            //    .AddNamespaceImport("System.Runtime.CompilerServices")
+            //    .AddNamespaceImport("CommunityToolkit.HighPerformance;")
+            //    .AddNamespaceImport("JobScheduler")
+            //    .AddNamespaceImport("Arch.Core.Utils")
+            //    .AddClass("World").MakePublicClass();
+            //queries.AppendQueryMethods(25);
+            //queries.AppendEntityQueryMethods(25);
+            //queries.AppendParallelQuerys(25);
+            //queries.AppendParallelEntityQuerys(25);
+
+            var queries = new StringBuilder();
+            queries.AppendLine("using System;");
+            queries.AppendLine("using System.Runtime.CompilerServices;");
+            queries.AppendLine("using JobScheduler;");
+            queries.AppendLine("using Arch.Core.Utils;");
+            queries.AppendLine("using CommunityToolkit.HighPerformance;");
+            queries.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
+            queries.AppendLine("namespace Arch.Core;");
+            queries.AppendLine($@"
+                
+                public partial class World
+                {{
+                    {new StringBuilder().AppendQueryMethods(25)}
+                    {new StringBuilder().AppendEntityQueryMethods(25)}
+                }}
+
+            ");
+
 
             var acessors = new StringBuilder();
             acessors.AppendLine("using System;");
@@ -137,7 +156,7 @@ public class QueryGenerator : IIncrementalGenerator
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("World.g.cs",
-                CSharpSyntaxTree.ParseText(queries.Build()).GetRoot().NormalizeWhitespace().ToFullString());
+                CSharpSyntaxTree.ParseText(queries.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("Acessors.g.cs",
                 CSharpSyntaxTree.ParseText(acessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

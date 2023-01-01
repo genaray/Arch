@@ -10,6 +10,13 @@ public static class StringBuilderExtensions
         return sb;
     }
 
+    public static StringBuilder GenericWhereStruct(this StringBuilder sb, int amount)
+    {
+        for (var localIndex = 0; localIndex <= amount; localIndex++) 
+            sb.Append($" where T{localIndex}: struct ");
+        return sb;
+    }
+
     public static StringBuilder Generic(this StringBuilder sb, int amount)
     {
         sb.Append("<");
@@ -39,7 +46,7 @@ public static class StringBuilderExtensions
     public static StringBuilder GetFirstGenericElements(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
-            sb.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
+            sb.AppendLine($"ref var t{localIndex}FirstElement = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(t{localIndex}Array);");
 
         return sb;
     }
@@ -47,7 +54,7 @@ public static class StringBuilderExtensions
     public static StringBuilder GetLastGenericElements(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
-            sb.AppendLine($"ref var t{localIndex}LastElement = ref ArrayExtensions.DangerousGetReferenceAt(t{localIndex}Array, chunkSize-1);");
+            sb.AppendLine($"ref var t{localIndex}LastElement = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(t{localIndex}Array.Slice(chunkSize-1));");
 
         return sb;
     }

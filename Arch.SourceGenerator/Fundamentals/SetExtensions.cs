@@ -26,9 +26,11 @@ public static class SetExtensions
         for (var index = 0; index <= amount; index++)
             sets.AppendLine($"t{index}Array[index] = t{index}Component;");
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Set<{generics}>(in int index, {parameters})
+public void Set<{generics}>(in int index, {parameters}) {whereT}
 {{
     {arrays}
     {sets}
@@ -52,10 +54,12 @@ public void Set<{generics}>(in int index, {parameters})
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInParams(amount);
         var insertParameters = new StringBuilder().InsertGenericInParams(amount);
-            
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal void Set<{generics}>(ref Slot slot, {parameters})
+internal void Set<{generics}>(ref Slot slot, {parameters}) {whereT}
 {{
     ref var chunk = ref GetChunk(slot.ChunkIndex);
     chunk.Set<{generics}>(slot.Index, {insertParameters});
@@ -80,9 +84,11 @@ internal void Set<{generics}>(ref Slot slot, {parameters})
         var parameters = new StringBuilder().GenericInParams(amount);
         var insertParams = new StringBuilder().InsertGenericInParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Set<{generics}>(in Entity entity, {parameters})
+public void Set<{generics}>(in Entity entity, {parameters}) {whereT}
 {{
     var entityInfo = EntityInfo[entity.Id];
     var archetype = entityInfo.Archetype;
@@ -108,9 +114,11 @@ public void Set<{generics}>(in Entity entity, {parameters})
         var parameters = new StringBuilder().GenericInParams(amount);
         var insertParams = new StringBuilder().InsertGenericInParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static void Set<{generics}>(this in Entity entity, {parameters})
+public static void Set<{generics}>(this in Entity entity, {parameters}) {whereT}
 {{
     var world = World.Worlds[entity.WorldId];
     world.Set<{generics}>(in entity, {insertParams});

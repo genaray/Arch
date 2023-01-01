@@ -18,8 +18,10 @@ public static class StringBuilderChunkJobExtensions
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
-public struct ForEachJob<{generics}> : IChunkJob {{
+public struct ForEachJob<{generics}> : IChunkJob {whereT} {{
 
     public ForEach<{generics}> ForEach;
 
@@ -56,8 +58,10 @@ public struct ForEachJob<{generics}> : IChunkJob {{
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
-public struct ForEachWithEntityJob<{generics}> : IChunkJob {{
+public struct ForEachWithEntityJob<{generics}> : IChunkJob {whereT} {{
 
     public ForEachWithEntity<{generics}> ForEach;
 
@@ -67,7 +71,7 @@ public struct ForEachWithEntityJob<{generics}> : IChunkJob {{
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+        ref var entityFirstElement = ref chunk.Entities[0];
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
@@ -96,8 +100,10 @@ public struct ForEachWithEntityJob<{generics}> : IChunkJob {{
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
-public struct IForEachJob<T,{generics}> : IChunkJob where T : struct, IForEach<{generics}>{{
+public struct IForEachJob<T,{generics}> : IChunkJob where T : struct, IForEach<{generics}> {whereT} {{
 
     public T ForEach;
 
@@ -134,8 +140,10 @@ public struct IForEachJob<T,{generics}> : IChunkJob where T : struct, IForEach<{
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
-public struct IForEachWithEntityJob<T,{generics}> : IChunkJob where T : struct, IForEachWithEntity<{generics}>{{
+public struct IForEachWithEntityJob<T,{generics}> : IChunkJob where T : struct, IForEachWithEntity<{generics}> {whereT} {{
 
     public T ForEach;
 
@@ -145,7 +153,7 @@ public struct IForEachWithEntityJob<T,{generics}> : IChunkJob where T : struct, 
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+        ref var entityFirstElement = ref chunk.Entities[0];
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{

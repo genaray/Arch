@@ -172,7 +172,7 @@ public sealed unsafe partial class Archetype
     /// <param name="cmp">The component</param>
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Set<T>(ref Slot slot, in T cmp)
+    internal void Set<T>(ref Slot slot, in T cmp) where T : struct
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         chunk.Set(slot.Index, in cmp);
@@ -184,7 +184,7 @@ public sealed unsafe partial class Archetype
     /// <typeparam name="T">The type</typeparam>
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has<T>()
+    public bool Has<T>() where T : struct
     { 
         var id = Component<T>.ComponentType.Id;
         return BitSet.IsSet(id);
@@ -197,7 +197,7 @@ public sealed unsafe partial class Archetype
     /// <typeparam name="T">The type</typeparam>
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal unsafe ref T Get<T>(scoped ref Slot slot)
+    internal unsafe ref T Get<T>(scoped ref Slot slot) where T : struct
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         return ref chunk.Get<T>(in slot.Index);

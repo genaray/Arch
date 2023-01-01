@@ -28,10 +28,13 @@ public static class StructuralChangesExtensions
         for (var index = 0; index <= amount; index++)
             types.AppendLine($"typeof(T{index}),");
         types.Length -= 3;
-        
+
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Add<{generics}>(in Entity entity, {parameters})
+public void Add<{generics}>(in Entity entity, {parameters}) {whereT}
 {{
     var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -72,10 +75,12 @@ public void Add<{generics}>(in Entity entity, {parameters})
         for (var index = 0; index <= amount; index++)
             types.AppendLine($"typeof(T{index}),");
         types.Length -= 3;
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Remove<{generics}>(in Entity entity)
+public void Remove<{generics}>(in Entity entity) {whereT}
 {{
     var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -108,10 +113,12 @@ public void Remove<{generics}>(in Entity entity)
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static void Add<{generics}>(this in Entity entity, {parameters})
+public static void Add<{generics}>(this in Entity entity, {parameters}) {whereT}
 {{
     var world = World.Worlds[entity.WorldId];
     world.Add<{generics}>(in entity);
@@ -133,9 +140,13 @@ public static void Add<{generics}>(this in Entity entity, {parameters})
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static void Remove<{generics}>(this in Entity entity)
+public static void Remove<{generics}>(this in Entity entity) {whereT}
 {{
     var world = World.Worlds[entity.WorldId];
     world.Remove<{generics}>(in entity);

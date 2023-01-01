@@ -154,7 +154,7 @@ public class CommandBuffer : IDisposable
     /// <param name="component">The component instance</param>
     /// <typeparam name="T">The generic type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T component)
+    public void Set<T>(in Entity entity, in T component) where T : struct
     {
         BufferedEntityInfo info;
         lock (this)
@@ -173,7 +173,7 @@ public class CommandBuffer : IDisposable
     /// <param name="component">The component instance.</param>
     /// <typeparam name="T">The generic type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in Entity entity, in T component)
+    public void Add<T>(in Entity entity, in T component) where T : struct
     {
         BufferedEntityInfo info;
         lock (this)
@@ -192,7 +192,7 @@ public class CommandBuffer : IDisposable
     /// <param name="entity">The entity which we wanna remove a component from.</param>
     /// <typeparam name="T">The generic type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove<T>(in Entity entity)
+    public void Remove<T>(in Entity entity) where T : struct
     {
         BufferedEntityInfo info;
         lock (this)
@@ -283,7 +283,10 @@ public class CommandBuffer : IDisposable
                 if(!sparseArray.Has(id)) continue;
 
                 var chunkArray = chunk.GetArray(sparseArray.Type);
-                Array.Copy(sparseArray.Components.Array, id, chunkArray, chunkIndex, 1);
+                var src = sparseArray.Components.GetSpan<byte>();
+                var size = sparseArray.Components.ElementType.ByteSize;
+
+                src.Slice(id * size, 1 * size).CopyTo(chunkArray.Slice(chunkIndex * size, 1 * size));
             }
         }
         

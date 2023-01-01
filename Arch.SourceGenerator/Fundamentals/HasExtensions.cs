@@ -29,11 +29,13 @@ public static class HasExtensions
         var ifs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             ifs.AppendLine($"if (ComponentIdToArrayIndex[t{index}ComponentId] != 1) return false;");
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 [Pure]
-public bool Has<{generics}>()
+public bool Has<{generics}>() {whereT}
 {{
     {getIds}
     {boundChecks}
@@ -66,10 +68,12 @@ public bool Has<{generics}>()
         for (var index = 0; index <= amount; index++)
             isSet.AppendLine($"BitSet.IsSet(t{index}ComponentId) &&");
         isSet.Length -= 4;
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public bool Has<{generics}>()
+public bool Has<{generics}>() {whereT}
 {{ 
     {getIds}
     return {isSet};
@@ -92,9 +96,11 @@ public bool Has<{generics}>()
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public bool Has<{generics}>(in Entity entity)
+public bool Has<{generics}>(in Entity entity) {whereT}
 {{
     var archetype = EntityInfo[entity.Id].Archetype;
     return archetype.Has<{generics}>();
@@ -116,10 +122,11 @@ public bool Has<{generics}>(in Entity entity)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static bool Has<{generics}>(this in Entity entity)
+public static bool Has<{generics}>(this in Entity entity) {whereT}
 {{
     var world = World.Worlds[entity.WorldId];
     return world.Has<{generics}>(in entity);

@@ -37,7 +37,7 @@ internal class SparseArray : IDisposable
     /// <summary>
     /// The component array of <see cref="Type"/>. 
     /// </summary>
-    public ComponentArray<IComponent> Components { get; private set; }
+    public ComponentArray Components { get; private set; }
 
     public SparseArray(ComponentType type, int capacity = 64)
     {
@@ -47,7 +47,7 @@ internal class SparseArray : IDisposable
         Size = 0;
         Entities = new int[Capacity];
         Array.Fill(Entities, -1);
-        Components = new ComponentArray<IComponent>(type, Capacity);
+        Components = new ComponentArray(type, Capacity * type.ByteSize);
     }
 
     /// <summary>
@@ -71,11 +71,17 @@ internal class SparseArray : IDisposable
             Size++;
 
             // Resize components
-            if (Size < Components.Array.Length) return;
+            var span = Components.GetSpan<byte>();
+            var size = Components.ElementType.ByteSize;
+
+            if (Size < span.Length / size) return;
 
             Capacity = Capacity <= 0 ? 1 : Capacity;
-            var array = new ComponentArray<IComponent>(Type, Capacity * 2);
-            Components.Array.CopyTo(array.Array, 0);
+            var array = new ComponentArray(Type, Capacity * 2 * Type.ByteSize);
+
+            var dest = array.GetSpan<byte>();
+            span.CopyTo(dest);
+
             Components = array;
             Capacity *= 2;
         }
@@ -98,9 +104,9 @@ internal class SparseArray : IDisposable
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private T[] GetArray<T>()
+    private Span<T> GetArray<T>() where T: struct
     {
-        return Unsafe.As<T[]>(Components.Array);
+        return Components.GetSpan<T>();
     }
 
     /// <summary>
@@ -109,7 +115,7 @@ internal class SparseArray : IDisposable
     /// <param name="index"></param>
     /// <param name="component"></param>
     /// <typeparam name="T"></typeparam>
-    public void Set<T>(int index, in T component)
+    public void Set<T>(int index, in T component) where T : struct
     { 
         lock (this)
         {
@@ -123,7 +129,7 @@ internal class SparseArray : IDisposable
     /// <param name="index"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public ref T Get<T>(int index)
+    public ref T Get<T>(int index) where T : struct
     {
         return ref GetArray<T>()[Entities[index]];
     }
@@ -226,7 +232,7 @@ internal class SparseSet : IDisposable
     /// <param name="component"></param>
     /// <typeparam name="T"></typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(int index, in T component)
+    public void Set<T>(int index, in T component) where T : struct
     {
         var id = Component<T>.ComponentType.Id;
         lock (_setLock)
@@ -257,7 +263,7 @@ internal class SparseSet : IDisposable
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has<T>(int index)
+    public bool Has<T>(int index) where T : struct
     {
         var id = Component<T>.ComponentType.Id;
         var array = Components[id];
@@ -271,7 +277,7 @@ internal class SparseSet : IDisposable
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T Get<T>(int index)
+    public T Get<T>(int index) where T : struct
     {
         var id = Component<T>.ComponentType.Id;
         var array = Components[id];

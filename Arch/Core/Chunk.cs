@@ -9,22 +9,23 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
-public interface IComponent { }
-
-public sealed class ComponentArray<T> where T : IComponent
+public sealed class ComponentArray
 {
-    private T[] _array;
+    private byte[] _array;
 
-    public T[] Array => _array;
-    public Type ElementType { get; }
+    //public byte[] Array => _array;
 
-    public ComponentArray(Type type, int size)
+    public ComponentType ElementType { get; }
+
+    public ComponentArray(ComponentType type, int size)
     {
-        _array = new T[size];
+        _array = new byte[size];
         ElementType = type;
     }
 
-    public ref T GetComponenet(int index) => ref _array[index];
+    public Span<T> GetSpan<T>() where T : struct => MemoryMarshal.Cast<byte, T>(_array);
+
+    public ref T GetComponent<T>(int index) where T: struct => ref GetSpan<T>()[index];
 }
 
 
@@ -63,13 +64,13 @@ public partial struct Chunk
         Capacity = capacity;
 
         Entities = new Entity[Capacity];
-        Components = new ComponentArray<IComponent>[types.Length];
+        Components = new ComponentArray[types.Length];
 
         // Init mapping
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
-            Components[index] = new ComponentArray<IComponent>(types[index], Capacity);
+            Components[index] = new ComponentArray(types[index], Capacity * types[index].ByteSize);
         }
     }
 
@@ -93,7 +94,7 @@ public partial struct Chunk
     /// <param name="cmp">The component</param>
     /// <typeparam name="T">The type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in int index, in T cmp)
+    public void Set<T>(in int index, in T cmp) where T : struct
     {
         var array = GetSpan<T>();
         array[index] = cmp;
@@ -106,7 +107,7 @@ public partial struct Chunk
     /// <returns>True if it does, false if it doesnt</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public bool Has<T>()
+    public bool Has<T>() where T : struct
     {
         var id = Component<T>.ComponentType.Id;
         return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
@@ -120,7 +121,7 @@ public partial struct Chunk
     /// <returns>The component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T Get<T>(scoped in int index)
+    public ref T Get<T>(scoped in int index) where T : struct
     {
         var array = GetSpan<T>();
         return ref array[index];
@@ -141,8 +142,9 @@ public partial struct Chunk
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
-            var array = Components[i].Array;
-            Array.Copy(array, lastIndex, array, index, 1);
+            var size = Components[i].ElementType.ByteSize;
+            var array = Components[i].GetSpan<byte>();
+            array.Slice(lastIndex * size, 1 * size).CopyTo(array.Slice(index * size, 1 * size));
         }
 
         // Update the mapping
@@ -157,7 +159,7 @@ public partial struct Chunk
     /// <summary>
     ///     The entity components in this chunk.
     /// </summary>
-    public readonly ComponentArray<IComponent>[] Components { [Pure] get; }
+    public readonly ComponentArray[] Components { [Pure] get; }
 
     /// <summary>
     ///     A map to get the index of a component array inside <see cref="Components" />.
@@ -201,10 +203,10 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public T[] GetArray<T>()
+    public Span<T> GetArray<T>() where T: struct
     {
         var index = Index<T>();
-        return Unsafe.As<T[]>(Components[index].Array);
+        return Components[index].GetSpan<T>();
     }
 
     /// <summary>
@@ -214,9 +216,9 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Span<T> GetSpan<T>()
+    public Span<T> GetSpan<T>() where T : struct
     {
-        return new Span<T>(GetArray<T>(), 0, Size);
+        return GetArray<T>().Slice(0, Size);
     }
 
     /// <summary>
@@ -226,7 +228,7 @@ public partial struct Chunk
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T GetFirst<T>()
+    public ref T GetFirst<T>() where T : struct
     {
         return ref GetSpan<T>()[0]; // Span to avoid bound checking for the [] operation
     }
@@ -239,11 +241,13 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public T[] GetArrayUnsafe<T>()
+    public Span<T> GetArrayUnsafe<T>() where T: struct
     {
-        var index = Index<T>();
-        ref var array = ref Components.DangerousGetReferenceAt(index);
-        return Unsafe.As<T[]>(array.Array);
+        //var index = Index<T>();
+        //ref var array = ref Components.DangerousGetReferenceAt(index);
+        //return Unsafe.As<T[]>(array.Array);
+
+        return GetSpan<T>();
     }
 
     /// <summary>
@@ -254,9 +258,9 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Span<T> GetSpanUnsafe<T>()
+    public Span<T> GetSpanUnsafe<T>() where T : struct
     {
-        return new Span<T>(GetArrayUnsafe<T>());
+        return GetArrayUnsafe<T>();
     }
 
     /// <summary>
@@ -266,7 +270,7 @@ public partial struct Chunk
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T GetFirstUnsafe<T>()
+    public ref T GetFirstUnsafe<T>() where T : struct
     {
         return ref GetArrayUnsafe<T>().DangerousGetReference();
     }
@@ -313,10 +317,10 @@ public partial struct Chunk
     /// <returns>The array of the certain component stored in the <see cref="Archetype" /></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public IComponent[] GetArray(Type type)
+    public Span<byte> GetArray(Type type)
     {
         var index = Index(type);
-        return Components[index].Array;
+        return Components[index].GetSpan<byte>();
     }
 }
 
@@ -338,9 +342,12 @@ public partial struct Chunk
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = Components[i].Array;
-            var desArray = toChunk.Components[i].Array;
-            Array.Copy(sourceArray, toIndex, desArray, index, 1);
+            var size = Components[i].ElementType.ByteSize;
+
+            var sourceArray = Components[i].GetSpan<byte>();
+            var desArray = toChunk.Components[i].GetSpan<byte>();
+
+            sourceArray.Slice(toIndex * size, 1 * size).CopyTo(desArray.Slice(index * size, 1 * size));
         }
     }
     
@@ -356,13 +363,15 @@ public partial struct Chunk
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = Components[i].Array;
             var sourceType = Components[i].ElementType;
 
             if (!toChunk.Has(sourceType)) continue;
-            
+
+            var sourceArray = Components[i].GetSpan<byte>();
             var desArray = toChunk.GetArray(sourceType);
-            Array.Copy(sourceArray, index, desArray, toIndex, 1);
+
+            sourceArray.Slice(index * sourceType.ByteSize, 1 * sourceType.ByteSize)
+                .CopyTo(desArray.Slice(toIndex * sourceType.ByteSize, 1 * sourceType.ByteSize));
         }
     }
 
@@ -382,9 +391,13 @@ public partial struct Chunk
         Entities[index] = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = chunk.Components[i].Array;
-            var desArray = Components[i].Array;
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
+            var size = Components[i].ElementType.ByteSize;
+
+            var sourceArray = chunk.Components[i].GetSpan<byte>();
+            var desArray = Components[i].GetSpan<byte>();
+
+            sourceArray.Slice(lastIndex * size, 1 * size)
+                .CopyTo(desArray.Slice(index * size, 1 * size));
         }
         
         chunk.Size--;

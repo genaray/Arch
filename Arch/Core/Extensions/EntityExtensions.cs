@@ -89,7 +89,7 @@ public static partial class EntityExtensions
     /// <param name="component">A reference to the component</param>
     /// <typeparam name="T">The component type</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Set<T>(this in Entity entity, in T component)
+    public static void Set<T>(this in Entity entity, in T component) where T : struct
     { 
         var world = World.Worlds[entity.WorldId];
         world.Set(in entity, in component);
@@ -102,7 +102,7 @@ public static partial class EntityExtensions
     /// <typeparam name="T">The component type</typeparam>
     /// <returns>True if it exists for that entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Has<T>(this in Entity entity)
+    public static bool Has<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return world.Has<T>(in entity);
@@ -115,7 +115,7 @@ public static partial class EntityExtensions
     /// <typeparam name="T">The component type</typeparam>
     /// <returns>A reference to the component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T Get<T>(this in Entity entity)
+    public static ref T Get<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return ref world.Get<T>(entity);
@@ -130,7 +130,7 @@ public static partial class EntityExtensions
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool TryGet<T>(this in Entity entity, out T component)
+    public static bool TryGet<T>(this in Entity entity, out T component) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return world.TryGet(in entity, out component);
@@ -145,7 +145,7 @@ public static partial class EntityExtensions
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
+    public static ref T TryGetRef<T>(this in Entity entity, out bool exists) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         return ref world.TryGetRef<T>(in entity, out exists);
@@ -159,7 +159,7 @@ public static partial class EntityExtensions
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add<T>(this in Entity entity, in T cmp = default)
+    public static void Add<T>(this in Entity entity, in T cmp = default) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         world.Add<T>(in entity);
@@ -173,7 +173,7 @@ public static partial class EntityExtensions
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Remove<T>(this in Entity entity)
+    public static void Remove<T>(this in Entity entity) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
         world.Remove<T>(in entity);

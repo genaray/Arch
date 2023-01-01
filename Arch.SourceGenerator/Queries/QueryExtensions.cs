@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using CodeGenHelpers;
 
@@ -78,97 +79,88 @@ public static class StringBuilderQueryExtensions
         return sb;
     }
 
-    public static void AppendQueryMethods(this ClassBuilder builder, int amount)
+    public static StringBuilder AppendQueryMethods(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-            builder.AppendQueryMethod(index);
+            sb.AppendQueryMethod(index);
+
+        return sb;
     }
 
-    public static void AppendQueryMethod(this ClassBuilder builder, int amount)
+    public static void AppendQueryMethod(this StringBuilder sb, int amount)
     {
-        var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
-        methodBuilder.AddParameter("in QueryDescription", "description");
-        methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
+        var generics = new StringBuilder().GenericWithoutBrackets(amount).ToString();
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
-        var generics = new StringBuilder().Generic(amount).ToString();
-        methodBuilder.AddParameter($"ForEach{generics}", "forEach");
+        var getArrays = new StringBuilder().GetGenericArrays(amount);
+        var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
+        var getComponents = new StringBuilder().GetGenericComponents(amount);
+        var insertParams = new StringBuilder().InsertGenericParams(amount);
 
-        for (var index = 0; index <= amount; index++)
-            methodBuilder.AddGeneric($"T{index}");
+        sb.Append($@"
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Query<{generics}>(in QueryDescription description, ForEach<{generics}> forEach) {whereT} {{
+        
+                var query = Query(in description);
+                foreach (ref var chunk in query.GetChunkIterator()) {{ 
 
-        methodBuilder.WithBody(writer =>
-        {
-            var getArrays = new StringBuilder().GetGenericArrays(amount);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
-            var getComponents = new StringBuilder().GetGenericComponents(amount);
-            var insertParams = new StringBuilder().InsertGenericParams(amount);
+                    var chunkSize = chunk.Size;
+                    {getArrays}
+            
+                    {getFirstElement}
 
-            var template =
-                $@"
-var query = Query(in description);
-foreach (ref var chunk in query.GetChunkIterator()) {{ 
+                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
 
-    var chunkSize = chunk.Size;
-    {getArrays}
-
-    {getFirstElement}
-
-    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
-
-        {getComponents}
-        forEach({insertParams});
-    }}
-}}
-";
-            writer.AppendLine(template);
-        });
+                        {getComponents}
+                        forEach({insertParams});
+                    }}
+                }}
+            }}
+        
+        ");
     }
 
-    public static void AppendEntityQueryMethods(this ClassBuilder builder, int amount)
+    public static StringBuilder AppendEntityQueryMethods(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-            builder.AppendEntityQueryMethod(index);
+            sb.AppendEntityQueryMethod(index);
+
+        return sb;
     }
 
-    public static void AppendEntityQueryMethod(this ClassBuilder builder, int amount)
+    public static void AppendEntityQueryMethod(this StringBuilder sb, int amount)
     {
-        var methodBuilder = builder.AddMethod("Query").MakePublicMethod().WithReturnType("void");
-        methodBuilder.AddParameter("in QueryDescription", "description");
-        methodBuilder.AddAttribute("MethodImpl(MethodImplOptions.AggressiveInlining)");
+        var generics = new StringBuilder().GenericWithoutBrackets(amount).ToString();
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
-        var generics = new StringBuilder().Generic(amount).ToString();
-        methodBuilder.AddParameter($"ForEachWithEntity{generics}", "forEach");
+        var getArrays = new StringBuilder().GetGenericArrays(amount);
+        var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
+        var getComponents = new StringBuilder().GetGenericComponents(amount);
+        var insertParams = new StringBuilder().InsertGenericParams(amount);
 
-        for (var index = 0; index <= amount; index++)
-            methodBuilder.AddGeneric($"T{index}");
+        sb.Append($@"
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Query<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach) {whereT} {{
+        
+                var query = Query(in description);
+                foreach (ref var chunk in query.GetChunkIterator()) {{ 
 
-        methodBuilder.WithBody(writer =>
-        {
-            var getArrays = new StringBuilder().GetGenericArrays(amount);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
-            var getComponents = new StringBuilder().GetGenericComponents(amount);
-            var insertParams = new StringBuilder().InsertGenericParams(amount);
+                    var chunkSize = chunk.Size;
+                    {getArrays}
+            
+                    ref var entityFirstElement = ref chunk.Entities[0];
+                    {getFirstElement}
 
-            var template =
-                $@"
-var query = Query(in description);
-foreach (ref var chunk in query.GetChunkIterator()) {{ 
-
-    var chunkSize = chunk.Size;
-    {getArrays}
-
-    ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
-    {getFirstElement}
-
-    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
-
-        ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-        {getComponents}
-        forEach(in entity, {insertParams});
-    }}
-}}
-";
-            writer.AppendLine(template);
-        });
+                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
+                        ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                        {getComponents}
+                        forEach(in entity, {insertParams});
+                    }}
+                }}
+            }}
+        
+        ");
     }
 }
