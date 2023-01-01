@@ -18,53 +18,43 @@ public class QueryGenerator : IIncrementalGenerator
 
         context.RegisterPostInitializationOutput(initializationContext =>
         {
+            const int METHOD_COUNT = 25;
 
             var compileTimeStatics = new StringBuilder();
             compileTimeStatics.AppendLine("using System;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
-            compileTimeStatics.AppendGroups(25);
+            compileTimeStatics.AppendGroups(METHOD_COUNT);
             
             var delegates = new StringBuilder();
             delegates.AppendLine("using System;");
             delegates.AppendLine("namespace Arch.Core;");
-            delegates.AppendForEachDelegates(25);
-            delegates.AppendForEachEntityDelegates(25);
+            delegates.AppendForEachDelegates(METHOD_COUNT);
+            delegates.AppendForEachEntityDelegates(METHOD_COUNT);
 
             var interfaces = new StringBuilder();
             interfaces.AppendLine("using System;");
             interfaces.AppendLine("using System.Runtime.CompilerServices;");
             interfaces.AppendLine("namespace Arch.Core;");
-            interfaces.AppendInterfaces(25);
-            interfaces.AppendEntityInterfaces(25);
+            interfaces.AppendInterfaces(METHOD_COUNT);
+            interfaces.AppendEntityInterfaces(METHOD_COUNT);
             
             var references = new StringBuilder();
             references.AppendLine("using System;");
             references.AppendLine("using System.Runtime.CompilerServices;");
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("namespace Arch.Core;");
-            references.AppendReferences(25);
+            references.AppendReferences(METHOD_COUNT);
 
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
             jobs.AppendLine("using System.Runtime.CompilerServices;");
             jobs.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             jobs.AppendLine("namespace Arch.Core;");
-            jobs.AppendForEachJobs(25);
-            jobs.AppendEntityForEachJobs(25);
-            jobs.AppendIForEachJobs(25);
-            jobs.AppendIForEachWithEntityJobs(25);
+            jobs.AppendForEachJobs(METHOD_COUNT);
+            jobs.AppendEntityForEachJobs(METHOD_COUNT);
+            jobs.AppendIForEachJobs(METHOD_COUNT);
+            jobs.AppendIForEachWithEntityJobs(METHOD_COUNT);
 
-            //var queries = CodeBuilder.Create("Arch.Core")
-            //    .AddNamespaceImport("System")
-            //    .AddNamespaceImport("System.Runtime.CompilerServices")
-            //    .AddNamespaceImport("CommunityToolkit.HighPerformance;")
-            //    .AddNamespaceImport("JobScheduler")
-            //    .AddNamespaceImport("Arch.Core.Utils")
-            //    .AddClass("World").MakePublicClass();
-            //queries.AppendQueryMethods(25);
-            //queries.AppendEntityQueryMethods(25);
-            //queries.AppendParallelQuerys(25);
-            //queries.AppendParallelEntityQuerys(25);
 
             var queries = new StringBuilder();
             queries.AppendLine("using System;");
@@ -78,8 +68,10 @@ public class QueryGenerator : IIncrementalGenerator
                 
                 public partial class World
                 {{
-                    {new StringBuilder().AppendQueryMethods(25)}
-                    {new StringBuilder().AppendEntityQueryMethods(25)}
+                    {new StringBuilder().AppendQueryMethods(METHOD_COUNT)}
+                    {new StringBuilder().AppendEntityQueryMethods(METHOD_COUNT)}
+                    {new StringBuilder().AppendParallelQuerys(METHOD_COUNT)}
+                    {new StringBuilder().AppendParallelEntityQuerys(METHOD_COUNT)}
                 }}
 
             ");
@@ -97,33 +89,33 @@ public class QueryGenerator : IIncrementalGenerator
             acessors.AppendLine($@"
                
                 public partial struct Chunk{{
-                    {new StringBuilder().AppendChunkHases(25)}
-                    {new StringBuilder().AppendChunkIndexGets(25)}        
-                    {new StringBuilder().AppendChunkIndexSets(25)}
+                    {new StringBuilder().AppendChunkHases(METHOD_COUNT)}
+                    {new StringBuilder().AppendChunkIndexGets(METHOD_COUNT)}        
+                    {new StringBuilder().AppendChunkIndexSets(METHOD_COUNT)}
                 }}
 
                 public partial class Archetype{{
-                    {new StringBuilder().AppendArchetypeHases(25)}
-                    {new StringBuilder().AppendArchetypeGets(25)}
-                    {new StringBuilder().AppendArchetypeSets(25)}
+                    {new StringBuilder().AppendArchetypeHases(METHOD_COUNT)}
+                    {new StringBuilder().AppendArchetypeGets(METHOD_COUNT)}
+                    {new StringBuilder().AppendArchetypeSets(METHOD_COUNT)}
                 }}
             
                 public partial class World{{
-                    {new StringBuilder().AppendCreates(25)}
-                    {new StringBuilder().AppendWorldHases(25)}
-                    {new StringBuilder().AppendWorldGets(25)}
-                    {new StringBuilder().AppendWorldSets(25)}
-                    {new StringBuilder().AppendWorldAdds(25)}    
-                    {new StringBuilder().AppendWorldRemoves(25)}
+                    {new StringBuilder().AppendCreates(METHOD_COUNT)}
+                    {new StringBuilder().AppendWorldHases(METHOD_COUNT)}
+                    {new StringBuilder().AppendWorldGets(METHOD_COUNT)}
+                    {new StringBuilder().AppendWorldSets(METHOD_COUNT)}
+                    {new StringBuilder().AppendWorldAdds(METHOD_COUNT)}    
+                    {new StringBuilder().AppendWorldRemoves(METHOD_COUNT)}
                 }}
 
                public static partial class EntityExtensions{{
                 #if !PURE_ECS
-                    {new StringBuilder().AppendEntityHases(25)}
-                    {new StringBuilder().AppendEntitySets(25)}
-                    {new StringBuilder().AppendEntityGets(25)}
-                    {new StringBuilder().AppendEntityAdds(25)}
-                    {new StringBuilder().AppendEntityRemoves(25)}
+                    {new StringBuilder().AppendEntityHases(METHOD_COUNT)}
+                    {new StringBuilder().AppendEntitySets(METHOD_COUNT)}
+                    {new StringBuilder().AppendEntityGets(METHOD_COUNT)}
+                    {new StringBuilder().AppendEntityAdds(METHOD_COUNT)}
+                    {new StringBuilder().AppendEntityRemoves(METHOD_COUNT)}
                 #endif
                 }}
             ");
@@ -135,10 +127,10 @@ public class QueryGenerator : IIncrementalGenerator
             hpQueries.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             hpQueries.AppendLine("using Arch.Core.Utils;");
             hpQueries.AppendLine("namespace Arch.Core;");
-            hpQueries.AppendQueryInterfaceMethods(25);
-            hpQueries.AppendEntityQueryInterfaceMethods(25);
-            hpQueries.AppendHpParallelQuerys(25);
-            hpQueries.AppendHpeParallelQuerys(25);
+            hpQueries.AppendQueryInterfaceMethods(METHOD_COUNT);
+            hpQueries.AppendEntityQueryInterfaceMethods(METHOD_COUNT);
+            hpQueries.AppendHpParallelQuerys(METHOD_COUNT);
+            hpQueries.AppendHpeParallelQuerys(METHOD_COUNT);
 
             initializationContext.AddSource("CompileTimeStatics.g.cs",
                 CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
