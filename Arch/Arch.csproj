@@ -8,15 +8,15 @@
 
         <PackageId>Arch</PackageId>
         <Title>Arch</Title>
-        <Version>1.1.0</Version>
+        <Version>1.1.1</Version>
         <Authors>genaray</Authors>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
         <PackageReleaseNotes>
-            Added PURE_ECS flag for slim down the entity to 4 byte and disable entity extension calls. 
-            Refactored internals for faster lookups, less dictionarys and space wasted.
-            Made several API calls internal for not confusing the user. 
-            Several other small performance tweaks, iteration and lookups are now faster and cause less adress jumping. 
+            World now can be modified during queries without commandbuffers.
+            New CommandBuffer API.
+            New additional QueryDescription-API. 
+            Fixed several other bugs.
         </PackageReleaseNotes>
         <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 

@@ -1,24 +1,81 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
+using CommunityToolkit.HighPerformance.Buffers;
 
 namespace Arch.Core;
 
 /// <summary>
 ///     A query describtion of which entities we wanna query for.
 /// </summary>
-public struct QueryDescription : IEquatable<QueryDescription>
+public partial struct QueryDescription : IEquatable<QueryDescription>
 {
     public ComponentType[] All = Array.Empty<ComponentType>();
     public ComponentType[] Any = Array.Empty<ComponentType>();
     public ComponentType[] None = Array.Empty<ComponentType>();
     public ComponentType[] Exclusive = Array.Empty<ComponentType>();
 
+    /// <summary>
+    /// Creates a new instance. 
+    /// </summary>
     public QueryDescription()
     {
+    }
+    
+    /// <summary>
+    /// Includes the passed generic into the description.
+    /// Replaces previous set ones. 
+    /// </summary>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>Reference to this instance for chaining calls.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithAll<T>()
+    {
+        All = Group<T>.Types;
+        return ref this;
+    }
+
+    /// <summary>
+    /// Includes the passed generic into the description.
+    /// Replaces previous set ones. 
+    /// </summary>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>Reference to this instance for chaining calls.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithAny<T>()
+    {
+        Any = Group<T>.Types;
+        return ref this;
+    }
+    
+    /// <summary>
+    /// Includes the passed generic into the description.
+    /// Replaces previous set ones. 
+    /// </summary>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>Reference to this instance for chaining calls.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithNone<T>()
+    {
+        None = Group<T>.Types;
+        return ref this;
+    }
+    
+    /// <summary>
+    /// Includes the passed generic into the description.
+    /// Replaces previous set ones. 
+    /// </summary>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>Reference to this instance for chaining calls.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithExclusive<T>()
+    {
+        Exclusive = Group<T>.Types;
+        return ref this;
     }
 
     public bool Equals(QueryDescription other)

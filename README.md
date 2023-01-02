@@ -4,42 +4,41 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
 ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
-A high performance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data oriented programming.    
+A high-performance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data-oriented programming.    
 
-- 🚀 **_FAST_** > Best cache efficiency, iteration and allocation speed. Plays in the same league as C++/Rust ECS Libs! 
+- 🚀 **_FAST_** > Best cache efficiency, iteration, and allocation speed. Plays in the same league as C++/Rust ECS Libs! 
 - 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark)!
 - 🤏 **_BARE MINIMUM_** >  Not bloated, it's small and only provides the essentials for you! 
-- ☕️ **_SIMPLE_** >  Promotes a clean, minimal and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki)!
-- 💪 _**MAINTAINED**_ > It's actively being worked on, maintained and supported ! 
+- ☕️ **_SIMPLE_** >  Promotes a clean, minimal, and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki)!
+- 💪 _**MAINTAINED**_ > It's actively being worked on, maintained, and supported! 
 - 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
 ```console
-dotnet add PROJECT package Arch --version 1.1.0
+dotnet add PROJECT package Arch --version 1.1.1
 ```
 
 # Code Sample
 
-Enough spoken, let's take a look at some code. Arch is bare minimum, easy to use and efficient. You want to create some game entities and make them move based on their velocity... sounds complicated?
-
-It's not ! Arch does everything for you, you only need to define the entities and the logic.
+Arch is bare minimum, easy to use, and efficient. Let's say you want to create some game entities and make them move based on their velocity... sounds complicated?
+It's not! Arch does everything for you, you only need to define the entities and the logic.
 
 ```cs
 // Components ( ignore the formatting, this saves space )
 public struct Position{ float X, Y };
 public struct Velocity{ float Dx, Dy };
 
-public class Game {
-    
-    public static void Main(string[] args) {
-        
-        // Create world and entities with position and velocity.
+public class Game 
+{
+    public static void Main(string[] args) 
+    {     
+        // Create a world and entities with position and velocity.
         var world = World.Create();
         for (var index = 0; index < 1000; index++) 
             world.Create(new Position{ X = 0, Y = 0}, new Velocity{ Dx = 1, Dy = 1});
         
         // Query and modify entities ( There are also alternatives without lambdas ;) ) 
-        var query = new QueryDescription{ All = new ComponentType[]{ typeof(Position), typeof(Velocity) } }; // Targets entities with Position AND Velocity.
+        var query = new QueryDescription().WithAll<Position,Velocity>(); // Targets entities with Position AND Velocity.
         world.Query(in query, (ref Position pos, ref Velocity vel) => {
             pos.X += vel.Dx;
             pos.Y += vel.Dy;
@@ -63,13 +62,13 @@ public class Game {
 
 # Quick start
 
-I bet you don't want to read tons of documentations, theory and other boring stuff right?  
+I bet you don't want to read tons of documentation, theory, and other boring stuff right?  
 Let's just ignore all that deep knowledge and jump in directly to get something done. 
 > For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wiki)!
 
 ## ECS
 
-Entity Component System (ECS) is a software architectural pattern mostly used for the representation of game world objects or data oriented design in general. An ECS comprises entities composed of components of data, with systems or queries which operate on entities' components.  
+Entity Component System (ECS) is a software architectural pattern mostly used for the representation of game world objects or data-oriented design in general. An ECS comprises entities composed of components of data, with systems or queries which operate on entities' components.  
 
 ECS follows the principle of composition over inheritance, meaning that every entity is defined not by a type hierarchy, but by the components that are associated with it.
 
@@ -77,7 +76,7 @@ ECS follows the principle of composition over inheritance, meaning that every en
 
 The world acts as a management class for all its entities, it contains methods to create, destroy and query them and handles all the internal mechanics.  
 Therefore, it is the most important class, you will use the world heavily.  
-Multiple worlds can be used in parallel, each instance and its entities are completely encapsulated from other worlds. Currently, worlds and their content can not interact with each other, however this feature is already planned. 
+Multiple worlds can be used in parallel, each instance and its entities are completely encapsulated from other worlds. Currently, worlds and their content can not interact with each other, however, this feature is already planned. 
 
 Worlds are created and destroyed like this...
 
@@ -94,7 +93,7 @@ An entity represents your game entity.
 It is a simple struct with some metadata acting as a key to access and manage its components.  
 
 Entities are being created by a world and will "live" in the world in which they were created.  
-When an entity is being created, you need to specify the components it will have. Components are basically the additional data or structure the entity will have. This is called "Archetype". 
+When an entity is created, you need to specify the components it will have. Components are the additional data or structure the entity will have. This is called "Archetype". 
 
 ```csharp
 var otherEntity = world.Create<Transform, Collider, PowerUp>(... optional);
@@ -106,31 +105,28 @@ var entity = world.Create(archetype);
 
 world.Destroy(in entity);
 ```
-> Entity creation/deletion should not happen during a Query! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this! :) 
 
 ## Component
 
-Components are data assigned to your entity. With them you define how an entity looks and behaves, they basically define the gamelogic with pure data.   
-Its recommended to use struct components since they offer better speed. 
+Components are data assigned to your entity. With them you define how an entity looks and behaves, they define the game logic with pure data.   
+It's recommended to use struct components since they offer better speed. 
 
-To ease writing code, you can acess the entity directly to modify its components or to check its metadata.  
+To ease writing code, you can access the entity directly to modify its components or to check its metadata.  
 A small example could look like this...
 
 ```csharp
 var entity = world.Create<Position, Velocity>();
 
-ref var position = ref entity.Get<Position>();    // Get reference to the position
-position.x++;                                     // Update x
-position.y++;                                     // Update y
+ref var position = ref entity.Get<Position>();    // Get reference to the position.
+position.X++;                                     // Update x.
+position.Y++;                                     // Update y.
 
-if(entity.Has<Position>())                        // Make sure that entity has a position ( Optional )
-    entity.Set(new Position{ x = 10, y = 10 };    // Replaces the old position 
+if(entity.Has<Position>())                        // Make sure that entity has a position (Optional).
+    entity.Set(new Position{ X = 10, Y = 10 };    // Replaces the old position .
 
-entity.Remove<Velocity>();                         // Removes an velocity component and moves it to a new archetype.
-entity.Add<Velocity>(new Velocity{ x = 1, y = 1);  // Adds an velocity component and moves the entity back to the previous archetype. 
+entity.Remove<Velocity>();                         // Removes a velocity component and moves it to a new archetype.
+entity.Add<Velocity>(new Velocity{ X = 1, Y = 1);  // Adds a velocity component and moves the entity back to the previous archetype. 
 ```
-
-> Structural entity changes should not happen during a Query or Iteration ! [CommandBuffers](https://github.com/genaray/Arch/wiki/Quickstart#command-buffers) can be used for this ! :) 
 
 ## System aka. Query
 
@@ -140,38 +136,37 @@ This is performed by using the world (remember, it manages your created entities
 
 ```csharp
 // Define a description of which entities you want to query
-var query = new QueryDescription {
-    All = new ComponentType[]{ typeof(Position), typeof(Velocity) },   // Should have all specified components
-    Any = new ComponentType[]{ typeof(Player), typeof(Projectile) },   // Should have any of those
-    None = new ComponentType[]{ typeof(AI) }                           // Should have none of those
-};
+var query = new QueryDescription().    
+            WithAll<Position,Velocity>().      // Should have all specified components
+            WithAny<Player,Projectile>().      // Should have any of those
+            WithNone<AI>();                    // Should have none of those
 
 // Execute the query
 world.Query(in query, entity => { /* Do something */ });
 
 // Execute the query and modify components in the same step, up to 10 generic components at the same time. 
 world.Query(in query, (ref Position pos, ref Velocity vel) => {
-    pos.x += vel.dx;
-    pos.y += vel.dy;
+    pos.X += vel.Dx;
+    pos.Y += vel.Dy;
 });
 ```
 
 In the example above, we want to move our entities based on their `Position` and `Velocity` components. 
-To perform this operation, we need to iterate over all entities having both a `Position` and `Velocity` component (`All`). We also want that our entity either is a `Player` or a `Projectile` (`Any`). However, we do not want to iterate and perform that calculation on entities which are controlled by an `AI` (`None`). 
+To perform this operation, we need to iterate over all entities having both a `Position` and `Velocity` component (`All`). We also want that our entity either is a `Player` or a `Projectile` (`Any`). However, we do not want to iterate and perform that calculation on entities that are controlled by an `AI` (`None`). 
 
-The `world.Query` method then smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile` and no `AI` component and executes the defined logic for all of those fitting entities. 
+The `world.Query` method then smartly searches for entities having both a `Position` and `Velocity`, either a `Player` or `Projectile`, and no `AI` component and executes the defined logic for all of those fitting entities. 
 
-Besides `All`, `Any` and `None`, `QueryDescription` can also target a exclusive set of components via `Exclusive`. If that's set, it will ignore `All`, `Any` and `None` and only target entities with an exactly defined set of components. It's also important to know that there are multiple different overloads to perform such a query.
-> The less you query in terms of components and the size of components... the faster the query is !
+Besides `All`, `Any`, and `None`, `QueryDescription` can also target an exclusive set of components via `Exclusive`. If that's set, it will ignore `All`, `Any`, and `None` and only target entities with an exactly defined set of components. It's also important to know that there are multiple different overloads to perform such a query.
+> The less you query in terms of components and the size of components... the faster the query is!
 
 ## More features and Outlook
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
-However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki) ! 
+However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki)! 
 There's more to explore, for example...
 
 - Bulk Entity Adding
-- High performance Queries
+- High-performance Queries
 - Archetypes
 - Chunks
 - Parallel / Multithreaded Queries
@@ -196,7 +191,7 @@ public struct Transform{ float x; float y; float z; }
 public struct Velocity { float x; float y; }
 ```
 
-The used structs are actually quite big, the smaller the components, the faster the query. However, i wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
+The used structs are actually quite big, the smaller the components, the faster the query. However, I wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
 
 |            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
@@ -218,5 +213,5 @@ The used structs are actually quite big, the smaller the components, the faster 
 
 # Contributing
 
-I will accept contributions, especially bug fixes, performance improvements and new features.
+I will accept contributions, especially bug fixes, performance improvements, and new features.
 New features however should not harm its performance, if they do, they should be wrapped within predecessor variables for enabling/disabling them. 
