@@ -2,22 +2,21 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
 
-// TODO: Documentation. Be more specific about what a "component" truly is.
 /// <summary>
-///     The <see cref="ComponentType"/> struct
-///     represents a component with its meta information.
+///     The <see cref="ComponentType"/> struct, represents a component with some information about it.
+///     A component labels an <see cref="Entity"/> as possessing a particular aspect, and holds the data needed to model that aspect.
+///     For example, every game object that can take damage might have a Health component associated with its <see cref="Entity"/>.
+///     Is created by compile time static or during runtime, look at the <see cref="ComponentRegistry"/>.
 /// </summary>
 public readonly struct ComponentType
 {
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ComponentType"/> struct
-    ///     ...
+    ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="type"></param>
-    /// <param name="byteSize"></param>
-    /// <param name="zeroSized"></param>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="type">Its type.</param>
+    /// <param name="byteSize">Its size in bytes.</param>
+    /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
     public ComponentType(int id, Type type, int byteSize, bool zeroSized)
     {
         Id = id;
@@ -26,28 +25,40 @@ public readonly struct ComponentType
         ZeroSized = zeroSized;
     }
 
-    // TODO: Documentation.
+    /// <summary>
+    ///     Represents a unique Id for this component.
+    /// </summary>
     public readonly int Id;
+
+    /// <summary>
+    ///     Its type.
+    /// </summary>
     public readonly Type Type;
+
+    /// <summary>
+    ///     Its size in bytes.
+    /// </summary>
     public readonly int ByteSize;
+
+    /// <summary>
+    ///     If its zero sized.
+    /// </summary>
     public readonly bool ZeroSized;
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Converts a <see cref="Type"/> to its <see cref="ComponentType"/>.
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="value">The type that is being converted.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ComponentType(Type value)
     {
         return Component.GetComponentType(value);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Converts the <see cref="ComponentType"/> to its original <see cref="Type"/>.
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="value">The type that is being converted.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Type(ComponentType value)
     {
@@ -57,18 +68,21 @@ public readonly struct ComponentType
 
 // TODO: Components should start at 1 instead, since the hash and `Chunk.Has` would work smoother that way.
 /// <summary>
-///     The <see cref="ComponentRegistry"/> class
-///     tracks all used components in the project.
-///     Component IDs start at 0 and increase by one for each new component.
+///     The <see cref="ComponentRegistry"/> class, tracks all used components in the project.
+///     Those are represented by <see cref="ComponentType"/>'s.
 /// </summary>
 public static class ComponentRegistry
 {
+
+    /// <summary>
+    /// All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
+    /// </summary>
     private static readonly Dictionary<Type, ComponentType> _types = new(128);
 
     // NOTE: Could this be optimized by editing the array as values get added?
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Returns an array of all registered <see cref="ComponentType"/>'s.
+    ///     Creates a new array each call.
     /// </summary>
     public static ComponentType[] Types
     {
@@ -78,26 +92,24 @@ public static class ComponentRegistry
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
-    public static int Size { get; set; }
+    public static int Size { get; private set; }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Adds a new component and registers it.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add<T>()
     {
         return Add(typeof(T));
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Adds a new component and registers it.
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(Type type)
     {
@@ -117,12 +129,11 @@ public static class ComponentRegistry
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks if a component is registered.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
+    /// <typeparam name="T">Its generic type.</typeparam>
+    /// <returns>True if it is, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>()
     {
@@ -130,38 +141,35 @@ public static class ComponentRegistry
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///      Checks if a component is registered.
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>True if it is, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has(Type type)
     {
         return _types.ContainsKey(type);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Trys to get a component if it is registered.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="componentType"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">Its generic type.</typeparam>
+    /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
+    /// <returns>True if it registered, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet<T>(out ComponentType componentType)
     {
         return TryGet(typeof(T), out componentType);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Trys to get a component if it is registered.
     /// </summary>
-    /// <param name="type"></param>
-    /// <param name="componentType"></param>
-    /// <returns></returns>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
+    /// <returns>True if it registered, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet(Type type, out ComponentType componentType)
     {
@@ -169,37 +177,33 @@ public static class ComponentRegistry
     }
 }
 
-// TODO: Documentation.
 /// <summary>
-///     The <see cref="Component{T}"/> class
-///     provides information about a component.
+///     The <see cref="Component{T}"/> class, provides compile time static information about a component.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">Its generic type.</typeparam>
 /// <remarks>
 ///     A <see cref="Component{T}"/> is created once during its first use.
 ///     Subsequent uses access statically stored information.
 /// </remarks>
 public static class Component<T>
 {
-    // TODO: Documentation?
     /// <summary>
-    /// 
+    ///     Creates the compile time static class for acessing its information.
+    ///     Registers the component.
     /// </summary>
     static Component()
     {
         ComponentType = ComponentRegistry.Add<T>();
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     A static reference to information about the compile time static registered class.
     /// </summary>
     public static readonly ComponentType ComponentType;
 }
 
 /// <summary>
-///     The <see cref="Component"/> class
-///     provides information about a component.
+///     The <see cref="Component"/> class provides information about a component during runtime.
 /// </summary>
 /// <remarks>
 ///     A <see cref="Component"/> is created once during its first use.
@@ -207,24 +211,23 @@ public static class Component<T>
 /// </remarks>
 public static class Component
 {
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Searches a <see cref="ComponentType"/> by its <see cref="Type"/>. If it does not exist, it will be added.
     /// </summary>
-    /// <param name="type"></param>
-    /// <returns></returns>
+    /// <param name="type">The <see cref="Type"/>.</param>
+    /// <returns>The <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType GetComponentType(Type type)
     {
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Calculates the hash code of a <see cref="ComponentType"/> array, which is unique for the elements contained in the array.
+    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <param name="obj">The <see cref="ComponentType"/> array.</param>
+    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(params ComponentType[] obj)
     {
@@ -251,12 +254,12 @@ public static class Component
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Calculates the hash code of a <see cref="ComponentType"/> Id array, which is unique for the elements contained in the array.
+    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <param name="obj">The <see cref="ComponentType"/> array.</param>
+    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<int> obj)
     {
@@ -285,27 +288,26 @@ public static class Component
 }
 
 // NOTE: Rename or reimplement this? An entire class just for counting something seems overkill.
-// TODO: Documentation.
 /// <summary>
-///     The <see cref="JobMeta"/> class
-///     ...
+///     The <see cref="JobMeta"/> class counts Id's for internally registered jobs during compile time.
 /// </summary>
 public static class JobMeta
 {
     internal static int Id;
 }
 
-// TODO: Documentation.
 /// <summary>
-///     The <see cref="JobMeta{T}"/> class
-///     ...
+///     The <see cref="JobMeta{T}"/> class registers each job during compiletime to ensure static access to some information, which is more efficient.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The job struct generic type..</typeparam>
+/// /// <remarks>
+///     A <see cref="JobMeta{T}"/> is created once during its first use.
+///     Subsequent uses access statically stored information.
+/// </remarks>
 public static class JobMeta<T> where T : class, new()
 {
-    // TODO: Documentation?
     /// <summary>
-    /// 
+    ///     Creates a compiletime static instance of this job.
     /// </summary>
     static JobMeta()
     {
@@ -314,17 +316,28 @@ public static class JobMeta<T> where T : class, new()
         Pool = new DefaultObjectPool<T>(Policy);
     }
 
-    // TODO: Documentation.
+    /// <summary>
+    ///     The unique Id of the job.
+    /// </summary>
     public static readonly int Id;
+
+    /// <summary>
+    ///     The pool policy of the registered job.
+    ///     Used for <see cref="Pool"/>.
+    /// </summary>
     public static readonly DefaultObjectPolicy<T> Policy;
+
+    /// <summary>
+    ///     The pool of the job.
+    ///     So that during multithreading new jobs are not permanently associated, which is better for efficiency.
+    /// </summary>
     public static readonly DefaultObjectPool<T> Pool;
 }
 
 // TODO: Based on the hash of each `Group` we can easily Map a `Group<T, T, T, ...>` to another `Group`.
 //       E.g.: `Group<int, byte>` to `Group<byte, int>`, as they return the same hash.
 /// <summary>
-///     The <see cref="Group"/> class
-///     ...
+///     The <see cref="Group"/> class counts the Ids of registered groups in an compiletime static way.
 /// </summary>
 public static class Group
 {
