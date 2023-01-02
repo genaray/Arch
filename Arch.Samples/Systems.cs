@@ -133,7 +133,9 @@ public class DrawSystem : SystemBase<GameTime>
 {
 
     private readonly SpriteBatch _batch;
-    public DrawSystem(World world, SpriteBatch batch) : base(world) { _batch = batch;}
+    private readonly Texture2D _texture;
+
+    public DrawSystem(World world, SpriteBatch batch, Texture2D texture) : base(world) { _batch = batch; _texture = texture; }
 
     /// <summary>
     /// Targets all entities with a position and sprite
@@ -161,7 +163,7 @@ public class DrawSystem : SystemBase<GameTime>
                 // Get refs to position and sprite.
                 ref var position = ref positions[index];
                 ref var sprite = ref sprites[index];
-                _batch.Draw(sprite.Texture2D, position.Vec2, sprite.Color);  // Draw
+                _batch.Draw(_texture, position.Vec2, sprite.Color);  // Draw
             }
         }
         

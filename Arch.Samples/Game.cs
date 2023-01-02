@@ -32,6 +32,11 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
+        this.IsFixedTimeStep = false;
+        _graphics.SynchronizeWithVerticalRetrace = false;
+        this.IsMouseVisible = true;
+        this.InactiveSleepTime = TimeSpan.Zero;
+        this.Window.Title = "No reflection";
     }
     
     protected override void Initialize()
@@ -61,7 +66,7 @@ public class Game : Microsoft.Xna.Framework.Game
         _jobScheduler = new("SampleWorkerThreads");
         _movementSystem = new MovementSystem(_world, GraphicsDevice.Viewport.Bounds);
         _colorSystem = new ColorSystem(_world);
-        _drawSystem = new DrawSystem(_world, _spriteBatch);
+        _drawSystem = new DrawSystem(_world, _spriteBatch, _texture2D);
 
         // Spawn in entities with position, velocity and sprite
         for (var index = 0; index < 1000; index++)
@@ -69,7 +74,7 @@ public class Game : Microsoft.Xna.Framework.Game
             _world.Create(
                 new Position{ Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) }, 
                 new Velocity{ Vec2 = _random.NextVector2(-0.25f,0.25f) }, 
-                new Sprite{ Texture2D = _texture2D, Color = _random.NextColor() }
+                new Sprite{ /*Texture2D = _texture2D,*/ Color = _random.NextColor() }
             );
         }
     }
@@ -93,7 +98,7 @@ public class Game : Microsoft.Xna.Framework.Game
     {
         _graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
         _drawSystem.Update(in gameTime);
-        Console.WriteLine($"FPS : {(1 / gameTime.ElapsedGameTime.TotalSeconds)}");
+        //Console.WriteLine($"FPS : {(1 / gameTime.ElapsedGameTime.TotalSeconds)}");
         base.Draw(gameTime);
     }
 

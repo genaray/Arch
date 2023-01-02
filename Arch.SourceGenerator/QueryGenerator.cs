@@ -57,6 +57,7 @@ public class QueryGenerator : IIncrementalGenerator
             var acessors = new StringBuilder();
             acessors.AppendLine("using System;");
             acessors.AppendLine("using System.Runtime.CompilerServices;");
+            acessors.AppendLine("using System.Runtime.InteropServices;");
             acessors.AppendLine("using JobScheduler;");
             acessors.AppendLine("using Arch.Core.Utils;");
             acessors.AppendLine("using System.Diagnostics.Contracts;");
