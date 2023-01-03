@@ -11,7 +11,7 @@ namespace Arch.Core;
 
 public sealed class ComponentArray
 {
-    private byte[] _array;
+    private readonly byte[] _array;
 
     public ComponentArray(ComponentType type, int size)
     {
@@ -136,14 +136,16 @@ public partial struct Chunk
     {
         // Last entity in archetype. 
         var lastIndex = Size - 1;
-      
+        
         // Copy last entity to replace the removed one
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
             var size = Components[i].ElementType.ByteSize;
-            var array = Components[i].GetSpan<byte>();
-            array.Slice(lastIndex * size, 1 * size).CopyTo(array.Slice(index * size, 1 * size));
+            var span = Components[i].GetSpan<byte>();
+
+            span.Slice(lastIndex * size, size)
+                .CopyTo(span.Slice(index * size, size));
         }
 
         // Update the mapping
@@ -341,12 +343,14 @@ public partial struct Chunk
         // Move/Copy components to the new chunk
         for (var i = 0; i < Components.Length; i++)
         {
+            // they are suppose to be similar, so the byte size is the same
             var size = Components[i].ElementType.ByteSize;
 
             var sourceArray = Components[i].GetSpan<byte>();
             var desArray = toChunk.Components[i].GetSpan<byte>();
 
-            sourceArray.Slice(toIndex * size, 1 * size).CopyTo(desArray.Slice(index * size, 1 * size));
+            sourceArray.Slice(toIndex * size, size)
+                .CopyTo(desArray.Slice(index * size, size));
         }
     }
     
@@ -369,8 +373,9 @@ public partial struct Chunk
             var sourceArray = Components[i].GetSpan<byte>();
             var desArray = toChunk.GetArray(sourceType);
 
-            sourceArray.Slice(index * sourceType.ByteSize, 1 * sourceType.ByteSize)
-                .CopyTo(desArray.Slice(toIndex * sourceType.ByteSize, 1 * sourceType.ByteSize));
+            // they are suppose to be similar, so the byte size is the same
+            sourceArray.Slice(index * sourceType.ByteSize, sourceType.ByteSize)
+                .CopyTo(desArray.Slice(toIndex * sourceType.ByteSize, sourceType.ByteSize));
         }
     }
 
@@ -390,13 +395,14 @@ public partial struct Chunk
         Entities[index] = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
+            // they are suppose to be similar, so the byte size is the same
             var size = Components[i].ElementType.ByteSize;
 
             var sourceArray = chunk.Components[i].GetSpan<byte>();
             var desArray = Components[i].GetSpan<byte>();
 
-            sourceArray.Slice(lastIndex * size, 1 * size)
-                .CopyTo(desArray.Slice(index * size, 1 * size));
+            sourceArray.Slice(lastIndex * size, size)
+                .CopyTo(desArray.Slice(index * size, size));
         }
         
         chunk.Size--;

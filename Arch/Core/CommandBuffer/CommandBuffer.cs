@@ -286,7 +286,8 @@ public class CommandBuffer : IDisposable
                 var src = sparseArray.Components.GetSpan<byte>();
                 var size = sparseArray.Components.ElementType.ByteSize;
 
-                src.Slice(id * size, 1 * size).CopyTo(chunkArray.Slice(chunkIndex * size, 1 * size));
+                src.Slice(id * size, size)
+                    .CopyTo(chunkArray.Slice(chunkIndex * size, size));
             }
         }
         
