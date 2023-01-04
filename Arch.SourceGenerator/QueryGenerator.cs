@@ -47,6 +47,7 @@ public class QueryGenerator : IIncrementalGenerator
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
             jobs.AppendLine("using System.Runtime.CompilerServices;");
+            jobs.AppendLine("using System.Runtime.InteropServices;");
             jobs.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             jobs.AppendLine("namespace Arch.Core;");
             jobs.AppendForEachJobs(25);

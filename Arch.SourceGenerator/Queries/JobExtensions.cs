@@ -71,7 +71,7 @@ public struct ForEachWithEntityJob<{generics}> : IChunkJob {whereT} {{
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref chunk.Entities[0];
+        ref var entityFirstElement = ref MemoryMarshal.GetReference<Entity>(chunk.Entities);
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
@@ -153,7 +153,7 @@ public struct IForEachWithEntityJob<T,{generics}> : IChunkJob where T : struct, 
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref chunk.Entities[0];
+        ref var entityFirstElement = ref MemoryMarshal.GetReference<Entity>(chunk.Entities);
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
