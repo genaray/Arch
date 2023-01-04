@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
@@ -868,10 +865,15 @@ public partial class World
         {
             var componentArray = components[index];
             var size = componentArray.ElementType.ByteSize;
+            var span = componentArray.GetSpan<byte>();
 
-            // FIXME
-            //ref var component = ref componentArray.GetComponent<object>(entityIndex);
-            //cmps[index] = component;
+            unsafe
+            {
+                fixed (byte* ptr = &MemoryMarshal.GetReference(span.Slice(entityIndex * size, size)))
+                {
+                    cmps[index] = Marshal.PtrToStructure((nint) ptr, componentArray.ElementType.Type);
+                }
+            }
         }
 
         return cmps;
