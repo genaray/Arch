@@ -9,6 +9,9 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+/// <summary>
+/// Rappresents a raw buffer of a specific component type
+/// </summary>
 public sealed class ComponentArray
 {
     private readonly byte[] _array;
