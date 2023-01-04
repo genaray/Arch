@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.ObjectPool;
@@ -85,8 +84,8 @@ public static class ComponentRegistry
          if (TryGet(type, out var meta)) return meta;
         
         // Register and assign component id
-        var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
-        meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
+        var size = Marshal.SizeOf(type);
+        meta = new ComponentType(Size, type, size, size - 1 <= 0);
         _types.Add(type, meta);
 
         Size++;
@@ -145,11 +144,7 @@ public static class ComponentRegistry
 /// <typeparam name="T"></typeparam>
 public static class Component<T>
 {
-    public static readonly ComponentType ComponentType;
-    static Component()
-    {
-        ComponentType = ComponentRegistry.Add<T>();
-    }
+    public static readonly ComponentType ComponentType = ComponentRegistry.Add<T>();
 }
 
 /// <summary>

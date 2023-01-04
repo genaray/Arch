@@ -34,10 +34,12 @@ public static class GetExtensions
         var assignRefs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefs.AppendLine($"t{index} = ref t{index}Component;");
-        
+
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template = $@"
-public ref struct References<{generics}>
+public ref struct References<{generics}> {whereT}
 {{
 
 #if NETSTANDARD2_1 || NET6_0
@@ -79,11 +81,13 @@ public ref struct References<{generics}>
         var gets = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             gets.AppendLine($"ref var t{index}Component = ref t{index}Array[index];");
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 [Pure]
-public References<{generics}> Get<{generics}>(scoped in int index)
+public References<{generics}> Get<{generics}>(scoped in int index) {whereT}
 {{
     {getArrays}
     {gets}
@@ -106,9 +110,13 @@ public References<{generics}> Get<{generics}>(scoped in int index)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal unsafe References<{generics}> Get<{generics}>(scoped ref Slot slot)
+internal unsafe References<{generics}> Get<{generics}>(scoped ref Slot slot) {whereT}
 {{
     ref var chunk = ref GetChunk(slot.ChunkIndex);
     return chunk.Get<{generics}>(slot.Index);
@@ -130,9 +138,13 @@ internal unsafe References<{generics}> Get<{generics}>(scoped ref Slot slot)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public References<{generics}> Get<{generics}>(in Entity entity)
+public References<{generics}> Get<{generics}>(in Entity entity) {whereT}
 {{
     var entityInfo = EntityInfo[entity.Id];
     var archetype = entityInfo.Archetype;
@@ -155,10 +167,13 @@ public References<{generics}> Get<{generics}>(in Entity entity)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        
+
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
+
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public static References<{generics}> Get<{generics}>(this in Entity entity)
+public static References<{generics}> Get<{generics}>(this in Entity entity) {whereT}
 {{
     var world = World.Worlds[entity.WorldId];
     return world.Get<{generics}>(entity);

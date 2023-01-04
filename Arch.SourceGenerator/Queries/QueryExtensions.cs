@@ -17,9 +17,11 @@ public static class StringBuilderQueryExtensions
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
 $@"
-public delegate void ForEach<{generics}>({parameters});
+public delegate void ForEach<{generics}>({parameters}) {whereT};
 ";
         sb.Append(template);
         return sb;
@@ -37,9 +39,11 @@ public delegate void ForEach<{generics}>({parameters});
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
             $@"
-public delegate void ForEachWithEntity<{generics}>(in Entity entity, {parameters});
+public delegate void ForEachWithEntity<{generics}>(in Entity entity, {parameters}) {whereT};
 ";
         sb.Append(template);
         return sb;
@@ -60,11 +64,12 @@ public delegate void ForEachWithEntity<{generics}>(in Entity entity, {parameters
         var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template =
                 $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Query<{generics}>(in QueryDescription description, ForEach<{generics}> forEach)
+public void Query<{generics}>(in QueryDescription description, ForEach<{generics}> forEach) {whereT}
 {{
     var query = Query(in description);
     foreach (ref var chunk in query.GetChunkIterator()) {{ 
@@ -100,11 +105,12 @@ public void Query<{generics}>(in QueryDescription description, ForEach<{generics
         var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template =
                 $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void Query<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach)
+public void Query<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach) {whereT}
 {{
     var query = Query(in description);
     foreach (ref var chunk in query.GetChunkIterator()) {{ 
@@ -112,7 +118,7 @@ public void Query<{generics}>(in QueryDescription description, ForEachWithEntity
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+        ref var entityFirstElement = ref MemoryMarshal.GetReference<Entity>(chunk.Entities);
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{

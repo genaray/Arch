@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Arch.Core.Extensions;
@@ -709,7 +706,7 @@ public partial class World
     /// <param name="cmp">The component instance.</param>
     /// <typeparam name="T">The generic/component type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T cmp = default)
+    public void Set<T>(in Entity entity, in T cmp = default) where T : struct
     {
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Set(ref entityInfo.Slot, in cmp);
@@ -722,7 +719,7 @@ public partial class World
     /// <typeparam name="T">The component type</typeparam>
     /// <returns>True if it exists for that entity</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Has<T>(in Entity entity)
+    public bool Has<T>(in Entity entity) where T : struct
     {
         var archetype = EntityInfo[entity.Id].Archetype;
         return archetype.Has<T>();
@@ -735,7 +732,7 @@ public partial class World
     /// <typeparam name="T">The generic/component type.</typeparam>
     /// <returns>A reference to the entity component</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T Get<T>(in Entity entity)
+    public ref T Get<T>(in Entity entity) where T: struct
     {
         var entityInfo = EntityInfo[entity.Id];
         return ref entityInfo.Archetype.Get<T>(ref entityInfo.Slot);
@@ -750,7 +747,7 @@ public partial class World
     /// <param name="component">The component itself</param>
     /// <returns>True if the component exists on the entity and could be returned.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGet<T>(in Entity entity, out T component)
+    public bool TryGet<T>(in Entity entity, out T component) where T : struct
     {
         component = default;
         if (!Has<T>(in entity)) return false;
@@ -768,7 +765,7 @@ public partial class World
     /// <param name="exists">True if the component exists</param>
     /// <returns>The reference to the component or a nullref</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T TryGetRef<T>(in Entity entity, out bool exists)
+    public ref T TryGetRef<T>(in Entity entity, out bool exists) where T : struct
     {
         if (!(exists = Has<T>(in entity)))
         {
@@ -867,8 +864,16 @@ public partial class World
         for (var index = 0; index < components.Length; index++)
         {
             var componentArray = components[index];
-            var component = componentArray.GetValue(entityIndex);
-            cmps[index] = component;
+            var size = componentArray.ElementType.ByteSize;
+            var span = componentArray.GetSpan<byte>();
+
+            unsafe
+            {
+                fixed (byte* ptr = &MemoryMarshal.GetReference(span.Slice(entityIndex * size, size)))
+                {
+                    cmps[index] = Marshal.PtrToStructure((nint) ptr, componentArray.ElementType.Type);
+                }
+            }
         }
 
         return cmps;
@@ -887,7 +892,7 @@ public partial class World{
     /// <param name="cmp">The component value.</param>
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in Entity entity)
+    public void Add<T>(in Entity entity) where T : struct
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -936,7 +941,7 @@ public partial class World{
     /// <param name="cmp">The component value.</param>
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in Entity entity, in T cmp)
+    public void Add<T>(in Entity entity, in T cmp) where T : struct
     {  
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -959,7 +964,7 @@ public partial class World{
     /// <param name="cmp">The component value.</param>
     /// <typeparam name="T">The Component.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove<T>(in Entity entity)
+    public void Remove<T>(in Entity entity) where T : struct
     { 
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 

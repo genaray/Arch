@@ -19,10 +19,11 @@ public static class CreateExtensions
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
         var inParameters = new StringBuilder().InsertGenericInParams(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public Entity Create<{generics}>({parameters})
+public Entity Create<{generics}>({parameters}) {whereT}
 {{
     
     var types = Group<{generics}>.Types;

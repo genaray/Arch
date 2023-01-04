@@ -15,10 +15,11 @@ public static class StringBuilderHpParallelQueryExtensions
     public static void AppendHpParallelQuery(this StringBuilder builder, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}>{{
+public void HPParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}> {whereT} {{
     
     var innerJob = new IForEachJob<T,{generics}>();
     innerJob.ForEach = iForEach;
@@ -71,10 +72,11 @@ public void HPParallelQuery<T,{generics}>(in QueryDescription description, ref T
     public static void AppendHpeParallelQuery(this StringBuilder builder, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
 
         var template = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPEParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}>{{
+public void HPEParallelQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}> {whereT} {{
     
     var innerJob = new IForEachWithEntityJob<T,{generics}>();
     innerJob.ForEach = iForEach;

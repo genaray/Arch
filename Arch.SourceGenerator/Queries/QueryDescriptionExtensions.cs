@@ -15,10 +15,12 @@ public static class QueryDescriptionExtensions
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
 $@"
 [UnscopedRef]
-public ref QueryDescription WithAll<{generics}>()
+public ref QueryDescription WithAll<{generics}>() {whereT}
 {{
    All = Group<{generics}>.Types;
    return ref this;
@@ -39,10 +41,12 @@ public ref QueryDescription WithAll<{generics}>()
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
             $@"
 [UnscopedRef]
-public ref QueryDescription WithAny<{generics}>()
+public ref QueryDescription WithAny<{generics}>() {whereT}
 {{
    Any = Group<{generics}>.Types;
    return ref this;
@@ -63,10 +67,12 @@ public ref QueryDescription WithAny<{generics}>()
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
             $@"
 [UnscopedRef]
-public ref QueryDescription WithNone<{generics}>()
+public ref QueryDescription WithNone<{generics}>() {whereT}
 {{
    None = Group<{generics}>.Types;
    return ref this;
@@ -87,10 +93,12 @@ public ref QueryDescription WithNone<{generics}>()
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = 
             $@"
 [UnscopedRef]
-public ref QueryDescription WithExclusive<{generics}>()
+public ref QueryDescription WithExclusive<{generics}>() {whereT}
 {{
    Exclusive = Group<{generics}>.Types;
    return ref this;

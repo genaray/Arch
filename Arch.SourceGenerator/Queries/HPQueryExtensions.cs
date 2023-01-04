@@ -77,11 +77,12 @@ public interface {interfaceInfo.Name}<{genericSb}>{{
             var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
+            var whereT = new StringBuilder().GenericWhereStruct(index);
 
             var methodTemplate = $@"
 
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}>{{
+public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{generics}> {whereT} {{
     
     var query = Query(in description);
     foreach (ref var chunk in query.GetChunkIterator()) {{ 
@@ -115,9 +116,7 @@ public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEac
             for (var localIndex = 0; localIndex <= index1; localIndex++)
                 getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
 
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index1);
 
             var getComponents = new StringBuilder();
             for (var localIndex = 0; localIndex <= index1; localIndex++)
@@ -128,9 +127,11 @@ public void HPQuery<T,{generics}>(in QueryDescription description, ref T iForEac
                 insertParams.Append($"ref t{localIndex}Component,");
             insertParams.Length--;
 
+            var whereT = new StringBuilder().GenericWhereStruct(index1);
+
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEach<{generics}>{{
+public void HPQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEach<{generics}> {whereT} {{
     
     var t = new T();
 
@@ -170,9 +171,7 @@ public void HPQuery<T,{generics}>(in QueryDescription description) where T : str
             for (var localIndex = 0; localIndex <= index1; localIndex++)
                 getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
 
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index1);
 
             var getComponents = new StringBuilder();
             for (var localIndex = 0; localIndex <= index1; localIndex++)
@@ -183,9 +182,11 @@ public void HPQuery<T,{generics}>(in QueryDescription description) where T : str
                 insertParams.Append($"ref t{localIndex}Component,");
             insertParams.Length--;
 
+            var whereT = new StringBuilder().GenericWhereStruct(index1);
+
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}>{{
+public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{generics}> {whereT} {{
     
     var query = Query(in description);
     foreach (ref var chunk in query.GetChunkIterator()) {{ 
@@ -193,7 +194,7 @@ public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEa
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+        ref var entityFirstElement = ref MemoryMarshal.GetReference<Entity>(chunk.Entities);
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{
@@ -221,9 +222,7 @@ public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEa
             for (var localIndex = 0; localIndex <= index1; localIndex++)
                 getArrays.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
 
-            var getFirstElement = new StringBuilder();
-            for (var localIndex = 0; localIndex <= index1; localIndex++)
-                getFirstElement.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
+            var getFirstElement = new StringBuilder().GetFirstGenericElements(index1);
 
             var getComponents = new StringBuilder();
             for (var localIndex = 0; localIndex <= index1; localIndex++)
@@ -234,9 +233,11 @@ public void HPEQuery<T,{generics}>(in QueryDescription description, ref T iForEa
                 insertParams.Append($"ref t{localIndex}Component,");
             insertParams.Length--;
 
+            var whereT = new StringBuilder().GenericWhereStruct(index1);
+
             var methodTemplate = $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void HPEQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEachWithEntity<{generics}>{{
+public void HPEQuery<T,{generics}>(in QueryDescription description) where T : struct, IForEachWithEntity<{generics}> {whereT} {{
     
     var t = new T();
 
@@ -246,7 +247,7 @@ public void HPEQuery<T,{generics}>(in QueryDescription description) where T : st
         var chunkSize = chunk.Size;
         {getArrays}
 
-        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+        ref var entityFirstElement = ref MemoryMarshal.GetReference<Entity>(chunk.Entities);
         {getFirstElement}
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex) {{

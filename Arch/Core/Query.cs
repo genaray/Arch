@@ -33,7 +33,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic.</typeparam>
     /// <returns>Reference to this instance for chaining calls.</returns>
     [UnscopedRef]
-    public ref QueryDescription WithAll<T>()
+    public ref QueryDescription WithAll<T>() where T: struct
     {
         All = Group<T>.Types;
         return ref this;
@@ -46,7 +46,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic.</typeparam>
     /// <returns>Reference to this instance for chaining calls.</returns>
     [UnscopedRef]
-    public ref QueryDescription WithAny<T>()
+    public ref QueryDescription WithAny<T>() where T : struct
     {
         Any = Group<T>.Types;
         return ref this;
@@ -59,7 +59,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic.</typeparam>
     /// <returns>Reference to this instance for chaining calls.</returns>
     [UnscopedRef]
-    public ref QueryDescription WithNone<T>()
+    public ref QueryDescription WithNone<T>() where T : struct
     {
         None = Group<T>.Types;
         return ref this;
@@ -72,7 +72,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic.</typeparam>
     /// <returns>Reference to this instance for chaining calls.</returns>
     [UnscopedRef]
-    public ref QueryDescription WithExclusive<T>()
+    public ref QueryDescription WithExclusive<T>() where T : struct
     {
         Exclusive = Group<T>.Types;
         return ref this;

@@ -17,10 +17,12 @@ public static class StringBuilderParallelQueryExtensions
     public static StringBuilder AppendParallelQuery(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template =
             $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{generics}> forEach){{
+public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{generics}> forEach) {whereT} {{
     var innerJob = new ForEachJob<{generics}>();
     innerJob.ForEach = forEach;
 
@@ -71,10 +73,12 @@ public void ParallelQuery<{generics}>(in QueryDescription description, ForEach<{
     public static StringBuilder AppendParallelEntityQuery(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template =
                 $@"
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach){{
+public void ParallelQuery<{generics}>(in QueryDescription description, ForEachWithEntity<{generics}> forEach) {whereT} {{
 
     var innerJob = new ForEachWithEntityJob<{generics}>();
     innerJob.ForEach = forEach;

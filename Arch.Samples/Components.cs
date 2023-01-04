@@ -24,6 +24,5 @@ public struct Velocity
 /// </summary>
 public struct Sprite
 {
-    public Texture2D Texture2D;
     public Color Color;
 }

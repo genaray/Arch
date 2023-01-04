@@ -21,8 +21,10 @@ public static class GroupExtensions
         for (var index = 0; index <= amount; index++)
             types.Append($"Component<T{index}>.ComponentType,");
 
+        var whereT = new StringBuilder().GenericWhereStruct(amount);
+
         var template = $@"
-public static class Group<{generics}>
+public static class Group<{generics}> {whereT}
 {{
     internal static readonly int Id;
     internal static readonly ComponentType[] Types;
