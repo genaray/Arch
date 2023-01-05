@@ -22,12 +22,11 @@ public class BitSet
         _bits = new uint[1];
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks whether a bit is set at the index.
     /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
+    /// <param name="index">The index.</param>
+    /// <returns>True if it is, otherwhise false</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSet(int index)
     {
@@ -40,11 +39,11 @@ public class BitSet
         return (_bits[b] & (1 << (index & BitSize))) != 0;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Sets a bit at the given index.
+    ///     Resizes its internal array if necessary.
     /// </summary>
-    /// <param name="index"></param>
+    /// <param name="index">The index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetBit(int index)
     {
@@ -57,11 +56,10 @@ public class BitSet
         _bits[b] |= 1u << (index & BitSize);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Clears the bit at the given index.
     /// </summary>
-    /// <param name="index"></param>
+    /// <param name="index">The index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ClearBit(int index)
     {
@@ -74,9 +72,8 @@ public class BitSet
         _bits[b] &= ~(1u << (index & BitSize));
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetAll()
@@ -88,9 +85,8 @@ public class BitSet
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Clears all set bits.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ClearAll()
@@ -98,21 +94,14 @@ public class BitSet
         Array.Clear(_bits, 0, _bits.Length);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks if all bits from this instance match those of the other instance.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="other">The other <see cref="BitSet"/>.</param>
+    /// <returns>True if they match, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool All(BitSet other)
     {
-        if (other is null)
-        {
-            throw new ArgumentNullException("other");
-        }
-
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
 
@@ -138,21 +127,14 @@ public class BitSet
         return true;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks if any bits from this instance match those of the other instance.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="other">The other <see cref="BitSet"/>.</param>
+    /// <returns>True if they match, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
-        if (other is null)
-        {
-            throw new ArgumentNullException("other");
-        }
-
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
 
@@ -178,21 +160,14 @@ public class BitSet
         return false;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks if none bits from this instance match those of the other instance.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="other">The other <see cref="BitSet"/>.</param>
+    /// <returns>True if none match, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
-        if (other is null)
-        {
-            throw new ArgumentNullException("other");
-        }
-
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
 
@@ -218,20 +193,14 @@ public class BitSet
         return false;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Checks if exactly all bits from this instance match those of the other instance.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="other">The other <see cref="BitSet"/>.</param>
+    /// <returns>True if they match, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Exclusive(BitSet other)
     {
-        if (other is null)
-        {
-            throw new ArgumentNullException("other");
-        }
 
         var otherBits = other._bits;
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -256,16 +225,5 @@ public class BitSet
         }
 
         return true;
-    }
-
-    // TODO: Documentation.
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ReadOnlySpan<uint> AsSpan()
-    {
-        return new ReadOnlySpan<uint>(_bits);
     }
 }
