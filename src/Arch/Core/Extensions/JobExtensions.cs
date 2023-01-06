@@ -1,20 +1,19 @@
 namespace Arch.Core.Extensions;
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="JobExtensions"/> class
-///     ...
+///     contains some job related methods.
 /// </summary>
-public class JobExtensions
+public static class JobExtensions
 {
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Calculates how an array should be partionated based on the threadcount.
+    ///     For multithreading.
     /// </summary>
-    /// <param name="threadCount"></param>
-    /// <param name="arraySize"></param>
-    /// <param name="requiredThreads"></param>
-    /// <param name="perThread"></param>
+    /// <param name="threadCount">The thread count.</param>
+    /// <param name="arraySize">The array size.</param>
+    /// <param name="requiredThreads">The amount of required threads.</param>
+    /// <param name="perThread">How many items per thread should be processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void PartionateArray(int threadCount, int arraySize, out int requiredThreads, out int perThread)
     {

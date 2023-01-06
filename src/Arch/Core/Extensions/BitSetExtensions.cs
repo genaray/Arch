@@ -3,20 +3,18 @@ using Arch.Core.Utils;
 namespace Arch.Core.Extensions;
 
 // NOTE: Should this really be an extension class? Why not simply add these methods to the `BitSet` type directly?
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="BitSetExtensions"/> class
-///     ...
+///     adds several extension methods to the <see cref="BitSet"/> class.
 /// </summary>
 public static class BitSetExtensions
 {
     // NOTE: Should this be in `TypeExtensions`?
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Converts an array of <see cref="ComponentType"/>'s to its <see cref="BitSet"/>.
     /// </summary>
-    /// <param name="types"></param>
-    /// <returns></returns>
+    /// <param name="types">The array of <see cref="ComponentType"/>'s.</param>
+    /// <returns>Their newly created <see cref="BitSet"/>.</returns>
     public static BitSet ToBitSet(this ComponentType[] types)
     {
         if (types.Length == 0)
@@ -30,12 +28,11 @@ public static class BitSetExtensions
         return bitSet;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Sets bits in a <see cref="BitSet"/> from the <see cref="ComponentType"/> ids.
     /// </summary>
-    /// <param name="bitSet"></param>
-    /// <param name="types"></param>
+    /// <param name="bitSet">The <see cref="BitSet"/>.</param>
+    /// <param name="types">The <see cref="ComponentType"/>'s array.</param>
     public static void SetBits(this BitSet bitSet, ComponentType[] types)
     {
         foreach (var type in types)
