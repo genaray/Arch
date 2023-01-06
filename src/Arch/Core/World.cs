@@ -8,57 +8,59 @@ using Component = Arch.Core.Utils.Component;
 namespace Arch.Core;
 
 #if PURE_ECS
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="Entity"/> struct
-///     ...
+///     represents a general-purpose object.
+///     In a game engine context, for example, every coarse game object is represented as an entity.
+///     It only consists of a unique id.
 /// </summary>
 public readonly struct Entity : IEquatable<Entity>
 {
-    // TODO: Documentation.
-    // The ID of this entity in the world, not in the archetype.
+    /// <summary>
+    ///     Its Id, unique in its <see cref="World"/>.
+    /// </summary>
     public readonly int Id;
+
+    /// <summary>
+    ///     A null entity, used for comparison.
+    /// </summary>
     public static readonly Entity Null = new(-1, 0);
 
     // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Entity"/> struct
-    ///     ...
+    ///     Initializes a new instance of the <see cref="Entity"/> struct.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="worldId"></param>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="worldId">Its world id, not used for this entity since its pure ecs.</param>
     internal Entity(int id, int worldId)
     {
         Id = id;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the <see cref="Entity"/> for equality with another one.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
+    /// <param name="other">The other <see cref="Entity"/>.</param>
+    /// <returns>True if equal, false if not.</returns>
     public bool Equals(Entity other)
     {
         return Id == other.Id;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the <see cref="Entity"/> for equality with another object..
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <param name="obj">The other <see cref="Entity"/> object.</param>
+    /// <returns>True if equal, false if not.</returns>
     public override bool Equals(object obj)
     {
         return obj is Entity other && Equals(other);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Calculates the hash of this <see cref="Entity"/>.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Its hash.</returns>
     public override int GetHashCode()
     {
         unchecked
@@ -70,99 +72,98 @@ public readonly struct Entity : IEquatable<Entity>
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the left <see cref="Entity"/> for equality with the right one.
     /// </summary>
-    /// <param name="left"></param>
-    /// <param name="right"></param>
-    /// <returns></returns>
+    /// <param name="left">The left <see cref="Entity"/>.</param>
+    /// <param name="right">The right <see cref="Entity"/>.</param>
+    /// <returns>True if both are equal, otherwhise false.</returns>
     public static bool operator ==(Entity left, Entity right)
     {
         return left.Equals(right);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the left <see cref="Entity"/> for unequality with the right one.
     /// </summary>
-    /// <param name="left"></param>
-    /// <param name="right"></param>
-    /// <returns></returns>
+    /// <param name="left">The left <see cref="Entity"/>.</param>
+    /// <param name="right">The right <see cref="Entity"/>.</param>
+    /// <returns>True if both are unequal, otherwhise false.</returns>
     public static bool operator !=(Entity left, Entity right)
     {
         return !left.Equals(right);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Converts this entity to a string.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A string.</returns>
     public override string ToString()
     {
         return $"{nameof(Id)}: {Id}";
     }
 }
 #else
-// TODO: Documentation.
+
 /// <summary>
 ///     The <see cref="Entity"/> struct
-///     ...
+///     represents a general-purpose object.
+///     In a game engine context, for example, every coarse game object is represented as an entity.
+///     It only consists of a unique id and one for its world.
 /// </summary>
 public readonly struct Entity : IEquatable<Entity>
 {
-    // TODO: Documentation.
-    // The ID of this entity in the world, not in the archetype.
+
+    /// <summary>
+    ///      Its Id, unique in its <see cref="World"/>.
+    /// </summary>
     public readonly int Id;
+
+    /// <summary>
+    /// Its <see cref="World"/> id.
+    /// </summary>
     public readonly int WorldId;
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     A null <see cref="Entity"/> used for comparison.
     /// </summary>
-    public static Entity Null { get; } = new(-1, 0);
+    public static Entity Null = new(-1, 0);
 
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Entity"/> struct
-    ///     ...
+    ///     Initializes a new instance of the <see cref="Entity"/> struct.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="worldId"></param>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="worldId">Its <see cref="World"/> id.</param>
     internal Entity(int id, int worldId)
     {
         Id = id;
         WorldId = worldId;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the <see cref="Entity"/> for equality with another one.
     /// </summary>
-    /// <param name="other"></param>
-    /// <returns></returns>
+    /// <param name="other">The other <see cref="Entity"/>.</param>
+    /// <returns>True if equal, false if not.</returns>
     public bool Equals(Entity other)
     {
         return Id == other.Id && WorldId == other.WorldId;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks the <see cref="Entity"/> for equality with another <see cref="object"/>.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <param name="obj">The other <see cref="Entity"/> object.</param>
+    /// <returns>True if equal, false if not.</returns>
     public override bool Equals(object obj)
     {
         return obj is Entity other && Equals(other);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Calculates the hash of this <see cref="Entity"/>.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Its hash.</returns>
     public override int GetHashCode()
     {
         unchecked
@@ -175,35 +176,32 @@ public readonly struct Entity : IEquatable<Entity>
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///      Checks the <see cref="Entity"/> for equality with another one.
     /// </summary>
-    /// <param name="left"></param>
-    /// <param name="right"></param>
-    /// <returns></returns>
+    /// <param name="left">The left <see cref="Entity"/>.</param>
+    /// <param name="right">The right <see cref="Entity"/>.</param>
+    /// <returns>True if equal, otherwhise false.</returns>
     public static bool operator ==(Entity left, Entity right)
     {
         return left.Equals(right);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///      Checks the <see cref="Entity"/> for unequality with another one.
     /// </summary>
-    /// <param name="left"></param>
-    /// <param name="right"></param>
-    /// <returns></returns>
+    /// <param name="left">The left <see cref="Entity"/>.</param>
+    /// <param name="right">The right <see cref="Entity"/>.</param>
+    /// <returns>True if unequal, otherwhise false.</returns>
     public static bool operator !=(Entity left, Entity right)
     {
         return !left.Equals(right);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Converts this <see cref="Entity"/> to a string.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Its string.</returns>
     public override string ToString()
     {
         return $"{nameof(Id)}: {Id}, {nameof(WorldId)}: {WorldId}";
@@ -211,56 +209,62 @@ public readonly struct Entity : IEquatable<Entity>
 }
 #endif
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="EntityInfo"/> struct
-///     ...
+///     stores information about an <see cref="Entity"/> to quickly access its data and location.
 /// </summary>
 internal struct EntityInfo
 {
-    // TODO: Documentation.
-    public Slot Slot;           // Slot inside the archetype
-    public Archetype Archetype; // Archetype Index in World
+
+    /// <summary>
+    /// Its slot inside its <see cref="Archetype"/>.
+    /// </summary>
+    public Slot Slot;
+
+    /// <summary>
+    /// Its <see cref="Archetype"/>.
+    /// </summary>
+    public Archetype Archetype;
+
+    /// <summary>
+    /// Its version.
+    /// </summary>
     public short Version;
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="IForEach"/> interface
-///     ...
+///     provides a method to execute logic on an <see cref="Entity"/>.
+///     Commonly used for queries to provide an clean interface.
 /// </summary>
 public interface IForEach
 {
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Called on an <see cref="Entity"/> to execute logic on it.
     /// </summary>
-    /// <param name="entity"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Update(in Entity entity);
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="ForEach"/> delegate
-///     ...
+///     provides a callback to execute logic on an <see cref="Entity"/>.
 /// </summary>
-/// <param name="entity"></param>
+/// <param name="entity">The <see cref="Entity"/>.</param>
 public delegate void ForEach(in Entity entity);
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="World"/> class
-///     ...
+///     stores <see cref="Entity"/>'s in <see cref="Archetype"/>'s and <see cref="Chunk"/>'s, manages them and provides methods to query for specific <see cref="Entity"/>'s.
 /// </summary>
 public partial class World
 {
-    // TODO: Documentation.
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="World"/> class
-    ///     ...
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">Its unique id.</param>
     internal World(int id)
     {
         Id = id;
@@ -281,43 +285,65 @@ public partial class World
         JobsCache = new List<IJob>(Environment.ProcessorCount);
     }
 
-    // TODO: Documentation.
+
+    /// <summary>
+    ///     A list of all existing <see cref="Worlds"/>.
+    ///     Should not be modified by the user.
+    /// </summary>
     public static List<World> Worlds { get; } = new(1);
+
+    /// <summary>
+    ///     The unique <see cref="World"/> id.
+    /// </summary>
     public int Id { get; }
+
+    /// <summary>
+    ///     The amount of <see cref="Entity"/>'s stored by this instance.
+    /// </summary>
     public int Size { get; private set; }
+
+    /// <summary>
+    ///     The available capacity for <see cref="Entity"/>'s by this instance.
+    /// </summary>
     public int Capacity { get; private set; }
-    public int HighestEntityId { get; private set; }
+
+    /// <summary>
+    ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
+    /// </summary>
     public PooledList<Archetype> Archetypes { get; }
+
+    /// <summary>
+    ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
+    /// </summary>
     internal PooledDictionary<int, EntityInfo> EntityInfo { get; }
+
+    /// <summary>
+    ///     Stores recycled <see cref="Entity"/> ids.
+    /// </summary>
     internal PooledQueue<int> RecycledIds { get; set; }
+
+    /// <summary>
+    ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Arch.Core.Query"/> to avoid allocs.
+    /// </summary>
     internal PooledDictionary<QueryDescription, Query> QueryCache { get; set; }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Creates a <see cref="World"/> instance.
     /// </summary>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
+    /// <returns>The created <see cref="World"/> instance.</returns>
     public static World Create()
     {
         var worldSize = Worlds.Count;
-        if (worldSize >= int.MaxValue)
-        {
-            // FIXME: `int.MaxValue` is not 255.
-            throw new Exception("Can not create world, there can only be 255 existing worlds.");
-        }
-
         var world = new World(worldSize);
         Worlds.Add(world);
 
         return world;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Destroys an existing <see cref="World"/>.
     /// </summary>
-    /// <param name="world"></param>
+    /// <param name="world">The <see cref="World"/>.</param>
     public static void Destroy(World world)
     {
         Worlds.Remove(world);
@@ -329,12 +355,11 @@ public partial class World
         world.GroupToArchetype.Clear();
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
-    /// <param name="types"></param>
-    /// <param name="amount"></param>
+    /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
+    /// <param name="amount">The amount.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reserve(ComponentType[] types, int amount)
     {
@@ -346,11 +371,11 @@ public partial class World
         Capacity = requiredCapacity;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
+    ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
     /// </summary>
-    /// <param name="types"></param>
+    /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(params ComponentType[] types)
@@ -380,14 +405,13 @@ public partial class World
         return entity;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Moves an <see cref="Entity"/> from one <see cref="Archetype"/> <see cref="Slot"/> to another.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="from"></param>
-    /// <param name="to"></param>
-    /// <param name="newSlot"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="from">Its <see cref="Archetype"/>.</param>
+    /// <param name="to">The new <see cref="Archetype"/>.</param>
+    /// <param name="newSlot">The new <see cref="Slot"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Move(in Entity entity, Archetype from, Archetype to, out Slot newSlot)
     {
@@ -431,11 +455,11 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Destroys an <see cref="Entity"/>.
+    ///     Might resize its target <see cref="Archetype"/> and release memory.
     /// </summary>
-    /// <param name="entity"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in Entity entity)
     {
@@ -466,11 +490,11 @@ public partial class World
         Size--;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Creates a <see cref="Arch.Core.Query"/> using a <see cref="QueryDescription"/>
+    ///     which can be used to iterate over the matching <see cref="Entity"/>'s, <see cref="Archetype"/>'s and <see cref="Chunk"/>'s.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Query Query(in QueryDescription queryDescription)
@@ -487,12 +511,11 @@ public partial class World
         return query;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="list"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="list">The <see cref="IList{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
@@ -510,12 +533,11 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Search all matching <see cref="Archetype"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="archetypes"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
+    /// <param name="archetypes">The <see cref="IList{T}"/> receiving <see cref="Archetype"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetArchetypes(in QueryDescription queryDescription, IList<Archetype> archetypes)
     {
@@ -526,12 +548,11 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Search all matching <see cref="Chunk"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="chunks"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
+    /// <param name="chunks">The <see cref="IList{T}"/> receiving <see cref="Chunk"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetChunks(in QueryDescription queryDescription, IList<Chunk> chunks)
     {
@@ -542,11 +563,10 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Creates and returns a new <see cref="Enumerator{T}"/> instance to iterate over all <see cref="Archetypes"/>.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A new <see cref="Enumerator{T}"/> instance.</returns>
     public Enumerator<Archetype> GetEnumerator()
     {
         return new Enumerator<Archetype>(Archetypes.Span);
@@ -555,16 +575,18 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
+
+    /// <summary>
+    ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
+    /// </summary>
     internal PooledDictionary<int, Archetype> GroupToArchetype { get; set; }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Trys to find an <see cref="Archetype"/> by the hash of its components.
     /// </summary>
-    /// <param name="types"></param>
-    /// <param name="archetype"></param>
-    /// <returns></returns>
+    /// <param name="types">Its <see cref="ComponentType"/>'s.</param>
+    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
+    /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetArchetype(ComponentType[] types, out Archetype archetype)
     {
@@ -572,13 +594,13 @@ public partial class World
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Trys to find an <see cref="Archetype"/> by the ids of its components.
+    ///     Those are being represented as a <see cref="Span{T}"/> array of ints.
     /// </summary>
-    /// <param name="ids"></param>
-    /// <param name="archetype"></param>
-    /// <returns></returns>
+    /// <param name="ids">A <see cref="Span{T}"/> with the component ids.</param>
+    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
+    /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetArchetype(Span<int> ids, out Archetype archetype)
     {
@@ -586,12 +608,11 @@ public partial class World
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returned an <see cref="Archetype"/> based on its components. If it does not exist, it will be created.
     /// </summary>
-    /// <param name="types"></param>
-    /// <returns></returns>
+    /// <param name="types">Its <see cref="ComponentType"/>'s.</param>
+    /// <returns>An existing or new <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Archetype GetOrCreate(ComponentType[] types)
     {
@@ -617,12 +638,11 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/>.
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="forEntity"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
@@ -640,12 +660,11 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="queryDescription"></param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Query<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
@@ -665,13 +684,12 @@ public partial class World
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="queryDescription"></param>
-    /// <param name="iForEach"></param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
@@ -692,16 +710,23 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
+
+    /// <summary>
+    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
+    /// </summary>
     private PooledList<JobHandle> JobHandles { get; }
+
+    /// <summary>
+    ///     A cache used for the parallel queries to prevent list allocations.
+    /// </summary>
     internal List<IJob> JobsCache { get; set; }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
+    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
-    /// <param name="queryDescription"></param>
-    /// <param name="forEntity"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
     {
@@ -713,12 +738,12 @@ public partial class World
         ParallelChunkQuery(in queryDescription, foreachJob);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
+    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="queryDescription"></param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
@@ -726,27 +751,26 @@ public partial class World
         ParallelChunkQuery(in queryDescription, iForEachJob);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
+    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="queryDescription"></param>
-    /// <param name="iForEach"></param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
     {
         ParallelChunkQuery(in queryDescription, in iForEach);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="queryDescription"></param>
-    /// <param name="innerJob"></param>
-    /// <exception cref="Exception"></exception>
+    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
+    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
@@ -794,13 +818,12 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Sets or replaces a component for an <see cref="Entity"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="cmp"></param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The instance, optional.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T cmp = default)
     {
@@ -808,13 +831,12 @@ public partial class World
         entityInfo.Archetype.Set(ref entityInfo.Slot, in cmp);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks if an <see cref="Entity"/> has a certain component.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>(in Entity entity)
     {
@@ -822,13 +844,12 @@ public partial class World
         return archetype.Has<T>();
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns a reference to the component of an <see cref="Entity"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(in Entity entity)
     {
@@ -836,14 +857,14 @@ public partial class World
         return ref entityInfo.Archetype.Get<T>(ref entityInfo.Slot);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Will copy the component if its a struct.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="component"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="component">The found component.</param>
+    /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGet<T>(in Entity entity, out T component)
     {
@@ -858,14 +879,13 @@ public partial class World
         return true;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="exists"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="exists">True if it exists, oterhwhise false.</param>
+    /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T TryGetRef<T>(in Entity entity, out bool exists)
     {
@@ -881,48 +901,45 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>True if it exists and is alive, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsAlive(in Entity entity)
     {
-        return entity.Id < EntityInfo.Count && EntityInfo[entity.Id].Archetype is not null;
+        return EntityInfo.TryGetValue(entity.Id, out _);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns the version of an <see cref="Entity"/>.
+    ///     Indicating how often it was recycled.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its version.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public short Version(in Entity entity)
     {
         return EntityInfo[entity.Id].Version;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns the <see cref="Archetype"/> of an <see cref="Entity"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Archetype GetArchetype(in Entity entity)
     {
         return EntityInfo[entity.Id].Archetype;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns the <see cref="Chunk"/> of an <see cref="Entity"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>A reference to its <see cref="Chunk"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly Chunk GetChunk(in Entity entity)
     {
@@ -930,12 +947,11 @@ public partial class World
         return ref entityInfo.Archetype.GetChunk(entityInfo.Slot.ChunkIndex);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns all <see cref="ComponentType"/>'s of an <see cref="Entity"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>'s array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ComponentType[] GetComponentTypes(in Entity entity)
     {
@@ -943,12 +959,12 @@ public partial class World
         return archetype.Types;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Returns all components of an <see cref="Entity"/> as an array.
+    ///     Will allocate memory.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>A newly allocated array containing the entities components.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public object[] GetAllComponents(in Entity entity)
     {
@@ -975,12 +991,11 @@ public partial class World
 
 public partial class World
 {
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity)
     {
@@ -999,12 +1014,11 @@ public partial class World
         Move(in entity, oldArchetype, newArchetype, out _);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="components"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in Entity entity, IList<ComponentType> components)
     {
@@ -1029,13 +1043,12 @@ public partial class World
         Move(in entity, oldArchetype, newArchetype, out _);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="cmp"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="cmp">The component instance.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T cmp)
     {
@@ -1055,12 +1068,11 @@ public partial class World
         newArchetype.Set(ref slot, cmp);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Removes an component from an <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     {
@@ -1080,12 +1092,11 @@ public partial class World
         Move(in entity, oldArchetype, newArchetype, out _);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="types"></param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(in Entity entity, IList<ComponentType> types)
     {

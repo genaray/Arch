@@ -248,9 +248,6 @@ public sealed partial class Archetype
     }
 }
 
-/// <summary>
-/// Capacity related methods.
-/// </summary>
 public sealed unsafe partial class Archetype
 {
 
@@ -353,9 +350,6 @@ public sealed unsafe partial class Archetype
     }
 }
 
-/// <summary>
-/// Copy related methods.
-/// </summary>
 public sealed partial class Archetype
 {
 

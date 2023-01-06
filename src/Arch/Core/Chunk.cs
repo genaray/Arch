@@ -152,9 +152,6 @@ public partial struct Chunk
     }
 }
 
-/// <summary>
-/// Provides some methods to access internal arrays using generics.
-/// </summary>
 public partial struct Chunk
 {
 
@@ -248,9 +245,6 @@ public partial struct Chunk
     }
 }
 
-/// <summary>
-/// Provides some methods to access internal arrays using types.
-/// </summary>
 public partial struct Chunk
 {
 
@@ -304,10 +298,6 @@ public partial struct Chunk
     }
 }
 
-
-/// <summary>
-/// Provides several methods to copy or transfer data.
-/// </summary>
 public partial struct Chunk
 {
     /// <summary>

@@ -6,7 +6,7 @@ namespace Arch.Core;
 
 /// <summary>
 ///     The <see cref="QueryDescription"/> struct
-///     represents a description of the <see cref="Entity"/>'s we want to address by means of a query.
+///     represents a description of the <see cref="Entity"/>'s or components we want to address by means of a query.
 /// </summary>
 public partial struct QueryDescription : IEquatable<QueryDescription>
 {
