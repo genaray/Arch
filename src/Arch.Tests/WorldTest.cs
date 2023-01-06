@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -39,8 +40,8 @@ public partial class WorldTest
         var size = _world.Size;
         var entity = _world.Create(_entityGroup);
 
-        Assert.That(_world.Size, Is.EqualTo(size + 1));
-        Assert.True(_world.IsAlive(in entity));
+        That(_world.Size, Is.EqualTo(size + 1));
+        True(_world.IsAlive(in entity));
     }
 
     [Test]
@@ -51,9 +52,9 @@ public partial class WorldTest
         var worldSizeAfter = _world.Size;
         _world.Destroy(in entity);
 
-        Assert.That(_world.Size, Is.EqualTo(worldSizeBefore));
-        Assert.Less(worldSizeBefore, worldSizeAfter);
-        Assert.False(_world.IsAlive(in entity));
+        That(_world.Size, Is.EqualTo(worldSizeBefore));
+        Less(worldSizeBefore, worldSizeAfter);
+        False(_world.IsAlive(in entity));
     }
 
     [Test]
@@ -70,9 +71,9 @@ public partial class WorldTest
             _world.Destroy(in entity);
         }
 
-        Assert.That(_world.Size, Is.EqualTo(0));
-        Assert.That(_world.Archetypes[0].Size, Is.EqualTo(1));
-        Assert.That(_world.Archetypes[1].Size, Is.EqualTo(1));
+        That(_world.Size, Is.EqualTo(0));
+        That(_world.Archetypes[0].Size, Is.EqualTo(1));
+        That(_world.Archetypes[1].Size, Is.EqualTo(1));
     }
 
     [Test]
@@ -85,8 +86,8 @@ public partial class WorldTest
         var recycledEntity = localWorld.Create(_entityGroup);
         var newEntity = localWorld.Create(_entityGroup);
 
-        Assert.That(recycledEntity.Id, Is.EqualTo(entity.Id));
-        Assert.That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
+        That(recycledEntity.Id, Is.EqualTo(entity.Id));
+        That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
 
         World.Destroy(localWorld);
     }
@@ -109,7 +110,7 @@ public partial class WorldTest
 
         var after = _world.Size;
 
-        Assert.That(after, Is.EqualTo(before));
+        That(after, Is.EqualTo(before));
     }
 
     [Test]
@@ -124,9 +125,9 @@ public partial class WorldTest
             _world.Create(_entityGroup);
         }
 
-        Assert.Greater(_world.Size, beforeSize);
-        Assert.That(_world.Size, Is.EqualTo(beforeSize + 10000));
-        Assert.That(_world.Capacity, Is.EqualTo(beforeCapacity + 10000));
+        Greater(_world.Size, beforeSize);
+        That(_world.Size, Is.EqualTo(beforeSize + 10000));
+        That(_world.Capacity, Is.EqualTo(beforeCapacity + 10000));
     }
 
     [Test]
@@ -138,7 +139,7 @@ public partial class WorldTest
         var entity1 = _world.Create(archTypes1);
         var entity2 = _world.Create(archTypes2);
 
-        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity1)));
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity1)));
     }
 
     [Test]
@@ -154,13 +155,13 @@ public partial class WorldTest
         var entites = new List<Entity>();
         world.GetEntities(query, entites);
 
-        Assert.That(entites.Count, Is.EqualTo(1));
+        That(entites.Count, Is.EqualTo(1));
 
         entites.Clear();
         world.Destroy(entity);
         world.GetEntities(query, entites);
 
-        Assert.That(entites.Count, Is.EqualTo(0));
+        That(entites.Count, Is.EqualTo(0));
         World.Destroy(world);
     }
 }
@@ -174,13 +175,13 @@ public partial class WorldTest
     {
 
         var entity = _world.Create(_entityGroup);
-        Assert.True(_world.Has<Transform>(in entity));
+        True(_world.Has<Transform>(in entity));
 
         _world.Set(entity, new Transform { X = 10, Y = 10 });
         ref var transform = ref _world.Get<Transform>(in entity);
 
-        Assert.That(transform.X, Is.EqualTo(10));
-        Assert.That(transform.Y, Is.EqualTo(10));
+        That(transform.X, Is.EqualTo(10));
+        That(transform.Y, Is.EqualTo(10));
     }
 
     [Test]
@@ -192,9 +193,9 @@ public partial class WorldTest
         _world.Remove<Transform>(in entity);
         _world.Remove<Transform>(in entity2);
 
-        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        Assert.That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
-        Assert.That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
     [Test]
@@ -206,13 +207,13 @@ public partial class WorldTest
         _world.Add<Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        Assert.That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
     }
 }
 
 /// <summary>
-/// Testing generated methods 
+/// Testing generated methods
 /// </summary>
 public partial class WorldTest
 {
@@ -223,23 +224,23 @@ public partial class WorldTest
         var size = _world.Size;
         var entity = _world.Create(new Transform(), new Rotation());
 
-        Assert.That(_world.Size, Is.EqualTo(size + 1));
-        Assert.True(_world.IsAlive(in entity));
+        That(_world.Size, Is.EqualTo(size + 1));
+        True(_world.IsAlive(in entity));
     }
 
     [Test]
     public void GeneratedSetGetAndHas()
     {
         var entity = _world.Create(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
-        Assert.True(_world.Has<Transform, Rotation>(in entity));
+        True(_world.Has<Transform, Rotation>(in entity));
 
         _world.Set(entity, new Transform { X = 20, Y = 20 }, new Rotation { X = 20, Y = 20 });
         var references = _world.Get<Transform, Rotation>(in entity);
 
-        Assert.AreEqual(20, references.t0.X);
-        Assert.AreEqual(20, references.t0.Y);
-        Assert.AreEqual(20, references.t1.X);
-        Assert.AreEqual(20, references.t1.Y);
+        AreEqual(20, references.t0.X);
+        AreEqual(20, references.t0.Y);
+        AreEqual(20, references.t1.X);
+        AreEqual(20, references.t1.Y);
     }
 
     [Test]
@@ -251,9 +252,9 @@ public partial class WorldTest
         _world.Remove<Rotation, Ai>(in entity);
         _world.Remove<Rotation, Ai>(in entity2);
 
-        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        Assert.That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
-        Assert.That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
     [Test]
@@ -265,8 +266,8 @@ public partial class WorldTest
         _world.Add<Rotation, Ai>(in entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        Assert.That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        Assert.That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
     }
 }
 

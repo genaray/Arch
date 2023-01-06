@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -27,25 +28,25 @@ public partial class EntityTest
 
         var archetype = _entity.GetArchetype();
 
-        Assert.True(bitset.All(archetype.BitSet));
+        True(bitset.All(archetype.BitSet));
     }
 
     [Test]
     public void IsAlive()
     {
-        Assert.True(_entity.IsAlive());
+        True(_entity.IsAlive());
     }
 
     [Test]
     public void Has()
     {
-        Assert.True(_entity.Has<Transform>());
+        True(_entity.Has<Transform>());
     }
 
     [Test]
     public void HasNot()
     {
-        Assert.False(_entity.Has<int>());
+        False(_entity.Has<int>());
     }
 
     [Test]
@@ -55,8 +56,8 @@ public partial class EntityTest
         _entity.Set(transform);
         ref var tramsformReference = ref _entity.Get<Transform>();
 
-        Assert.That(tramsformReference.X, Is.EqualTo(transform.X));
-        Assert.That(tramsformReference.Y, Is.EqualTo(transform.Y));
+        That(tramsformReference.X, Is.EqualTo(transform.X));
+        That(tramsformReference.Y, Is.EqualTo(transform.Y));
     }
 }
 
@@ -69,16 +70,16 @@ public partial class EntityTest
         _entity.Set(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
         var refs = _entity.Get<Transform, Rotation>();
 
-        Assert.AreEqual(10, refs.t0.X);
-        Assert.AreEqual(10, refs.t0.Y);
-        Assert.AreEqual(10, refs.t1.X);
-        Assert.AreEqual(10, refs.t1.Y);
+        AreEqual(10, refs.t0.X);
+        AreEqual(10, refs.t0.Y);
+        AreEqual(10, refs.t1.X);
+        AreEqual(10, refs.t1.Y);
     }
 
     [Test]
     public void GeneratedHas()
     {
-        Assert.True(_entity.Has<Transform, Rotation>());
+        True(_entity.Has<Transform, Rotation>());
     }
 }
 #endif

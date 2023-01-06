@@ -1,4 +1,5 @@
 ﻿using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -14,7 +15,7 @@ public class ComparerTest
         ComponentType[] array2 = { typeof(int), typeof(byte) };
         ComponentType[] array3 = { typeof(byte), typeof(int) };
 
-        Assert.That(Component.GetHashCode(array2), Is.EqualTo(Component.GetHashCode(array1)));
-        Assert.That(Component.GetHashCode(array3), Is.EqualTo(Component.GetHashCode(array1)));
+        That(Component.GetHashCode(array2), Is.EqualTo(Component.GetHashCode(array1)));
+        That(Component.GetHashCode(array3), Is.EqualTo(Component.GetHashCode(array1)));
     }
 }

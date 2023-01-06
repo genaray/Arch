@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.Core.CommandBuffer;
 using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -25,8 +26,8 @@ public partial class CommandBufferTest
         mySet.Set(second, new Rotation { X = 10, Y = 10 });
         var rotation = mySet.Get<Rotation>(second);
 
-        Assert.That(transform.X, Is.EqualTo(10));
-        Assert.That(rotation.X, Is.EqualTo(10));
+        That(transform.X, Is.EqualTo(10));
+        That(rotation.X, Is.EqualTo(10));
     }
 
     [Test]
@@ -41,10 +42,10 @@ public partial class CommandBufferTest
         commandBuffer.Remove<int>(in entity);
 
         commandBuffer.Playback();
-        Assert.That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        Assert.That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        Assert.IsTrue(world.Has<Ai>(in entity));
-        Assert.IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(in entity));
+        IsFalse(world.Has<int>(in entity));
 
         World.Destroy(world);
     }
@@ -63,10 +64,10 @@ public partial class CommandBufferTest
         commandBuffer.Playback();
 
         entity = new Entity(0, 0);
-        Assert.That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        Assert.That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        Assert.IsTrue(world.Has<Ai>(in entity));
-        Assert.IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(in entity));
+        IsFalse(world.Has<int>(in entity));
 
         World.Destroy(world);
     }
@@ -92,15 +93,15 @@ public partial class CommandBufferTest
 
         bufferedEntity = new Entity(1, 0);
 
-        Assert.That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        Assert.That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        Assert.IsTrue(world.Has<Ai>(in entity));
-        Assert.IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(in entity));
+        IsFalse(world.Has<int>(in entity));
 
-        Assert.That(world.Get<Transform>(in bufferedEntity).X, Is.EqualTo(20));
-        Assert.That(world.Get<Transform>(in bufferedEntity).Y, Is.EqualTo(20));
-        Assert.IsTrue(world.Has<Ai>(in bufferedEntity));
-        Assert.IsFalse(world.Has<int>(in bufferedEntity));
+        That(world.Get<Transform>(in bufferedEntity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(in bufferedEntity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(in bufferedEntity));
+        IsFalse(world.Has<int>(in bufferedEntity));
 
         World.Destroy(world);
     }

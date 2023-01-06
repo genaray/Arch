@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -40,7 +41,7 @@ public class QueryTest
 
         var count = 0;
         _world.Query(query, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(100));
+        That(count, Is.EqualTo(100));
     }
 
     [Test]
@@ -56,7 +57,7 @@ public class QueryTest
 
         var count = 0;
         _world.Query(query, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(100));
+        That(count, Is.EqualTo(100));
     }
 
     [Test]
@@ -72,7 +73,7 @@ public class QueryTest
 
         var count = 0;
         _world.Query(query, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(0));
+        That(count, Is.EqualTo(0));
     }
 
     [Test]
@@ -89,7 +90,7 @@ public class QueryTest
 
         var count = 0;
         _world.Query(query, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(0));
+        That(count, Is.EqualTo(0));
 
         for (var index = 0; index < 100; index++)
         {
@@ -98,7 +99,7 @@ public class QueryTest
 
         count = 0;
         _world.Query(query, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(100));
+        That(count, Is.EqualTo(100));
     }
 
     [Test]
@@ -112,7 +113,7 @@ public class QueryTest
 
         var count = 0;
         _world.Query(_withoutAiQuery, (in Entity entity) => count++);
-        Assert.That(count, Is.EqualTo(100));
+        That(count, Is.EqualTo(100));
     }
 
     [Test]
@@ -135,8 +136,8 @@ public class QueryTest
         var otherQueryCount = 0;
         _world.Query(_allQuery, (in Entity entity) => otherQueryCount++);
 
-        Assert.That(queryCount, Is.EqualTo(100));
-        Assert.That(otherQueryCount, Is.EqualTo(100));
+        That(queryCount, Is.EqualTo(100));
+        That(otherQueryCount, Is.EqualTo(100));
     }
 
     [Test]
@@ -159,8 +160,8 @@ public class QueryTest
         var otherQueryCount = 0;
         _world.Query(in _allQuery, (ref Rotation rot) => otherQueryCount++);
 
-        Assert.That(queryCount, Is.EqualTo(100));
-        Assert.That(otherQueryCount, Is.EqualTo(100));
+        That(queryCount, Is.EqualTo(100));
+        That(otherQueryCount, Is.EqualTo(100));
     }
 
     [Test]
@@ -183,8 +184,8 @@ public class QueryTest
         var otherQueryCount = 0;
         _world.ParallelQuery(in _allQuery, (ref Rotation rot) => Interlocked.Increment(ref otherQueryCount));
 
-        Assert.That(queryCount, Is.EqualTo(1000));
-        Assert.That(otherQueryCount, Is.EqualTo(1000));
+        That(queryCount, Is.EqualTo(1000));
+        That(otherQueryCount, Is.EqualTo(1000));
     }
 
     public struct RotCounter : IForEach<Rotation>
@@ -227,8 +228,8 @@ public class QueryTest
         var rotCounter = new RotCounter { Counter = 0 };
         _world.HPQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
 
-        Assert.That(entityCounter.Counter, Is.EqualTo(100));
-        Assert.That(rotCounter.Counter, Is.EqualTo(100));
+        That(entityCounter.Counter, Is.EqualTo(100));
+        That(rotCounter.Counter, Is.EqualTo(100));
     }
 
     [Test]
@@ -248,11 +249,11 @@ public class QueryTest
         var entityCounter = new EntityCounter { Counter = 0 };
         _world.HPEParallelQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
 
-        Assert.True(true);
+        True(true);
 
         var rotCounter = new RotCounter { Counter = 0 };
         _world.HPParallelQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
 
-        Assert.True(true);
+        True(true);
     }
 }

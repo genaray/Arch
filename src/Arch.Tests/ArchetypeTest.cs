@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
@@ -35,14 +36,14 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        Assert.That(archetype.Size, Is.EqualTo(1));
+        That(archetype.Size, Is.EqualTo(1));
     }
 
     [Test]
     public void ScaleChunkCapacity()
     {
         var archetype = new Archetype(_heavyGroup);
-        Assert.That(archetype.ChunkSize, Is.EqualTo(Archetype.BaseSize * 2)); // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
+        That(archetype.ChunkSize, Is.EqualTo(Archetype.BaseSize * 2)); // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
     }
 
     [Test]
@@ -57,7 +58,7 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        Assert.That(archetype.Size, Is.EqualTo(2));
+        That(archetype.Size, Is.EqualTo(2));
     }
 
     [Test]
@@ -73,8 +74,8 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        Assert.That(archetype.Size, Is.EqualTo(10));
-        Assert.That(archetype.Capacity, Is.EqualTo(10));
+        That(archetype.Size, Is.EqualTo(10));
+        That(archetype.Capacity, Is.EqualTo(10));
     }
 
     [Test]
@@ -92,11 +93,11 @@ public class ArchetypeTest
         var slot = new Slot(0, 0);
         archetype.Remove(ref slot, out _);
 
-        Assert.That(archetype.Size, Is.EqualTo(2));
-        Assert.That(archetype.Capacity, Is.EqualTo(2));
-        Assert.That(archetype.Chunks[0].Size, Is.EqualTo(entities - 50));
-        Assert.That(archetype.Chunks[1].Size, Is.EqualTo(49));
-        Assert.That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.Size, Is.EqualTo(2));
+        That(archetype.Capacity, Is.EqualTo(2));
+        That(archetype.Chunks[0].Size, Is.EqualTo(entities - 50));
+        That(archetype.Chunks[1].Size, Is.EqualTo(49));
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     [Test]
@@ -114,10 +115,10 @@ public class ArchetypeTest
         var slot = new Slot(0, 0);
         archetype.Remove(ref slot, out _);
 
-        Assert.That(archetype.Size, Is.EqualTo(1));
-        Assert.That(archetype.Capacity, Is.EqualTo(1));
-        Assert.That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
-        Assert.That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.Size, Is.EqualTo(1));
+        That(archetype.Capacity, Is.EqualTo(1));
+        That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     [Test]
@@ -138,11 +139,11 @@ public class ArchetypeTest
         archetype.CopyTo(otherArchetype, ref entityOneSlot, ref newSlot);
         archetype.Remove(ref entityOneSlot, out var replacedEntityId);
 
-        Assert.That(archetype.Chunks[0].Size, Is.EqualTo(0));
-        Assert.That(otherArchetype.Chunks[0].Size, Is.EqualTo(2));
-        Assert.That(otherArchetype.Get<Transform>(ref newSlot).X, Is.EqualTo(10));
-        Assert.That(otherArchetype.Get<Transform>(ref newSlot).Y, Is.EqualTo(10));
-        Assert.That(otherArchetype.Get<Rotation>(ref newSlot).X, Is.EqualTo(10));
-        Assert.That(otherArchetype.Get<Rotation>(ref newSlot).Y, Is.EqualTo(10));
+        That(archetype.Chunks[0].Size, Is.EqualTo(0));
+        That(otherArchetype.Chunks[0].Size, Is.EqualTo(2));
+        That(otherArchetype.Get<Transform>(ref newSlot).X, Is.EqualTo(10));
+        That(otherArchetype.Get<Transform>(ref newSlot).Y, Is.EqualTo(10));
+        That(otherArchetype.Get<Rotation>(ref newSlot).X, Is.EqualTo(10));
+        That(otherArchetype.Get<Rotation>(ref newSlot).Y, Is.EqualTo(10));
     }
 }
