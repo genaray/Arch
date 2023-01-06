@@ -10,9 +10,7 @@ namespace Arch.Core;
 #if PURE_ECS
 /// <summary>
 ///     The <see cref="Entity"/> struct
-///     represents a general-purpose object.
-///     In a game engine context, for example, every coarse game object is represented as an entity.
-///     It only consists of a unique id.
+///     represents a general-purpose object and can be assigned a set of components that act as data.
 /// </summary>
 public readonly struct Entity : IEquatable<Entity>
 {
@@ -107,9 +105,7 @@ public readonly struct Entity : IEquatable<Entity>
 
 /// <summary>
 ///     The <see cref="Entity"/> struct
-///     represents a general-purpose object.
-///     In a game engine context, for example, every coarse game object is represented as an entity.
-///     It only consists of a unique id and one for its world.
+///     represents a general-purpose object and can be assigned a set of components that act as data.
 /// </summary>
 public readonly struct Entity : IEquatable<Entity>
 {
