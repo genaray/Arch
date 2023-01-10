@@ -32,23 +32,21 @@ public struct BufferedEntityInfo
     public int RemoveIndex;
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="CommandBuffer"/> class
-///     ...
+///     stores operation to <see cref="Entity"/>'s between to play and implement them at a later time in the <see cref="World"/>.
 /// </summary>
 public class CommandBuffer : IDisposable
 {
     private readonly PooledList<ComponentType> _addTypes;
     private readonly PooledList<ComponentType> _removeTypes;
 
-    // TODO: Documentation.
     /// <summary>
     ///     Initializes a new instance of the <see cref="CommandBuffer"/> class
     ///     with the specified <see cref="Core.World"/> and an optional <paramref name="initialCapacity"/> (default: 128).
     /// </summary>
-    /// <param name="world"></param>
-    /// <param name="initialCapacity"></param>
+    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="initialCapacity">The <see cref="initialCapacity"/>.</param>
     public CommandBuffer(World world, int initialCapacity = 128)
     {
         World = world;
@@ -63,7 +61,6 @@ public class CommandBuffer : IDisposable
         _removeTypes = new PooledList<ComponentType>(16);
     }
 
-    // TODO: Documentation.
     /// <summary>
     ///     Gets the <see cref="Core.World"/>.
     /// </summary>
@@ -74,22 +71,47 @@ public class CommandBuffer : IDisposable
     /// </summary>
     public int Size { get; private set; }
 
-    // TODO: Documentation.
+    /// <summary>
+    ///     All <see cref="Entity"/>'s created or modified in this <see cref="CommandBuffer"/>.
+    /// </summary>
     internal PooledList<Entity> Entities { get; set; }
+
+    /// <summary>
+    ///     A map that stores some additional information for each <see cref="Entity"/>, which is needed for the internal <see cref="CommandBuffer"/> operations.
+    /// </summary>
     internal PooledDictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
+
+    /// <summary>
+    ///     All create commands recorded in this <see cref="CommandBuffer"/>. Used to create <see cref="Entity"/>'s during <see cref="Playback"/>.
+    /// </summary>
     internal PooledList<CreateCommand> Creates { get; set; }
+
+    /// <summary>
+    ///     Saves set operations for components to play them back later during <see cref="Playback"/>.
+    /// </summary>
     internal SparseSet Sets { get; set; }
+
+    /// <summary>
+    ///     Saves add operations for components to play them back later during <see cref="Playback"/>.
+    /// </summary>
     internal StructuralSparseSet Adds { get; set; }
+
+    /// <summary>
+    ///     Saves remove operations for components to play them back later during <see cref="Playback"/>.
+    /// </summary>
     internal StructuralSparseSet Removes { get; set; }
+
+    /// <summary>
+    ///     Saves remove operations for <see cref="Entity"/>'s to play them back later during <see cref="Playback"/>.
+    /// </summary>
     internal PooledList<int> Destroys { get; set; }
 
-    // TODO: Documentation.
     /// <summary>
     ///     Registers a new <see cref="Entity"/> into the <see cref="CommandBuffer"/>.
     ///     An <see langword="out"/> parameter contains its <see cref="Core.CommandBuffer.BufferedEntityInfo"/>.
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="info"></param>
+    /// <param name="entity">The <see cref="Entity"/> to register.</param>
+    /// <param name="info">Its <see cref="BufferedEntityInfo"/> which stores indexes used for <see cref="CommandBuffer"/> operations.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Register(in Entity entity, out BufferedEntityInfo info)
     {
@@ -110,11 +132,11 @@ public class CommandBuffer : IDisposable
         Size++;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Records a Create operation for an <see cref="Entity"/> based on its component structure.
+    ///     Will be created during <see cref="Playback"/>.
     /// </summary>
-    /// <param name="types"></param>
+    /// <param name="types">The <see cref="Entity"/>'s component structure/<see cref="Archetype"/>.</param>
     /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(ComponentType[] types)
@@ -131,9 +153,9 @@ public class CommandBuffer : IDisposable
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Record a Destroy operation for an (buffered) <see cref="Entity"/>.
+    ///     Will be destroyed during <see cref="Playback"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to destroy.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,13 +172,14 @@ public class CommandBuffer : IDisposable
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Records a set operation for an (buffered) <see cref="Entity"/>.
+    ///     Overwrites previous values.
+    ///     Will be set during <see cref="Playback"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="component"></param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="component">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in Entity entity, in T component)
     {
@@ -172,13 +195,14 @@ public class CommandBuffer : IDisposable
         Sets.Set(info.SetIndex, in component);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Records a add operation for an (buffered) <see cref="Entity"/>.
+    ///     Overwrites previous values.
+    ///     Will be added during <see cref="Playback"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="component"></param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="component">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T component)
     {
@@ -195,12 +219,12 @@ public class CommandBuffer : IDisposable
         Sets.Set(info.SetIndex, in component);
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Records a remove operation for an (buffered) <see cref="Entity"/>.
+    ///     Will be removed during <see cref="Playback"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="entity"></param>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     {
@@ -233,7 +257,7 @@ public class CommandBuffer : IDisposable
         }
 
         // Play back additions.
-        for (var index = 0; index < Adds.Size; index++)
+        for (var index = 0; index < Adds.Count; index++)
         {
             var wrappedEntity = Adds.Entities[index];
             for (var i = 0; i < Adds.UsedSize; i++)
@@ -241,7 +265,7 @@ public class CommandBuffer : IDisposable
                 ref var usedIndex = ref Adds.Used[i];
                 ref var sparseSet = ref Adds.Components[usedIndex];
 
-                if (!sparseSet.Has(wrappedEntity.Index))
+                if (!sparseSet.Contains(wrappedEntity.Index))
                 {
                     continue;
                 }
@@ -262,14 +286,14 @@ public class CommandBuffer : IDisposable
         }
 
         // Play back removals.
-        for (var index = 0; index < Removes.Size; index++)
+        for (var index = 0; index < Removes.Count; index++)
         {
             var wrappedEntity = Removes.Entities[index];
             for (var i = 0; i < Removes.UsedSize; i++)
             {
                 ref var usedIndex = ref Removes.Used[i];
                 ref var sparseSet = ref Removes.Components[usedIndex];
-                if (!sparseSet.Has(wrappedEntity.Index))
+                if (!sparseSet.Contains(wrappedEntity.Index))
                 {
                     continue;
                 }
@@ -290,7 +314,7 @@ public class CommandBuffer : IDisposable
         }
 
         // Play back sets.
-        for (var index = 0; index < Sets.Size; index++)
+        for (var index = 0; index < Sets.Count; index++)
         {
             // Get wrapped entity
             var wrappedEntity = Sets.Entities[index];
@@ -304,13 +328,13 @@ public class CommandBuffer : IDisposable
             ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
             var chunkIndex = entityInfo.Slot.Index;
 
-            // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk 
+            // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk
             for (var i = 0; i < Sets.UsedSize; i++)
             {
                 var used = Sets.Used[i];
                 var sparseArray = Sets.Components[used];
 
-                if (!sparseArray.Has(id))
+                if (!sparseArray.Contains(id))
                 {
                     continue;
                 }
