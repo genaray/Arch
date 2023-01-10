@@ -155,7 +155,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 ///     Represents a query which is created based on a <see cref="World"/> and a <see cref="QueryDescription"/>.
 ///     It provides some methods to iterate over all <see cref="Entity"/>'s that match the aspect of the <see cref="QueryDescription"/> that was used to create this instance.
 /// </summary>
-public readonly struct Query : IEquatable<Query>
+public readonly partial struct Query : IEquatable<Query>
 {
     private readonly PooledList<Archetype> _archetypes;
     private readonly QueryDescription _queryDescription;
@@ -234,6 +234,36 @@ public readonly struct Query : IEquatable<Query>
     public QueryChunkIterator GetChunkIterator()
     {
         return new QueryChunkIterator(this, _archetypes.Span);
+    }
+
+    /// <summary>
+    ///     Returns an iterator to iterate over all <see cref="Entity"/>'s addressed by this <see cref="Query"/>.
+    /// </summary>
+    /// <returns>A new instance of the <see cref="QueryEntityIterator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityIterator GetEntityIterator()
+    {
+        return new QueryEntityIterator(this, _archetypes.Span);
+    }
+
+    /// <summary>
+    ///     Returns an iterator to iterate over all components addressed by this <see cref="Query"/>.
+    /// </summary>
+    /// <returns>A new instance of the <see cref="QueryReferenceIterator{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryReferenceIterator<T> GetIterator<T>()
+    {
+        return new QueryReferenceIterator<T>(this, _archetypes.Span);
+    }
+
+    /// <summary>
+    ///     Returns an iterator to iterate over all components addressed by this <see cref="Query"/>.
+    /// </summary>
+    /// <returns>A new instance of the <see cref="QueryEntityReferenceIterator{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityReferenceIterator<T> GetEntityIterator<T>()
+    {
+        return new QueryEntityReferenceIterator<T>(this, _archetypes.Span);
     }
 
     /// <summary>

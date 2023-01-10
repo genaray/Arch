@@ -1,4 +1,5 @@
 using System.Text;
+using Arch.SourceGen;
 
 namespace ArchSourceGenerator;
 
@@ -8,34 +9,34 @@ public static class ReferencesExtensions
     {
         for (var index = 0; index < amount; index++)
             sb.AppendReference(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendReference(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
-        
+
         var refStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             refStructs.AppendLine($"public Ref<T{index}> t{index};");
-        
+
         var references = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             references.AppendLine($"public ref T{index} t{index};");
-        
+
         var assignRefStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefStructs.AppendLine($"t{index} = new Ref<T{index}>(ref t{index}Component);");
-        
+
         var assignRefs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefs.AppendLine($"t{index} = ref t{index}Component;");
-        
 
-        var template = 
+
+        var template =
             $$"""
             public ref struct References<{{generics}}>
             {
@@ -52,7 +53,7 @@ public static class ReferencesExtensions
                 {{assignRefStructs}}
             #else
                 {{assignRefs}}
-            #endif        
+            #endif
 
                 }
             }
@@ -60,39 +61,39 @@ public static class ReferencesExtensions
 
         return sb.AppendLine(template);
     }
-    
+
     public static StringBuilder AppendEntityReferences(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
             sb.AppendEntityReference(index);
-        
+
         return sb;
     }
-    
+
     public static StringBuilder AppendEntityReference(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericRefParams(amount);
-        
+
         var refStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             refStructs.AppendLine($"public Ref<T{index}> t{index};");
-        
+
         var references = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             references.AppendLine($"public ref T{index} t{index};");
-        
+
         var assignRefStructs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefStructs.AppendLine($"t{index} = new Ref<T{index}>(ref t{index}Component);");
-        
+
         var assignRefs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
             assignRefs.AppendLine($"t{index} = ref t{index}Component;");
-        
 
-        var template = 
+
+        var template =
             $$"""
             public ref struct EntityReferences<{{generics}}>
             {
@@ -113,7 +114,7 @@ public static class ReferencesExtensions
             #else
                 Entity = ref entity;
                 {{assignRefs}}
-            #endif        
+            #endif
 
                 }
             }

@@ -1,4 +1,6 @@
-﻿namespace Arch.SourceGen;
+﻿using ArchSourceGenerator;
+
+namespace Arch.SourceGen;
 
 [Generator]
 public class QueryGenerator : IIncrementalGenerator
@@ -37,6 +39,15 @@ public class QueryGenerator : IIncrementalGenerator
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("namespace Arch.Core;");
             references.AppendReferences(25);
+            references.AppendEntityReferences(25);
+
+            var enumerators = new StringBuilder();
+            enumerators.AppendLine("using System;");
+            enumerators.AppendLine("using System.Runtime.CompilerServices;");
+            enumerators.AppendLine("using CommunityToolkit.HighPerformance;");
+            enumerators.AppendLine("namespace Arch.Core;");
+            enumerators.AppendReferenceEnumerators(25);
+            enumerators.AppendEntityReferenceEnumerators(25);
 
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
@@ -64,16 +75,17 @@ public class QueryGenerator : IIncrementalGenerator
                 {
                     {{new StringBuilder().AppendChunkHases(25)}}
                     {{new StringBuilder().AppendChunkIndexGets(25)}}
+                    {{new StringBuilder().AppendChunkIndexGetRows(25)}}
                     {{new StringBuilder().AppendChunkIndexSets(25)}}
                 }
-                
+
                 public partial class Archetype
                 {
                     {{new StringBuilder().AppendArchetypeHases(25)}}
                     {{new StringBuilder().AppendArchetypeGets(25)}}
                     {{new StringBuilder().AppendArchetypeSets(25)}}
                 }
-                
+
                 public partial class World
                 {
                     {{new StringBuilder().AppendCreates(25)}}
@@ -82,18 +94,18 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendWorldSets(25)}}
                     {{new StringBuilder().AppendWorldAdds(25)}}
                     {{new StringBuilder().AppendWorldRemoves(25)}}
-                
+
                     {{new StringBuilder().AppendQueryMethods(25)}}
                     {{new StringBuilder().AppendEntityQueryMethods(25)}}
                     {{new StringBuilder().AppendParallelQuerys(25)}}
                     {{new StringBuilder().AppendParallelEntityQuerys(25)}}
-                
+
                     {{new StringBuilder().AppendQueryInterfaceMethods(25)}}
                     {{new StringBuilder().AppendEntityQueryInterfaceMethods(25)}}
                     {{new StringBuilder().AppendHpParallelQuerys(25)}}
                     {{new StringBuilder().AppendHpeParallelQuerys(25)}}
                 }
-                
+
                 public static partial class EntityExtensions
                 {
                 #if !PURE_ECS
@@ -104,7 +116,7 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendEntityRemoves(25)}}
                 #endif
                 }
-                
+
                 public partial struct QueryDescription
                 {
                     {{new StringBuilder().AppendQueryDescriptionWithAlls(25)}}
@@ -112,7 +124,14 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendQueryDescriptionWithNones(25)}}
                     {{new StringBuilder().AppendQueryDescriptionWithExclusives(25)}}
                 }
-                """);
+
+                public readonly partial struct Query
+                {
+                    {{new StringBuilder().AppendGetReferenceIterators(25)}}
+                    {{new StringBuilder().AppendGetEntityReferenceIterators(25)}}
+                }
+                """
+            );
 
             initializationContext.AddSource("CompileTimeStatics.g.cs",
                 CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
@@ -125,6 +144,9 @@ public class QueryGenerator : IIncrementalGenerator
 
             initializationContext.AddSource("References.g.cs",
                 CSharpSyntaxTree.ParseText(references.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
+
+            initializationContext.AddSource("Enumerators.g.cs",
+                CSharpSyntaxTree.ParseText(enumerators.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("Jobs.g.cs",
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

@@ -333,7 +333,7 @@ internal class SparseSet : IDisposable
 
         foreach (var sparset in Components)
         {
-            sparset.Clear();
+            sparset?.Clear();
         }
     }
 }

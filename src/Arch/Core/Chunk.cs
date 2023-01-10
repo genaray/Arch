@@ -50,7 +50,7 @@ public partial struct Chunk
     ///     The <see cref="Entity"/>'s that are stored in this chunk.
     ///     Can be accessed during the iteration.
     /// </summary>
-    public readonly Entity[] Entities { [Pure] get; }
+    public readonly Entity[] Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The component arrays in which the components of the <see cref="Entity"/>'s are stored.
@@ -119,7 +119,7 @@ public partial struct Chunk
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index.</param>
-    /// <returns></returns>
+    /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public ref T Get<T>(scoped in int index)
@@ -129,10 +129,25 @@ public partial struct Chunk
     }
 
     /// <summary>
+    ///     Returns a chunk row (entity and component) from an index within the <see cref="Chunk"/>.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <param name="index">The index.</param>
+    /// <returns>A <see cref="EntityReferences{T0}"/> containing the <see cref="Entity"/> and its components at that index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public EntityReferences<T> GetRow<T>(scoped in int index)
+    {
+        ref var entity = ref Entities[index];
+        var array = GetSpan<T>();
+        return new EntityReferences<T>(in entity, ref array[index]);
+    }
+
+    /// <summary>
     ///     Removes the <see cref="Entity"/> at an index with all its components.
     ///     Copies the last <see cref="Entity"/> in its place to ensure a uniform array.
     /// </summary>
-    /// <param name="index"></param>
+    /// <param name="index">Its index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Remove(in int index)
     {

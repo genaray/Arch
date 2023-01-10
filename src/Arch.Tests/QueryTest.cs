@@ -5,7 +5,7 @@ using static NUnit.Framework.Assert;
 namespace Arch.Tests;
 
 [TestFixture]
-public class QueryTest
+public partial class QueryTest
 {
     private JobScheduler.JobScheduler _jobScheduler;
     private World? _world;
@@ -139,6 +139,40 @@ public class QueryTest
         That(queryCount, Is.EqualTo(100));
         That(otherQueryCount, Is.EqualTo(100));
     }
+
+    [Test]
+    public void ComplexIteratorQuery()
+    {
+        _world = World.Create();
+        for (var index = 0; index < 100; index++)
+        {
+            _world.Create(_entityGroup);
+        }
+
+        for (var index = 0; index < 100; index++)
+        {
+            _world.Create(_entityAiGroup);
+        }
+
+        var queryCount = 0;
+        foreach (ref var entity in _world.Query(in _withoutAiQuery).GetEntityIterator())
+        {
+            queryCount++;
+        }
+
+        var otherQueryCount = 0;
+        foreach (ref var transform in _world.Query(in _allQuery).GetIterator<Transform>())
+        {
+            otherQueryCount++;
+        }
+
+        That(queryCount, Is.EqualTo(100));
+        That(otherQueryCount, Is.EqualTo(100));
+    }
+}
+
+public partial class QueryTest
+{
 
     [Test]
     public void GeneratedQueryTest()

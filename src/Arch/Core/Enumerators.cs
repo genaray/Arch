@@ -266,6 +266,312 @@ public readonly ref struct QueryChunkIterator
 }
 
 /// <summary>
+///     The <see cref="QueryEntityEnumerator"/> struct
+///     represents an enumerator with which one can iterate over all <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
+/// </summary>
+public ref struct QueryEntityEnumerator
+{
+    private QueryChunkEnumerator _chunkEnumerator;
+    private int _index;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryEntityEnumerator"/> struct.
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
+    /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        _index = -1;
+        _chunkEnumerator = new QueryChunkEnumerator(query, archetypes);
+    }
+
+    /// <summary>
+    ///     Moves to the next <see cref="Entity"/>.
+    /// </summary>
+    /// <returns>True if theres a next <see cref="Entity"/>, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            --_index;
+
+            // We reached the end, next archetype
+            if (_index >= 0)
+            {
+                return true;
+            }
+
+            if (!_chunkEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            _index = _chunkEnumerator.Current.Size - 1;
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     Resets this instance.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+        _chunkEnumerator.Reset();
+    }
+
+    /// <summary>
+    ///     Returns a reference to the current <see cref="Entity"/>.
+    /// </summary>
+    public readonly ref Entity Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _chunkEnumerator.Current.Entities[_index];
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryEntityIterator"/> struct
+///     represents an iterator wich iterates over all <see cref="Entity"/>'s within its given <see cref="Archetype"/> array.
+/// </summary>
+public readonly ref struct QueryEntityIterator
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryEntityIterator"/> struct
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> each <see cref="QueryEntityIterator"/> will use.</param>
+    /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryEntityIterator"/> will use.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityIterator(Query query, Span<Archetype> archetypes)
+    {
+        _query = query;
+        _archetypes = archetypes;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="QueryEntityEnumerator"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
+    /// </summary>
+    /// <returns>The new <see cref="QueryEntityEnumerator"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityEnumerator GetEnumerator()
+    {
+        return new QueryEntityEnumerator(_query, _archetypes);
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryReferenceEnumerator{T}"/> struct
+///     represents an enumerator with which one can iterate over all <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
+/// </summary>
+public ref struct QueryReferenceEnumerator<T>
+{
+    private QueryChunkEnumerator _chunkEnumerator;
+    private int _index;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryReferenceEnumerator{T}"/> struct.
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
+    /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryReferenceEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        _index = -1;
+        _chunkEnumerator = new QueryChunkEnumerator(query, archetypes);
+    }
+
+    /// <summary>
+    ///     Moves to the next <see cref="Entity"/>.
+    /// </summary>
+    /// <returns>True if theres a next <see cref="Entity"/>, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            --_index;
+
+            // We reached the end, next archetype
+            if (_index >= 0)
+            {
+                return true;
+            }
+
+            if (!_chunkEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            _index = _chunkEnumerator.Current.Size - 1;
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     Resets this instance.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+        _chunkEnumerator.Reset();
+    }
+
+    /// <summary>
+    ///     Returns a reference to the current component instance.
+    /// </summary>
+    public ref T Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _chunkEnumerator.Current.Get<T>(_index);
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryReferenceIterator{T}"/> struct
+///     represents an iterator wich iterates over all <see cref="Entity"/> component's within its given <see cref="Archetype"/> array.
+/// </summary>
+public readonly ref struct QueryReferenceIterator<T>
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryReferenceIterator{T}"/> struct
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> each <see cref="QueryReferenceIterator{T}"/> will use.</param>
+    /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryReferenceIterator{T}"/> will use.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryReferenceIterator(Query query, Span<Archetype> archetypes)
+    {
+        _query = query;
+        _archetypes = archetypes;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="QueryReferenceIterator{T}"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
+    /// </summary>
+    /// <returns>The new <see cref="QueryReferenceEnumerator{T}"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryReferenceEnumerator<T> GetEnumerator()
+    {
+        return new QueryReferenceEnumerator<T>(_query, _archetypes);
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryEntityReferenceEnumerator{T}"/> struct
+///     represents an enumerator with which one can iterate over all <see cref="Entity"/>'s and their components that matches the given <see cref="Query"/>.
+/// </summary>
+public ref struct QueryEntityReferenceEnumerator<T>
+{
+    private QueryChunkEnumerator _chunkEnumerator;
+    private int _index;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryEntityReferenceEnumerator{T}"/> struct.
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
+    /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityReferenceEnumerator(Query query, Span<Archetype> archetypes)
+    {
+        _index = -1;
+        _chunkEnumerator = new QueryChunkEnumerator(query, archetypes);
+    }
+
+    /// <summary>
+    ///     Moves to the next <see cref="Entity"/>.
+    /// </summary>
+    /// <returns>True if theres a next <see cref="Entity"/>, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            --_index;
+
+            // We reached the end, next archetype
+            if (_index >= 0)
+            {
+                return true;
+            }
+
+            if (!_chunkEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            _index = _chunkEnumerator.Current.Size - 1;
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     Resets this instance.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        _index = -1;
+        _chunkEnumerator.Reset();
+    }
+
+    /// <summary>
+    ///     Returns a reference to the current component instance.
+    /// </summary>
+    public EntityReferences<T> Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            ref var current = ref _chunkEnumerator.Current;
+            ref var entity = ref current.Entities[_index];
+            ref var component = ref current.Get<T>(_index);
+            return new EntityReferences<T>(in entity, ref component);
+        }
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryEntityReferenceIterator{T}"/> struct
+///     represents an iterator wich iterates over all <see cref="Entity"/> component's within its given <see cref="Archetype"/> array.
+/// </summary>
+public readonly ref struct QueryEntityReferenceIterator<T>
+{
+    private readonly Query _query;
+    private readonly Span<Archetype> _archetypes;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryEntityReferenceIterator{T}"/> struct
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> each <see cref="QueryEntityReferenceIterator{T}"/> will use.</param>
+    /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryEntityReferenceIterator{T}"/> will use.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityReferenceIterator(Query query, Span<Archetype> archetypes)
+    {
+        _query = query;
+        _archetypes = archetypes;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="QueryEntityReferenceEnumerator{T}"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
+    /// </summary>
+    /// <returns>The new <see cref="QueryEntityReferenceEnumerator{T}"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public QueryEntityReferenceEnumerator<T> GetEnumerator()
+    {
+        return new QueryEntityReferenceEnumerator<T>(_query, _archetypes);
+    }
+}
+
+/// <summary>
 ///     The <see cref="RangeEnumerator"/> struct
 ///     is sed to iterate over sections of a range to split them into pieces.
 ///     Mostly used to partition arrays.
@@ -342,7 +648,6 @@ public ref struct RangeEnumerator
     }
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="RangePartitioner"/> struct
 ///     represents an iterator wich wraps the <see cref="RangeEnumerator"/> for using it in foreach loops.

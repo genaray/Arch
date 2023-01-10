@@ -1,10 +1,11 @@
+using System.Runtime.InteropServices;
 using Arch.Core;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
-public class EnumeratorTest
+public partial class EnumeratorTest
 {
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
@@ -81,5 +82,76 @@ public class EnumeratorTest
         var archetype1ChunkCount = _world.Archetypes[0].Size;
         var archetype2ChunkCount = _world.Archetypes[1].Size;
         That(counter, Is.EqualTo(archetype1ChunkCount + archetype2ChunkCount));
+    }
+
+    [Test]
+    public void QueryEntityEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (ref var entity in query.GetEntityIterator())
+        {
+            counter++;
+        }
+
+        That(20000, Is.EqualTo(counter));
+    }
+
+    [Test]
+    public void QueryReferenceEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (ref var reference in query.GetIterator<Transform>())
+        {
+            counter++;
+        }
+
+        That(20000, Is.EqualTo(counter));
+    }
+
+
+    [Test]
+    public void QueryEntityReferenceEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (var entity in query.GetEntityIterator<Transform>())
+        {
+            counter++;
+        }
+
+        That(20000, Is.EqualTo(counter));
+    }
+}
+
+public partial class EnumeratorTest
+{
+
+    [Test]
+    public void GeneratedQueryReferenceEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (var reference in query.GetIterator<Transform, Rotation>())
+        {
+            counter++;
+        }
+
+        That(20000, Is.EqualTo(counter));
+    }
+
+
+    [Test]
+    public void GeneratedQueryEntityReferenceEnumeration()
+    {
+        var counter = 0;
+        var query = _world.Query(in _description);
+        foreach (var entity in query.GetEntityIterator<Transform, Rotation>())
+        {
+            counter++;
+        }
+
+        That(20000, Is.EqualTo(counter));
     }
 }
