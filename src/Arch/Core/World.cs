@@ -355,12 +355,12 @@ public partial class World
     public static void Destroy(World world)
     {
         Worlds.Remove(world);
-        world.Capacity = 0;
-        world.Size = 0;
-        world.RecycledIds.Clear();
-        world.Archetypes.Clear();
-        world.EntityInfo.Clear();
-        world.GroupToArchetype.Clear();
+        world.JobHandles.Dispose();
+        world.GroupToArchetype.Dispose();
+        world.Archetypes.Dispose();
+        world.EntityInfo.Dispose();
+        world.RecycledIds.Dispose();
+        world.QueryCache.Dispose();
     }
 
     /// <summary>
@@ -578,6 +578,14 @@ public partial class World
     public Enumerator<Archetype> GetEnumerator()
     {
         return new Enumerator<Archetype>(Archetypes.Span);
+    }
+
+    /// <summary>
+    ///     Disposes this <see cref="World"/> instance and destroys it from the <see cref="Worlds"/>.
+    /// </summary>
+    public void Dispose()
+    {
+        Destroy(this);
     }
 }
 
@@ -824,7 +832,7 @@ public partial class World
     }
 }
 
-public partial class World
+public partial class World : IDisposable
 {
     /// <summary>
     ///     Sets or replaces a component for an <see cref="Entity"/>.
