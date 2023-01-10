@@ -167,7 +167,7 @@ public readonly ref struct QueryArchetypeIterator
 
 /// <summary>
 ///     The <see cref="QueryChunkEnumerator"/> struct
-///     represents an enumerator with which one can iterate over all <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
+///     represents an enumerator with which one can iterate over all non empty <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
 /// </summary>
 public ref struct QueryChunkEnumerator
 {
@@ -182,8 +182,13 @@ public ref struct QueryChunkEnumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
     {
-        _index = -1;
         _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
+
+        // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
+        if (_archetypeEnumerator.MoveNext())
+        {
+            _index = _archetypeEnumerator.Current.Size;
+        }
     }
 
     /// <summary>
@@ -195,20 +200,19 @@ public ref struct QueryChunkEnumerator
     {
         unchecked
         {
-            --_index;
-
-            // We reached the end, next archetype
-            if (_index >= 0)
+            // Decrease chunk till its zero, skip empty chunks -> otherwhise entity query might fail since it tries to acess that chunk
+            if (--_index >= 0 && Current.Size > 0)
             {
                 return true;
             }
 
+            // Return false if there no new archetypes
             if (!_archetypeEnumerator.MoveNext())
             {
                 return false;
             }
 
-            _index = _archetypeEnumerator.Current.Size - 1;
+            _index = _archetypeEnumerator.Current.Size-1;
             return true;
         }
     }
@@ -221,6 +225,12 @@ public ref struct QueryChunkEnumerator
     {
         _index = -1;
         _archetypeEnumerator.Reset();
+
+        // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
+        if (_archetypeEnumerator.MoveNext())
+        {
+            _index = _archetypeEnumerator.Current.Size;
+        }
     }
 
     /// <summary>

@@ -57,22 +57,22 @@ public partial struct Chunk
     ///     Represent the component structure.
     ///     They can be accessed quickly using the <see cref="ComponentIdToArrayIndex"/> or one of the chunk methods.
     /// </summary>
-    public readonly Array[] Components { [Pure] get; }
+    public readonly Array[] Components { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
     /// </summary>
-    public readonly int[] ComponentIdToArrayIndex { [Pure] get; }
+    public readonly int[] ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The number of occupied <see cref="Entity"/> slots in this <see cref="Chunk"/>.
     /// </summary>
-    public int Size { [Pure] get; private set; }
+    public int Size { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
 
     /// <summary>
     ///     The number of possible <see cref="Entity"/>'s in this <see cref="Chunk"/>.
     /// </summary>
-    public int Capacity { [Pure] get; }
+    public int Capacity { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
