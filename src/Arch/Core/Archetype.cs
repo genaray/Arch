@@ -7,7 +7,7 @@ namespace Arch.Core;
 /// <summary>
 ///     The <see cref="Slot"/> struct references an <see cref="Entity"/> entry within an <see cref="Archetype"/> using a reference to its <see cref="Chunk"/> and its index.
 /// </summary>
-internal struct Slot
+internal record struct Slot
 {
     /// <summary>
     ///     The index of the <see cref="Entity"/> in the <see cref="Chunk"/>.

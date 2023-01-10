@@ -209,9 +209,8 @@ public readonly struct Entity : IEquatable<Entity>
 ///     The <see cref="EntityInfo"/> struct
 ///     stores information about an <see cref="Entity"/> to quickly access its data and location.
 /// </summary>
-internal struct EntityInfo
+internal record struct EntityInfo
 {
-
     /// <summary>
     /// Its slot inside its <see cref="Archetype"/>.
     /// </summary>
@@ -226,6 +225,19 @@ internal struct EntityInfo
     /// Its version.
     /// </summary>
     public short Version;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="EntityInfo"/> struct.
+    /// </summary>
+    /// <param name="slot">Its <see cref="Slot"/>.</param>
+    /// <param name="archetype">Its <see cref="Archetype"/>.</param>
+    /// <param name="version">Its version.</param>
+    public EntityInfo(Slot slot, Archetype archetype, short version)
+    {
+        Slot = slot;
+        Archetype = archetype;
+        Version = version;
+    }
 }
 
 /// <summary>
@@ -395,7 +407,7 @@ public partial class World
         }
 
         // Map
-        EntityInfo.Add(id, new EntityInfo { Version = 0, Archetype = archetype, Slot = slot });
+        EntityInfo.Add(id, new EntityInfo(slot, archetype, 0));
 
         Size++;
         return entity;

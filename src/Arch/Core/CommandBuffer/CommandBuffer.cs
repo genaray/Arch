@@ -3,19 +3,27 @@ using Collections.Pooled;
 
 namespace Arch.Core.CommandBuffer;
 
-// NOTE: This can probably be a `record struct`.
 /// <summary>
 ///     The <see cref="CreateCommand"/> struct
 ///     contains data for creating a new <see cref="Entity"/>.
 /// </summary>
-public struct CreateCommand
+public readonly record struct CreateCommand
 {
-    // TODO: Documentation.
-    public int Index;
-    public ComponentType[] Types;
+    public readonly int Index;
+    public readonly ComponentType[] Types;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="CreateCommand"/> struct.
+    /// </summary>
+    /// <param name="index">The <see cref="Entity"/>'s buffer id.</param>
+    /// <param name="types">Its <see cref="ComponentType"/>'s array.</param>
+    public CreateCommand(int index, ComponentType[] types)
+    {
+        Index = index;
+        Types = types;
+    }
 }
 
-// NOTE: This can probably be a `record struct`.
 /// <summary>
 ///     The <see cref="BufferedEntityInfo"/> struct
 ///     contains data about a buffered <see cref="Entity"/>.
@@ -23,13 +31,27 @@ public struct CreateCommand
 /// <remarks>
 ///     This struct's purpose is to speed up lookups into an <see cref="Entity"/>'s internal data.
 /// </remarks>
-public struct BufferedEntityInfo
+public readonly record struct BufferedEntityInfo
 {
-    // TODO: Documentation.
-    public int Index;
-    public int SetIndex;
-    public int AddIndex;
-    public int RemoveIndex;
+    public readonly int Index;
+    public readonly int SetIndex;
+    public readonly int AddIndex;
+    public readonly int RemoveIndex;
+
+    /// <summary>
+    ///      Initializes a new instance of the <see cref="CreateCommand"/> struct.
+    /// </summary>
+    /// <param name="index">Its <see cref="CommandBuffer"/> index.</param>
+    /// <param name="setIndex">Its <see cref="CommandBuffer.Sets"/> index.</param>
+    /// <param name="addIndex">Its <see cref="CommandBuffer.Adds"/> index.</param>
+    /// <param name="removeIndex">Its <see cref="CommandBuffer.Removes"/> index.</param>
+    public BufferedEntityInfo(int index, int setIndex, int addIndex, int removeIndex)
+    {
+        Index = index;
+        SetIndex = setIndex;
+        AddIndex = addIndex;
+        RemoveIndex = removeIndex;
+    }
 }
 
 /// <summary>
@@ -119,13 +141,7 @@ public class CommandBuffer : IDisposable
         var addIndex = Adds.Create(in entity);
         var removeIndex = Removes.Create(in entity);
 
-        info = new BufferedEntityInfo
-        {
-            Index = Size,
-            SetIndex = setIndex,
-            AddIndex = addIndex,
-            RemoveIndex = removeIndex
-        };
+        info = new BufferedEntityInfo(Size, setIndex, addIndex, removeIndex);
 
         Entities.Add(entity);
         BufferedEntityInfo.Add(entity.Id, info);
@@ -146,7 +162,7 @@ public class CommandBuffer : IDisposable
             var entity = new Entity(-Math.Abs(Size - 1), World.Id);
             Register(entity, out _);
 
-            var command = new CreateCommand { Index = Size - 1, Types = types };
+            var command = new CreateCommand(Size - 1, types);
             Creates.Add(command);
 
             return entity;
