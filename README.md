@@ -58,6 +58,7 @@ public class Game
   * [More Features and Outlook](#more-features-and-outlook)
 - [Performance](#performance)
   * [Benchmark](#benchmark)
+- [Extensions](#extensions)
 - [Contributing](#contributing)
 
 # Quick start
@@ -210,6 +211,12 @@ The used structs are actually quite big, the smaller the components, the faster 
 |       EntityQuery | 1000000 |  2,462.296 us |   322.4767 us |  17.6760 us |         28,113 |         - |
 |       StructQuery | 1000000 |  1,514.479 us |   296.5311 us |  16.2539 us |         29,723 |         - |
 | StructEntityQuery | 1000000 |  1,483.142 us |   329.9446 us |  18.0854 us |         31,272 |         - |
+
+# Extensions
+
+Arch has some extensions that add more features and tools. Among them for example : 
+- 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
+- ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
 
 # Contributing
 
