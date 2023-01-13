@@ -107,14 +107,14 @@ public class QueryBenchmark
     public void StructQuery()
     {
         var vel = new VelocityUpdate();
-        _world.HPQuery<VelocityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
+        _world.InlineQuery<VelocityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
 
     [Benchmark]
     public void StructEntityQuery()
     {
         var vel = new VelocityEntityUpdate();
-        _world.HPEQuery<VelocityEntityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
+        _world.InlineEntityQuery<VelocityEntityUpdate, Transform, Velocity>(in _queryDescription, ref vel);
     }
 
     public struct VelocityUpdate : IForEach<Transform, Velocity>

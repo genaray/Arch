@@ -257,10 +257,10 @@ public partial class QueryTest
         }
 
         var entityCounter = new EntityCounter { Counter = 0 };
-        _world.HPEQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
+        _world.InlineEntityQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
 
         var rotCounter = new RotCounter { Counter = 0 };
-        _world.HPQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
+        _world.InlineQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
 
         That(entityCounter.Counter, Is.EqualTo(100));
         That(rotCounter.Counter, Is.EqualTo(100));
@@ -281,12 +281,12 @@ public partial class QueryTest
         }
 
         var entityCounter = new EntityCounter { Counter = 0 };
-        _world.HPEParallelQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
+        _world.InlineEntityQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
 
         True(true);
 
         var rotCounter = new RotCounter { Counter = 0 };
-        _world.HPParallelQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
+        _world.InlineQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
 
         True(true);
     }

@@ -151,12 +151,12 @@ public class MovementSystem : SystemBase<GameTime>
         // Iterates over all entities ( based on the passed QueryDescription ), accesses their Position and Velocity Components and updates them.
         // Highperformance and inlined calls for maximum effiency.
         var movementJob = new Move((float)time.ElapsedGameTime.TotalMilliseconds);
-        World.HPParallelQuery<Move, Position, Velocity>(in _entitiesToMove, ref movementJob);
+        World.InlineParallelQuery<Move, Position, Velocity>(in _entitiesToMove, ref movementJob);
 
         // Iterates over the same entities, accesses the same components. But executes the "Bounce" struct.
         // Checks whether the entity hit the viewport bounds and inverts its velocity to make it bounce.
         var bounceJob = new Bounce(_viewport);
-        World.HPParallelQuery<Bounce, Position, Velocity>(in _entitiesToMove, ref bounceJob);
+        World.InlineParallelQuery<Bounce, Position, Velocity>(in _entitiesToMove, ref bounceJob);
     }
 }
 

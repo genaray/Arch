@@ -699,11 +699,12 @@ public partial class World
 
     /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
+    ///     Inlines the call and is therefore faster than normal queries.
     /// </summary>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
         var t = new T();
 
@@ -723,12 +724,13 @@ public partial class World
 
     /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
+    ///     Inlines the call and is therefore faster than normal queries.
     /// </summary>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
+    public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query.GetChunkIterator())
@@ -772,7 +774,7 @@ public partial class World
             ForEach = forEntity
         };
 
-        ParallelChunkQuery(in queryDescription, foreachJob);
+        InlineParallelChunkQuery(in queryDescription, foreachJob);
     }
 
     /// <summary>
@@ -782,10 +784,10 @@ public partial class World
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    public void InlineParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
         var iForEachJob = new IForEachJob<T>();
-        ParallelChunkQuery(in queryDescription, iForEachJob);
+        InlineParallelChunkQuery(in queryDescription, iForEachJob);
     }
 
     /// <summary>
@@ -796,9 +798,9 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
+    public void InlineParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
     {
-        ParallelChunkQuery(in queryDescription, in iForEach);
+        InlineParallelChunkQuery(in queryDescription, in iForEach);
     }
 
     /// <summary>
@@ -809,7 +811,7 @@ public partial class World
     /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
     /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
+    public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
         // Job scheduler needs to be initialized.
         if (JobScheduler.JobScheduler.Instance is null)
