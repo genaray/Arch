@@ -12,6 +12,7 @@ namespace Arch.Core;
 ///     The <see cref="Entity"/> struct
 ///     represents a general-purpose object and can be assigned a set of components that act as data.
 /// </summary>
+[SkipLocalsInit]
 public readonly struct Entity : IEquatable<Entity>
 {
     /// <summary>
@@ -107,6 +108,7 @@ public readonly struct Entity : IEquatable<Entity>
 ///     The <see cref="Entity"/> struct
 ///     represents a general-purpose object and can be assigned a set of components that act as data.
 /// </summary>
+[SkipLocalsInit]
 public readonly struct Entity : IEquatable<Entity>
 {
 
@@ -209,6 +211,7 @@ public readonly struct Entity : IEquatable<Entity>
 ///     The <see cref="EntityInfo"/> struct
 ///     stores information about an <see cref="Entity"/> to quickly access its data and location.
 /// </summary>
+[SkipLocalsInit]
 internal record struct EntityInfo
 {
     /// <summary>
@@ -517,6 +520,24 @@ public partial class World
         QueryCache[queryDescription] = query;
 
         return query;
+    }
+
+    /// <summary>
+    ///     Counts all <see cref="Entity"/>'s that match a <see cref="QueryDescription"/> and returns the number.
+    /// </summary>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int CountEntities(in QueryDescription queryDescription)
+    {
+        var counter = 0;
+        var query = Query(in queryDescription);
+        foreach (ref var archetype in query.GetArchetypeIterator())
+        {
+            var entities = ( archetype.Size * archetype.EntitiesPerChunk ) - ( archetype.EntitiesPerChunk - archetype.GetChunk(archetype.Size-1).Size );
+            counter += entities;
+        }
+
+        return counter;
     }
 
     /// <summary>
@@ -1012,6 +1033,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity)
     {
@@ -1035,6 +1057,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(in Entity entity, IList<ComponentType> components)
     {
@@ -1065,6 +1088,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="cmp">The component instance.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in Entity entity, in T cmp)
     {
@@ -1089,6 +1113,7 @@ public partial class World
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in Entity entity)
     {
@@ -1113,6 +1138,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(in Entity entity, IList<ComponentType> types)
     {

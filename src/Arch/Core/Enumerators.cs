@@ -71,6 +71,7 @@ public ref struct Enumerator<T>
 ///     The <see cref="QueryArchetypeEnumerator"/> struct
 ///     represents an enumerator with which one can iterate over all <see cref="Archetype"/>'s that matches the given <see cref="Query"/>.
 /// </summary>
+[SkipLocalsInit]
 public ref struct QueryArchetypeEnumerator
 {
     private readonly Query _query;
@@ -97,6 +98,7 @@ public ref struct QueryArchetypeEnumerator
     ///     Moves to the next <see cref="Archetype"/>.
     /// </summary>
     /// <returns>True if theres a next <see cref="Archetype"/>, otherwhise false.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
@@ -118,6 +120,7 @@ public ref struct QueryArchetypeEnumerator
     /// <summary>
     ///     Resets this instance.
     /// </summary>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
@@ -129,6 +132,7 @@ public ref struct QueryArchetypeEnumerator
     /// </summary>
     public readonly ref Archetype Current
     {
+        [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _archetypes[_index];
     }
@@ -138,6 +142,7 @@ public ref struct QueryArchetypeEnumerator
 ///     The <see cref="QueryArchetypeIterator"/> struct
 ///     represents an iterator wich wraps the <see cref="QueryArchetypeEnumerator"/> for using it in foreach loops.
 /// </summary>
+[SkipLocalsInit]
 public readonly ref struct QueryArchetypeIterator
 {
     private readonly Query _query;
@@ -158,6 +163,7 @@ public readonly ref struct QueryArchetypeIterator
     ///     Creates a new instance of <see cref="QueryArchetypeEnumerator"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
     /// </summary>
     /// <returns>The new <see cref="QueryArchetypeEnumerator"/> instance.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryArchetypeEnumerator GetEnumerator()
     {
@@ -169,6 +175,7 @@ public readonly ref struct QueryArchetypeIterator
 ///     The <see cref="QueryChunkEnumerator"/> struct
 ///     represents an enumerator with which one can iterate over all non empty <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
 /// </summary>
+[SkipLocalsInit]
 public ref struct QueryChunkEnumerator
 {
     private QueryArchetypeEnumerator _archetypeEnumerator;
@@ -179,6 +186,7 @@ public ref struct QueryChunkEnumerator
     /// </summary>
     /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
     /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
     {
@@ -195,6 +203,7 @@ public ref struct QueryChunkEnumerator
     ///     Moves to the next <see cref="Chunk"/>.
     /// </summary>
     /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
@@ -220,6 +229,7 @@ public ref struct QueryChunkEnumerator
     /// <summary>
     ///     Resets this instance.
     /// </summary>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
@@ -238,6 +248,7 @@ public ref struct QueryChunkEnumerator
     /// </summary>
     public readonly ref Chunk Current
     {
+        [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _archetypeEnumerator.Current.GetChunk(_index);
     }
@@ -247,6 +258,7 @@ public ref struct QueryChunkEnumerator
 ///     The <see cref="QueryChunkIterator"/> struct
 ///     represents an iterator wich wraps the <see cref="QueryChunkEnumerator"/> for using it in foreach loops.
 /// </summary>
+[SkipLocalsInit]
 public readonly ref struct QueryChunkIterator
 {
     private readonly Query _query;
@@ -257,6 +269,7 @@ public readonly ref struct QueryChunkIterator
     /// </summary>
     /// <param name="query">The <see cref="Query"/> each <see cref="QueryChunkEnumerator"/> will use.</param>
     /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryChunkEnumerator"/> will use.</param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkIterator(Query query, Span<Archetype> archetypes)
     {
@@ -268,6 +281,7 @@ public readonly ref struct QueryChunkIterator
     ///     Creates a new instance of <see cref="QueryChunkEnumerator"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
     /// </summary>
     /// <returns>The new <see cref="QueryChunkEnumerator"/> instance.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkEnumerator GetEnumerator()
     {
@@ -283,6 +297,7 @@ public ref struct QueryEntityEnumerator
 {
     private QueryChunkEnumerator _chunkEnumerator;
     private int _index;
+    private Span<Entity> _entities;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryEntityEnumerator"/> struct.
@@ -318,7 +333,9 @@ public ref struct QueryEntityEnumerator
                 return false;
             }
 
-            _index = _chunkEnumerator.Current.Size - 1;
+            ref var chunk = ref _chunkEnumerator.Current;
+            _index = chunk.Size - 1;
+            _entities = chunk.Entities;
             return true;
         }
     }
@@ -339,7 +356,7 @@ public ref struct QueryEntityEnumerator
     public readonly ref Entity Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _chunkEnumerator.Current.Entities[_index];
+        get => ref _entities[_index];
     }
 }
 
@@ -382,7 +399,9 @@ public readonly ref struct QueryEntityIterator
 public ref struct QueryReferenceEnumerator<T>
 {
     private QueryChunkEnumerator _chunkEnumerator;
+
     private int _index;
+    private Span<T> _components;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryReferenceEnumerator{T}"/> struct.
@@ -405,10 +424,8 @@ public ref struct QueryReferenceEnumerator<T>
     {
         unchecked
         {
-            --_index;
-
             // We reached the end, next archetype
-            if (_index >= 0)
+            if (--_index >= 0)
             {
                 return true;
             }
@@ -418,7 +435,9 @@ public ref struct QueryReferenceEnumerator<T>
                 return false;
             }
 
-            _index = _chunkEnumerator.Current.Size - 1;
+            ref var current = ref _chunkEnumerator.Current;
+            _index = current.Size - 1;
+            _components = current.GetSpan<T>();
             return true;
         }
     }
@@ -439,7 +458,7 @@ public ref struct QueryReferenceEnumerator<T>
     public ref T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _chunkEnumerator.Current.Get<T>(_index);
+        get => ref _components[_index];
     }
 }
 
@@ -483,6 +502,9 @@ public ref struct QueryEntityReferenceEnumerator<T>
 {
     private QueryChunkEnumerator _chunkEnumerator;
     private int _index;
+    private Entity[] _entities;
+    private Span<T> _components;
+    private EntityReferences<T> _entityReferences;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryEntityReferenceEnumerator{T}"/> struct.
@@ -505,10 +527,8 @@ public ref struct QueryEntityReferenceEnumerator<T>
     {
         unchecked
         {
-            --_index;
-
             // We reached the end, next archetype
-            if (_index >= 0)
+            if (--_index >= 0)
             {
                 return true;
             }
@@ -518,7 +538,10 @@ public ref struct QueryEntityReferenceEnumerator<T>
                 return false;
             }
 
-            _index = _chunkEnumerator.Current.Size - 1;
+            ref var current = ref _chunkEnumerator.Current;
+            _index = current.Size - 1;
+            _entities = current.Entities;
+            _components = current.GetSpan<T>();
             return true;
         }
     }
@@ -538,12 +561,12 @@ public ref struct QueryEntityReferenceEnumerator<T>
     /// </summary>
     public EntityReferences<T> Current
     {
+        [UnscopedRef]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            ref var current = ref _chunkEnumerator.Current;
-            ref var entity = ref current.Entities[_index];
-            ref var component = ref current.Get<T>(_index);
+            ref readonly var entity = ref _entities[_index];
+            ref var component = ref _components[_index];
             return new EntityReferences<T>(in entity, ref component);
         }
     }

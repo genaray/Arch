@@ -28,7 +28,7 @@ public abstract class SystemBase<T>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="state"></param>
     public abstract void Update(in T state);
@@ -79,7 +79,7 @@ public class MovementSystem : SystemBase<GameTime>
 
         // TODO: Documentation.
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="vel"></param>
@@ -112,7 +112,7 @@ public class MovementSystem : SystemBase<GameTime>
 
         // TODO: Documentation.
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="pos"></param>
         /// <param name="vel"></param>
@@ -143,18 +143,18 @@ public class MovementSystem : SystemBase<GameTime>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="time"></param>
     public override void Update(in GameTime time)
     {
         // Iterates over all entities ( based on the passed QueryDescription ), accesses their Position and Velocity Components and updates them.
-        // Highperformance and inlined calls for maximum effiency. 
+        // Highperformance and inlined calls for maximum effiency.
         var movementJob = new Move((float)time.ElapsedGameTime.TotalMilliseconds);
         World.HPParallelQuery<Move, Position, Velocity>(in _entitiesToMove, ref movementJob);
 
-        // Iterates over the same entities, accesses the same components. But executes the "Bounce" struct. 
-        // Checks whether the entity hit the viewport bounds and inverts its velocity to make it bounce. 
+        // Iterates over the same entities, accesses the same components. But executes the "Bounce" struct.
+        // Checks whether the entity hit the viewport bounds and inverts its velocity to make it bounce.
         var bounceJob = new Bounce(_viewport);
         World.HPParallelQuery<Bounce, Position, Velocity>(in _entitiesToMove, ref bounceJob);
     }
@@ -181,18 +181,26 @@ public class ColorSystem : SystemBase<GameTime>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="time"></param>
     public override void Update(in GameTime time)
     {
         _gameTime = time;
+        foreach (ref var sprite in World.Query(_entitiesToChangeColor).GetIterator<Sprite>())
+        {
+            sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
+            sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
+            sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
+        }
+
+        /*
         World.Query(in _entitiesToChangeColor, (ref Sprite sprite) =>
         {
             sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-        });
+        });*/
     }
 }
 
@@ -221,7 +229,7 @@ public class DrawSystem : SystemBase<GameTime>
 
     // TODO: Documentation.
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="time"></param>
     public override void Update(in GameTime time)

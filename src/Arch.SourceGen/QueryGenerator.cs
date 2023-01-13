@@ -127,8 +127,8 @@ public class QueryGenerator : IIncrementalGenerator
 
                 public readonly partial struct Query
                 {
-                    {{new StringBuilder().AppendGetReferenceIterators(25)}}
-                    {{new StringBuilder().AppendGetEntityReferenceIterators(25)}}
+                    {{new StringBuilder().AppendQueryGetReferenceIterators(25)}}
+                    {{new StringBuilder().AppendQueryGetEntityReferenceIterators(25)}}
                 }
                 """
             );

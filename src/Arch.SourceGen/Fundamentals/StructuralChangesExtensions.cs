@@ -34,19 +34,20 @@ public static class StructuralChangesExtensions
 
         var template =
             $$"""
+            [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Add<{{generics}}>(in Entity entity, {{parameters}})
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
-            
+
                 // Create a stack array with all component we now search an archetype for.
                 Span<int> ids = stackalloc int[oldArchetype.Types.Length + {{amount + 1}}];
                 oldArchetype.Types.WriteComponentIds(ids);
                 {{setIds}}
-            
+
                 if (!TryGetArchetype(ids, out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
-            
+
                 Move(in entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
             }
@@ -85,20 +86,21 @@ public static class StructuralChangesExtensions
 
         var template =
             $$"""
+            [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Remove<{{generics}}>(in Entity entity)
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
-            
+
                 // Create a stack array with all component we now search an archetype for.
                 Span<int> ids = stackalloc int[oldArchetype.Types.Length];
                 oldArchetype.Types.WriteComponentIds(ids);
                 {{removes}}
                 ids = ids[..^{{amount + 1}}];
-            
+
                 if (!TryGetArchetype(ids, out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
-            
+
                 Move(in entity, oldArchetype, newArchetype, out _);
             }
             """;

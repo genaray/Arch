@@ -33,17 +33,8 @@ public static class StringBuilderExtensions
         return sb;
     }
 
-    public static StringBuilder GenericConstraints(this StringBuilder sb, int amount)
-    {
-        for (var localIndex = 0; localIndex <= amount; localIndex++)
-        {
-            sb.Append($"where T{localIndex} : struct ");
-        }
 
-        sb.Length--;
-
-        return sb;
-    }
+    // Queries, set, has & get
 
     public static StringBuilder GetGenericArrays(this StringBuilder sb, int amount)
     {
@@ -140,8 +131,6 @@ public static class StringBuilderExtensions
         return sb;
     }
 
-    // World-----------
-
     public static StringBuilder GetChunkArrays(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
@@ -150,6 +139,42 @@ public static class StringBuilderExtensions
         }
 
         sb.Length--;
+        return sb;
+    }
+
+
+    // Enumerator Extensions
+
+    public static StringBuilder SpanFields(this StringBuilder sb, int amount)
+    {
+        for (var localIndex = 0; localIndex <= amount; localIndex++)
+        {
+            sb.AppendLine($"Span<T{localIndex}> t{localIndex}Span;");
+        }
+
+        sb.Length--;
+        return sb;
+    }
+
+    public static StringBuilder AssignSpanFields(this StringBuilder sb, int amount)
+    {
+        for (var localIndex = 0; localIndex <= amount; localIndex++)
+        {
+            sb.AppendLine($"t{localIndex}Span = _chunkEnumerator.Current.GetSpan<T{localIndex}>();");
+        }
+
+        sb.Length--;
+        return sb;
+    }
+
+    public static StringBuilder InsertSpanRefs(this StringBuilder sb, int amount)
+    {
+        for (var localIndex = 0; localIndex <= amount; localIndex++)
+        {
+            sb.AppendLine($"ref t{localIndex}Span[_index],");
+        }
+
+        sb.Length -= 3;
         return sb;
     }
 }

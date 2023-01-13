@@ -79,8 +79,9 @@ public partial class WorldTest
     [Test]
     public void RecycleId()
     {
-        var localWorld = World.Create();
+        using var localWorld = World.Create();
 
+        // Destroy & create new entity to see if it was recycled
         var entity = localWorld.Create(_entityGroup);
         localWorld.Destroy(in entity);
         var recycledEntity = localWorld.Create(_entityGroup);
@@ -88,8 +89,6 @@ public partial class WorldTest
 
         That(recycledEntity.Id, Is.EqualTo(entity.Id));
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
-
-        World.Destroy(localWorld);
     }
 
     [Test]
@@ -145,24 +144,45 @@ public partial class WorldTest
     [Test]
     public void GetEntitesTest()
     {
-        var world = World.Create();
-
+        // Query
         var archTypes = new ComponentType[] { typeof(Transform) };
         var query = new QueryDescription { All = archTypes };
 
+        // World
+        using var world = World.Create();
         var entity = world.Create(archTypes);
 
+        // Get entities
         var entites = new List<Entity>();
         world.GetEntities(query, entites);
 
         That(entites.Count, Is.EqualTo(1));
 
+        // Destroy the one entity
         entites.Clear();
         world.Destroy(entity);
         world.GetEntities(query, entites);
 
         That(entites.Count, Is.EqualTo(0));
-        World.Destroy(world);
+    }
+
+    [Test]
+    public void CountEntitiesTest()
+    {
+        // Query
+        var archTypes = new ComponentType[] { typeof(Transform) };
+        var query = new QueryDescription { All = archTypes };
+
+        // World
+        using var world = World.Create();
+
+        for (int i = 0; i < 2222; i++)
+            world.Create(archTypes);
+
+        // count entities
+        var count = world.CountEntities(query);
+
+        That(count, Is.EqualTo(2222));
     }
 }
 
@@ -268,15 +288,5 @@ public partial class WorldTest
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
-    }
-}
-
-// Tests if operations during query performed sucessfull
-public partial class WorldTest
-{
-
-    [Test]
-    public void QueryAndCreate()
-    {
     }
 }

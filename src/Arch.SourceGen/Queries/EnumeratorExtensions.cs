@@ -13,12 +13,19 @@ public static class EnumeratorExtensions
     public static StringBuilder AppendReferenceEnumerator(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var spans = new StringBuilder().SpanFields(amount);
+        var assignSpans = new StringBuilder().AssignSpanFields(amount);
+        var insertParams = new StringBuilder().InsertSpanRefs(amount);
+
         var template = $$"""
+            [SkipLocalsInit]
             public ref struct QueryReferenceEnumerator<{{generics}}>
             {
                 private QueryChunkEnumerator _chunkEnumerator;
                 private int _index;
+                {{spans}}
 
+                [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public QueryReferenceEnumerator(Query query, Span<Archetype> archetypes)
                 {
@@ -26,15 +33,14 @@ public static class EnumeratorExtensions
                     _chunkEnumerator = new QueryChunkEnumerator(query, archetypes);
                 }
 
+                [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public bool MoveNext()
                 {
                     unchecked
                     {
-                        --_index;
-
                         // We reached the end, next archetype
-                        if (_index >= 0)
+                        if (--_index >= 0)
                         {
                             return true;
                         }
@@ -45,6 +51,7 @@ public static class EnumeratorExtensions
                         }
 
                         _index = _chunkEnumerator.Current.Size - 1;
+                        {{assignSpans}}
                         return true;
                     }
                 }
@@ -52,6 +59,7 @@ public static class EnumeratorExtensions
                 /// <summary>
                 ///     Resets this instance.
                 /// </summary>
+                [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public void Reset()
                 {
@@ -64,16 +72,19 @@ public static class EnumeratorExtensions
                 /// </summary>
                 public References<{{generics}}> Current
                 {
+                    [SkipLocalsInit]
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get => _chunkEnumerator.Current.Get<{{generics}}>(_index);
+                    get => new References<{{generics}}>({{insertParams}});
                 }
             }
 
+            [SkipLocalsInit]
             public readonly ref struct QueryReferenceIterator<{{generics}}>
             {
                 private readonly Query _query;
                 private readonly Span<Archetype> _archetypes;
 
+                [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public QueryReferenceIterator(Query query, Span<Archetype> archetypes)
                 {
@@ -81,6 +92,7 @@ public static class EnumeratorExtensions
                     _archetypes = archetypes;
                 }
 
+                [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public QueryReferenceEnumerator<{{generics}}> GetEnumerator()
                 {
@@ -103,11 +115,17 @@ public static class EnumeratorExtensions
     public static StringBuilder AppendEntityReferenceEnumerator(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var spans = new StringBuilder().SpanFields(amount);
+        var assignSpans = new StringBuilder().AssignSpanFields(amount);
+        var insertParams = new StringBuilder().InsertSpanRefs(amount);
+
         var template = $$"""
             public ref struct QueryEntityReferenceEnumerator<{{generics}}>
             {
                 private QueryChunkEnumerator _chunkEnumerator;
                 private int _index;
+                private Span<Entity> _entities;
+                {{spans}}
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public QueryEntityReferenceEnumerator(Query query, Span<Archetype> archetypes)
@@ -135,6 +153,8 @@ public static class EnumeratorExtensions
                         }
 
                         _index = _chunkEnumerator.Current.Size - 1;
+                        _entities = _chunkEnumerator.Current.Entities.AsSpan();
+                        {{assignSpans}}
                         return true;
                     }
                 }
@@ -155,7 +175,7 @@ public static class EnumeratorExtensions
                 public EntityReferences<{{generics}}> Current
                 {
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    get => _chunkEnumerator.Current.GetRow<{{generics}}>(_index);
+                    get => new EntityReferences<{{generics}}>(in _entities[_index], {{insertParams}});
                 }
             }
 
@@ -183,14 +203,14 @@ public static class EnumeratorExtensions
         return sb;
     }
 
-    public static StringBuilder AppendGetReferenceIterators(this StringBuilder sb, int amount)
+    public static StringBuilder AppendQueryGetReferenceIterators(this StringBuilder sb, int amount)
     {
         for (int index = 1; index < amount; index++)
-            sb.AppendGetReferenceIterator(index);
+            sb.AppendQueryGetReferenceIterator(index);
         return sb;
     }
 
-    public static StringBuilder AppendGetReferenceIterator(this StringBuilder sb, int amount)
+    public static StringBuilder AppendQueryGetReferenceIterator(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var template = $$"""
@@ -205,14 +225,14 @@ public static class EnumeratorExtensions
         return sb;
     }
 
-    public static StringBuilder AppendGetEntityReferenceIterators(this StringBuilder sb, int amount)
+    public static StringBuilder AppendQueryGetEntityReferenceIterators(this StringBuilder sb, int amount)
     {
         for (int index = 1; index < amount; index++)
-            sb.AppendGetEntityReferenceIterator(index);
+            sb.AppendQueryGetEntityReferenceIterator(index);
         return sb;
     }
 
-    public static StringBuilder AppendGetEntityReferenceIterator(this StringBuilder sb, int amount)
+    public static StringBuilder AppendQueryGetEntityReferenceIterator(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var template = $$"""

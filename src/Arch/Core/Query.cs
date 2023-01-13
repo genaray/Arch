@@ -8,6 +8,7 @@ namespace Arch.Core;
 ///     The <see cref="QueryDescription"/> struct
 ///     represents a description of the <see cref="Entity"/>'s or components we want to address by means of a query.
 /// </summary>
+[SkipLocalsInit]
 public partial struct QueryDescription : IEquatable<QueryDescription>
 {
 
@@ -43,6 +44,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref QueryDescription WithAll<T>()
     {
         All = Group<T>.Types;
@@ -55,6 +57,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref QueryDescription WithAny<T>()
     {
         Any = Group<T>.Types;
@@ -67,6 +70,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref QueryDescription WithNone<T>()
     {
         None = Group<T>.Types;
@@ -80,6 +84,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref QueryDescription WithExclusive<T>()
     {
         Exclusive = Group<T>.Types;
@@ -155,6 +160,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 ///     Represents a query which is created based on a <see cref="World"/> and a <see cref="QueryDescription"/>.
 ///     It provides some methods to iterate over all <see cref="Entity"/>'s that match the aspect of the <see cref="QueryDescription"/> that was used to create this instance.
 /// </summary>
+[SkipLocalsInit]
 public readonly partial struct Query : IEquatable<Query>
 {
     private readonly PooledList<Archetype> _archetypes;

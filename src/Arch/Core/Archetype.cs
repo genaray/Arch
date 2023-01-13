@@ -7,6 +7,7 @@ namespace Arch.Core;
 /// <summary>
 ///     The <see cref="Slot"/> struct references an <see cref="Entity"/> entry within an <see cref="Archetype"/> using a reference to its <see cref="Chunk"/> and its index.
 /// </summary>
+[SkipLocalsInit]
 internal record struct Slot
 {
     /// <summary>
@@ -76,12 +77,12 @@ public sealed partial class Archetype
     /// <summary>
     ///     The component types that the <see cref="Entity"/>'s stored here have.
     /// </summary>
-    public ComponentType[] Types { get; }
+    public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.
     /// </summary>
-    public BitSet BitSet { get; }
+    public BitSet BitSet { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The number of entities that are stored per <see cref="Chunk"/>.
@@ -104,7 +105,7 @@ public sealed partial class Archetype
     ///     How many <see cref="Chunk"/>' have been deposited within the <see cref="Chunks"/> array.
     ///     The total capacity.
     /// </summary>
-    public int Capacity { get; private set; }
+    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
 
     /// <summary>
     ///     The number of occupied/used <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
@@ -115,12 +116,12 @@ public sealed partial class Archetype
     ///     An array which stores the <see cref="Chunk"/>'s.
     ///     May contain null references since its being pooled, therefore use the <see cref="Size"/> and <see cref="Capacity"/> for acessing it.
     /// </summary>
-    public Chunk[] Chunks { get; private set; }
+    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
 
     /// <summary>
     ///     Points to the last <see cref="Chunk"/> that is not yet full.
     /// </summary>
-    private ref Chunk LastChunk { get => ref Chunks[Size - 1]; }
+    private ref Chunk LastChunk { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Chunks[Size - 1]; }
 
     /// <summary>
     ///     Adds an <see cref="Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.
@@ -226,6 +227,7 @@ public sealed partial class Archetype
         return ref chunk.Get<T>(in slot.Index);
     }
 
+    /// NOTE: Causes bounds check, any way to avoid that ?
     /// <summary>
     ///     Returns a reference to a given <see cref="Chunk"/> using its index.
     /// </summary>

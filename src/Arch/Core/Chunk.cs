@@ -180,44 +180,7 @@ public partial struct Chunk
     private int Index<T>()
     {
         var id = Component<T>.ComponentType.Id;
-        return ComponentIdToArrayIndex[id];
-    }
-
-    /// <summary>
-    ///     Returns the component array for a given component.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>The array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public T[] GetArray<T>()
-    {
-        var index = Index<T>();
-        return Unsafe.As<T[]>(Components[index]);
-    }
-
-    /// <summary>
-    ///     Returns the component array <see cref="Span{T}"/> for a given component.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>The array <see cref="Span{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public Span<T> GetSpan<T>()
-    {
-        return new Span<T>(GetArray<T>(), 0, Size);
-    }
-
-    /// <summary>
-    ///     Returns a reference to the first element of a component from its component array.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>A reference to the first element.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public ref T GetFirst<T>()
-    {
-        return ref GetSpan<T>()[0]; // Span, to avoid bound checking for the [] operation.
+        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
     }
 
     /// <summary>
@@ -227,7 +190,7 @@ public partial struct Chunk
     /// <returns>The array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public T[] GetArrayUnsafe<T>()
+    public T[] GetArray<T>()
     {
         var index = Index<T>();
         ref var array = ref Components.DangerousGetReferenceAt(index);
@@ -242,9 +205,9 @@ public partial struct Chunk
     /// <returns>The array <see cref="Span{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Span<T> GetSpanUnsafe<T>()
+    public Span<T> GetSpan<T>()
     {
-        return new Span<T>(GetArrayUnsafe<T>());
+        return new Span<T>(GetArray<T>());
     }
 
     /// <summary>
@@ -254,9 +217,9 @@ public partial struct Chunk
     /// <returns>A reference to the first element.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T GetFirstUnsafe<T>()
+    public ref T GetFirst<T>()
     {
-        return ref GetArrayUnsafe<T>().DangerousGetReference();
+        return ref GetArray<T>().DangerousGetReference();
     }
 }
 
@@ -278,7 +241,7 @@ public partial struct Chunk
             return false;
         }
 
-        return ComponentIdToArrayIndex[id] != -1;
+        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id) != -1;
     }
 
     /// <summary>
@@ -296,7 +259,7 @@ public partial struct Chunk
             return -1;
         }
 
-        return ComponentIdToArrayIndex[id];
+        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
     }
 
     /// <summary>
@@ -309,7 +272,7 @@ public partial struct Chunk
     public Array GetArray(Type type)
     {
         var index = Index(type);
-        return Components[index];
+        return Components.DangerousGetReferenceAt(index);
     }
 }
 

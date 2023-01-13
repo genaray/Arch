@@ -38,6 +38,7 @@ public static class ReferencesExtensions
 
         var template =
             $$"""
+            [SkipLocalsInit]
             public ref struct References<{{generics}}>
             {
 
@@ -47,6 +48,8 @@ public static class ReferencesExtensions
                 {{references}}
             #endif
 
+                [SkipLocalsInit]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public References({{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0
@@ -95,6 +98,7 @@ public static class ReferencesExtensions
 
         var template =
             $$"""
+            [SkipLocalsInit]
             public ref struct EntityReferences<{{generics}}>
             {
 
@@ -106,6 +110,8 @@ public static class ReferencesExtensions
                 {{references}}
             #endif
 
+                [SkipLocalsInit]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public EntityReferences(in Entity entity, {{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0

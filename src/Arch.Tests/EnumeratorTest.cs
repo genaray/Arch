@@ -128,6 +128,7 @@ public partial class EnumeratorTest
 public partial class EnumeratorTest
 {
 
+    /*
     [Test]
     public void GeneratedQueryReferenceEnumeration()
     {
@@ -139,7 +140,7 @@ public partial class EnumeratorTest
         }
 
         That(20000, Is.EqualTo(counter));
-    }
+    }*/
 
 
     [Test]

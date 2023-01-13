@@ -19,6 +19,7 @@ public static class QueryDescriptionExtensions
         var template =
             $$"""
             [UnscopedRef]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ref QueryDescription WithAll<{{generics}}>()
             {
                All = Group<{{generics}}>.Types;
@@ -47,6 +48,7 @@ public static class QueryDescriptionExtensions
         var template =
             $$"""
             [UnscopedRef]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ref QueryDescription WithAny<{{generics}}>()
             {
                Any = Group<{{generics}}>.Types;
@@ -75,6 +77,7 @@ public static class QueryDescriptionExtensions
         var template =
             $$"""
             [UnscopedRef]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ref QueryDescription WithNone<{{generics}}>()
             {
                None = Group<{{generics}}>.Types;
@@ -103,6 +106,7 @@ public static class QueryDescriptionExtensions
         var template =
             $$"""
             [UnscopedRef]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ref QueryDescription WithExclusive<{{generics}}>()
             {
                Exclusive = Group<{{generics}}>.Types;

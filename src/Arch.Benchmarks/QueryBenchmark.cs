@@ -84,6 +84,26 @@ public class QueryBenchmark
     }
 
     [Benchmark]
+    public void QueryIterator()
+    {
+        foreach (var refs in _world.Query(in _queryDescription).GetIterator<Transform, Velocity>())
+        {
+            refs.t0.X += refs.t1.X;
+            refs.t0.Y += refs.t1.Y;
+        }
+    }
+
+    [Benchmark]
+    public void EntityQueryIterator()
+    {
+        foreach (var refs in _world.Query(in _queryDescription).GetEntityIterator<Transform, Velocity>())
+        {
+            refs.t0.X += refs.t1.X;
+            refs.t0.Y += refs.t1.Y;
+        }
+    }
+
+    [Benchmark]
     public void StructQuery()
     {
         var vel = new VelocityUpdate();
