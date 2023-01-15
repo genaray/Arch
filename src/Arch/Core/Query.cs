@@ -243,36 +243,6 @@ public readonly partial struct Query : IEquatable<Query>
     }
 
     /// <summary>
-    ///     Returns an iterator to iterate over all <see cref="Entity"/>'s addressed by this <see cref="Query"/>.
-    /// </summary>
-    /// <returns>A new instance of the <see cref="QueryEntityIterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryEntityIterator GetEntityIterator()
-    {
-        return new QueryEntityIterator(this, _archetypes.Span);
-    }
-
-    /// <summary>
-    ///     Returns an iterator to iterate over all components addressed by this <see cref="Query"/>.
-    /// </summary>
-    /// <returns>A new instance of the <see cref="QueryReferenceIterator{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryReferenceIterator<T> GetIterator<T>()
-    {
-        return new QueryReferenceIterator<T>(this, _archetypes.Span);
-    }
-
-    /// <summary>
-    ///     Returns an iterator to iterate over all components addressed by this <see cref="Query"/>.
-    /// </summary>
-    /// <returns>A new instance of the <see cref="QueryEntityReferenceIterator{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryEntityReferenceIterator<T> GetEntityIterator<T>()
-    {
-        return new QueryEntityReferenceIterator<T>(this, _archetypes.Span);
-    }
-
-    /// <summary>
     ///     Checks this <see cref="Query"/> for equality with another.
     /// </summary>
     /// <param name="other">The other <see cref="Query"/>.</param>

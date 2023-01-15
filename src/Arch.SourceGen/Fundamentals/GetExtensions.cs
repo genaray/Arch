@@ -2,6 +2,152 @@ namespace Arch.SourceGen;
 
 public static class GetExtensions
 {
+
+    public static StringBuilder AppendChunkGetArrays(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+        {
+            sb.AppendChunkGetArray(index);
+        }
+
+        return sb;
+    }
+
+    public static StringBuilder AppendChunkGetArray(this StringBuilder sb, int amount)
+    {
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var outs = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            outs.Append($"out T{index}[] t{index}Array,");
+        }
+        outs.Length--;
+
+        var indexes = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            indexes.Append($"out var t{index}Index,");
+        }
+        indexes.Length--;
+
+        var assignComponents = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            assignComponents.AppendLine($"t{index}Array = Unsafe.As<T{index}[]>(Unsafe.Add(ref arrays, t{index}Index));");
+        }
+
+        var template =
+            $$"""
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Pure]
+            public void GetArray<{{generics}}>({{outs}})
+            {
+                Index<{{generics}}>({{indexes}});
+                ref var arrays = ref Components.DangerousGetReference();
+                {{assignComponents}}
+            }
+            """;
+
+        return sb.AppendLine(template);
+    }
+
+    public static StringBuilder AppendChunkGetSpans(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+        {
+            sb.AppendChunkGetSpan(index);
+        }
+
+        return sb;
+    }
+
+    public static StringBuilder AppendChunkGetSpan(this StringBuilder sb, int amount)
+    {
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+
+        var outs = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            outs.Append($"out Span<T{index}> t{index}Span,");
+        }
+        outs.Length--;
+
+        var arrays = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            arrays.Append($"out var t{index}Array,");
+        }
+        arrays.Length--;
+
+        var assignComponents = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            assignComponents.AppendLine($"t{index}Span = new Span<T{index}>(t{index}Array);");
+        }
+
+        var template =
+            $$"""
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Pure]
+            public void GetSpan<{{generics}}>({{outs}})
+            {
+                GetArray<{{generics}}>({{arrays}});
+                {{assignComponents}}
+            }
+            """;
+
+        return sb.AppendLine(template);
+    }
+
+    public static StringBuilder AppendChunkGetFirsts(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+        {
+            sb.AppendChunkGetFirst(index);
+        }
+
+        return sb;
+    }
+
+    public static StringBuilder AppendChunkGetFirst(this StringBuilder sb, int amount)
+    {
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+
+        var indexes = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            indexes.Append($"out var t{index}Index,");
+        }
+        indexes.Length--;
+
+        var arrays = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            arrays.Append($"out var t{index}Array,");
+        }
+        arrays.Length--;
+
+        var insertParams = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            insertParams.Append($"ref t{index}Array.DangerousGetReference(),");
+        }
+        insertParams.Length--;
+
+        var template =
+            $$"""
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Pure]
+            public References<{{generics}}> GetFirst<{{generics}}>()
+            {
+                GetArray<{{generics}}>({{arrays}});
+                return new References<{{generics}}>({{insertParams}});
+            }
+            """;
+
+        return sb.AppendLine(template);
+    }
+
     public static StringBuilder AppendChunkIndexGets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)

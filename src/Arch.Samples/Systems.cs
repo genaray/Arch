@@ -187,12 +187,13 @@ public class ColorSystem : SystemBase<GameTime>
     public override void Update(in GameTime time)
     {
         _gameTime = time;
-        foreach (ref var sprite in World.Query(_entitiesToChangeColor).GetIterator<Sprite>())
+
+        /*foreach (ref var sprite in World.Query(_entitiesToChangeColor).GetIterator<Sprite>())
         {
             sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-        }
+        }*/
 
         /*
         World.Query(in _entitiesToChangeColor, (ref Sprite sprite) =>

@@ -1,4 +1,5 @@
-﻿using ArchSourceGenerator;
+﻿using Arch.SourceGen.Fundamentals;
+using ArchSourceGenerator;
 
 namespace Arch.SourceGen;
 
@@ -9,7 +10,7 @@ public class QueryGenerator : IIncrementalGenerator
     {
         if (!Debugger.IsAttached)
         {
-            // Debugger.Launch();
+            //Debugger.Launch();
         }
 
         context.RegisterPostInitializationOutput(initializationContext =>
@@ -41,14 +42,6 @@ public class QueryGenerator : IIncrementalGenerator
             references.AppendReferences(25);
             references.AppendEntityReferences(25);
 
-            var enumerators = new StringBuilder();
-            enumerators.AppendLine("using System;");
-            enumerators.AppendLine("using System.Runtime.CompilerServices;");
-            enumerators.AppendLine("using CommunityToolkit.HighPerformance;");
-            enumerators.AppendLine("namespace Arch.Core;");
-            enumerators.AppendReferenceEnumerators(25);
-            enumerators.AppendEntityReferenceEnumerators(25);
-
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
             jobs.AppendLine("using System.Runtime.CompilerServices;");
@@ -67,16 +60,22 @@ public class QueryGenerator : IIncrementalGenerator
             accessors.AppendLine("using System.Diagnostics.Contracts;");
             accessors.AppendLine("using Arch.Core.Extensions;");
             accessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
+            accessors.AppendLine("using CommunityToolkit.HighPerformance;");
             accessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             accessors.AppendLine("namespace Arch.Core;");
             accessors.AppendLine(
                 $$"""
                 public partial struct Chunk
                 {
+                    {{new StringBuilder().AppendChunkIndexes(25)}}
                     {{new StringBuilder().AppendChunkHases(25)}}
                     {{new StringBuilder().AppendChunkIndexGets(25)}}
                     {{new StringBuilder().AppendChunkIndexGetRows(25)}}
                     {{new StringBuilder().AppendChunkIndexSets(25)}}
+
+                    {{new StringBuilder().AppendChunkGetArrays(25)}}
+                    {{new StringBuilder().AppendChunkGetSpans(25)}}
+                    {{new StringBuilder().AppendChunkGetFirsts(25)}}
                 }
 
                 public partial class Archetype
@@ -124,12 +123,6 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendQueryDescriptionWithNones(25)}}
                     {{new StringBuilder().AppendQueryDescriptionWithExclusives(25)}}
                 }
-
-                public readonly partial struct Query
-                {
-                    {{new StringBuilder().AppendQueryGetReferenceIterators(25)}}
-                    {{new StringBuilder().AppendQueryGetEntityReferenceIterators(25)}}
-                }
                 """
             );
 
@@ -144,9 +137,6 @@ public class QueryGenerator : IIncrementalGenerator
 
             initializationContext.AddSource("References.g.cs",
                 CSharpSyntaxTree.ParseText(references.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("Enumerators.g.cs",
-                CSharpSyntaxTree.ParseText(enumerators.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("Jobs.g.cs",
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

@@ -129,18 +129,31 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Returns a chunk row (entity and component) from an index within the <see cref="Chunk"/>.
+    ///     Returns a component at the index of the passed array.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <param name="first">The first element of the array.</param>
+    /// <param name="index">The index.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public ref T Get<T>(ref T first, in int index)
+    {
+        return ref Unsafe.Add(ref first, index);
+    }
+
+    /// <summary>
+    ///     Returns a component and <see cref="Entity"/> from an index within the <see cref="Chunk"/>.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index.</param>
-    /// <returns>A <see cref="EntityReferences{T0}"/> containing the <see cref="Entity"/> and its components at that index.</returns>
+    /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public EntityReferences<T> GetRow<T>(scoped in int index)
     {
-        ref var entity = ref Entities[index];
         var array = GetSpan<T>();
-        return new EntityReferences<T>(in entity, ref array[index]);
+        return new EntityReferences<T>(in Entities[index], ref array[index]);
     }
 
     /// <summary>
@@ -164,6 +177,15 @@ public partial struct Chunk
 
         // Update the mapping.
         Size--;
+    }
+
+    /// <summary>
+    ///     Creates and returns a new <see cref="EntityEnumerator"/> instance to iterate over all used rows representing <see cref="Entity"/>'s.
+    /// </summary>
+    /// <returns>A new <see cref="EntityEnumerator"/> instance.</returns>
+    public EntityEnumerator GetEnumerator()
+    {
+        return new EntityEnumerator(Size);
     }
 }
 

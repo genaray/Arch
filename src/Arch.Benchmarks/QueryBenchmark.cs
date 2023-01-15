@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Arch.Benchmarks;
 
@@ -12,7 +13,7 @@ public class QueryBenchmark
 
     private readonly JobScheduler.JobScheduler? _jobScheduler;
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
-    private QueryDescription _queryDescription = new() { All = _group };
+    private readonly QueryDescription _queryDescription = new() { All = _group };
 
     private static World? _world;
 
@@ -36,6 +37,7 @@ public class QueryBenchmark
     {
         //_jobScheduler.Dispose();
     }
+
 
     [Benchmark]
     public void WorldEntityQuery()
@@ -83,23 +85,21 @@ public class QueryBenchmark
         });
     }
 
-    [Benchmark]
-    public void QueryIterator()
-    {
-        foreach (var refs in _world.Query(in _queryDescription).GetIterator<Transform, Velocity>())
-        {
-            refs.t0.X += refs.t1.X;
-            refs.t0.Y += refs.t1.Y;
-        }
-    }
 
     [Benchmark]
-    public void EntityQueryIterator()
+    public void Iterator()
     {
-        foreach (var refs in _world.Query(in _queryDescription).GetEntityIterator<Transform, Velocity>())
+        foreach (var chunk in _world.Query(in _queryDescription).GetChunkIterator())
         {
-            refs.t0.X += refs.t1.X;
-            refs.t0.Y += refs.t1.Y;
+            var refs = chunk.GetFirst<Transform, Velocity>();
+            foreach (var entity in chunk)
+            {
+                ref var pos = ref Unsafe.Add(ref refs.t0, entity);
+                ref var vel = ref Unsafe.Add(ref refs.t1, entity);
+
+                pos.X += vel.X;
+                pos.Y += vel.Y;
+            }
         }
     }
 
