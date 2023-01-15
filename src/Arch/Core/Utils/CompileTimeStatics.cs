@@ -113,14 +113,13 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(Type type)
     {
-        Debug.Assert(type.IsValueType, $"Only value type components are useable, '{type.Name}' is not a primitive nor a struct.");
         if (TryGet(type, out var meta))
         {
             return meta;
         }
 
         // Register and assign component id
-        var size = Marshal.SizeOf(type);
+        var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
         meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
         _types.Add(type, meta);
 
