@@ -249,13 +249,25 @@ public partial struct Chunk
 {
 
     /// <summary>
+    ///     Sets or replaces a component for an index in the chunk.
+    /// </summary>
+    /// <param name="index">The index in the array.</param>
+    /// <param name="cmp">The component value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set(in int index, in object cmp)
+    {
+        var array = GetArray(cmp.GetType());
+        array.SetValue(cmp, index);
+    }
+
+    /// <summary>
     ///     Checks if a component is included in this <see cref="Chunk"/>.
     /// </summary>
     /// <param name="t">The type.</param>
     /// <returns>True if included, false otherwise.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public bool Has(Type t)
+    public bool Has(ComponentType t)
     {
         var id = Component.GetComponentType(t).Id;
         if (id >= ComponentIdToArrayIndex.Length)
@@ -267,15 +279,29 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Returns the component array index of a component by its type.
+    ///     Returns a component from an index within the <see cref="Chunk"/>.
     /// </summary>
     /// <param name="type">The type.</param>
+    /// <param name="index">The index.</param>
+    /// <returns>A component casted to an <see cref="object"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public object Get(scoped in int index, ComponentType type)
+    {
+        var array = GetArray(type);
+        return array.GetValue(index);
+    }
+
+    /// <summary>
+    ///     Returns the component array index of a component by its type.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/>.</param>
     /// <returns>The index in the <see cref="Components"/> array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    private int Index(Type type)
+    private int Index(ComponentType type)
     {
-        var id = Component.GetComponentType(type).Id;
+        var id = type.Id;
         if (id >= ComponentIdToArrayIndex.Length)
         {
             return -1;
@@ -291,7 +317,7 @@ public partial struct Chunk
     /// <returns>The <see cref="Array"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Array GetArray(Type type)
+    public Array GetArray(ComponentType type)
     {
         var index = Index(type);
         return Components.DangerousGetReferenceAt(index);

@@ -61,6 +61,34 @@ public partial class EntityTest
     }
 }
 
+// Non generics
+public partial class EntityTest
+{
+
+    [Test]
+    public void Has_NonGeneric()
+    {
+        True(_entity.Has(typeof(Transform)));
+    }
+
+    [Test]
+    public void HasNot_NonGeneric()
+    {
+        False(_entity.Has(typeof(int)));
+    }
+
+    [Test]
+    public void SetAndGet_NonGeneric()
+    {
+        var transform = (object)new Transform { X = 10, Y = 10 };
+        _entity.Set(transform);
+        var tramsformReference = (Transform)_entity.Get(typeof(Transform));
+
+        That(tramsformReference.X, Is.EqualTo(10));
+        That(tramsformReference.Y, Is.EqualTo(10));
+    }
+}
+
 public partial class EntityTest
 {
 

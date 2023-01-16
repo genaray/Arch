@@ -254,6 +254,47 @@ public sealed unsafe partial class Archetype
 {
 
     /// <summary>
+    ///     Sets or replaces the components of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Entity"/> is to be set or replaced.</param>
+    /// <param name="cmp">The component value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Set(ref Slot slot, in object cmp)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.Set(slot.Index, in cmp);
+    }
+
+    /// <summary>
+    ///      Checks if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with a specific component.
+    /// </summary>
+    /// <param name="type">The <see cref="Type"/>.</param>
+    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with such a component, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Has(ComponentType type)
+    {
+        var id = Component.GetComponentType(type).Id;
+        return BitSet.IsSet(id);
+    }
+
+    /// <summary>
+    ///     Returns a reference of the component of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="type">The component <see cref="Type"/>.</param>
+    /// <param name="slot">The <see cref="Slot"/>.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal object Get(scoped ref Slot slot, ComponentType type)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        return chunk.Get(in slot.Index, type);
+    }
+}
+
+public sealed unsafe partial class Archetype
+{
+
+    /// <summary>
     ///     Calculates how many <see cref="Chunk"/>'s are needed to fulfill the <see cref="MinimumAmountOfEntitiesPerChunk"/>.
     /// </summary>
     /// <param name="types">The component structure of the <see cref="Entity"/>'s.</param>

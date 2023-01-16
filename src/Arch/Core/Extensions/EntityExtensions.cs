@@ -180,3 +180,117 @@ public static partial class EntityExtensions
     }
 #endif
 }
+
+
+public static partial class EntityExtensions
+{
+
+#if !PURE_ECS
+
+    /// <summary>
+    ///     Sets or replaces a component for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Set(this in Entity entity, object cmp)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Set(in entity, cmp);
+    }
+
+    /// <summary>
+    ///     Sets or replaces a <see cref="IList{T}"/> of components for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">The components <see cref="IList{T}"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetRange(this in Entity entity, params object[] components)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.SetRange(in entity, components);
+    }
+
+    /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain component.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Has(this in Entity entity, ComponentType type)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Has(in entity, type);
+    }
+
+    /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain component.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasRange(this in Entity entity, params ComponentType[] types)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.HasRange(in entity, types);
+    }
+
+    /// <summary>
+    ///     Returns a reference to the component of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static object Get(this in Entity entity, ComponentType type)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Get(in entity, type);
+    }
+
+    /// <summary>
+    ///     Returns an array of components of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static object[] GetRange(this in Entity entity, params ComponentType[] types)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.GetRange(in entity, types);
+    }
+
+    /// <summary>
+    ///     Returns an array of components of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> where the components are put it.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void GetRange(this in Entity entity, ComponentType[] types, IList<object> components)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.GetRange(in entity, types, components);
+    }
+
+    /// <summary>
+    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Will copy the component if its a struct.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <param name="component">The found component.</param>
+    /// <returns>True if it exists, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGet(this in Entity entity, ComponentType type, out object component)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.TryGet(in entity, type, out component);
+    }
+
+#endif
+}

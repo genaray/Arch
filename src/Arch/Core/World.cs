@@ -940,6 +940,144 @@ public partial class World : IDisposable
 
 public partial class World
 {
+
+    /// <summary>
+    ///     Sets or replaces a component for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set(in Entity entity, object cmp)
+    {
+        var entityInfo = EntityInfo[entity.Id];
+        entityInfo.Archetype.Set(ref entityInfo.Slot, cmp);
+    }
+
+    /// <summary>
+    ///     Sets or replaces a <see cref="IList{T}"/> of components for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">The components <see cref="IList{T}"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetRange(in Entity entity, params object[] components)
+    {
+        var entityInfo = EntityInfo[entity.Id];
+        foreach (var cmp in components)
+        {
+            entityInfo.Archetype.Set(ref entityInfo.Slot, cmp);
+        }
+    }
+
+    /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain component.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Has(in Entity entity, ComponentType type)
+    {
+        var archetype = EntityInfo[entity.Id].Archetype;
+        return archetype.Has(type);
+    }
+
+    /// <summary>
+    ///     Checks if an <see cref="Entity"/> has a certain component.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasRange(in Entity entity, params ComponentType[] types)
+    {
+        var archetype = EntityInfo[entity.Id].Archetype;
+        foreach (var type in types)
+        {
+            if (!archetype.Has(type))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    ///     Returns a reference to the component of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public object Get(in Entity entity, ComponentType type)
+    {
+        var entityInfo = EntityInfo[entity.Id];
+        return entityInfo.Archetype.Get(ref entityInfo.Slot, type);
+    }
+
+    /// <summary>
+    ///     Returns an array of components of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public object[] GetRange(in Entity entity, params ComponentType[] types)
+    {
+        var entityInfo = EntityInfo[entity.Id];
+
+        var array = new object[types.Length];
+        for (var index = 0; index < types.Length; index++)
+        {
+            var type = types[index];
+            array[index] = entityInfo.Archetype.Get(ref entityInfo.Slot, type);
+        }
+
+        return array;
+    }
+
+    /// <summary>
+    ///     Returns an array of components of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">The component <see cref="ComponentType"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> where the components are put it.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetRange(in Entity entity, ComponentType[] types, IList<object> components)
+    {
+        var entityInfo = EntityInfo[entity.Id];
+        for (var index = 0; index < types.Length; index++)
+        {
+            var type = types[index];
+            components.Add(entityInfo.Archetype.Get(ref entityInfo.Slot, type));
+        }
+    }
+
+    /// <summary>
+    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Will copy the component if its a struct.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    /// <param name="component">The found component.</param>
+    /// <returns>True if it exists, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGet(in Entity entity, ComponentType type, out object component)
+    {
+        component = default;
+        if (!Has(in entity, type))
+        {
+            return false;
+        }
+
+        var entityInfo = EntityInfo[entity.Id];
+        component = entityInfo.Archetype.Get(ref entityInfo.Slot, type);
+        return true;
+    }
+}
+
+public partial class World
+{
     /// <summary>
     ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
     /// </summary>
@@ -1055,36 +1193,6 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
-    [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(in Entity entity, IList<ComponentType> components)
-    {
-        var oldArchetype = EntityInfo[entity.Id].Archetype;
-
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Count];
-        oldArchetype.Types.WriteComponentIds(ids);
-
-        // Add ids from array to all ids
-        for (var index = 0; index < components.Count; index++)
-        {
-            var type = components[index];
-            ids[oldArchetype.Types.Length + index] = type.Id;
-        }
-
-        if (!TryGetArchetype(ids, out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
-        }
-
-        Move(in entity, oldArchetype, newArchetype, out _);
-    }
-
-    /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
@@ -1108,6 +1216,93 @@ public partial class World
 
         Move(in entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
+    }
+
+
+    /// <summary>
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(in Entity entity, in object cmp)
+    {
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
+
+        // Create a stack array with all component we now search an archetype for.
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length + 1];
+        oldArchetype.Types.WriteComponentIds(ids);
+        ids[^1] = Component.GetComponentType(cmp.GetType()).Id;
+
+        if (!TryGetArchetype(ids, out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
+        }
+
+        Move(in entity, oldArchetype, newArchetype, out _);
+    }
+
+    /// <summary>
+    ///     Adds a <see cref="IList{T}"/> of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">The component <see cref="IList{T}"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddRange(in Entity entity, params object[] components)
+    {
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
+
+        // Create a stack array with all component we now search an archetype for.
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length + 1];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        // Add ids from array to all ids
+        var newComponents = new ComponentType[components.Length];
+        for (var index = 0; index < components.Length; index++)
+        {
+            var type = Component.GetComponentType(components[index].GetType());
+            newComponents[index] = type;
+            ids[oldArchetype.Types.Length + index] = type.Id;
+        }
+
+        if (!TryGetArchetype(ids, out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
+        }
+
+        Move(in entity, oldArchetype, newArchetype, out _);
+    }
+
+    /// <summary>
+    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddRange(in Entity entity, IList<ComponentType> components)
+    {
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
+
+        // Create a stack array with all component we now search an archetype for.
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Count];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        // Add ids from array to all ids
+        for (var index = 0; index < components.Count; index++)
+        {
+            var type = components[index];
+            ids[oldArchetype.Types.Length + index] = type.Id;
+        }
+
+        if (!TryGetArchetype(ids, out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
+        }
+
+        Move(in entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1142,7 +1337,37 @@ public partial class World
     /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove(in Entity entity, IList<ComponentType> types)
+    public void RemoveRange(in Entity entity, params ComponentType[] types)
+    {
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
+
+        // Create a stack array with all component we now search an archetype for.
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
+        oldArchetype.Types.WriteComponentIds(ids);
+
+        foreach (var type in types)
+        {
+            ids.Remove(type.Id);
+        }
+
+        ids = ids[..^types.Length];
+
+        if (!TryGetArchetype(ids, out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
+        }
+
+        Move(in entity, oldArchetype, newArchetype, out _);
+    }
+
+    /// <summary>
+    ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void RemoveRange(in Entity entity, IList<ComponentType> types)
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 

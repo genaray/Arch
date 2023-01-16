@@ -232,6 +232,51 @@ public partial class WorldTest
     }
 }
 
+
+// Get, Set, Has, Remove, Add non generic
+public partial class WorldTest
+{
+
+    [Test]
+    public void SetGetAndHas_NonGeneric()
+    {
+        var entity = _world.Create(_entityGroup);
+        True(_world.Has(in entity, typeof(Transform)));
+
+        _world.Set(entity, (object)new Transform { X = 10, Y = 10 });
+        var transform = (Transform)_world.Get(in entity, typeof(Transform));
+
+        That(transform.X, Is.EqualTo(10));
+        That(transform.Y, Is.EqualTo(10));
+    }
+
+    [Test]
+    public void Remove_NonGeneric()
+    {
+        var entity = _world.Create(_entityGroup);
+        var entity2 = _world.Create(_entityGroup);
+        _world.RemoveRange(in entity, typeof(Transform));
+        _world.RemoveRange(in entity2, typeof(Transform));
+
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void Add_NonGeneric()
+    {
+        var entity = _world.Create(_entityGroup);
+        var entity2 = _world.Create(_entityGroup);
+        _world.AddRange(in entity, new Ai());
+        _world.AddRange(in entity2, new Ai());
+
+        _world.TryGetArchetype(_entityAiGroup, out var arch);
+        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+    }
+}
+
 /// <summary>
 /// Testing generated methods
 /// </summary>

@@ -296,7 +296,7 @@ public class CommandBuffer : IDisposable
 
             var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
             var entity = Entities[entityIndex];
-            World.Add(in entity, (IList<ComponentType>)_addTypes);
+            World.AddRange(in entity, (IList<ComponentType>)_addTypes);
 
             _addTypes.Clear();
         }
@@ -324,7 +324,7 @@ public class CommandBuffer : IDisposable
 
             var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
             var entity = Entities[entityIndex];
-            World.Remove(in entity, _removeTypes);
+            World.RemoveRange(in entity, _removeTypes);
 
             _removeTypes.Clear();
         }
