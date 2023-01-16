@@ -1255,7 +1255,7 @@ public partial class World
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
         // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length + 1];
+        Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Length];
         oldArchetype.Types.WriteComponentIds(ids);
 
         // Add ids from array to all ids
