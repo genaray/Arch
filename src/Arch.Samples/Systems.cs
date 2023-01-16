@@ -188,20 +188,12 @@ public class ColorSystem : SystemBase<GameTime>
     {
         _gameTime = time;
 
-        /*foreach (ref var sprite in World.Query(_entitiesToChangeColor).GetIterator<Sprite>())
-        {
-            sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-            sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-            sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-        }*/
-
-        /*
         World.Query(in _entitiesToChangeColor, (ref Sprite sprite) =>
         {
             sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
-        });*/
+        });
     }
 }
 
@@ -242,11 +234,10 @@ public class DrawSystem : SystemBase<GameTime>
         foreach (ref var chunk in query.GetChunkIterator())   // Iterate over each chunk that has entities that fit the query.
         {
             // Receive raw arrays of positions and sprites from the chunk.
-            var positions = chunk.GetSpan<Position>();
-            var sprites = chunk.GetSpan<Sprite>();
+            chunk.GetSpan<Position, Sprite>(out var positions, out var sprites);
 
             // Loop over the chunk
-            for (var index = 0; index < chunk.Size; index++)
+            foreach(var index in chunk)
             {
                 // Get refs to position and sprite.
                 ref var position = ref positions[index];
