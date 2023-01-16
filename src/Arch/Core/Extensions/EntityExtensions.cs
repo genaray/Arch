@@ -292,5 +292,71 @@ public static partial class EntityExtensions
         return world.TryGet(in entity, type, out component);
     }
 
+    /// <summary>
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add(this in Entity entity, in object cmp)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Add(in entity, cmp);
+    }
+
+    /// <summary>
+    ///     Adds a <see cref="IList{T}"/> of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">The component <see cref="IList{T}"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AddRange(this in Entity entity, params object[] components)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.AddRange(in entity, components);
+    }
+
+    /// <summary>
+    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AddRange(this in Entity entity, IList<ComponentType> components)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.AddRange(in entity, components);
+    }
+
+
+    /// <summary>
+    ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void RemoveRange(this in Entity entity, params ComponentType[] types)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.RemoveRange(in entity, types);
+    }
+
+    /// <summary>
+    ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void RemoveRange(this in Entity entity, IList<ComponentType> types)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.RemoveRange(in entity, types);
+    }
+
 #endif
 }
