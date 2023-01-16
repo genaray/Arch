@@ -78,7 +78,7 @@ public static class StringBuilderHpParallelQueryExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void InlineEntityParallelQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{{generics}}>
+            public void InlineParallelEntityQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{{generics}}>
             {
                 var innerJob = new IForEachWithEntityJob<T,{{generics}}>();
                 innerJob.ForEach = iForEach;

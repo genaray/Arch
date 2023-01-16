@@ -199,7 +199,7 @@ public static class StringBuilderHpQueryExtensions
             var template =
                 $$"""
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void InlinEntityQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEachWithEntity<{{generics}}>
+                public void InlineEntityQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEachWithEntity<{{generics}}>
                 {
                     var t = new T();
 
