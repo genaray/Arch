@@ -150,10 +150,10 @@ public partial struct Chunk
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public EntityReferences<T> GetRow<T>(scoped in int index)
+    public EntityComponents<T> GetRow<T>(scoped in int index)
     {
         var array = GetSpan<T>();
-        return new EntityReferences<T>(in Entities[index], ref array[index]);
+        return new EntityComponents<T>(in Entities[index], ref array[index]);
     }
 
     /// <summary>
@@ -373,10 +373,10 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Transfers an <see cref="Entity"/> at the index of this chunk to another chunk.
+    ///     Transfers the last <see cref="Entity"/> of the referenced <see cref="Chunk"/> into this <see cref="Chunk"/> at the given index.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
-    /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
+    /// <param name="index">The index of the <see cref="Entity"/>.</param>
+    /// <param name="chunk">The <see cref="Chunk"/> we want transfer the last <see cref="Entity"/> from.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -395,7 +395,40 @@ public partial struct Chunk
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
 
-        chunk.Size--;
+        //chunk.Size--;
+        return lastEntity.Id;
+    }
+
+    /// <summary>
+    ///     Transfers an <see cref="Entity"/> at the index of this chunk to another chunk.
+    /// </summary>
+    /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
+    /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal int CoolerTransfer(int index, ref Chunk chunk)
+    {
+        var chunkSize = chunk.Size;
+        var chunkComponents = chunk.Components;
+        var chunkEntities = chunk.Entities;
+        var components = Components;
+        var entities = Entities;
+
+        // Get last entity
+        var lastIndex = chunkSize - 1;
+        var lastEntity = chunkEntities[lastIndex];
+
+        // Replace index entity with the last entity from the other chunk
+        entities[index] = lastEntity;
+        for (var i = 0; i < components.Length; i++)
+        {
+            var sourceArray = chunkComponents[i];
+            var desArray = components[i];
+            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
+        }
+
+        //chunk.Size = chunkSize - 1;
         return lastEntity.Id;
     }
 }

@@ -24,30 +24,30 @@ public static class CreateExtensions
             public Entity Create<{{generics}}>({{parameters}})
             {
                 var types = Group<{{generics}}>.Types;
-            
+
                 // Recycle id or increase
                 var recycle = RecycledIds.TryDequeue(out var recycledId);
-                var id = recycle ? recycledId : Size;
-            
+                var recycled = recycle ? recycledId : new RecycledEntity(Size,0);
+
                 // Create new entity and put it to the back of the array
-                var entity = new Entity(id, Id);
-            
+                var entity = new Entity(recycled.Id, Id);
+
                 // Add to archetype & mapping
                 var archetype = GetOrCreate(types);
                 var createdChunk = archetype.Add(in entity, out var slot);
-            
+
                 archetype.Set<{{generics}}>(ref slot, {{inParameters}});
-            
+
                 // Resize map & Array to fit all potential new entities
                 if (createdChunk)
                 {
                     Capacity += archetype.EntitiesPerChunk;
                     EntityInfo.EnsureCapacity(Capacity);
                 }
-            
+
                 // Map
-                EntityInfo[id] = new EntityInfo { Version = 0, Archetype = archetype, Slot = slot };
-            
+                EntityInfo[recycled.Id] = new EntityInfo { Version = recycled.Version, Archetype = archetype, Slot = slot };
+
                 Size++;
                 return entity;
             }
