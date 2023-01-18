@@ -138,10 +138,10 @@ public static class GetExtensions
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public References<{{generics}}> GetFirst<{{generics}}>()
+            public Components<{{generics}}> GetFirst<{{generics}}>()
             {
                 GetArray<{{generics}}>({{arrays}});
-                return new References<{{generics}}>({{insertParams}});
+                return new Components<{{generics}}>({{insertParams}});
             }
             """;
 
@@ -174,12 +174,12 @@ public static class GetExtensions
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public References<{{generics}}> Get<{{generics}}>(scoped in int index)
+            public Components<{{generics}}> Get<{{generics}}>(scoped in int index)
             {
                 {{getArrays}}
                 {{gets}}
 
-                return new References<{{generics}}>({{inParams}});
+                return new Components<{{generics}}>({{inParams}});
             }
             """;
 
@@ -212,14 +212,14 @@ public static class GetExtensions
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public EntityReferences<{{generics}}> GetRow<{{generics}}>(scoped in int index)
+            public EntityComponents<{{generics}}> GetRow<{{generics}}>(scoped in int index)
             {
                 {{getArrays}}
 
                 ref var entity = ref Entities[index];
                 {{gets}}
 
-                return new EntityReferences<{{generics}}>(in entity, {{inParams}});
+                return new EntityComponents<{{generics}}>(in entity, {{inParams}});
             }
             """;
 
@@ -243,7 +243,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal unsafe References<{{generics}}> Get<{{generics}}>(scoped ref Slot slot)
+            internal unsafe Components<{{generics}}> Get<{{generics}}>(scoped ref Slot slot)
             {
                 ref var chunk = ref GetChunk(slot.ChunkIndex);
                 return chunk.Get<{{generics}}>(slot.Index);
@@ -270,7 +270,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public References<{{generics}}> Get<{{generics}}>(in Entity entity)
+            public Components<{{generics}}> Get<{{generics}}>(in Entity entity)
             {
                 var entityInfo = EntityInfo[entity.Id];
                 var archetype = entityInfo.Archetype;
@@ -298,7 +298,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static References<{{generics}}> Get<{{generics}}>(this in Entity entity)
+            public static Components<{{generics}}> Get<{{generics}}>(this in Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];
                 return world.Get<{{generics}}>(entity);
