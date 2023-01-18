@@ -116,7 +116,7 @@ public class ArchetypeTest
         archetype.Remove(ref slot, out _);
 
         That(archetype.Size, Is.EqualTo(1));
-        That(archetype.Capacity, Is.EqualTo(1));
+        That(archetype.Capacity, Is.EqualTo(2));
         That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
         That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }

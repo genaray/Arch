@@ -77,7 +77,7 @@ public partial class WorldTest
     }
 
     [Test]
-    public void RecycleId()
+    public void Recycle()
     {
         using var localWorld = World.Create();
 
@@ -87,8 +87,36 @@ public partial class WorldTest
         var recycledEntity = localWorld.Create(_entityGroup);
         var newEntity = localWorld.Create(_entityGroup);
 
-        That(recycledEntity.Id, Is.EqualTo(entity.Id));
+        That(recycledEntity.Id, Is.EqualTo(entity.Id));           // Id was recycled
+        That(localWorld.Version(recycledEntity), Is.EqualTo(1));  // Version was increased
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
+    }
+
+    [Test]
+    public void Reference()
+    {
+        using var localWorld = World.Create();
+
+        // Destroy & create new entity to see if it was recycled
+        var entity = localWorld.Create(_entityGroup);
+        var reference = localWorld.Reference(entity);
+
+        var otherEntity = localWorld.Create(_entityGroup);
+        var otherReference = localWorld.Reference(otherEntity);
+
+        // Check if references point to same entity
+        That(reference == otherReference, Is.EqualTo(false));
+        That(reference != otherReference, Is.EqualTo(true));
+
+
+        // Destroy entity and create a new one which will have the same ID but different version
+        localWorld.Destroy(otherEntity);
+        var recycledEntity = localWorld.Create(_entityGroup);
+        var recycledReference = localWorld.Reference(recycledEntity);
+
+        // Check if reference takes care of wrong version
+        That(recycledReference != otherReference, Is.EqualTo(true));
+        That(otherReference.IsAlive, Is.EqualTo(false));
     }
 
     [Test]
@@ -301,11 +329,10 @@ public partial class WorldTest
 
         _world.Set(entity, new Transform { X = 20, Y = 20 }, new Rotation { X = 20, Y = 20 });
         var references = _world.Get<Transform, Rotation>(in entity);
-
-        AreEqual(20, references.t0.X);
-        AreEqual(20, references.t0.Y);
-        AreEqual(20, references.t1.X);
-        AreEqual(20, references.t1.Y);
+        That(references.t0.X, Is.EqualTo(20));
+        That(references.t0.Y, Is.EqualTo(20));
+        That(references.t1.X, Is.EqualTo(20));
+        That(references.t1.Y, Is.EqualTo(20));
     }
 
     [Test]

@@ -5,15 +5,15 @@ namespace ArchSourceGenerator;
 
 public static class ReferencesExtensions
 {
-    public static StringBuilder AppendReferences(this StringBuilder sb, int amount)
+    public static StringBuilder AppendComponents(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-            sb.AppendReference(index);
+            sb.AppendComponent(index);
 
         return sb;
     }
 
-    public static StringBuilder AppendReference(this StringBuilder sb, int amount)
+    public static StringBuilder AppendComponent(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
@@ -39,7 +39,7 @@ public static class ReferencesExtensions
         var template =
             $$"""
             [SkipLocalsInit]
-            public ref struct References<{{generics}}>
+            public ref struct Components<{{generics}}>
             {
 
             #if NETSTANDARD2_1 || NET6_0
@@ -50,7 +50,7 @@ public static class ReferencesExtensions
 
                 [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public References({{parameters}}){
+                public Components({{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0
                 {{assignRefStructs}}
@@ -65,15 +65,15 @@ public static class ReferencesExtensions
         return sb.AppendLine(template);
     }
 
-    public static StringBuilder AppendEntityReferences(this StringBuilder sb, int amount)
+    public static StringBuilder AppendEntityComponents(this StringBuilder sb, int amount)
     {
         for (var index = 0; index < amount; index++)
-            sb.AppendEntityReference(index);
+            sb.AppendEntityComponent(index);
 
         return sb;
     }
 
-    public static StringBuilder AppendEntityReference(this StringBuilder sb, int amount)
+    public static StringBuilder AppendEntityComponent(this StringBuilder sb, int amount)
     {
 
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
@@ -99,7 +99,7 @@ public static class ReferencesExtensions
         var template =
             $$"""
             [SkipLocalsInit]
-            public ref struct EntityReferences<{{generics}}>
+            public ref struct EntityComponents<{{generics}}>
             {
 
             #if NETSTANDARD2_1 || NET6_0
@@ -112,7 +112,7 @@ public static class ReferencesExtensions
 
                 [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public EntityReferences(in Entity entity, {{parameters}}){
+                public EntityComponents(in Entity entity, {{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0
                 Entity = new ReadOnlyRef<Entity>(in entity);

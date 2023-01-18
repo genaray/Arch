@@ -80,10 +80,22 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its version.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static short Version(this in Entity entity)
+    public static int Version(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
         return world.Version(in entity);
+    }
+
+    /// <summary>
+    ///     Returns a <see cref="EntityReference"/> to an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its <see cref="EntityReference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static EntityReference Reference(this in Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Reference(in entity);
     }
 
     /// <summary>

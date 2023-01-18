@@ -7,205 +7,33 @@ using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
 
-#if PURE_ECS
 /// <summary>
-///     The <see cref="Entity"/> struct
-///     represents a general-purpose object and can be assigned a set of components that act as data.
+///     The <see cref="RecycledEntity"/> struct
+///     stores information about an recycled <see cref="Entity"/>, its id and its version.
 /// </summary>
-[SkipLocalsInit]
-public readonly struct Entity : IEquatable<Entity>
+internal record struct RecycledEntity
 {
     /// <summary>
-    ///     Its Id, unique in its <see cref="World"/>.
+    ///     The recycled id.
     /// </summary>
-    public readonly int Id;
+    public int Id;
 
     /// <summary>
-    ///     A null entity, used for comparison.
+    ///     Its new version.
     /// </summary>
-    public static readonly Entity Null = new(-1, 0);
+    public int Version;
 
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Entity"/> struct.
+    ///     Initializes a new instance of the <see cref="RecycledEntity"/> struct.
     /// </summary>
-    /// <param name="id">Its unique id.</param>
-    /// <param name="worldId">Its world id, not used for this entity since its pure ecs.</param>
-    internal Entity(int id, int worldId)
+    /// <param name="id">Its id..</param>
+    /// <param name="version">Its version.</param>
+    public RecycledEntity(int id, int version)
     {
         Id = id;
-    }
-
-    /// <summary>
-    ///     Checks the <see cref="Entity"/> for equality with another one.
-    /// </summary>
-    /// <param name="other">The other <see cref="Entity"/>.</param>
-    /// <returns>True if equal, false if not.</returns>
-    public bool Equals(Entity other)
-    {
-        return Id == other.Id;
-    }
-
-    /// <summary>
-    ///     Checks the <see cref="Entity"/> for equality with another object..
-    /// </summary>
-    /// <param name="obj">The other <see cref="Entity"/> object.</param>
-    /// <returns>True if equal, false if not.</returns>
-    public override bool Equals(object obj)
-    {
-        return obj is Entity other && Equals(other);
-    }
-
-    /// <summary>
-    ///     Calculates the hash of this <see cref="Entity"/>.
-    /// </summary>
-    /// <returns>Its hash.</returns>
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            // Overflow is fine, just wrap
-            var hash = 17;
-            hash = hash * 23 + Id;
-            return hash;
-        }
-    }
-
-    /// <summary>
-    ///     Checks the left <see cref="Entity"/> for equality with the right one.
-    /// </summary>
-    /// <param name="left">The left <see cref="Entity"/>.</param>
-    /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are equal, otherwhise false.</returns>
-    public static bool operator ==(Entity left, Entity right)
-    {
-        return left.Equals(right);
-    }
-
-    /// <summary>
-    ///     Checks the left <see cref="Entity"/> for unequality with the right one.
-    /// </summary>
-    /// <param name="left">The left <see cref="Entity"/>.</param>
-    /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are unequal, otherwhise false.</returns>
-    public static bool operator !=(Entity left, Entity right)
-    {
-        return !left.Equals(right);
-    }
-
-    /// <summary>
-    ///     Converts this entity to a string.
-    /// </summary>
-    /// <returns>A string.</returns>
-    public override string ToString()
-    {
-        return $"{nameof(Id)}: {Id}";
+        Version = version;
     }
 }
-#else
-
-/// <summary>
-///     The <see cref="Entity"/> struct
-///     represents a general-purpose object and can be assigned a set of components that act as data.
-/// </summary>
-[SkipLocalsInit]
-public readonly struct Entity : IEquatable<Entity>
-{
-
-    /// <summary>
-    ///      Its Id, unique in its <see cref="World"/>.
-    /// </summary>
-    public readonly int Id;
-
-    /// <summary>
-    /// Its <see cref="World"/> id.
-    /// </summary>
-    public readonly int WorldId;
-
-    /// <summary>
-    ///     A null <see cref="Entity"/> used for comparison.
-    /// </summary>
-    public static Entity Null = new(-1, 0);
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="Entity"/> struct.
-    /// </summary>
-    /// <param name="id">Its unique id.</param>
-    /// <param name="worldId">Its <see cref="World"/> id.</param>
-    internal Entity(int id, int worldId)
-    {
-        Id = id;
-        WorldId = worldId;
-    }
-
-    /// <summary>
-    ///     Checks the <see cref="Entity"/> for equality with another one.
-    /// </summary>
-    /// <param name="other">The other <see cref="Entity"/>.</param>
-    /// <returns>True if equal, false if not.</returns>
-    public bool Equals(Entity other)
-    {
-        return Id == other.Id && WorldId == other.WorldId;
-    }
-
-    /// <summary>
-    ///     Checks the <see cref="Entity"/> for equality with another <see cref="object"/>.
-    /// </summary>
-    /// <param name="obj">The other <see cref="Entity"/> object.</param>
-    /// <returns>True if equal, false if not.</returns>
-    public override bool Equals(object obj)
-    {
-        return obj is Entity other && Equals(other);
-    }
-
-    /// <summary>
-    ///     Calculates the hash of this <see cref="Entity"/>.
-    /// </summary>
-    /// <returns>Its hash.</returns>
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            // Overflow is fine, just wrap
-            var hash = 17;
-            hash = (hash * 23) + Id;
-            hash = (hash * 23) + WorldId;
-            return hash;
-        }
-    }
-
-    /// <summary>
-    ///      Checks the <see cref="Entity"/> for equality with another one.
-    /// </summary>
-    /// <param name="left">The left <see cref="Entity"/>.</param>
-    /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if equal, otherwhise false.</returns>
-    public static bool operator ==(Entity left, Entity right)
-    {
-        return left.Equals(right);
-    }
-
-    /// <summary>
-    ///      Checks the <see cref="Entity"/> for unequality with another one.
-    /// </summary>
-    /// <param name="left">The left <see cref="Entity"/>.</param>
-    /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if unequal, otherwhise false.</returns>
-    public static bool operator !=(Entity left, Entity right)
-    {
-        return !left.Equals(right);
-    }
-
-    /// <summary>
-    ///     Converts this <see cref="Entity"/> to a string.
-    /// </summary>
-    /// <returns>Its string.</returns>
-    public override string ToString()
-    {
-        return $"{nameof(Id)}: {Id}, {nameof(WorldId)}: {WorldId}";
-    }
-}
-#endif
 
 /// <summary>
 ///     The <see cref="EntityInfo"/> struct
@@ -227,7 +55,7 @@ internal record struct EntityInfo
     /// <summary>
     /// Its version.
     /// </summary>
-    public short Version;
+    public int Version;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfo"/> struct.
@@ -235,7 +63,7 @@ internal record struct EntityInfo
     /// <param name="slot">Its <see cref="Slot"/>.</param>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="version">Its version.</param>
-    public EntityInfo(Slot slot, Archetype archetype, short version)
+    public EntityInfo(Slot slot, Archetype archetype, int version)
     {
         Slot = slot;
         Archetype = archetype;
@@ -286,7 +114,7 @@ public partial class World
         // Entity stuff.
         Archetypes = new PooledList<Archetype>(8);
         EntityInfo = new PooledDictionary<int, EntityInfo>(256);
-        RecycledIds = new PooledQueue<int>(256);
+        RecycledIds = new PooledQueue<RecycledEntity>(256);
 
         // Query.
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
@@ -329,9 +157,9 @@ public partial class World
     internal PooledDictionary<int, EntityInfo> EntityInfo { get; }
 
     /// <summary>
-    ///     Stores recycled <see cref="Entity"/> ids.
+    ///     Stores recycled <see cref="Entity"/> ids and their last version.
     /// </summary>
-    internal PooledQueue<int> RecycledIds { get; set; }
+    internal PooledQueue<RecycledEntity> RecycledIds { get; set; }
 
     /// <summary>
     ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Arch.Core.Query"/> to avoid allocs.
@@ -358,6 +186,7 @@ public partial class World
     public static void Destroy(World world)
     {
         Worlds.Remove(world);
+        world.TrimExcess();
         world.JobHandles.Dispose();
         world.GroupToArchetype.Dispose();
         world.Archetypes.Dispose();
@@ -393,10 +222,10 @@ public partial class World
     {
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var id = recycle ? recycledId : Size;
+        var recycled = recycle ? recycledId : new RecycledEntity(Size, 0);
 
         // Create new entity and put it to the back of the array
-        var entity = new Entity(id, Id);
+        var entity = new Entity(recycled.Id, Id);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(types);
@@ -410,7 +239,7 @@ public partial class World
         }
 
         // Map
-        EntityInfo.Add(id, new EntityInfo(slot, archetype, 0));
+        EntityInfo.Add(recycled.Id, new EntityInfo(slot, archetype, recycled.Version));
 
         Size++;
         return entity;
@@ -430,7 +259,7 @@ public partial class World
         var entityInfo = EntityInfo[entity.Id];
         var created = to.Add(in entity, out newSlot);
         from.CopyTo(to, ref entityInfo.Slot, ref newSlot);
-        var destroyed = from.Remove(ref entityInfo.Slot, out var movedEntity);
+        from.Remove(ref entityInfo.Slot, out var movedEntity);
 
         // Update moved entity from the remove
         var movedEntityInfo = EntityInfo[movedEntity];
@@ -447,22 +276,8 @@ public partial class World
         if (created)
         {
             difference += to.EntitiesPerChunk;
-        }
-
-        if (destroyed)
-        {
-            difference -= from.EntitiesPerChunk;
-        }
-
-        Capacity += difference;
-
-        if (difference >= 0)
-        {
+            Capacity += difference;
             EntityInfo.EnsureCapacity(Capacity);
-        }
-        else
-        {
-            EntityInfo.TrimExcess(Capacity);
         }
     }
 
@@ -480,7 +295,7 @@ public partial class World
         // Remove from archetype
         var entityInfo = EntityInfo[id];
         var archetype = entityInfo.Archetype;
-        var destroyedChunk = archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
+        archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
 
         // Update info of moved entity which replaced the removed entity.
         var movedEntityInfo = EntityInfo[movedEntityId];
@@ -488,17 +303,29 @@ public partial class World
         EntityInfo[movedEntityId] = movedEntityInfo;
 
         // Recycle id && Remove mapping
-        RecycledIds.Enqueue(id);
+        RecycledIds.Enqueue(new RecycledEntity(id, unchecked(entityInfo.Version+1)));
         EntityInfo.Remove(id);
 
-        // Resizing and releasing memory
-        if (destroyedChunk)
-        {
-            Capacity -= archetype.EntitiesPerChunk;
-            EntityInfo.TrimExcess(Capacity);
-        }
-
         Size--;
+    }
+
+    /// <summary>
+    ///     Trims this <see cref="World"/> instance and releases unused memory.
+    ///     Should not be called every single update or frame.
+    ///     One single <see cref="Chunk"/> from each <see cref="Archetype"/> is spared.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess()
+    {
+        Capacity = 0;
+
+        // Trim entity info and chunks
+        EntityInfo.TrimExcess();
+        foreach (ref var archetype in this)
+        {
+            archetype.TrimExcess();
+            Capacity += archetype.Size * archetype.EntitiesPerChunk; // Since always one chunk always exists.
+        }
     }
 
     /// <summary>
@@ -1096,9 +923,20 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its version.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public short Version(in Entity entity)
+    public int Version(in Entity entity)
     {
         return EntityInfo[entity.Id].Version;
+    }
+
+    /// <summary>
+    ///     Returns a <see cref="EntityReference"/> to an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its <see cref="EntityReference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public EntityReference Reference(in Entity entity)
+    {
+        return new EntityReference(in entity, EntityInfo[entity.Id].Version);
     }
 
     /// <summary>

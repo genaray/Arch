@@ -1,4 +1,5 @@
 using Arch.Core;
+using Arch.Core.Extensions;
 
 namespace Arch.Benchmarks;
 

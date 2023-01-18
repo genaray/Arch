@@ -39,8 +39,8 @@ public class QueryGenerator : IIncrementalGenerator
             references.AppendLine("using System.Runtime.CompilerServices;");
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("namespace Arch.Core;");
-            references.AppendReferences(25);
-            references.AppendEntityReferences(25);
+            references.AppendComponents(25);
+            references.AppendEntityComponents(25);
 
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
