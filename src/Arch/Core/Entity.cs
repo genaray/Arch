@@ -218,6 +218,7 @@ public readonly struct Entity : IEquatable<Entity>
 ///     The <see cref="EntityReference"/> struct
 ///     represents a reference to an <see cref="Entity"/> and its Version.
 /// </summary>
+[SkipLocalsInit]
 public readonly struct EntityReference
 {
 
@@ -266,18 +267,33 @@ public readonly struct EntityReference
     }
 #endif
 
+
+    /// <summary>
+    ///     Checks the <see cref="EntityReference"/> for equality with another one.
+    /// </summary>
+    /// <param name="other">The other <see cref="EntityReference"/>.</param>
+    /// <returns>True if equal, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Equals(EntityReference other)
     {
         return Entity.Equals(other.Entity) && Version == other.Version;
     }
 
+    /// <summary>
+    ///     Checks the <see cref="EntityReference"/> for equality with another <see cref="object"/>.
+    /// </summary>
+    /// <param name="obj">The other <see cref="EntityReference"/> object.</param>
+    /// <returns>True if equal, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Equals(object? obj)
     {
         return obj is EntityReference other && Equals(other);
     }
 
+    /// <summary>
+    ///     Calculates the hash of this <see cref="Entity"/>.
+    /// </summary>
+    /// <returns>Its hash.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode()
     {
@@ -287,12 +303,24 @@ public readonly struct EntityReference
         }
     }
 
+    /// <summary>
+    ///      Checks the <see cref="EntityReference"/> for equality with another one.
+    /// </summary>
+    /// <param name="left">The left <see cref="EntityReference"/>.</param>
+    /// <param name="right">The right <see cref="EntityReference"/>.</param>
+    /// <returns>True if equal, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator ==(EntityReference left, EntityReference right)
     {
         return left.Equals(right);
     }
 
+    /// <summary>
+    ///      Checks the <see cref="EntityReference"/> for inequality with another one.
+    /// </summary>
+    /// <param name="left">The left <see cref="EntityReference"/>.</param>
+    /// <param name="right">The right <see cref="EntityReference"/>.</param>
+    /// <returns>True if inequal, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool operator !=(EntityReference left, EntityReference right)
     {

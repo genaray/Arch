@@ -7,11 +7,27 @@ using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
 
+/// <summary>
+///     The <see cref="RecycledEntity"/> struct
+///     stores information about an recycled <see cref="Entity"/>, its id and its version.
+/// </summary>
 internal record struct RecycledEntity
 {
+    /// <summary>
+    ///     The recycled id.
+    /// </summary>
     public int Id;
+
+    /// <summary>
+    ///     Its new version.
+    /// </summary>
     public int Version;
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="RecycledEntity"/> struct.
+    /// </summary>
+    /// <param name="id">Its id..</param>
+    /// <param name="version">Its version.</param>
     public RecycledEntity(int id, int version)
     {
         Id = id;
