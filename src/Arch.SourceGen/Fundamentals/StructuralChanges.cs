@@ -27,10 +27,10 @@ public static class StructuralChangesExtensions
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            types.AppendLine($"typeof(T{index}),");
+            types.Append($"typeof(T{index}),");
         }
 
-        types.Length -= 3;
+        types.Length--;
 
         var template =
             $$"""
@@ -79,10 +79,10 @@ public static class StructuralChangesExtensions
         var types = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            types.AppendLine($"typeof(T{index}),");
+            types.Append($"typeof(T{index}),");
         }
 
-        types.Length -= 3;
+        types.Length--;
 
         var template =
             $$"""
