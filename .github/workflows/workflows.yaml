@@ -21,7 +21,7 @@ on:
       
 jobs:
   build:
-    name: (${{ matrix.os }}) Build Arch .NET/Core ${{ matrix.dotnet-version }}
+    name: Build Arch .NET/Core ${{ matrix.dotnet-version }}
     runs-on: ubuntu-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -36,8 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dotnet-version: [ '3.0', '3.1.x', '5.0.x', '6.0.x', '7.0.x' ]
-        os: [windows-latest, ubuntu-latest]
+        dotnet-version: [ '3.1.x', '6.0.x', '7.0.x' ]
 
     steps:
     - uses: actions/checkout@v3
