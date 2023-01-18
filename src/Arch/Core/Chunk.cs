@@ -395,10 +395,11 @@ public partial struct Chunk
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
 
-        //chunk.Size--;
+        chunk.Size--;
         return lastEntity.Id;
     }
 
+    /*
     /// <summary>
     ///     Transfers an <see cref="Entity"/> at the index of this chunk to another chunk.
     /// </summary>
@@ -430,5 +431,5 @@ public partial struct Chunk
 
         //chunk.Size = chunkSize - 1;
         return lastEntity.Id;
-    }
+    }*/
 }

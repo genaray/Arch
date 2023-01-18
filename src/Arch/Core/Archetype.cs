@@ -155,11 +155,10 @@ public sealed partial class Archetype
         slot.ChunkIndex = Size;
 
         // Resize chunks & map entity
-        EnsureOrTrimCapacity(Size + 1);
+        EnsureCapacity(Size + 1);
         Chunks[Size] = newChunk;
 
-        // Increase capacity
-        Capacity++;
+        // Increase size
         Size++;
         return true;
     }
@@ -183,8 +182,7 @@ public sealed partial class Archetype
             return false;
         }
 
-        EnsureOrTrimCapacity(Size - 1);
-        Capacity--;
+        // Only increase size, capacity stays since we do not trim automatically
         Size--;
         return true;
     }
@@ -316,32 +314,36 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
-    ///     Ensures or trims the capacity of the <see cref="Chunks"/> array.
+    ///     Ensures the capacity of the <see cref="Chunks"/> array.
+    ///     Increases the <see cref="Capacity"/>.
     /// </summary>
     /// <param name="newCapacity">The amount of <see cref="Chunk"/>'s required, in total.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureOrTrimCapacity(int newCapacity)
+    private void EnsureCapacity(int newCapacity)
     {
-        // More size needed
-        if (newCapacity > Capacity)
-        {
-            // Increase chunk array size
-            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-            Array.Copy(Chunks, newChunks, Size);
-            ArrayPool<Chunk>.Shared.Return(Chunks, true);
-            Chunks = newChunks;
-        }
-        else if (newCapacity < Capacity)
-        {
-            // Always keep capacity for atleast one chunk
-            newCapacity = newCapacity <= 0 ? 1 : newCapacity;
+        // Increase chunk array size
+        var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
+        Array.Copy(Chunks, newChunks, Size);
+        ArrayPool<Chunk>.Shared.Return(Chunks, true);
+        Chunks = newChunks;
+        Capacity = newCapacity;
+    }
 
-            // Decrease chunk size
-            var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-            Array.Copy(Chunks, newChunks, Size - 1);
-            ArrayPool<Chunk>.Shared.Return(Chunks, true);
-            Chunks = newChunks;
-        }
+    /// <summary>
+    ///     Trims the capacity of the <see cref="Chunks"/> array to its used minimum.
+    ///     Reduces the <see cref="Capacity"/>.
+    /// </summary>
+    internal void TrimExcess()
+    {
+        // This always spares one single chunk.
+        var minimalSize = Size > 0 ? Size : 1;
+
+        // Decrease chunk size
+        var newChunks = ArrayPool<Chunk>.Shared.Rent(minimalSize);
+        Array.Copy(Chunks, newChunks, minimalSize);
+        ArrayPool<Chunk>.Shared.Return(Chunks, true);
+        Chunks = newChunks;
+        Capacity = minimalSize;
     }
 
     /// <summary>
@@ -351,44 +353,25 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Reserve(in int amount)
     {
-        // Put into the last partial empty chunk.
-        if (Size > 0)
+        // Calculate amount of required chunks.
+        ref var lastChunk = ref LastChunk;
+        var freeSpots = lastChunk.Capacity - lastChunk.Size;
+        var neededSpots = amount - freeSpots;
+        var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
+
+        // Set capacity and insert new empty chunks.
+        var previousCapacity = Capacity;
+        EnsureCapacity(previousCapacity + neededChunks);
+        for (var index = 0; index < neededChunks; index++)
         {
-            // Calculate amount of required chunks.
-            ref var lastChunk = ref LastChunk;
-            var freeSpots = lastChunk.Capacity - lastChunk.Size;
-            var neededSpots = amount - freeSpots;
-            var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
-
-            // Set capacity and insert new empty chunks.
-            EnsureOrTrimCapacity(Capacity + neededChunks);
-            for (var index = 0; index < neededChunks; index++)
-            {
-                var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
-                Chunks[Capacity + index] = newChunk;
-            }
-
-            // If last chunk was full, add.
-            if (freeSpots == 0)
-            {
-                Size++;
-            }
-
-            Capacity += neededChunks;
+            var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
+            Chunks[previousCapacity + index] = newChunk;
         }
-        else
+
+        // If last chunk was full, add.
+        if (freeSpots == 0)
         {
-            // Allocate new chunks in one go.
-            var neededChunks = (int)Math.Ceiling((float)amount / EntitiesPerChunk);
-            EnsureOrTrimCapacity(Capacity + neededChunks);
-
-            for (var index = 0; index < neededChunks; index++)
-            {
-                var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
-                Chunks[Capacity + index] = newChunk;
-            }
-
-            Capacity += neededChunks; // So many chunks are allocated.
+            Size++;
         }
     }
 }

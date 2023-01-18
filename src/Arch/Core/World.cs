@@ -242,7 +242,7 @@ public partial class World
         var entityInfo = EntityInfo[entity.Id];
         var created = to.Add(in entity, out newSlot);
         from.CopyTo(to, ref entityInfo.Slot, ref newSlot);
-        var destroyed = from.Remove(ref entityInfo.Slot, out var movedEntity);
+        from.Remove(ref entityInfo.Slot, out var movedEntity);
 
         // Update moved entity from the remove
         var movedEntityInfo = EntityInfo[movedEntity];
@@ -259,22 +259,8 @@ public partial class World
         if (created)
         {
             difference += to.EntitiesPerChunk;
-        }
-
-        if (destroyed)
-        {
-            difference -= from.EntitiesPerChunk;
-        }
-
-        Capacity += difference;
-
-        if (difference >= 0)
-        {
+            Capacity += difference;
             EntityInfo.EnsureCapacity(Capacity);
-        }
-        else
-        {
-            EntityInfo.TrimExcess(Capacity);
         }
     }
 
@@ -292,7 +278,7 @@ public partial class World
         // Remove from archetype
         var entityInfo = EntityInfo[id];
         var archetype = entityInfo.Archetype;
-        var destroyedChunk = archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
+        archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
 
         // Update info of moved entity which replaced the removed entity.
         var movedEntityInfo = EntityInfo[movedEntityId];
@@ -303,14 +289,26 @@ public partial class World
         RecycledIds.Enqueue(new RecycledEntity(id, unchecked(entityInfo.Version+1)));
         EntityInfo.Remove(id);
 
-        // Resizing and releasing memory
-        if (destroyedChunk)
-        {
-            Capacity -= archetype.EntitiesPerChunk;
-            EntityInfo.TrimExcess(Capacity);
-        }
-
         Size--;
+    }
+
+    /// <summary>
+    ///     Trims this <see cref="World"/> instance and releases unused memory.
+    ///     Should not be called every single update or frame.
+    ///     One single <see cref="Chunk"/> from each <see cref="Archetype"/> is spared.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess()
+    {
+        Capacity = 0;
+
+        // Trim entity info and chunks
+        EntityInfo.TrimExcess();
+        foreach (ref var archetype in this)
+        {
+            archetype.TrimExcess();
+            Capacity += archetype.Size * archetype.EntitiesPerChunk; // Since always one chunk always exists.
+        }
     }
 
     /// <summary>
