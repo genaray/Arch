@@ -45,6 +45,7 @@ public class ChunkBenchmark
         //Console.WriteLine("TEST");
     }
 
+    /*
     [Benchmark]
     public void Transfer()
     {
@@ -63,5 +64,5 @@ public class ChunkBenchmark
         {
             _fourthChunk.CoolerTransfer(index, ref _thirdChunk);
         }
-    }
+    }*/
 }

@@ -170,6 +170,7 @@ public partial class World
     public static void Destroy(World world)
     {
         Worlds.Remove(world);
+        world.TrimExcess();
         world.JobHandles.Dispose();
         world.GroupToArchetype.Dispose();
         world.Archetypes.Dispose();
