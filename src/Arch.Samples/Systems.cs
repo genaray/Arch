@@ -231,7 +231,7 @@ public class DrawSystem : SystemBase<GameTime>
 
         // Get query for the description, targets all entities with "Positions" and "Sprite".
         var query = World.Query(in _entitiesToDraw);
-        foreach (ref var chunk in query.GetChunkIterator())   // Iterate over each chunk that has entities that fit the query.
+        foreach (ref var chunk in query)   // Iterate over each chunk that has entities that fit the query.
         {
             // Receive raw arrays of positions and sprites from the chunk.
             chunk.GetSpan<Position, Sprite>(out var positions, out var sprites);

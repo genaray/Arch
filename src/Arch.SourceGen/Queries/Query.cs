@@ -74,14 +74,14 @@ public static class StringBuilderQueryExtensions
             public void Query<{{generics}}>(in QueryDescription description, ForEach<{{generics}}> forEach)
             {
                 var query = Query(in description);
-                foreach (ref var chunk in query.GetChunkIterator())
+                foreach (ref var chunk in query)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     {{getFirstElement}}
-            
-                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+
+                    foreach(var entityIndex in chunk)
                     {
                         {{getComponents}}
                         forEach({{insertParams}});
@@ -118,15 +118,15 @@ public static class StringBuilderQueryExtensions
             public void Query<{{generics}}>(in QueryDescription description, ForEachWithEntity<{{generics}}> forEach)
             {
                 var query = Query(in description);
-                foreach (ref var chunk in query.GetChunkIterator())
+                foreach (ref var chunk in query)
                 {
                     var chunkSize = chunk.Size;
                     {{getArrays}}
-            
+
                     ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                     {{getFirstElement}}
-            
-                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+
+                    foreach(var entityIndex in chunk)
                     {
                         ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                         {{getComponents}}

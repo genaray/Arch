@@ -243,6 +243,15 @@ public readonly partial struct Query : IEquatable<Query>
     }
 
     /// <summary>
+    ///     Returns an enumerator to iterate over all <see cref="Chunk"/>'s containing <see cref="Entity"/>'s addressed by this <see cref="Query"/>.
+    /// </summary>
+    /// <returns>A new instance of the <see cref="QueryChunkIterator"/>.</returns>
+    public QueryChunkEnumerator GetEnumerator()
+    {
+        return new QueryChunkEnumerator(this, _archetypes.Span);
+    }
+
+    /// <summary>
     ///     Checks this <see cref="Query"/> for equality with another.
     /// </summary>
     /// <param name="other">The other <see cref="Query"/>.</param>

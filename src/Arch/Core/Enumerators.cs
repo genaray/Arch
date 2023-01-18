@@ -327,7 +327,7 @@ public ref struct EntityEnumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityEnumerator(int length)
     {
-        _length = length - 1;
+        _length = length;
         _index = _length;
     }
 

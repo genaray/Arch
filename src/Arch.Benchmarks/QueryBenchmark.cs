@@ -89,7 +89,7 @@ public class QueryBenchmark
     [Benchmark]
     public void Iterator()
     {
-        foreach (var chunk in _world.Query(in _queryDescription).GetChunkIterator())
+        foreach (var chunk in _world.Query(in _queryDescription))
         {
             var refs = chunk.GetFirst<Transform, Velocity>();
             foreach (var entity in chunk)

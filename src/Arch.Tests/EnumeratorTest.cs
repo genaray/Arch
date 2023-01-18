@@ -74,7 +74,7 @@ public partial class EnumeratorTest
     {
         var counter = 0;
         var query = _world.Query(in _description);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
             counter++;
         }

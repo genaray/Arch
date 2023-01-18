@@ -376,12 +376,10 @@ public partial class World
     public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
-            var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
-
-            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 list.Add(entity);
@@ -413,7 +411,7 @@ public partial class World
     public void GetChunks(in QueryDescription queryDescription, IList<Chunk> chunks)
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
             chunks.Add(chunk);
         }
@@ -511,14 +509,12 @@ public partial class World
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
-            var chunkSize = chunk.Size;
-            ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(chunk.Entities, chunkSize - 1);
-
-            for (var entityIndex = 0; entityIndex < chunkSize; ++entityIndex)
+            ref var entityLastElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            foreach(var entityIndex in chunk)
             {
-                ref readonly var entity = ref Unsafe.Subtract(ref entityLastElement, entityIndex);
+                ref readonly var entity = ref Unsafe.Add(ref entityLastElement, entityIndex);
                 forEntity(entity);
             }
         }
@@ -536,12 +532,10 @@ public partial class World
         var t = new T();
 
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
-            var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
-
-            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            foreach (var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 t.Update(in entity);
@@ -560,12 +554,10 @@ public partial class World
     public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query.GetChunkIterator())
+        foreach (ref var chunk in query)
         {
-            var chunkSize = chunk.Size;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
-
-            for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 iForEach.Update(in entity);

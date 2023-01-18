@@ -87,10 +87,8 @@ public struct ForEachJob : IChunkJob
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Execute(int index, ref Chunk chunk)
     {
-        var chunkSize = chunk.Size;
         ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
-
-        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+        foreach(var entityIndex in chunk)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             ForEach(in entity);
@@ -120,10 +118,8 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Execute(int index, ref Chunk chunk)
     {
-        var chunkSize = chunk.Size;
         ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
-
-        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+        foreach(var entityIndex in chunk)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
             ForEach.Update(in entity);

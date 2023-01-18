@@ -92,14 +92,14 @@ public static class StringBuilderHpQueryExtensions
                 public void InlineQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{{generics}}>
                 {
                     var query = Query(in description);
-                    foreach (ref var chunk in query.GetChunkIterator())
+                    foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
 
                         {{getFirstElement}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                        foreach(var entityIndex in chunk)
                         {
                             {{getComponents}}
                             iForEach.Update({{insertParams}});
@@ -128,14 +128,14 @@ public static class StringBuilderHpQueryExtensions
                     var t = new T();
 
                     var query = Query(in description);
-                    foreach (ref var chunk in query.GetChunkIterator())
+                    foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
 
                         {{getFirstElement}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                        foreach(var entityIndex in chunk)
                         {
                             {{getComponents}}
                             t.Update({{insertParams}});
@@ -166,7 +166,7 @@ public static class StringBuilderHpQueryExtensions
                 public void InlineEntityQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{{generics}}>
                 {
                     var query = Query(in description);
-                    foreach (ref var chunk in query.GetChunkIterator())
+                    foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
@@ -174,7 +174,7 @@ public static class StringBuilderHpQueryExtensions
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                        foreach(var entityIndex in chunk)
                         {
                             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                             {{getComponents}}
@@ -204,7 +204,7 @@ public static class StringBuilderHpQueryExtensions
                     var t = new T();
 
                     var query = Query(in description);
-                    foreach (ref var chunk in query.GetChunkIterator())
+                    foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
                         {{getArrays}}
@@ -212,7 +212,7 @@ public static class StringBuilderHpQueryExtensions
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
 
-                        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                        foreach (var entityIndex in chunk)
                         {
                             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                             {{getComponents}}
