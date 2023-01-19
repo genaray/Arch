@@ -1,3 +1,5 @@
+using CommunityToolkit.HighPerformance;
+
 namespace Arch.Core.Extensions;
 
 /// <summary>

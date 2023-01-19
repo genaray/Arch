@@ -117,6 +117,12 @@ public partial class WorldTest
         // Check if reference takes care of wrong version
         That(recycledReference != otherReference, Is.EqualTo(true));
         That(otherReference.IsAlive, Is.EqualTo(false));
+
+        // Entity reference null is NOT alive.
+        EntityReference cons = new EntityReference{};
+        EntityReference refs = EntityReference.Null;
+        That(refs.IsAlive, Is.EqualTo(false));
+        That(cons.IsAlive, Is.EqualTo(false));
     }
 
     [Test]

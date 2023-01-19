@@ -233,14 +233,28 @@ public readonly struct EntityReference
     public readonly int Version;
 
     /// <summary>
+    ///     A null reference.
+    /// </summary>
+    public static readonly EntityReference Null = new(Entity.Null, -1);
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="EntityReference"/> struct.
     /// </summary>
     /// <param name="entity">The referenced <see cref="Entity"/>.</param>
     /// <param name="version">Its version.</param>
-    public EntityReference(in Entity entity, in int version)
+    internal EntityReference(in Entity entity, in int version)
     {
         Entity = entity;
         Version = version;
+    }
+
+    /// <summary>
+    ///     Initializes a new null instance of the <see cref="EntityReference"/> struct.
+    /// </summary>
+    public EntityReference()
+    {
+        Entity = Entity.Null;
+        Version = -1;
     }
 
 #if PURE_ECS

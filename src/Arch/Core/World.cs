@@ -928,7 +928,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityReference Reference(in Entity entity)
     {
-        return new EntityReference(in entity, EntityInfo[entity.Id].Version);
+        var entityInfo = EntityInfo.TryGetValue(entity.Id, out var info);
+        return new EntityReference(in entity, entityInfo ? info.Version : 0);
     }
 
     /// <summary>
