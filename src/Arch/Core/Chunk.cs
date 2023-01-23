@@ -67,7 +67,7 @@ public partial struct Chunk
     /// <summary>
     ///     The number of occupied <see cref="Entity"/> slots in this <see cref="Chunk"/>.
     /// </summary>
-    public int Size { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Size { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
 
     /// <summary>
     ///     The number of possible <see cref="Entity"/>'s in this <see cref="Chunk"/>.

@@ -1151,7 +1151,6 @@ public partial class World
         Span<int> ids = stackalloc int[oldArchetype.Types.Length];
         oldArchetype.Types.WriteComponentIds(ids);
         ids.Remove(Component<T>.ComponentType.Id);
-        ids = ids[..^1];
 
         if (!TryGetArchetype(ids, out var newArchetype))
         {
@@ -1180,8 +1179,6 @@ public partial class World
         {
             ids.Remove(type.Id);
         }
-
-        ids = ids[..^types.Length];
 
         if (!TryGetArchetype(ids, out var newArchetype))
         {

@@ -1,4 +1,5 @@
 using Arch.Core;
+using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -194,6 +195,9 @@ public class ColorSystem : SystemBase<GameTime>
             sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
         });
+
+        //World.Query(in _entitiesToChangeColor, (in Entity entity) => entity.Add<int>());
+        //World.Query(in _entitiesToChangeColor, (in Entity entity) => entity.Remove<int>());
     }
 }
 

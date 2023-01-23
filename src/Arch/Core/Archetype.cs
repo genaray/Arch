@@ -54,7 +54,7 @@ public sealed partial class Archetype
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
     /// <param name="types">The component structure of the <see cref="Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
-    internal Archetype(params ComponentType[] types)
+    internal Archetype(ComponentType[] types)
     {
         Types = types;
 
@@ -105,18 +105,18 @@ public sealed partial class Archetype
     ///     How many <see cref="Chunk"/>' have been deposited within the <see cref="Chunks"/> array.
     ///     The total capacity.
     /// </summary>
-    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
 
     /// <summary>
     ///     The number of occupied/used <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
     /// </summary>
-    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
 
     /// <summary>
     ///     An array which stores the <see cref="Chunk"/>'s.
     ///     May contain null references since its being pooled, therefore use the <see cref="Size"/> and <see cref="Capacity"/> for acessing it.
     /// </summary>
-    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
 
     /// <summary>
     ///     Points to the last <see cref="Chunk"/> that is not yet full.
@@ -133,18 +133,16 @@ public sealed partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool Add(in Entity entity, out Slot slot)
     {
-        // Fill existing chunk
+        // Increase size by one if the current chunk is full and theres capcity to prevent new chunk allocation.
         ref var lastChunk = ref LastChunk;
+        Size = lastChunk.Size == lastChunk.Capacity && Size < Capacity ? Size + 1 : Size;
+
+        // Fill chunk
+        lastChunk = ref LastChunk;
         if (lastChunk.Size != lastChunk.Capacity)
         {
             slot.Index = lastChunk.Add(in entity);
             slot.ChunkIndex = Size - 1;
-
-            // Chunk full, use existing capacity
-            if (lastChunk.Size == lastChunk.Capacity && Size < Capacity)
-            {
-                Size++;
-            }
 
             return false;
         }
@@ -170,21 +168,19 @@ public sealed partial class Archetype
     /// <param name="movedEntityId">The id of the <see cref="Entity"/> that was moved to the position of the deleted <see cref="Entity"/>.</param>
     /// <returns>True if a <see cref="Chunk"/> was deleted, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool Remove(ref Slot slot, out int movedEntityId)
+    internal void Remove(ref Slot slot, out int movedEntityId)
     {
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         ref var chunk = ref Chunks[slot.ChunkIndex];
         movedEntityId = chunk.Transfer(slot.Index, ref LastChunk);
 
-        // Trim when last chunk is now empty and we havent reached the last chunk yet
+        // Return to prevent that Size decreases when chunk IS not Empty and to prevent Size becoming 0 or -1.
         if (LastChunk.Size != 0 || Size <= 1)
         {
-            return false;
+            return;
         }
 
-        // Only increase size, capacity stays since we do not trim automatically
         Size--;
-        return true;
     }
 
     /// <summary>

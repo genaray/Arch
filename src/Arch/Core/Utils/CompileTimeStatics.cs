@@ -228,7 +228,7 @@ public static class Component
     /// <param name="obj">The <see cref="ComponentType"/> array.</param>
     /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetHashCode(params ComponentType[] obj)
+    public static int GetHashCode(Span<ComponentType> obj)
     {
         // From https://stackoverflow.com/a/52172541.
         unchecked

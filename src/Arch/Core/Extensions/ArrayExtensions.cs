@@ -50,82 +50,108 @@ public static class ArrayExtensions
         return result;
     }
 
+
+    /// <summary>
+    ///     Removes a item from the <see cref="Span{T}"/> and returns a slice without the removed item.
+    /// </summary>
+    /// <param name="target">The target <see cref="Span{T}"/>.</param>
+    /// <param name="item">The item to remove.</param>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>A <see cref="Span{T}"/> without the removed item.</returns>
+    public static void Remove<T>(this ref Span<T> target, T item) where T : IEquatable<T>?
+    {
+        var index = target.IndexOf(item);
+        if (index == -1)
+        {
+            return;
+        }
+
+        target[index] = target[^1];
+        target = target[..index];
+    }
+
+
     /// <summary>
     ///     Removes a list of items from an array by value equality.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
-    /// <param name="target">The target array.</param>
-    /// <param name="items">The <see cref="IList"/> of items which will be removed.</param>
+    /// <param name="array">The target array.</param>
+    /// <param name="toRemove">The <see cref="IList"/> of items which will be removed.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Remove<T>(this T[] target, params T[] items)
+    public static T[] Remove<T>(this T[] array, params T[] toRemove)
     {
-        // NOTE: Why the `ToArray` call? Is `target` not already an array?
-        var result = new List<T>(target.ToArray());
-        var targetSpan = target.AsSpan();
-
-        for (var index = 0; index < targetSpan.Length; index++)
+        // Count how many items exist in target array to remove
+        var count = 0;
+        var arraySpan = array.AsSpan();
+        for (var index = 0; index < arraySpan.Length; index++)
         {
-            ref var currentItem = ref targetSpan[index];
-            if (items.Contains(currentItem))
+            ref var item = ref arraySpan[index];
+            var itemIndex = Array.IndexOf<T>(toRemove, item);
+            if (itemIndex > -1)
             {
-                result.Remove(currentItem);
+                count++;
             }
         }
 
-        return result.ToArray();
-    }
-
-    /// <summary>
-    ///     Removes a list of items from an array by value equality.
-    /// </summary>
-    /// <typeparam name="T">The generic type.</typeparam>
-    /// <param name="target">The target array.</param>
-    /// <param name="items">The <see cref="IList"/> of items which will be removed.</param>
-    /// <returns>The new array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Remove<T>(this T[] target, IList<T> items)
-    {
-        var result = new T[target.Length - items.Count];
-        var targetSpan = target.AsSpan();
-        var resultSpan = result.AsSpan();
-
-        var offset = 0;
-        for (var index = 0; index < targetSpan.Length; index++)
+        // Walk over the array again and just copy items into result array which are NOT in the passed items array.
+        var result = new T[arraySpan.Length - count];
+        count = 0;
+        for (var index = 0; index < arraySpan.Length; index++)
         {
-            ref var currentItem = ref targetSpan[index];
-            if (items.Contains(currentItem))
+            ref var item = ref arraySpan[index];
+            var itemIndex = Array.IndexOf<T>(toRemove, item);
+            if (itemIndex > -1)
             {
-                offset++;
                 continue;
             }
 
-            resultSpan[index - offset] = currentItem;
+            result[count] = item;
+            count++;
         }
 
         return result;
     }
 
     /// <summary>
-    ///     Removes an item from an <see cref="Span"/> by value equality.
+    ///     Removes a list of items from an array by value equality.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
-    /// <param name="target">The target <see cref="Span"/>.</param>
-    /// <param name="item">The item.</param>
+    /// <param name="target">The target array.</param>
+    /// <param name="items">The <see cref="IList"/> of items which will be removed.</param>
+    /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Remove<T>(this ref Span<T> target, T item)
+    public static T[] Remove<T>(this T[] array, IList<T> toRemove)
     {
-        var offset = 0;
-        for (var index = 0; index < target.Length; index++)
+        // Count how many items exist in target array to remove
+        var count = 0;
+        var arraySpan = array.AsSpan();
+        for (var index = 0; index < arraySpan.Length; index++)
         {
-            ref var currentItem = ref target[index];
-            if (currentItem.Equals(item))
+            ref var item = ref arraySpan[index];
+            var itemIndex = toRemove.IndexOf(item);
+            if (itemIndex > -1)
             {
-                offset++;
+                count++;
+            }
+        }
+
+        // Walk over the array again and just copy items into result array which are NOT in the passed items array.
+        var result = new T[arraySpan.Length - count];
+        count = 0;
+        for (var index = 0; index < arraySpan.Length; index++)
+        {
+            ref var item = ref arraySpan[index];
+            var itemIndex = toRemove.IndexOf(item);
+            if (itemIndex > -1)
+            {
                 continue;
             }
 
-            target[index - offset] = currentItem;
+            result[count] = item;
+            count++;
         }
+
+        return result;
     }
 }
