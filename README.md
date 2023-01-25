@@ -185,14 +185,16 @@ Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among
 
 ## Benchmark
 The current Benchmark tested a bunch of different iterations and access techniques. However, the most interesting one is the `QueryBenchmark`. 
-It tests various query variants in a common movement calculation scenario. 
+In the benchmark, a set of entities was iterated over using the framework to access their transform and velocity and calculate a new position each iteration.
+
+Their components looked like this:
 
 ```CSHARP
 public struct Transform{ float x; float y; float z; }
 public struct Velocity { float x; float y; float z; }
 ```
 
-The components above are used in the scenario to calculate a new position for simulating movement.
+The following performance was achieved with Arch for the scenario under heavy load and different amount of entities. 
 
 |            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
