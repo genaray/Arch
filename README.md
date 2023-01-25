@@ -185,14 +185,14 @@ Based on https://github.com/Doraku/Ecs.CSharp.Benchmark - Benchmark, it is among
 
 ## Benchmark
 The current Benchmark tested a bunch of different iterations and access techniques. However, the most interesting one is the `QueryBenchmark`. 
-It tests `world.Query` against `world.HPQuery` and a `world.Query(in desc, (in Entity) => { entity.Get<T>... }` variant. 
+It tests various query variants in a common movement calculation scenario. 
 
 ```CSHARP
 public struct Transform{ float x; float y; float z; }
-public struct Velocity { float x; float y; }
+public struct Velocity { float x; float y; float z; }
 ```
 
-The used structs are actually quite big, the smaller the components, the faster the query. However, I wanted to create a realistic approach and therefore used a combination of Transform and Velocity. 
+The components above are used in the scenario to calculate a new position for simulating movement.
 
 |            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
