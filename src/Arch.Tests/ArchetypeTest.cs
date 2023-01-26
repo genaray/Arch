@@ -9,7 +9,7 @@ namespace Arch.Tests;
 /// </summary>
 internal unsafe struct HeavyComponent
 {
-    private fixed double _items[9];
+    private fixed double _items[18];
 }
 
 [TestFixture]
