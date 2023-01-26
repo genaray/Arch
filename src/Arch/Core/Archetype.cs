@@ -5,37 +5,78 @@ using Arch.Core.Utils;
 namespace Arch.Core;
 
 /// <summary>
-///     The <see cref="Slot"/> struct references an <see cref="Entity"/> entry within an <see cref="Archetype"/> using a reference to its <see cref="Chunk"/> and its index.
+///     The <see cref="Slot"/> struct references an <see cref="Arch.Core.Entity"/> entry within an <see cref="Archetype"/> using a reference to its <see cref="Chunk"/> and its index.
 /// </summary>
 [SkipLocalsInit]
 internal record struct Slot
 {
     /// <summary>
-    ///     The index of the <see cref="Entity"/> in the <see cref="Chunk"/>.
+    ///     The index of the <see cref="Arch.Core.Entity"/> in the <see cref="Chunk"/>.
     /// </summary>
     public int Index;
 
     /// <summary>
-    ///     The index of the <see cref="Chunk"/> in which the <see cref="Entity"/> is located.
+    ///     The index of the <see cref="Chunk"/> in which the <see cref="Arch.Core.Entity"/> is located.
     /// </summary>
     public int ChunkIndex;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Slot"/> struct.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/> in the <see cref="Chunk"/>.</param>
-    /// <param name="chunkIndex">The index of the <see cref="Chunk"/> in which the <see cref="Entity"/> is located.</param>
+    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> in the <see cref="Chunk"/>.</param>
+    /// <param name="chunkIndex">The index of the <see cref="Chunk"/> in which the <see cref="Arch.Core.Entity"/> is located.</param>
     public Slot(int index, int chunkIndex)
     {
         Index = index;
         ChunkIndex = chunkIndex;
     }
+
+    /// <summary>
+    ///     Adds a plus operator for easy calculation of new <see cref="Slot"/>. Adds the positions of both <see cref="Slot"/>s.
+    /// </summary>
+    /// <param name="first">The first <see cref="Slot"/>.</param>
+    /// <param name="second">The second <see cref="Slot"/>.</param>
+    /// <returns>The result <see cref="Slot"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Slot operator +(Slot first, Slot second)
+    {
+        return new Slot(first.Index + second.Index, first.ChunkIndex + second.ChunkIndex);
+    }
+
+    /// <summary>
+    ///     Adds a plus plus operator for easy calculation of new <see cref="Slot"/>. Increases the index by one.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/>.</param>
+    /// <returns>The <see cref="Slot"/> with index increased by one..</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Slot operator ++(Slot slot)
+    {
+        slot.Index++;
+        return slot;
+    }
+
+    /// <summary>
+    ///     Validates the <see cref="Slot"/>, moves the <see cref="Slot"/> if it is outside a <see cref="Chunk.Capacity"/> to match it.
+    /// </summary>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Wrap(int capacity)
+    {
+        // Result outside valid chunk, wrap into next one
+        if (Index <= capacity)
+        {
+            return;
+        }
+
+        Index -= capacity;
+        ChunkIndex++;
+    }
 }
 
 /// <summary>
-///     The <see cref="Archetype"/> class contains all <see cref="Entity"/>'s of a unique combination of component types.
+///     The <see cref="Archetype"/> class contains all <see cref="Arch.Core.Entity"/>'s of a unique combination of component types.
 ///     These are stored in multiple <see cref="Chunk"/>'s located within the <see cref="Chunks"/>-Array.
-///     The <see cref="Archetype"/> class provides several methods to manage its stored <see cref="Entity"/>'s and their <see cref="Chunk"/>'s.
+///     The <see cref="Archetype"/> class provides several methods to manage its stored <see cref="Arch.Core.Entity"/>'s and their <see cref="Chunk"/>'s.
 /// </summary>
 public sealed partial class Archetype
 {
@@ -53,7 +94,7 @@ public sealed partial class Archetype
     /// <summary>
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
-    /// <param name="types">The component structure of the <see cref="Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
+    /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
     internal Archetype(ComponentType[] types)
     {
         Types = types;
@@ -75,7 +116,7 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     The component types that the <see cref="Entity"/>'s stored here have.
+    ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     /// </summary>
     public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
@@ -96,7 +137,7 @@ public sealed partial class Archetype
     public int ChunkSize { get; } = BaseSize;
 
     /// <summary>
-    ///     The minimum number of <see cref="Entity"/>'s that should fit into a <see cref="Chunk"/> within this <see cref="Archetype"/>.
+    ///     The minimum number of <see cref="Arch.Core.Entity"/>'s that should fit into a <see cref="Chunk"/> within this <see cref="Archetype"/>.
     ///     On the basis of this, the <see cref="ChunkSize"/> is increased.
     /// </summary>
     public int MinimumAmountOfEntitiesPerChunk { get; } = 100;
@@ -124,10 +165,32 @@ public sealed partial class Archetype
     private ref Chunk LastChunk { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref Chunks[Size - 1]; }
 
     /// <summary>
-    ///     Adds an <see cref="Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.
+    ///     Points to the last <see cref="Slot"/>.
+    /// </summary>
+    internal Slot LastSlot
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get
+        {
+            var lastRow = LastChunk.Size - 1;
+            lastRow = lastRow > 0 ? lastRow : 0; // Make sure no negative slot is returned when chunk is empty.
+            return new(lastRow, Size - 1);
+        }
+    }
+
+    /// <summary>
+    ///     The number of <see cref="Arch.Core.Entity"/>s in this <see cref="Archetype"/>.
+    /// </summary>
+    public int Entities
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => (Size * EntitiesPerChunk) - (EntitiesPerChunk - GetChunk(Size - 1).Size);
+    }
+
+    /// <summary>
+    ///     Adds an <see cref="Arch.Core.Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.
     ///     Uses the last <see cref="Chunk"/> that is not full, once it is full and the capacity is exhausted, a new <see cref="Chunk"/> is allocated.
     /// </summary>
-    /// <param name="entity">The <see cref="Entity"/> that is added.</param>
+    /// <param name="entity">The <see cref="Arch.Core.Entity"/> that is added.</param>
     /// <param name="slot">The <see cref="Slot"/> in which it was deposited.</param>
     /// <returns>True if a new <see cref="Chunk"/> was allocated, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -162,10 +225,10 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     Removes an <see cref="Entity"/> from a <see cref="Slot"/> and moves the last <see cref="Entity"/> of the <see cref="Archetype"/> to its position.
+    ///     Removes an <see cref="Arch.Core.Entity"/> from a <see cref="Slot"/> and moves the last <see cref="Arch.Core.Entity"/> of the <see cref="Archetype"/> to its position.
     /// </summary>
-    /// <param name="slot">The slot of the <see cref="Entity"/> to be removed.</param>
-    /// <param name="movedEntityId">The id of the <see cref="Entity"/> that was moved to the position of the deleted <see cref="Entity"/>.</param>
+    /// <param name="slot">The slot of the <see cref="Arch.Core.Entity"/> to be removed.</param>
+    /// <param name="movedEntityId">The id of the <see cref="Arch.Core.Entity"/> that was moved to the position of the deleted <see cref="Arch.Core.Entity"/>.</param>
     /// <returns>True if a <see cref="Chunk"/> was deleted, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Remove(ref Slot slot, out int movedEntityId)
@@ -184,10 +247,10 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     Sets or replaces the components of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    ///     Sets or replaces the components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
-    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Entity"/> is to be set or replaced.</param>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be set or replaced.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Set<T>(ref Slot slot, in T cmp)
@@ -197,10 +260,10 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///      Checks if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with a specific component.
+    ///      Checks if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with a specific component.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with such a component, otherwhise false.</returns>
+    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has<T>()
     {
@@ -209,7 +272,7 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     Returns a reference of the component of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    ///     Returns a reference of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="slot">The <see cref="Slot"/>.</param>
@@ -219,6 +282,18 @@ public sealed partial class Archetype
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         return ref chunk.Get<T>(in slot.Index);
+    }
+
+    /// <summary>
+    ///     Returns a reference of the <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/>.</param>
+    /// <returns>A reference to the <see cref="Arch.Core.Entity"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ref Entity Entity(scoped ref Slot slot)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        return ref chunk.Entity(in slot.Index);
     }
 
     /// NOTE: Causes bounds check, any way to avoid that ?
@@ -242,15 +317,29 @@ public sealed partial class Archetype
     {
         return new Enumerator<Chunk>(Chunks.AsSpan(), Size);
     }
+
+    /// <summary>
+    ///     Cleares this <see cref="Archetype"/>, an efficient method to delete all <see cref="Arch.Core.Entity"/>s.
+    ///     Does not dispose any resources nor modifies its <see cref="Capacity"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        Size = 1;
+        foreach (ref var chunk in this)
+        {
+            chunk.Clear();
+        }
+    }
 }
 
 public sealed unsafe partial class Archetype
 {
 
     /// <summary>
-    ///     Sets or replaces the components of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    ///     Sets or replaces the components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
-    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Entity"/> is to be set or replaced.</param>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be set or replaced.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Set(ref Slot slot, in object cmp)
@@ -260,10 +349,10 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
-    ///      Checks if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with a specific component.
+    ///      Checks if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with a specific component.
     /// </summary>
     /// <param name="type">The <see cref="Type"/>.</param>
-    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Entity"/>'s with such a component, otherwhise false.</returns>
+    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(ComponentType type)
     {
@@ -272,7 +361,7 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
-    ///     Returns a reference of the component of an <see cref="Entity"/> at a given <see cref="Slot"/>.
+    ///     Returns a reference of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <param name="type">The component <see cref="Type"/>.</param>
     /// <param name="slot">The <see cref="Slot"/>.</param>
@@ -285,13 +374,15 @@ public sealed unsafe partial class Archetype
     }
 }
 
+// Capacity related methods
+
 public sealed unsafe partial class Archetype
 {
 
     /// <summary>
     ///     Calculates how many <see cref="Chunk"/>'s are needed to fulfill the <see cref="MinimumAmountOfEntitiesPerChunk"/>.
     /// </summary>
-    /// <param name="types">The component structure of the <see cref="Entity"/>'s.</param>
+    /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
     /// <returns>The amount of <see cref="Chunk"/>'s required.</returns>
     public int MinimumRequiredChunkSize(ComponentType[] types)
     {
@@ -300,10 +391,10 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
-    ///     Calculates how many <see cref="Entity"/>'s fit into one <see cref="Chunk"/>.
+    ///     Calculates how many <see cref="Arch.Core.Entity"/>'s fit into one <see cref="Chunk"/>.
     /// </summary>
-    /// <param name="types">The component structure of the <see cref="Entity"/>'s.</param>
-    /// <returns>The amount of <see cref="Entity"/>'s.</returns>
+    /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
+    /// <returns>The amount of <see cref="Arch.Core.Entity"/>'s.</returns>
     public int CalculateEntitiesPerChunk(ComponentType[] types)
     {
         return ChunkSize / (sizeof(Entity) + types.ToByteSize());
@@ -343,9 +434,9 @@ public sealed unsafe partial class Archetype
     }
 
     /// <summary>
-    ///     Reserves space for a certain number of <see cref="Entity"/>'s in addition to the already existing amount.
+    ///     Reserves space for a certain number of <see cref="Arch.Core.Entity"/>'s in addition to the already existing amount.
     /// </summary>
-    /// <param name="amount">The amount of new <see cref="Entity"/>'s.</param>
+    /// <param name="amount">The amount of new <see cref="Arch.Core.Entity"/>'s.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Reserve(in int amount)
     {
@@ -376,17 +467,62 @@ public sealed partial class Archetype
 {
 
     /// <summary>
-    ///     Copies an <see cref="Entity"/> from a <see cref="Slot"/> within this <see cref="Archetype"/> to a <see cref="Slot"/> within another <see cref="Archetype"/> .
+    ///     Copies all <see cref="Chunks"/> from one <see cref="Archetype"/> to another.
+    ///     Deterministic, the content of the first <see cref="Archetype"/> will be copied to the other <see cref="Archetype"/>, attached to its last partial <see cref="Chunk"/>.
     /// </summary>
-    /// <param name="to">The <see cref="Archetype"/> into which the <see cref="Entity"/> should move.</param>
-    /// <param name="fromSlot">The <see cref="Slot"/> that targets the <see cref="Entity"/> that should move.</param>
-    /// <param name="toSlot">The <see cref="Slot"/> to which the <see cref="Entity"/> should move.</param>
+    /// <param name="source">The source <see cref="Archetype"/>.</param>
+    /// <param name="destination">The destination <see cref="Archetype"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void CopyTo(Archetype to, ref Slot fromSlot, ref Slot toSlot)
+    internal static void CopyTo(Archetype source, Archetype destination)
+    {
+        // Make sure other archetype can fit additional entities from this archetype.
+        destination.Reserve(source.Entities);
+
+        // Copy chunks into destination chunks
+        var sourceChunkIndex = 0;
+        var destinationChunkIndex = destination.Size;
+        while (sourceChunkIndex < source.Size)
+        {
+            ref var sourceChunk = ref source.Chunks[sourceChunkIndex];
+            var index = 0;
+            while (sourceChunk.Size > 0 && destinationChunkIndex <= destination.Capacity)  // Making sure that we dont go out of bounds
+            {
+                ref var destinationChunk = ref destination.Chunks[destinationChunkIndex-1];
+
+                // Check how many entities fit into the destination chunk and choose the minimum as a copy length to prevent out of range exceptions.
+                var destinationRemainingCapacity = destinationChunk.Capacity - destinationChunk.Size;
+                var length = Math.Min(sourceChunk.Size, destinationRemainingCapacity);
+
+                // Copy source array into destination chunk.
+                Chunk.Copy(ref sourceChunk, index, ref destinationChunk, destinationChunk.Size, length);
+
+                sourceChunk.Size -= length;
+                destinationChunk.Size += length;
+                index += length;
+
+                // Current source chunk still has remaining capacity, resume with next destination chunk.
+                if (destinationChunk.Size >= destinationChunk.Capacity)
+                {
+                    destinationChunkIndex++;
+                }
+            }
+
+            sourceChunkIndex++;
+        }
+    }
+
+    /// <summary>
+    ///     Copies an <see cref="Arch.Core.Entity"/> and all its components from a <see cref="Slot"/> within this <see cref="Archetype"/> to a <see cref="Slot"/> within another <see cref="Archetype"/> .
+    /// </summary>
+    /// <param name="to">The <see cref="Archetype"/> into which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="fromSlot">The <see cref="Slot"/> that targets the <see cref="Arch.Core.Entity"/> that should move.</param>
+    /// <param name="toSlot">The <see cref="Slot"/> to which the <see cref="Arch.Core.Entity"/> should move.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void CopyRowTo(Archetype to, ref Slot fromSlot, ref Slot toSlot)
     {
         // Copy items from old to new chunk
         ref var oldChunk = ref GetChunk(fromSlot.ChunkIndex);
         ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
-        oldChunk.CopyToDifferent(ref newChunk, fromSlot.Index, toSlot.Index);
+        Chunk.CopyRowTo(ref oldChunk, fromSlot.Index, ref newChunk, toSlot.Index);
     }
 }

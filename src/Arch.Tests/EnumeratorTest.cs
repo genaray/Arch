@@ -34,6 +34,18 @@ public partial class EnumeratorTest
     [Test]
     public void WorldArchetypeEnumeration()
     {
+
+        var bitset = new BitSet();
+        bitset.SetBit(1);
+        bitset.SetBit(5);
+
+        Span<uint> stack = stackalloc uint[100];
+        bitset.AsSpan(stack);
+
+        var stackSet = new SpanBitSet(stack);
+        //stackSet.SetBit(0);
+        //stackSet.ClearBit(1);
+
         var counter = 0;
         foreach (ref var archetype in _world)
         {

@@ -67,7 +67,7 @@ public class Game : Microsoft.Xna.Framework.Game
         _drawSystem = new DrawSystem(_world, _spriteBatch);
 
         // Spawn in entities with position, velocity and sprite
-        for (var index = 0; index < 1000; index++)
+        for (var index = 0; index < 10000; index++)
         {
             _world.Create(
                 new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },

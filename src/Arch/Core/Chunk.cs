@@ -47,13 +47,13 @@ public partial struct Chunk
 
 
     /// <summary>
-    ///     The <see cref="Entity"/>'s that are stored in this chunk.
+    ///     The <see cref="Arch.Core.Entity"/>'s that are stored in this chunk.
     ///     Can be accessed during the iteration.
     /// </summary>
     public readonly Entity[] Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
-    ///     The component arrays in which the components of the <see cref="Entity"/>'s are stored.
+    ///     The component arrays in which the components of the <see cref="Arch.Core.Entity"/>'s are stored.
     ///     Represent the component structure.
     ///     They can be accessed quickly using the <see cref="ComponentIdToArrayIndex"/> or one of the chunk methods.
     /// </summary>
@@ -65,20 +65,20 @@ public partial struct Chunk
     public readonly int[] ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
-    ///     The number of occupied <see cref="Entity"/> slots in this <see cref="Chunk"/>.
+    ///     The number of occupied <see cref="Arch.Core.Entity"/> slots in this <see cref="Chunk"/>.
     /// </summary>
-    public int Size { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public int Size { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
-    ///     The number of possible <see cref="Entity"/>'s in this <see cref="Chunk"/>.
+    ///     The number of possible <see cref="Arch.Core.Entity"/>'s in this <see cref="Chunk"/>.
     /// </summary>
     public int Capacity { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
     /// </summary>
-    /// <param name="entity">The <see cref="Entity"/> that will be inserted.</param>
-    /// <returns>The index occupied by the <see cref="Entity"/> in the chunk.</returns>
+    /// <param name="entity">The <see cref="Arch.Core.Entity"/> that will be inserted.</param>
+    /// <returns>The index occupied by the <see cref="Arch.Core.Entity"/> in the chunk.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Add(in Entity entity)
     {
@@ -143,7 +143,7 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Returns a component and <see cref="Entity"/> from an index within the <see cref="Chunk"/>.
+    ///     Returns a component and <see cref="Arch.Core.Entity"/> from an index within the <see cref="Chunk"/>.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index.</param>
@@ -157,8 +157,20 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Removes the <see cref="Entity"/> at an index with all its components.
-    ///     Copies the last <see cref="Entity"/> in its place to ensure a uniform array.
+    ///     Returns an <see cref="Arch.Core.Entity"/> at the index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <returns>A reference to the <see cref="Arch.Core.Entity"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public ref Entity Entity(scoped in int index)
+    {
+        return ref Entities.AsSpan()[index];
+    }
+
+    /// <summary>
+    ///     Removes the <see cref="Arch.Core.Entity"/> at an index with all its components.
+    ///     Copies the last <see cref="Arch.Core.Entity"/> in its place to ensure a uniform array.
     /// </summary>
     /// <param name="index">Its index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -180,12 +192,23 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Creates and returns a new <see cref="EntityEnumerator"/> instance to iterate over all used rows representing <see cref="Entity"/>'s.
+    ///     Creates and returns a new <see cref="EntityEnumerator"/> instance to iterate over all used rows representing <see cref="Arch.Core.Entity"/>'s.
     /// </summary>
     /// <returns>A new <see cref="EntityEnumerator"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityEnumerator GetEnumerator()
     {
         return new EntityEnumerator(Size);
+    }
+
+    /// <summary>
+    ///     Cleares this <see cref="Chunk"/>, an efficient method to delete all <see cref="Arch.Core.Entity"/>s.
+    ///     Does not dispose any resources nor modifies its <see cref="Capacity"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        Size = 0;
     }
 }
 
@@ -326,57 +349,56 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
-    /// <summary>
-    ///     Copies an <see cref="Entity"/> at one index to another <see cref="Chunk"/>-index.
-    ///     Only works for similar structures <see cref="Chunk"/>'s.
-    /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
-    /// <param name="toChunk">The chunk we want to move it to.</param>
-    /// <param name="toIndex">The index we want to move it to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    internal void CopyToSimilar(int index, ref Chunk toChunk, int toIndex)
-    {
-        // Move/Copy components to the new chunk
-        for (var i = 0; i < Components.Length; i++)
-        {
-            var sourceArray = Components[i];
-            var desArray = toChunk.Components[i];
-            Array.Copy(sourceArray, toIndex, desArray, index, 1);
-        }
-    }
 
     /// <summary>
-    ///     Copies an <see cref="Entity"/> at one index to another <see cref="Chunk"/>-index.
+    ///     Copies the whole <see cref="Chunk"/> (with all its entities and components) or a part from it to the another <see cref="Chunk"/>.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
-    /// <param name="toChunk">The chunk we want to move it to.</param>
-    /// <param name="toIndex">The index we want to move it to.</param>
+    /// <param name="toChunk">The chunk we want to copy to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal void CopyToDifferent(ref Chunk toChunk, int index, int toIndex)
+    internal static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndey, int length)
     {
-        // Move/Copy components to the new chunk
-        for (var i = 0; i < Components.Length; i++)
+        // Arrays
+        var entities = source.Entities;
+        var sourceComponents = source.Components;
+
+        // Copy entities array
+        Array.Copy(entities, index, destination.Entities, destinationIndey, length);
+
+        // Copy component arrays
+        for (var i = 0; i < sourceComponents.Length; i++)
         {
-            var sourceArray = Components[i];
+            var sourceArray = sourceComponents[i];
             var sourceType = sourceArray.GetType().GetElementType();
 
-            if (!toChunk.Has(sourceType))
+            if (!destination.Has(sourceType))
             {
                 continue;
             }
 
-            var desArray = toChunk.GetArray(sourceType);
-            Array.Copy(sourceArray, index, desArray, toIndex, 1);
+            var destinationArray = destination.GetArray(sourceType);
+            Array.Copy(sourceArray, index, destinationArray, destinationIndey, length);
         }
     }
 
     /// <summary>
-    ///     Transfers the last <see cref="Entity"/> of the referenced <see cref="Chunk"/> into this <see cref="Chunk"/> at the given index.
+    ///     Copies an <see cref="Arch.Core.Entity"/> with its components at one index to another <see cref="Chunk"/>-index.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/>.</param>
-    /// <param name="chunk">The <see cref="Chunk"/> we want transfer the last <see cref="Entity"/> from.</param>
+    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> we want to copy.</param>
+    /// <param name="destination">The chunk we want to move it to.</param>
+    /// <param name="toIndex">The index we want to move it to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal static void CopyRowTo(ref Chunk source, int index, ref Chunk destination, int toIndex)
+    {
+        Copy(ref source, index, ref destination, toIndex, 1);
+    }
+
+    /// <summary>
+    ///     Transfers the last <see cref="Arch.Core.Entity"/> of the referenced <see cref="Chunk"/> into this <see cref="Chunk"/> at the given index.
+    /// </summary>
+    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/>.</param>
+    /// <param name="chunk">The <see cref="Chunk"/> we want transfer the last <see cref="Arch.Core.Entity"/> from.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -401,9 +423,9 @@ public partial struct Chunk
 
     /*
     /// <summary>
-    ///     Transfers an <see cref="Entity"/> at the index of this chunk to another chunk.
+    ///     Transfers an <see cref="Arch.Core.Entity"/> at the index of this chunk to another chunk.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Entity"/> we want to copy.</param>
+    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> we want to copy.</param>
     /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

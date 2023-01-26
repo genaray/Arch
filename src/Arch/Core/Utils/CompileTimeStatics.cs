@@ -284,6 +284,23 @@ public static class Component
             return hash;
         }
     }
+
+    /// <summary>
+    ///     Calculates the hash code of a <see cref="ComponentType"/> Id array, which is unique for the elements contained in the array.
+    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
+    /// </summary>
+    /// <param name="obj">The <see cref="ComponentType"/> array.</param>
+    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int GetHashCode(BitSet bitSet)
+    {
+        // From https://stackoverflow.com/a/52172541.
+        unchecked
+        {
+            int hash = bitSet.GetHashCode();
+            return hash;
+        }
+    }
 }
 
 // NOTE: Rename or reimplement this? An entire class just for counting something seems overkill.
