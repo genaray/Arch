@@ -259,7 +259,7 @@ public partial class World : IDisposable
         // Copy entity to other archetype
         var entityInfo = EntityInfo[entity.Id];
         var created = to.Add(in entity, out newSlot);
-        from.CopyRowTo(to, ref entityInfo.Slot, ref newSlot);
+        Archetype.CopyComponents(from, ref entityInfo.Slot, to,ref newSlot);
         from.Remove(ref entityInfo.Slot, out var movedEntity);
 
         // Update moved entity from the remove
@@ -721,12 +721,32 @@ public partial class World
     }
 
     /// <summary>
-    ///     An efficient method to destroy all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
+    ///     An efficient method to set one component for all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
+    ///     No <see cref="Entity"/> lookups which makes it as fast as a inlin query.
+    /// </summary>
+    /// <param name="queryDescription"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set<T>(in QueryDescription queryDescription, in T value = default)
+    {
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query)
+        {
+            ref var componentFirstElement = ref chunk.GetFirst<T>();
+            foreach (var index in chunk)
+            {
+                ref var component = ref Unsafe.Add(ref componentFirstElement, index);
+                component = value;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     An efficient method to add one component to all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
     /// <param name="queryDescription"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in QueryDescription queryDescription)
+    public void Add<T>(in QueryDescription queryDescription, in T component = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -734,6 +754,12 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (ref var archetype in query.GetArchetypeIterator())
         {
+            // Archetype with T shouldnt be skipped to prevent undefined behaviour.
+            if(archetype.Has<T>())
+            {
+                continue;
+            }
+
             // Create local bitset on the stack and set bits to get a new fitting bitset of the new archetype.
             var bitSet = archetype.BitSet;
             var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
@@ -745,7 +771,93 @@ public partial class World
                 newArchetype = GetOrCreate(archetype.Types.Add(typeof(T)));
             }
 
-            Archetype.CopyTo(archetype, newArchetype);
+            // Get last slots before copy, for updating entityinfo later
+            var archetypeSlot = archetype.LastSlot;
+            var newArchetypeLastSlot = newArchetype.LastSlot;
+
+            Archetype.Copy(archetype, newArchetype);
+            Set(in queryDescription, in component);
+
+            // Update the entityInfo of all copied entities.
+            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+            {
+                ref var chunk = ref archetype.GetChunk(chunkIndex);
+                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                for (var index = archetypeSlot.Index; index >= 0; --index)
+                {
+                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+
+                    // Calculate new entity slot based on its old slot.
+                    var entitySlot = new Slot(index, chunkIndex);
+                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+
+                    // Update entity info
+                    var entityInfo = EntityInfo[entity.Id];
+                    entityInfo.Slot = newSlot;
+                    entityInfo.Archetype = newArchetype;
+                    EntityInfo[entity.Id] = entityInfo;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    ///     An efficient method to remove one component from <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
+    ///     No <see cref="Entity"/>s are recopied which is much faster.
+    /// </summary>
+    /// <param name="queryDescription"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove<T>(in QueryDescription queryDescription)
+    {
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+
+        var query = Query(in queryDescription);
+        foreach (ref var archetype in query.GetArchetypeIterator())
+        {
+            // Archetype without T shouldnt be skipped to prevent undefined behaviour.
+            if(!archetype.Has<T>())
+            {
+                continue;
+            }
+
+            // Create local bitset on the stack and set bits to get a new fitting bitset of the new archetype.
+            var bitSet = archetype.BitSet;
+            var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
+            spanBitSet.ClearBit(Component<T>.ComponentType.Id);
+
+            // Get or create new archetype.
+            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            {
+                newArchetype = GetOrCreate(archetype.Types.Add(typeof(T)));
+            }
+
+            // Get last slots before copy, for updating entityinfo later
+            var archetypeSlot = archetype.LastSlot;
+            var newArchetypeLastSlot = newArchetype.LastSlot;
+
+            Archetype.Copy(archetype, newArchetype);
+
+            // Update the entityInfo of all copied entities.
+            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+            {
+                ref var chunk = ref archetype.GetChunk(chunkIndex);
+                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                for (var index = archetypeSlot.Index; index >= 0; --index)
+                {
+                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+
+                    // Calculate new entity slot based on its old slot.
+                    var entitySlot = new Slot(index, chunkIndex);
+                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+
+                    // Update entity info
+                    var entityInfo = EntityInfo[entity.Id];
+                    entityInfo.Slot = newSlot;
+                    entityInfo.Archetype = newArchetype;
+                    EntityInfo[entity.Id] = entityInfo;
+                }
+            }
         }
     }
 }

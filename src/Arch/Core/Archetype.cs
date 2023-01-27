@@ -63,13 +63,36 @@ internal record struct Slot
     public void Wrap(int capacity)
     {
         // Result outside valid chunk, wrap into next one
-        if (Index <= capacity)
+        if (Index < capacity)
         {
             return;
         }
 
-        Index -= capacity;
-        ChunkIndex++;
+        // Index outside of its chunk, so we calculate how many times a chunk fit into the index for adjusting the chunkindex to that position.
+        // Floor since we do not neet a rounded value since the index is within that chunk and not the next one.
+        ChunkIndex += (int)Math.Floor(Index / (float)capacity);
+
+        // After moving the chunk index we can simply take the rest and assign it as a index.
+        Index %= capacity;
+    }
+
+    /// <summary>
+    ///     Moves or shifts the source <see cref="Slot"/> based on the destination <see cref="Slot"/> and calculates its new position.
+    ///     Used for copy operations to predict where the source <see cref="Slot"/> will end up.
+    /// </summary>
+    /// <param name="source">The source <see cref="Slot"/>, from which we want to calculate where it lands..</param>
+    /// <param name="destination">The destination <see cref="Slot"/>, a reference point at which the copy or shift operation starts.</param>
+    /// <param name="sourceCapacity">The source <see cref="Chunk.Capacity"/>.</param>
+    /// <param name="destinationCapacity">The destination <see cref="Chunk.Capacity"/></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Slot Shift(in Slot source, int sourceCapacity, in Slot destination, int destinationCapacity)
+    {
+        var freeSpot = new Slot(destination.Index+1, destination.ChunkIndex);
+        var resultSlot = source + freeSpot;
+        resultSlot.Index += source.ChunkIndex * (sourceCapacity - destinationCapacity); // Berücksichtigen der differenz zwischen den chunks und weiter verschieben.
+        resultSlot.Wrap(destinationCapacity);
+
+        return resultSlot;
     }
 }
 
@@ -410,10 +433,46 @@ public sealed unsafe partial class Archetype
     {
         // Increase chunk array size
         var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
-        Array.Copy(Chunks, newChunks, Size);
+        Array.Copy(Chunks, newChunks, Capacity);
         ArrayPool<Chunk>.Shared.Return(Chunks, true);
         Chunks = newChunks;
         Capacity = newCapacity;
+    }
+
+    /// <summary>
+    ///     Ensures the capacity of the <see cref="Chunks"/> array.
+    ///     Increases the <see cref="Capacity"/>.
+    /// </summary>
+    /// <param name="newCapacity">The amount of <see cref="Chunk"/>'s required, in total.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void EnsureEntityCapacity(int newCapacity)
+    {
+        // Calculate amount of required chunks.
+        ref var lastChunk = ref LastChunk;
+        var freeSpots = lastChunk.Capacity - lastChunk.Size;
+        var neededSpots = newCapacity - freeSpots;
+        var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
+
+        if (neededChunks <= Capacity)
+        {
+            return;
+        }
+
+        // Set capacity and insert new empty chunks.
+        var previousCapacity = Capacity;
+        EnsureCapacity(previousCapacity + neededChunks);
+
+        for (var index = 0; index < neededChunks; index++)
+        {
+            var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
+            Chunks[previousCapacity + index] = newChunk;
+        }
+
+        // If last chunk was full, add.
+        if (freeSpots == 0)
+        {
+            Size++;
+        }
     }
 
     /// <summary>
@@ -473,10 +532,10 @@ public sealed partial class Archetype
     /// <param name="source">The source <see cref="Archetype"/>.</param>
     /// <param name="destination">The destination <see cref="Archetype"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void CopyTo(Archetype source, Archetype destination)
+    internal static void Copy(Archetype source, Archetype destination)
     {
         // Make sure other archetype can fit additional entities from this archetype.
-        destination.Reserve(source.Entities);
+        destination.EnsureEntityCapacity(source.Entities);
 
         // Copy chunks into destination chunks
         var sourceChunkIndex = 0;
@@ -501,14 +560,18 @@ public sealed partial class Archetype
                 index += length;
 
                 // Current source chunk still has remaining capacity, resume with next destination chunk.
-                if (destinationChunk.Size >= destinationChunk.Capacity)
+                if (destinationChunk.Size >= destinationChunk.Capacity && destination.Size < destination.Capacity)
                 {
                     destinationChunkIndex++;
+                    destination.Size++;
                 }
             }
 
             sourceChunkIndex++;
         }
+
+        // Update archetype sizes since the chunks were transfered.
+        source.Size = 1;
     }
 
     /// <summary>
@@ -518,11 +581,11 @@ public sealed partial class Archetype
     /// <param name="fromSlot">The <see cref="Slot"/> that targets the <see cref="Arch.Core.Entity"/> that should move.</param>
     /// <param name="toSlot">The <see cref="Slot"/> to which the <see cref="Arch.Core.Entity"/> should move.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void CopyRowTo(Archetype to, ref Slot fromSlot, ref Slot toSlot)
+    internal static void CopyComponents(Archetype from, ref Slot fromSlot, Archetype to, ref Slot toSlot)
     {
         // Copy items from old to new chunk
-        ref var oldChunk = ref GetChunk(fromSlot.ChunkIndex);
+        ref var oldChunk = ref from.GetChunk(fromSlot.ChunkIndex);
         ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
-        Chunk.CopyRowTo(ref oldChunk, fromSlot.Index, ref newChunk, toSlot.Index);
+        Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref newChunk, toSlot.Index, 1);
     }
 }

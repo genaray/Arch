@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Text;
 
 namespace Arch.Core.Utils;
@@ -10,9 +11,9 @@ namespace Arch.Core.Utils;
 /// </summary>
 public class BitSet
 {
-    private const int BitSize = (sizeof(uint) * 8) - 1; // 31
+    internal const int BitSize = (sizeof(uint) * 8) - 1; // 31
     // NOTE: Is a byte not 8 bits?
-    private const int ByteSize = 5; // log_2(BitSize + 1)
+    internal const int ByteSize = 5; // log_2(BitSize + 1)
 
     public static int RequiredLength(int id)
     {
@@ -277,22 +278,7 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode()
     {
-        unchecked
-        {
-            int hash = 0;
-            for (var i = 0; i < _bits.Length; i++)
-            {
-                var bit = _bits[i];
-                if(bit == 0)
-                {
-                    continue;
-                }
-
-                hash = HashCode.Combine(hash, bit);
-            }
-
-            return hash;
-        }
+        return Component.GetHashCode(this);
     }
 
     /// <summary>
@@ -440,22 +426,7 @@ public ref struct SpanBitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override int GetHashCode()
     {
-        unchecked
-        {
-            int hash = 0;
-            for (var i = 0; i < _bits.Length; i++)
-            {
-                var bit = _bits[i];
-                if(bit == 0)
-                {
-                    continue;
-                }
-
-                hash = HashCode.Combine(hash, bit);
-            }
-
-            return hash;
-        }
+        return Component.GetHashCode(ref this);
     }
 
     /// <summary>

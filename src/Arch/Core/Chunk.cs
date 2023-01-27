@@ -351,19 +351,23 @@ public partial struct Chunk
 {
 
     /// <summary>
-    ///     Copies the whole <see cref="Chunk"/> (with all its entities and components) or a part from it to the another <see cref="Chunk"/>.
+    ///  Copies the whole <see cref="Chunk"/> (with all its entities and components) or a part from it to the another <see cref="Chunk"/>.
     /// </summary>
-    /// <param name="toChunk">The chunk we want to copy to.</param>
+    /// <param name="source">The source <see cref="Chunk"/>.</param>
+    /// <param name="index">The start index in the source <see cref="Chunk"/>.</param>
+    /// <param name="destination">The destination <see cref="Chunk"/>.</param>
+    /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
+    /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndey, int length)
+    internal static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
         // Arrays
         var entities = source.Entities;
         var sourceComponents = source.Components;
 
         // Copy entities array
-        Array.Copy(entities, index, destination.Entities, destinationIndey, length);
+        Array.Copy(entities, index, destination.Entities, destinationIndex, length);
 
         // Copy component arrays
         for (var i = 0; i < sourceComponents.Length; i++)
@@ -377,21 +381,39 @@ public partial struct Chunk
             }
 
             var destinationArray = destination.GetArray(sourceType);
-            Array.Copy(sourceArray, index, destinationArray, destinationIndey, length);
+            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
         }
     }
 
     /// <summary>
-    ///     Copies an <see cref="Arch.Core.Entity"/> with its components at one index to another <see cref="Chunk"/>-index.
+    ///     Copies an <see cref="Arch.Core.Entity"/> components at one index to another <see cref="Chunk"/>-index.
     /// </summary>
-    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> we want to copy.</param>
-    /// <param name="destination">The chunk we want to move it to.</param>
-    /// <param name="toIndex">The index we want to move it to.</param>
+    /// <param name="source">The source <see cref="Chunk"/>.</param>
+    /// <param name="index">The start index in the source <see cref="Chunk"/>.</param>
+    /// <param name="destination">The destination <see cref="Chunk"/>.</param>
+    /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
+    /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal static void CopyRowTo(ref Chunk source, int index, ref Chunk destination, int toIndex)
+    internal static void CopyComponents(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
-        Copy(ref source, index, ref destination, toIndex, 1);
+        // Arrays
+        var sourceComponents = source.Components;
+
+        // Copy component arrays
+        for (var i = 0; i < sourceComponents.Length; i++)
+        {
+            var sourceArray = sourceComponents[i];
+            var sourceType = sourceArray.GetType().GetElementType();
+
+            if (!destination.Has(sourceType))
+            {
+                continue;
+            }
+
+            var destinationArray = destination.GetArray(sourceType);
+            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
+        }
     }
 
     /// <summary>

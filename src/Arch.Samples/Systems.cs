@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
@@ -196,8 +197,9 @@ public class ColorSystem : SystemBase<GameTime>
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
         });
 
-        //World.Query(in _entitiesToChangeColor, (in Entity entity) => entity.Add<int, long>());
-        //World.Query(in _entitiesToChangeColor, (in Entity entity) => entity.Remove<int, long>());
+        // Bulk removing components, incredible fast.
+        World.Add(in _entitiesToChangeColor, 10);
+        World.Remove<int>(in _entitiesToChangeColor);
     }
 }
 

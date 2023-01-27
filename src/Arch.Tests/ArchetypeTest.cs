@@ -15,9 +15,9 @@ internal unsafe struct HeavyComponent
 [TestFixture]
 public class ArchetypeTest
 {
-    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
-    private readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-    private readonly ComponentType[] _heavyGroup = { typeof(Transform), typeof(Rotation), typeof(HeavyComponent) };
+    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private static readonly ComponentType[] _heavyGroup = { typeof(Transform), typeof(Rotation), typeof(HeavyComponent) };
 
     /// <summary>
     ///     Tests if <see cref="Archetype"/>s and their <see cref="Chunk"/> are created correctly.
@@ -145,17 +145,19 @@ public class ArchetypeTest
         var archetype = new Archetype(_group);
         var otherArchetype = new Archetype(_otherGroup);
 
+        // Add two entities into different archetypes to move one to the other later.
         var entity = new Entity(1, 0);
         var otherEntity = new Entity(2, 0);
         archetype.Add(entity, out var entityOneSlot);
-        otherArchetype.Add(otherEntity, out var entityTwoSlot);
+        otherArchetype.Add(otherEntity, out _);
 
         archetype.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
         archetype.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
 
+        // Move entity from first archetype to second, copy its components and remove it from the first.
         otherArchetype.Add(entity, out var newSlot);
-        archetype.CopyRowTo(otherArchetype, ref entityOneSlot, ref newSlot);
-        archetype.Remove(ref entityOneSlot, out var replacedEntityId);
+        Archetype.CopyComponents(archetype, ref entityOneSlot,otherArchetype, ref newSlot);
+        archetype.Remove(ref entityOneSlot, out _);
 
         That(archetype.Chunks[0].Size, Is.EqualTo(0));
         That(otherArchetype.Chunks[0].Size, Is.EqualTo(2));
@@ -175,7 +177,7 @@ public class ArchetypeTest
     public void CopyTo([Values(1111,2222,3333)] int sourceAmount, [Values(1111,2222,3333)] int destinationAmount)
     {
         var source = new Archetype(_group);
-        var destination = new Archetype(_otherGroup);
+        var destination = new Archetype(_heavyGroup);
 
         // Fill chunks with data to copy
         for (int index = 0; index < sourceAmount; index++)
@@ -198,13 +200,11 @@ public class ArchetypeTest
         // Calculate their slots and position of copied entity.
         var sourceSlot = source.LastSlot;
         var destinationSlot = destination.LastSlot;
-        var resultSlot = sourceSlot + ++destinationSlot;
-        resultSlot.Wrap(destination.EntitiesPerChunk);
+        var resultSlot = Slot.Shift(sourceSlot, source.EntitiesPerChunk, destinationSlot, destination.EntitiesPerChunk);
 
         // Copy from one chunk into other.
-        Archetype.CopyTo(source, destination);
-
-        //That(source.Capacity, Is.EqualTo(destination.Capacity));
+        Archetype.Copy(source, destination);
+        That(destination.Entities, Is.EqualTo(sourceAmount+destinationAmount));
         That(source.Entity(ref sourceSlot), Is.EqualTo(destination.Entity(ref resultSlot)));  // Make sure entities were copied correctly.
     }
 }
