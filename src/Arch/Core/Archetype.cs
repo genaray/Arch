@@ -535,18 +535,18 @@ public sealed partial class Archetype
     internal static void Copy(Archetype source, Archetype destination)
     {
         // Make sure other archetype can fit additional entities from this archetype.
-        destination.EnsureEntityCapacity(source.Entities);
+        destination.EnsureEntityCapacity(destination.Entities+source.Entities);
 
         // Copy chunks into destination chunks
         var sourceChunkIndex = 0;
-        var destinationChunkIndex = destination.Size;
+        var destinationChunkIndex = destination.Size - 1;
         while (sourceChunkIndex < source.Size)
         {
             ref var sourceChunk = ref source.Chunks[sourceChunkIndex];
             var index = 0;
-            while (sourceChunk.Size > 0 && destinationChunkIndex <= destination.Capacity)  // Making sure that we dont go out of bounds
+            while (sourceChunk.Size > 0 && destinationChunkIndex < destination.Capacity)  // Making sure that we dont go out of bounds
             {
-                ref var destinationChunk = ref destination.Chunks[destinationChunkIndex-1];
+                ref var destinationChunk = ref destination.Chunks[destinationChunkIndex];
 
                 // Check how many entities fit into the destination chunk and choose the minimum as a copy length to prevent out of range exceptions.
                 var destinationRemainingCapacity = destinationChunk.Capacity - destinationChunk.Size;
@@ -560,10 +560,13 @@ public sealed partial class Archetype
                 index += length;
 
                 // Current source chunk still has remaining capacity, resume with next destination chunk.
-                if (destinationChunk.Size >= destinationChunk.Capacity && destination.Size < destination.Capacity)
+                if (destinationChunk.Size >= destinationChunk.Capacity)
                 {
                     destinationChunkIndex++;
-                    destination.Size++;
+                    if(destination.Size + 1 <= destination.Capacity)
+                    {
+                        destination.Size++;
+                    }
                 }
             }
 
