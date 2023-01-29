@@ -36,21 +36,11 @@ public static class StringBuilderExtensions
 
     // Queries, set, has & get
 
-    public static StringBuilder GetGenericArrays(this StringBuilder sb, int amount)
-    {
-        for (var localIndex = 0; localIndex <= amount; localIndex++)
-        {
-            sb.AppendLine($"var t{localIndex}Array = chunk.GetArray<T{localIndex}>();");
-        }
-
-        return sb;
-    }
-
     public static StringBuilder GetFirstGenericElements(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
         {
-            sb.AppendLine($"ref var t{localIndex}FirstElement = ref ArrayExtensions.DangerousGetReference(t{localIndex}Array);");
+            sb.AppendLine($"ref var t{localIndex}FirstElement = ref chunk.GetFirst<T{localIndex}>();");
         }
 
         return sb;
@@ -105,6 +95,16 @@ public static class StringBuilderExtensions
             sb.Append($"in T{localIndex} t{localIndex}Component,");
         }
 
+        sb.Length--;
+        return sb;
+    }
+
+    public static StringBuilder GenericTypeParams(this StringBuilder sb, int amount)
+    {
+        for (var index = 0; index <= amount; index++)
+        {
+            sb.Append($"typeof(T{index}),");
+        }
         sb.Length--;
         return sb;
     }

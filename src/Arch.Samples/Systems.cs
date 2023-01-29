@@ -196,10 +196,6 @@ public class ColorSystem : SystemBase<GameTime>
             sprite.Color.G += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
         });
-
-        // Bulk removing components, incredible fast.
-        World.Add(in _entitiesToChangeColor, 10);
-        World.Remove<int>(in _entitiesToChangeColor);
     }
 }
 

@@ -699,7 +699,7 @@ public partial class World
     ///     An efficient method to destroy all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s will be destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in QueryDescription queryDescription)
     {
@@ -731,7 +731,7 @@ public partial class World
     ///     An efficient method to set one component for all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/> lookups which makes it as fast as a inlin query.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in QueryDescription queryDescription, in T value = default)
     {
@@ -751,7 +751,7 @@ public partial class World
     ///     An efficient method to add one component to all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in QueryDescription queryDescription, in T component = default)
@@ -784,6 +784,7 @@ public partial class World
             var newArchetypeLastSlot = newArchetype.LastSlot;
 
             Archetype.Copy(archetype, newArchetype);
+            archetype.Clear();
             Set(in queryDescription, in component);
 
             // Update the entityInfo of all copied entities.
@@ -813,7 +814,7 @@ public partial class World
     ///     An efficient method to remove one component from <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
-    /// <param name="queryDescription"></param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in QueryDescription queryDescription)
@@ -846,6 +847,7 @@ public partial class World
             var newArchetypeLastSlot = newArchetype.LastSlot;
 
             Archetype.Copy(archetype, newArchetype);
+            archetype.Clear();
 
             // Update the entityInfo of all copied entities.
             for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)

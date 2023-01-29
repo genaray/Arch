@@ -103,6 +103,10 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendEntityQueryInterfaceMethods(25)}}
                     {{new StringBuilder().AppendHpParallelQuerys(25)}}
                     {{new StringBuilder().AppendHpeParallelQuerys(25)}}
+
+                    {{new StringBuilder().AppendSetWithQueryDescriptions(25)}}
+                    {{new StringBuilder().AppendAddWithQueryDescriptions(25)}}
+                    {{new StringBuilder().AppendRemoveWithQueryDescriptions(25)}}
                 }
 
                 public static partial class EntityExtensions

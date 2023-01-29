@@ -572,9 +572,6 @@ public sealed partial class Archetype
 
             sourceChunkIndex++;
         }
-
-        // Update archetype sizes since the chunks were transfered.
-        source.Size = 1;
     }
 
     /// <summary>

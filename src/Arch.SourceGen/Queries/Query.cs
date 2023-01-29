@@ -62,7 +62,6 @@ public static class StringBuilderQueryExtensions
 
     public static StringBuilder AppendQueryMethod(this StringBuilder sb, int amount)
     {
-        var getArrays = new StringBuilder().GetGenericArrays(amount);
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
@@ -77,8 +76,6 @@ public static class StringBuilderQueryExtensions
                 foreach (ref var chunk in query)
                 {
                     var chunkSize = chunk.Size;
-                    {{getArrays}}
-
                     {{getFirstElement}}
 
                     foreach(var entityIndex in chunk)
@@ -106,7 +103,6 @@ public static class StringBuilderQueryExtensions
 
     public static StringBuilder AppendEntityQueryMethod(this StringBuilder sb, int amount)
     {
-        var getArrays = new StringBuilder().GetGenericArrays(amount);
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
@@ -121,8 +117,6 @@ public static class StringBuilderQueryExtensions
                 foreach (ref var chunk in query)
                 {
                     var chunkSize = chunk.Size;
-                    {{getArrays}}
-
                     ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                     {{getFirstElement}}
 

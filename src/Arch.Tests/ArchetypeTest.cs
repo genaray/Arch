@@ -204,6 +204,8 @@ public class ArchetypeTest
 
         // Copy from one chunk into other.
         Archetype.Copy(source, destination);
+        source.Clear();
+
         That(destination.Entities, Is.EqualTo(sourceAmount+destinationAmount));
         That(source.Entity(ref sourceSlot), Is.EqualTo(destination.Entity(ref resultSlot)));  // Make sure entities were copied correctly.
     }

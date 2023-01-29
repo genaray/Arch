@@ -17,20 +17,13 @@ public static class StructuralChangesExtensions
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
         var inParameters = new StringBuilder().InsertGenericInParams(amount);
+        var types = new StringBuilder().GenericTypeParams(amount);
 
         var setIds = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            setIds.AppendLine($"ids[^{index + 1}] = Component<T{index}>.ComponentType.Id;");
+            setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
         }
-
-        var types = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            types.Append($"typeof(T{index}),");
-        }
-
-        types.Length--;
 
         var template =
             $$"""
@@ -40,12 +33,15 @@ public static class StructuralChangesExtensions
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-                // Create a stack array with all component we now search an archetype for.
-                Span<int> ids = stackalloc int[oldArchetype.Types.Length + {{amount + 1}}];
-                oldArchetype.Types.WriteComponentIds(ids);
+                // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+                Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+                oldArchetype.BitSet.AsSpan(stack);
+
+                // Create a span bitset, doing it local saves us headache and gargabe
+                var spanBitSet = new SpanBitSet(stack);
                 {{setIds}}
 
-                if (!TryGetArchetype(ids, out var newArchetype))
+                if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
                 Move(in entity, oldArchetype, newArchetype, out var newSlot);
@@ -69,20 +65,13 @@ public static class StructuralChangesExtensions
     public static StringBuilder AppendWorldRemove(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var types = new StringBuilder().GenericTypeParams(amount);
 
         var removes = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            removes.AppendLine($"ids.Remove(Component<T{index}>.ComponentType.Id);");
+            removes.AppendLine($"spanBitSet.ClearBit(Component<T{index}>.ComponentType.Id);");
         }
-
-        var types = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            types.Append($"typeof(T{index}),");
-        }
-
-        types.Length--;
 
         var template =
             $$"""
@@ -92,12 +81,15 @@ public static class StructuralChangesExtensions
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-                // Create a stack array with all component we now search an archetype for.
-                Span<int> ids = stackalloc int[oldArchetype.Types.Length];
-                oldArchetype.Types.WriteComponentIds(ids);
+                // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+                Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
+                oldArchetype.BitSet.AsSpan(stack);
+
+                // Create a span bitset, doing it local saves us headache and gargabe
+                var spanBitSet = new SpanBitSet(stack);
                 {{removes}}
 
-                if (!TryGetArchetype(ids, out var newArchetype))
+                if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
                 Move(in entity, oldArchetype, newArchetype, out _);

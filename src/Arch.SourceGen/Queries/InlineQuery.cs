@@ -81,7 +81,6 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getArrays = new StringBuilder().GetGenericArrays(index);
             var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
@@ -95,8 +94,6 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        {{getArrays}}
-
                         {{getFirstElement}}
 
                         foreach(var entityIndex in chunk)
@@ -115,7 +112,6 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getArrays = new StringBuilder().GetGenericArrays(index);
             var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
@@ -131,8 +127,6 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        {{getArrays}}
-
                         {{getFirstElement}}
 
                         foreach(var entityIndex in chunk)
@@ -155,7 +149,6 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getArrays = new StringBuilder().GetGenericArrays(index);
             var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
@@ -169,8 +162,6 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        {{getArrays}}
-
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
 
@@ -191,7 +182,6 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getArrays = new StringBuilder().GetGenericArrays(index);
             var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
@@ -207,8 +197,6 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        {{getArrays}}
-
                         ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
                         {{getFirstElement}}
 
