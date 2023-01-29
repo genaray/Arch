@@ -200,6 +200,7 @@ public class ArchetypeTest
         // Calculate their slots and position of copied entity.
         var sourceSlot = source.LastSlot;
         var destinationSlot = destination.LastSlot;
+        destinationSlot++;
         var resultSlot = Slot.Shift(sourceSlot, source.EntitiesPerChunk, destinationSlot, destination.EntitiesPerChunk);
 
         // Copy from one chunk into other.

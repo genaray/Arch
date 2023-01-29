@@ -783,6 +783,7 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
+            newArchetypeLastSlot++;
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
@@ -846,6 +847,7 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
+            newArchetypeLastSlot++;
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
