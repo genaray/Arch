@@ -67,7 +67,7 @@ public class Game : Microsoft.Xna.Framework.Game
         _drawSystem = new DrawSystem(_world, _spriteBatch);
 
         // Spawn in entities with position, velocity and sprite
-        for (var index = 0; index < 10000; index++)
+        for (var index = 0; index < 1002; index++)
         {
             _world.Create(
                 new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
@@ -88,7 +88,7 @@ public class Game : Microsoft.Xna.Framework.Game
         {
             // Query for velocity entities and remove their velocity to make them stop moving.
             var queryDesc = new QueryDescription().WithAll<Velocity>();
-            _world.Query(in queryDesc, (in Entity entity) => entity.Remove<Velocity>());
+            _world.Remove<Velocity>(in queryDesc);
         }
 
         _movementSystem.Update(in gameTime);

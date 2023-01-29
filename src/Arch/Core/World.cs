@@ -704,19 +704,26 @@ public partial class World
     public void Destroy(in QueryDescription queryDescription)
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query)
+        foreach (ref var archetype in query.GetArchetypeIterator())
         {
-            var entityFirstElement = chunk.Entities.DangerousGetReference();
-            foreach (var index in chunk)
+            foreach (ref var chunk in archetype)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                foreach (var index in chunk)
+                {
+                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
 
-                var info = EntityInfo[entity.Id];
-                var recycledEntity = new RecycledEntity(entity.Id, info.Version);
+                    var info = EntityInfo[entity.Id];
+                    var recycledEntity = new RecycledEntity(entity.Id, info.Version);
 
-                RecycledIds.Enqueue(recycledEntity);
-                EntityInfo.Remove(entity.Id);
+                    RecycledIds.Enqueue(recycledEntity);
+                    EntityInfo.Remove(entity.Id);
+                }
+
+                chunk.Clear();
             }
+
+            archetype.Clear();
         }
     }
 
@@ -745,6 +752,7 @@ public partial class World
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
     /// <param name="queryDescription"></param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in QueryDescription queryDescription, in T component = default)
     {
@@ -755,7 +763,7 @@ public partial class World
         foreach (ref var archetype in query.GetArchetypeIterator())
         {
             // Archetype with T shouldnt be skipped to prevent undefined behaviour.
-            if(archetype.Has<T>())
+            if(archetype.Entities == 0 || archetype.Has<T>())
             {
                 continue;
             }
@@ -806,6 +814,7 @@ public partial class World
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
     /// <param name="queryDescription"></param>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in QueryDescription queryDescription)
     {
@@ -816,7 +825,7 @@ public partial class World
         foreach (ref var archetype in query.GetArchetypeIterator())
         {
             // Archetype without T shouldnt be skipped to prevent undefined behaviour.
-            if(!archetype.Has<T>())
+            if(archetype.Entities <= 0 || !archetype.Has<T>())
             {
                 continue;
             }
@@ -829,7 +838,7 @@ public partial class World
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
             {
-                newArchetype = GetOrCreate(archetype.Types.Add(typeof(T)));
+                newArchetype = GetOrCreate(archetype.Types.Remove(typeof(T)));
             }
 
             // Get last slots before copy, for updating entityinfo later
