@@ -14,16 +14,13 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.1.6</Version>
+    <Version>1.1.7</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>
-      Renamed References and EntityReferences to Components and EntityComponents to clarify their usage.
-      Added World.TrimExcess to clear unused capacity and release memory.
-      Added EntityReference to reference entities and verify that they are still existant.
-      Entity Version now works correctly.
-      EntityReference fix.
+      Fixed structural changes memory leak.
+      Added destroy, set, add and remove operations for QueryDescriptions to target a range of entities.
       Small performance improvements.
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
