@@ -453,7 +453,7 @@ public sealed unsafe partial class Archetype
         var neededSpots = newCapacity - freeSpots;
         var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
 
-        if (neededChunks <= Capacity)
+        if (Capacity > neededChunks)
         {
             return;
         }

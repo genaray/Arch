@@ -706,6 +706,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (ref var archetype in query.GetArchetypeIterator())
         {
+            Size -= archetype.Entities;
             foreach (ref var chunk in archetype)
             {
                 ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();

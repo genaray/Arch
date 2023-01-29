@@ -220,6 +220,74 @@ public partial class WorldTest
     }
 }
 
+// Destroy, Set, Add, Remove operations based on querydescriptions
+public partial class WorldTest
+{
+
+    [Test]
+    public void SetByQueryDescription()
+    {
+
+        var queryDesc = new QueryDescription().WithAll<Transform>();
+        _world.Set(in queryDesc, new Transform{ X = 100, Y = 100});
+        _world.Query(in queryDesc, (ref Transform transform) =>
+        {
+            That(transform.X, Is.EqualTo(100));
+            That(transform.Y, Is.EqualTo(100));
+        });
+    }
+
+    [Test]
+    public void DestroyByQueryDescription()
+    {
+
+        var queryDesc = new QueryDescription().WithAll<Transform>();
+        using var world = World.Create();
+        for (int index = 0; index < 1000; index++)
+        {
+            world.Create(_entityGroup);
+        }
+
+        world.Destroy(in queryDesc);
+        That(world.Size, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void AddByQueryDescription()
+    {
+        var withAIQueryDesc = new QueryDescription().WithAll<Ai>();
+        var withoutAIQueryDesc = new QueryDescription().WithNone<Ai>();
+
+        using var world = World.Create();
+        for (int index = 0; index < 1000; index++)
+        {
+            world.Create(_entityGroup);
+        }
+
+        world.Add<Ai>(in withoutAIQueryDesc);
+        That(world.CountEntities(in withAIQueryDesc), Is.EqualTo(1000));
+        That(world.CountEntities(in withoutAIQueryDesc), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void RemoveByQueryDescription()
+    {
+        var withAIQueryDesc = new QueryDescription().WithAll<Ai>();
+        var withoutAIQueryDesc = new QueryDescription().WithNone<Ai>();
+
+        using var world = World.Create();
+        for (int index = 0; index < 1000; index++)
+        {
+            world.Create(_entityAiGroup);
+        }
+
+        world.Remove<Ai>(in withAIQueryDesc);
+        That(world.CountEntities(in withAIQueryDesc), Is.EqualTo(0));
+        That(world.CountEntities(in withoutAIQueryDesc), Is.EqualTo(1000));
+    }
+}
+
+
 // Get, Set, Has, Remove, Add
 public partial class WorldTest
 {
