@@ -351,6 +351,7 @@ public static class Component
                 {
                     if ((value & 1) != 1)
                     {
+                        value >>= 1;
                         continue;
                     }
 
