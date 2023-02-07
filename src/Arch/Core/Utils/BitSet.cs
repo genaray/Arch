@@ -165,8 +165,8 @@ public class BitSet
         }
 
         // Handle extra bits on our side that might just be all zero.
-        var extra = _bits.Length - count;
-        for (var i = count; i < extra; i++)
+        var bitCount = _bits.Length;
+        for (var i = count; i < bitCount; i++)
         {
             if (_bits[i] != 0)
             {
@@ -198,8 +198,8 @@ public class BitSet
         }
 
         // handle extra bits on our side that might just be all zero
-        var extra = _bits.Length - count;
-        for (var i = count; i < extra; i++)
+        var bitCount = _bits.Length;
+        for (var i = count; i < bitCount; i++)
         {
             if (_bits[i] != 0)
             {
@@ -232,8 +232,8 @@ public class BitSet
         }
 
         // handle extra bits on our side that might just be all zero
-        var extra = _bits.Length - count;
-        for (var i = count; i < extra; i++)
+        var bitCount = _bits.Length;
+        for (var i = count; i < bitCount; i++)
         {
             if (_bits[i] != 0)
             {

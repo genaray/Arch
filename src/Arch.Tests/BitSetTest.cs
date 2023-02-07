@@ -36,8 +36,14 @@ public class BitSetTest
         var bitSet2 = new BitSet();
         bitSet2.SetBit(33);
 
-        bool result = bitSet2.All(bitSet1);
+        var allResult = bitSet2.All(bitSet1);
+        var anyResult = bitSet2.Any(bitSet1);
+        var noneResult = bitSet2.None(bitSet1);
+        var exclusive = bitSet2.Exclusive(bitSet1);
 
-        That(result, Is.EqualTo(false));
+        That(allResult, Is.EqualTo(false));
+        That(anyResult, Is.EqualTo(false));
+        That(noneResult, Is.EqualTo(true));
+        That(exclusive, Is.EqualTo(false));
     }
 }
