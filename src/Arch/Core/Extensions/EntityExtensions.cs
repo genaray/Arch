@@ -176,7 +176,7 @@ public static partial class EntityExtensions
     public static void Add<T>(this in Entity entity, in T cmp = default) where T : struct
     {
         var world = World.Worlds[entity.WorldId];
-        world.Add<T>(in entity);
+        world.Add(in entity, cmp);
     }
 
     /// <summary>
