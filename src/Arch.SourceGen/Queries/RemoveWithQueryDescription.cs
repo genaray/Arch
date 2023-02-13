@@ -47,7 +47,7 @@ public static class RemoveWithQueryDesription
                 Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
                 var query = Query(in queryDescription);
-                foreach (ref var archetype in query.GetArchetypeIterator())
+                foreach (var archetype in query.GetArchetypeIterator())
                 {
                     // Archetype without T shouldnt be skipped to prevent undefined behaviour.
                     if(archetype.Entities <= 0 || !archetype.Has<{{generics}}>())

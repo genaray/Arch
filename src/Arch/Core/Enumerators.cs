@@ -127,7 +127,7 @@ public ref struct QueryArchetypeEnumerator
     {
         while (_archetypes.MoveNext())
         {
-            ref var archetype = ref _archetypes.Current;
+            var archetype = _archetypes.Current;
             if (archetype.Size > 0 && _query.Valid(archetype.BitSet))
             {
                 return true;
@@ -150,11 +150,11 @@ public ref struct QueryArchetypeEnumerator
     /// <summary>
     ///     Returns a reference to the current <see cref="Archetype"/>.
     /// </summary>
-    public readonly ref Archetype Current
+    public readonly Archetype Current
     {
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _archetypes.Current;
+        get => _archetypes.Current;
     }
 }
 

@@ -73,7 +73,7 @@ public partial class EnumeratorTest
     {
         var counter = 0;
         var query = _world.Query(in _description);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             counter++;
         }

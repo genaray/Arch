@@ -359,7 +359,7 @@ public partial class World : IDisposable
     {
         var counter = 0;
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             var entities = archetype.Entities;
             counter += entities;
@@ -397,7 +397,7 @@ public partial class World : IDisposable
     public void GetArchetypes(in QueryDescription queryDescription, IList<Archetype> archetypes)
     {
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             archetypes.Add(archetype);
         }
@@ -658,7 +658,7 @@ public partial class World
         // Cast pool in an unsafe fast way and run the query.
         var pool = JobMeta<ChunkIterationJob<T>>.Pool;
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             var archetypeSize = archetype.Size;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
@@ -704,7 +704,7 @@ public partial class World
     public void Destroy(in QueryDescription queryDescription)
     {
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             Size -= archetype.Entities;
             foreach (ref var chunk in archetype)
@@ -761,7 +761,7 @@ public partial class World
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype with T shouldnt be skipped to prevent undefined behaviour.
             if(archetype.Entities == 0 || archetype.Has<T>())
@@ -825,7 +825,7 @@ public partial class World
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
         var query = Query(in queryDescription);
-        foreach (ref var archetype in query.GetArchetypeIterator())
+        foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype without T shouldnt be skipped to prevent undefined behaviour.
             if(archetype.Entities <= 0 || !archetype.Has<T>())

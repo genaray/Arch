@@ -26,7 +26,7 @@ public static class StringBuilderHpParallelQueryExtensions
 
                 var pool = JobMeta<ChunkIterationJob<IForEachJob<T,{{generics}}>>>.Pool;
                 var query = Query(in description);
-                foreach (ref var archetype in query.GetArchetypeIterator())
+                foreach (var archetype in query.GetArchetypeIterator())
                 {
                     var archetypeSize = archetype.Size;
                     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
@@ -85,7 +85,7 @@ public static class StringBuilderHpParallelQueryExtensions
 
                 var pool = JobMeta<ChunkIterationJob<IForEachWithEntityJob<T,{{generics}}>>>.Pool;
                 var query = Query(in description);
-                foreach (ref var archetype in query.GetArchetypeIterator()) {
+                foreach (var archetype in query.GetArchetypeIterator()) {
 
                     var archetypeSize = archetype.Size;
                     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
