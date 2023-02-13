@@ -6,85 +6,78 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Arch.Samples;
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="SystemBase{T}"/> class
-///     ...
+///     is a rudimentary basis for all systems with some important methods and properties.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The generic type passed to the <see cref="Update"/> method.</typeparam>
 public abstract class SystemBase<T>
 {
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SystemBase{T}"/> class
-    ///     ...
+    ///     Initializes a new instance of the <see cref="SystemBase{T}"/> class.
     /// </summary>
-    /// <param name="world"></param>
+    /// <param name="world">Its <see cref="World"/>.</param>
     protected SystemBase(World world)
     {
         World = world;
     }
 
-    // TODO: Documentation.
+    /// <summary>
+    ///     The <see cref="World"/> for which this system works and must access.
+    /// </summary>
     public World World { get; private set; }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Should be called within the update loop to update this system and executes its logic.
     /// </summary>
-    /// <param name="state"></param>
+    /// <param name="state">A external state being passed to this method to be used.</param>
     public abstract void Update(in T state);
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="MovementSystem"/> class
-///     ...
+///     ensures that all <see cref="Entity"/>s move and stay within the screen and bounce off it.
 /// </summary>
 public class MovementSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToMove = new QueryDescription().WithAll<Position, Velocity>();
     private readonly Rectangle _viewport;
 
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="MovementSystem"/> class
-    ///     ...
+    ///     Initializes a new instance of the <see cref="MovementSystem"/> class.
     /// </summary>
-    /// <param name="world"></param>
-    /// <param name="viewport"></param>
+    /// <param name="world">Its <see cref="World"/>.</param>
+    /// <param name="viewport">The games viewport represented as a <see cref="Rectangle"/>.</param>
     public MovementSystem(World world, Rectangle viewport)
         : base(world)
     {
         _viewport = viewport;
     }
 
-    // TODO: Documentation.
     /// <summary>
     ///     The <see cref="Move"/> struct
-    ///     ...
+    ///     acts as an implementation of the movement logic to move <see cref="Entity"/>s.
+    ///     Can be inlined, the great performance advantage of this approach.
     /// </summary>
     private readonly struct Move : IForEach<Position, Velocity>
     {
         private readonly float _deltaTime;
 
-        // TODO: Documentation.
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Move"/> struct
-        ///     ...
+        ///     Initializes a new instance of the <see cref="Move"/> struct.
         /// </summary>
-        /// <param name="deltaTime"></param>
+        /// <param name="deltaTime">The games delta-time.</param>
         public Move(float deltaTime)
         {
             _deltaTime = deltaTime;
         }
 
-        // TODO: Documentation.
         /// <summary>
-        ///
+        ///     Makes one <see cref="Entity"/> move.
+        ///     Gets called automatically for all entities fitting a <see cref="QueryDescription"/>.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="vel"></param>
+        /// <param name="pos">A reference to the <see cref="Entity"/>s <see cref="Position"/>.</param>
+        /// <param name="vel">A reference to the <see cref="Entity"/>s <see cref="Velocity"/>.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(ref Position pos, ref Velocity vel)
         {
@@ -92,32 +85,30 @@ public class MovementSystem : SystemBase<GameTime>
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
     ///     The <see cref="Bounce"/> struct
-    ///     ...
+    ///     acts as an implementation of the bounce logic to make <see cref="Entity"/>s stay in the viewport.
+    ///     Can be inlined, the great performance advantage of this approach.
     /// </summary>
     private struct Bounce : IForEach<Position, Velocity>
     {
         private Rectangle _viewport;
 
-        // TODO: Documentation.
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Bounce"/> struct
-        ///     ...
+        ///     Initializes a new instance of the <see cref="Bounce"/> struct.
         /// </summary>
-        /// <param name="viewport"></param>
+        /// <param name="viewport">The games viewport as a <see cref="Rectangle"/>.</param>
         public Bounce(Rectangle viewport)
         {
             _viewport = viewport;
         }
 
-        // TODO: Documentation.
         /// <summary>
-        ///
+        ///     Makes one <see cref="Entity"/> bounce of the gamescreen.
+        ///     Gets called automatically for all entities fitting a <see cref="QueryDescription"/>.
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="vel"></param>
+        /// <param name="pos">A reference to the <see cref="Entity"/>s <see cref="Position"/>.</param>
+        /// <param name="vel">A reference to the <see cref="Entity"/>s <see cref="Velocity"/>.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(ref Position pos, ref Velocity vel)
         {
@@ -143,11 +134,10 @@ public class MovementSystem : SystemBase<GameTime>
         }
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Gets called to execute the movement systems logic and make the <see cref="Entity"/>s move and bounce.
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">The <see cref="GameTime"/> being passed from outside the system.</param>
     public override void Update(in GameTime time)
     {
         // Iterates over all entities ( based on the passed QueryDescription ), accesses their Position and Velocity Components and updates them.
@@ -162,34 +152,32 @@ public class MovementSystem : SystemBase<GameTime>
     }
 }
 
-// TODO: Documentation.
+
 /// <summary>
 ///     The <see cref="ColorSystem"/> class
-///     ...
+///     ensures that all <see cref="Entity"/>s update their color.
 /// </summary>
 public class ColorSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToChangeColor = new QueryDescription().WithAll<Sprite>();
     private static GameTime? _gameTime;
 
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ColorSystem"/> class
-    ///     ...
+    ///     Initializes a new instance of the <see cref="ColorSystem"/> class.
     /// </summary>
-    /// <param name="world"></param>
+    /// <param name="world">Its <see cref="World"/>.</param>
     public ColorSystem(World world)
         : base(world) { }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Gets called to execute the color systems logic and to change the <see cref="Entity"/>s color.
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">The <see cref="GameTime"/> being passed from outside the system.</param>
     public override void Update(in GameTime time)
     {
         _gameTime = time;
 
+        // Modifies the color of all entities fitting the entitiesToChangeColor query.
         World.Query(in _entitiesToChangeColor, (ref Sprite sprite) =>
         {
             sprite.Color.R += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
@@ -197,39 +185,36 @@ public class ColorSystem : SystemBase<GameTime>
             sprite.Color.B += (byte)(_gameTime.ElapsedGameTime.TotalMilliseconds * 0.08);
         });
 
+        // A demonstration of bulk adding and removing components.
         World.Add<int>(in _entitiesToChangeColor);
         World.Remove<int>(in _entitiesToChangeColor);
     }
 }
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="DrawSystem"/> class
-///     ...
+///     ensures that all <see cref="Entity"/>s are drawn to the screen.
 /// </summary>
 public class DrawSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToDraw = new QueryDescription().WithAll<Position, Sprite>();
     private readonly SpriteBatch _batch;
 
-    // TODO: Documentation.
     /// <summary>
-    ///     Initializes a new instance of the <see cref="DrawSystem"/> class
-    ///     ...
+    ///     Initializes a new instance of the <see cref="DrawSystem"/> class.
     /// </summary>
-    /// <param name="world"></param>
-    /// <param name="batch"></param>
+    /// <param name="world">Its <see cref="World"/>.</param>
+    /// <param name="batch">The <see cref="SpriteBatch"/> used to draw all <see cref="Entity"/>s.</param>
     public DrawSystem(World world, SpriteBatch batch)
         : base(world)
     {
         _batch = batch;
     }
 
-    // TODO: Documentation.
     /// <summary>
-    ///
+    ///     Gets called to execute the draw systems logic and to draw the <see cref="Entity"/>s.
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">The <see cref="GameTime"/> being passed from outside the system.</param>
     public override void Update(in GameTime time)
     {
         _batch.Begin();

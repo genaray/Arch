@@ -6,7 +6,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Arch.Samples;
 
-// TODO: Documentation?
+/// <summary>
+///     An implementation of the <see cref="Microsoft.Xna.Framework.Game"/> to demonstrate Archs usage.
+/// </summary>
 public class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading.
@@ -25,7 +27,6 @@ public class Game : Microsoft.Xna.Framework.Game
 
     private Random _random;
 
-    // TODO: Documentation?
     public Game()
     {
         _graphics = new GraphicsDeviceManager(this);

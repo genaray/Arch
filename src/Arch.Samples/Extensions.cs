@@ -2,50 +2,46 @@ using Microsoft.Xna.Framework;
 
 namespace Arch.Samples;
 
-// TODO: Documentation.
 /// <summary>
 ///     The <see cref="RandomExtensions"/> class
-///     ...
+///     is an extension class which contains several methods for <see cref="Random"/>.
 /// </summary>
 public static class RandomExtensions
 {
-    // TODO: Documentation.
+
     /// <summary>
-    /// 
+    ///     Creates a random <see cref="Vector2"/> in a predefined area.
     /// </summary>
-    /// <param name="random"></param>
-    /// <param name="rectangle"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <param name="rectangle">The predefined area as a <see cref="Rectangle"/>.</param>
+    /// <returns>A random <see cref="Vector2"/> inside the area.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 NextVector2(this Random random, in Rectangle rectangle)
     {
         return new(random.Next(rectangle.X, rectangle.X + rectangle.Width), random.Next(rectangle.Y, rectangle.Y + rectangle.Height));
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Creates a random <see cref="Vector2"/> by a minimum and maximum value.
     /// </summary>
-    /// <param name="random"></param>
-    /// <param name="min"></param>
-    /// <param name="max"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <param name="min">The minimum possible x and y value.</param>
+    /// <param name="max">The maximum possible x and y value.</param>
+    /// <returns>A random <see cref="Vector2"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 NextVector2(this Random random, float min, float max)
     {
         return new((float)((random.NextDouble() * (max - min)) + min), (float)((random.NextDouble() * (max - min)) + min));
     }
 
-    // TODO: Documentation.
     /// <summary>
-    /// 
+    ///     Creates a random <see cref="Color"/> in the valid RGB colorspace.
     /// </summary>
-    /// <param name="random"></param>
-    /// <returns></returns>
+    /// <param name="random">The <see cref="Random"/> instance.</param>
+    /// <returns>A random <see cref="Color"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Color NextColor(this Random random)
     {
-        // FIXME: The `maxValue` of `Random.Next` is exclusive. These will never generate the valid value `255`.
-        return new(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+        return new(random.Next(0, 256), random.Next(0, 256), random.Next(0, 256));
     }
 }
