@@ -75,19 +75,9 @@ public static class ComponentRegistry
 {
 
     /// <summary>
-    /// All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
+    ///     All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
     /// </summary>
     private static readonly Dictionary<Type, ComponentType> _types = new(128);
-
-    // NOTE: Could this be optimized by editing the array as values get added?
-    /// <summary>
-    ///     Returns an array of all registered <see cref="ComponentType"/>'s.
-    ///     Creates a new array each call.
-    /// </summary>
-    public static ComponentType[] Types
-    {
-        get => _types.Values.ToArray();
-    }
 
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
@@ -149,6 +139,60 @@ public static class ComponentRegistry
     public static bool Has(Type type)
     {
         return _types.ContainsKey(type);
+    }
+
+    /// <summary>
+    ///     Removes a registered component by its <see cref="Type"/> from the <see cref="ComponentRegistry"/>.
+    /// </summary>
+    /// <typeparam name="T">The component to remove.</typeparam>
+    /// <returns>True if it was sucessfull, false if not.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T>()
+    {
+        return _types.Remove(typeof(T));
+    }
+
+    /// <summary>
+    ///     Removes a registered component by its <see cref="Type"/> from the <see cref="ComponentRegistry"/>.
+    /// </summary>
+    /// <param name="type">The component <see cref="Type"/> to remove.</param>
+    /// <returns>True if it was sucessfull, false if not.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove(Type type)
+    {
+        return _types.Remove(type);
+    }
+
+    /// <summary>
+    ///     Replaces a registered component by its <see cref="Type"/> with another one.
+    ///     The new <see cref="Type"/> will receive the id from the old one.
+    ///     <remarks>Use with caution, might cause undefined behaviour if you do not know what exactly you are doing.</remarks>
+    /// </summary>
+    /// <typeparam name="T0">The old component to be replaced.</typeparam>
+    /// <typeparam name="T1">The new component that replaced the old one.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Replace<T0,T1>()
+    {
+        var oldType = typeof(T0);
+        var newType = typeof(T1);
+        Replace(oldType, newType);
+    }
+
+    /// <summary>
+    ///     Replaces a registered component by its <see cref="Type"/> with another one.
+    ///     The new <see cref="Type"/> will receive the id from the old one.
+    ///     <remarks>Use with caution, might cause undefined behaviour if you do not know what exactly you are doing.</remarks>
+    /// </summary>
+    /// <param name="oldType">The old component <see cref="Type"/> to be replaced.</param>
+    /// <param name="newType">The new component <see cref="Type"/> that replaced the old one.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Replace(Type oldType, Type newType)
+    {
+        var oldComponentType = _types[oldType];
+        _types.Remove(oldType);
+
+        var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
+        _types.Add(newType, new ComponentType(oldComponentType.Id, newType, size, newType.GetFields().Length == 0));
     }
 
     /// <summary>
@@ -295,7 +339,6 @@ public static class Component
     public static int GetHashCode(BitSet obj)
     {
         // From https://stackoverflow.com/a/52172541.
-        // From https://stackoverflow.com/a/52172541.
         unchecked
         {
             var span = obj.AsSpan();
@@ -338,7 +381,6 @@ public static class Component
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(ref SpanBitSet obj)
     {
-        // From https://stackoverflow.com/a/52172541.
         // From https://stackoverflow.com/a/52172541.
         unchecked
         {
