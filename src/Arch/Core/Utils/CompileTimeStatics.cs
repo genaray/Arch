@@ -80,6 +80,25 @@ public static class ComponentRegistry
     private static readonly Dictionary<Type, ComponentType> _types = new(128);
 
     /// <summary>
+    ///     All registered components mapped to their <see cref="Type"/> as a <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    public static Dictionary<Type, ComponentType> Types
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _types;
+    }
+
+    /// <summary>
+    ///     TODO: Store array somewhere and update it to reduce allocations.
+    ///     All registered components as an <see cref="ComponentType"/> array.
+    /// </summary>
+    public static ComponentType[] TypesArray
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _types.Values.ToArray();
+    }
+
+    /// <summary>
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
     public static int Size { get; private set; }
@@ -188,11 +207,20 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Replace(Type oldType, Type newType)
     {
-        var oldComponentType = _types[oldType];
-        _types.Remove(oldType);
+        var id = 0;
+        if (TryGet(oldType, out var oldComponentType))
+        {
+            id = oldComponentType.Id;
+            _types.Remove(oldType);
+        }
+        else
+        {
+            id = Size;
+            Size++;
+        }
 
         var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
-        _types.Add(newType, new ComponentType(oldComponentType.Id, newType, size, newType.GetFields().Length == 0));
+        _types.Add(newType, new ComponentType(id, newType, size, newType.GetFields().Length == 0));
     }
 
     /// <summary>
