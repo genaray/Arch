@@ -113,7 +113,7 @@ public partial class World : IDisposable
         GroupToArchetype = new PooledDictionary<int, Archetype>(8);
 
         // Entity stuff.
-        Archetypes = new PooledList<Archetype>(8);
+        Archetypes = new PooledList<Archetype>(8, ClearMode.Never);
         EntityInfo = new PooledDictionary<int, EntityInfo>(256);
         RecycledIds = new PooledQueue<RecycledEntity>(256);
 
@@ -150,7 +150,7 @@ public partial class World : IDisposable
     /// <summary>
     ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
     /// </summary>
-    public PooledList<Archetype> Archetypes { get; }
+    public PooledList<Archetype?> Archetypes { get; }
 
     /// <summary>
     ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
@@ -187,13 +187,24 @@ public partial class World : IDisposable
     public static void Destroy(World world)
     {
         Worlds.Remove(world);
-        world.TrimExcess();
+
+        world.Capacity = 0;
+        world.Size = 0;
+
+        // Dispose
         world.JobHandles.Dispose();
         world.GroupToArchetype.Dispose();
-        world.Archetypes.Dispose();
         world.EntityInfo.Dispose();
         world.RecycledIds.Dispose();
         world.QueryCache.Dispose();
+
+        // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
+        for (var index = 0; index < world.Archetypes.Count; index++)
+        {
+            world.Archetypes[index] = null;
+        }
+
+        world.Archetypes.Dispose();
     }
 
     /// <summary>
