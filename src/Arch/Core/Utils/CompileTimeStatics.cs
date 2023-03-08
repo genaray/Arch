@@ -10,20 +10,6 @@ namespace Arch.Core.Utils;
 /// </summary>
 public readonly struct ComponentType
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
-    /// </summary>
-    /// <param name="id">Its unique id.</param>
-    /// <param name="type">Its type.</param>
-    /// <param name="byteSize">Its size in bytes.</param>
-    /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
-    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
-    {
-        Id = id;
-        Type = type;
-        ByteSize = byteSize;
-        ZeroSized = zeroSized;
-    }
 
     /// <summary>
     ///     Represents a unique Id for this component.
@@ -44,6 +30,21 @@ public readonly struct ComponentType
     ///     If its zero sized.
     /// </summary>
     public readonly bool ZeroSized;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
+    /// </summary>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="type">Its type.</param>
+    /// <param name="byteSize">Its size in bytes.</param>
+    /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
+    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
+    {
+        Id = id;
+        Type = type;
+        ByteSize = byteSize;
+        ZeroSized = zeroSized;
+    }
 
     /// <summary>
     ///     Converts a <see cref="Type"/> to its <see cref="ComponentType"/>.

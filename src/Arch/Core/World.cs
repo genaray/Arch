@@ -267,8 +267,11 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Move(in Entity entity, Archetype from, Archetype to, out Slot newSlot)
     {
+        // Cache id since in Entity is basically ref readonly entity.
+        var id = entity.Id;
+
         // Copy entity to other archetype
-        var entityInfo = EntityInfo[entity.Id];
+        var entityInfo = EntityInfo[id];
         var created = to.Add(in entity, out newSlot);
         Archetype.CopyComponents(from, ref entityInfo.Slot, to,ref newSlot);
         from.Remove(ref entityInfo.Slot, out var movedEntity);
@@ -281,7 +284,7 @@ public partial class World : IDisposable
         // Update mapping of target entity
         entityInfo.Archetype = to;
         entityInfo.Slot = newSlot;
-        EntityInfo[entity.Id] = entityInfo;
+        EntityInfo[id] = entityInfo;
 
         // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
         var difference = 0;

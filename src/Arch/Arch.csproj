@@ -14,15 +14,12 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.1.9</Version>
+    <Version>1.2.1</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>
-      Fixed structural changes memory leak.
-      Added destroy, set, add and remove operations for QueryDescriptions to target a range of entities.
-      Fixed proper entityinfo update and leak.
-      Small performance improvements.
+      Fixed a bug where frequent adding/removing components cause a messed up EntityInfo dictionary and therefore mostly a crash sooner or later.
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
