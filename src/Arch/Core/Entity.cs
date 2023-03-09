@@ -1,4 +1,5 @@
 using Arch.Core.Extensions;
+using Arch.Core.Utils;
 
 namespace Arch.Core;
 
@@ -109,6 +110,7 @@ public readonly struct Entity : IEquatable<Entity>
 ///     The <see cref="Entity"/> struct
 ///     represents a general-purpose object and can be assigned a set of components that act as data.
 /// </summary>
+[DebuggerTypeProxy(typeof(EntityDebugView))]
 [SkipLocalsInit]
 public readonly struct Entity : IEquatable<Entity>
 {
