@@ -4,7 +4,7 @@ namespace Arch.Core.Utils;
 
 /// <summary>
 ///     A debug view exclusive for the <see cref="Entity"/> to ease the debugging.
-///     <remarks>Not available for pure_ecs.</remarks>
+///     <remarks>Not available for #define pure_ecs.</remarks>
 /// </summary>
 internal sealed class EntityDebugView
 {
@@ -21,14 +21,9 @@ internal sealed class EntityDebugView
     }
 
     /// <summary>
-    /// The <see cref="World"/> this <see cref="Entity"/> lives in.
+    /// The id of this <see cref="Entity"/>.
     /// </summary>
-    public World World => IsAlive ? World.Worlds[_entity.WorldId] : null;
-
-    /// <summary>
-    /// The stored <see cref="EntityInfo"/> for this <see cref="Entity"/>.
-    /// </summary>
-    public EntityInfo EntityInfo => IsAlive ? World.EntityInfo[_entity.Id] : new EntityInfo();
+    public int Id => _entity.Id;
 
     /// <summary>
     /// The status of this <see cref="Entity"/>.
@@ -38,5 +33,15 @@ internal sealed class EntityDebugView
     /// <summary>
     /// The <see cref="Entity"/>s components.
     /// </summary>
-    public object[] Components { get; private set; }
+    public object[] Components { get; }
+
+    /// <summary>
+    /// The stored <see cref="EntityInfo"/> for this <see cref="Entity"/>.
+    /// </summary>
+    public EntityInfo EntityInfo => IsAlive ? World.EntityInfo[_entity.Id] : new EntityInfo();
+
+    /// <summary>
+    /// The <see cref="World"/> this <see cref="Entity"/> lives in.
+    /// </summary>
+    public World World => IsAlive ? World.Worlds[_entity.WorldId] : null;
 }
