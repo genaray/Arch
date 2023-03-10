@@ -8,7 +8,7 @@ namespace Arch.Core.Utils;
 ///     For example, every game object that can take damage might have a Health component associated with its <see cref="Entity"/>.
 ///     Is created by compile time static or during runtime, look at the <see cref="ComponentRegistry"/>.
 /// </summary>
-public readonly struct ComponentType
+public readonly record struct ComponentType
 {
 
     /// <summary>

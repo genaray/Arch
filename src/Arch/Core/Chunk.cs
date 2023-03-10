@@ -210,6 +210,16 @@ public partial struct Chunk
     {
         Size = 0;
     }
+
+    /// <summary>
+    ///     Converts this <see cref="Chunk"/> to a human readable string.
+    /// </summary>
+    /// <returns>A string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override string ToString()
+    {
+        return $"Chunk = {{ {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
+    }
 }
 
 public partial struct Chunk

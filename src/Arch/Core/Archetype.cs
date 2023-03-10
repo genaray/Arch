@@ -354,6 +354,17 @@ public sealed partial class Archetype
             chunk.Clear();
         }
     }
+
+    /// <summary>
+    ///     Converts this <see cref="Archetype"/> to a human readable string.
+    /// </summary>
+    /// <returns>A string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override string ToString()
+    {
+        var types =  string.Join(",", Types.Select(p => p.Type.Name).ToArray());
+        return $"Archetype {{ {nameof(Types)} = {{ {types} }}, {nameof(BitSet)} = {{ {BitSet} }}, {nameof(EntitiesPerChunk)} = {EntitiesPerChunk}, {nameof(ChunkSize)} = {ChunkSize}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size}, {nameof(Entities)} = {Entities} }}";
+    }
 }
 
 public sealed unsafe partial class Archetype

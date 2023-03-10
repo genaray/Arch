@@ -450,6 +450,16 @@ public partial class World : IDisposable
     {
         Destroy(this);
     }
+
+    /// <summary>
+    ///     Converts this <see cref="World"/> to a human readable string.
+    /// </summary>
+    /// <returns>A string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override string ToString()
+    {
+        return $"World {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
+    }
 }
 
 public partial class World

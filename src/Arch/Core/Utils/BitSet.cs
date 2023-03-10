@@ -294,6 +294,7 @@ public class BitSet
         {
             binaryBuilder.Append(Convert.ToString(bit, 2)).Append(',');
         }
+        binaryBuilder.Length--;
 
         return $"{nameof(_bits)}: {binaryBuilder}, {nameof(Length)}: {Length}";
     }
@@ -443,6 +444,7 @@ public ref struct SpanBitSet
         {
             binaryBuilder.Append(Convert.ToString(bit, 2)).Append(',');
         }
+        binaryBuilder.Length--;
 
         return $"{nameof(_bits)}: {string.Join(",", binaryBuilder)}";
     }
