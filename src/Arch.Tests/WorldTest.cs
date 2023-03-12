@@ -5,6 +5,10 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+/// <summary>
+///     The <see cref="WorldTest"/> class
+///     tests basic <see cref="World"/> operations.
+/// </summary>
 [TestFixture]
 public partial class WorldTest
 {
@@ -35,6 +39,9 @@ public partial class WorldTest
         World.Destroy(_world);
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
+    /// </summary>
     [Test]
     public void Create()
     {
@@ -45,6 +52,9 @@ public partial class WorldTest
         True(_world.IsAlive(in entity));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> destroys <see cref="Entity"/> correctly.
+    /// </summary>
     [Test]
     public void Destroy()
     {
@@ -58,6 +68,9 @@ public partial class WorldTest
         False(_world.IsAlive(in entity));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> is capable of destroying all <see cref="Entity"/> correctly.
+    /// </summary>
     [Test]
     public void DestroyAll()
     {
@@ -77,6 +90,9 @@ public partial class WorldTest
         That(_world.Archetypes[1].Size, Is.EqualTo(1));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> recycles destroyed <see cref="Entity"/> correctly.
+    /// </summary>
     [Test]
     public void Recycle()
     {
@@ -93,6 +109,9 @@ public partial class WorldTest
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> references <see cref="Entity"/> with <see cref="EntityReference"/> correctly.
+    /// </summary>
     [Test]
     public void Reference()
     {
@@ -126,6 +145,9 @@ public partial class WorldTest
         That(cons.IsAlive, Is.EqualTo(false));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> adjusts its capacity when creating <see cref="Entity"/>s correctly.
+    /// </summary>
     [Test]
     public void CapacityTest()
     {
@@ -147,6 +169,9 @@ public partial class WorldTest
         That(after, Is.EqualTo(before));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> reserves memory for <see cref="Entity"/>s correctly.
+    /// </summary>
     [Test]
     public void Reserve()
     {
@@ -164,6 +189,66 @@ public partial class WorldTest
         That(_world.Capacity, Is.EqualTo(beforeCapacity + 10000));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> trims its content correctly.
+    /// </summary>
+    [Test]
+    public void TrimExcess()
+    {
+        // Fill world
+        var amount = 10000;
+        using var world = World.Create();
+        for (int index = 0; index < amount; index++)
+        {
+            world.Create<HeavyComponent>();
+        }
+
+        // Destroy half of the world entities
+        var counter = 0;
+        var query = new QueryDescription().WithAll<HeavyComponent>();
+        world.Query(in query, (in Entity entity) =>
+        {
+            if (counter < amount - 1)
+            {
+                world.Destroy(entity);
+            }
+            counter++;
+        });
+
+        // Trim
+        world.TrimExcess();
+
+        var archetype = world.Archetypes[0];
+        That(world.Size, Is.EqualTo(1));
+        That(world.Capacity, Is.EqualTo(archetype.EntitiesPerChunk));
+        That(archetype.Size, Is.EqualTo(1));
+        That(archetype.Capacity, Is.EqualTo(1));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> clears itself correctly.
+    /// </summary>
+    [Test]
+    public void Clear()
+    {
+        // Fill world
+        var amount = 1000;
+        using var world = World.Create();
+        for (int index = 0; index < amount; index++)
+        {
+            world.Create<int>();
+        }
+
+        // Trim
+        world.Clear();
+
+        That(world.Size, Is.EqualTo(0));
+        That(world.Capacity, Is.EqualTo(0));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> creates different <see cref="Entity"/> with different <see cref="Archetype"/>s correctly.
+    /// </summary>
     [Test]
     public void MultipleArchetypesTest()
     {
@@ -176,6 +261,9 @@ public partial class WorldTest
         That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity1)));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> gets <see cref="Entity"/>s correctly.
+    /// </summary>
     [Test]
     public void GetEntitesTest()
     {
@@ -201,6 +289,9 @@ public partial class WorldTest
         That(entites.Count, Is.EqualTo(0));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> counts <see cref="Entity"/> correctly.
+    /// </summary>
     [Test]
     public void CountEntitiesTest()
     {
@@ -225,6 +316,9 @@ public partial class WorldTest
 public partial class WorldTest
 {
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> bulk set by using a <see cref="QueryDescription"/> works correctly.
+    /// </summary>
     [Test]
     public void SetByQueryDescription()
     {
@@ -238,6 +332,9 @@ public partial class WorldTest
         });
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> bulk destroy by using a <see cref="QueryDescription"/> works correctly.
+    /// </summary>
     [Test]
     public void DestroyByQueryDescription()
     {
@@ -253,6 +350,9 @@ public partial class WorldTest
         That(world.Size, Is.EqualTo(0));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> bulk add by using a <see cref="QueryDescription"/> works correctly.
+    /// </summary>
     [Test]
     public void AddByQueryDescription()
     {
@@ -270,6 +370,9 @@ public partial class WorldTest
         That(world.CountEntities(in withoutAIQueryDesc), Is.EqualTo(0));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> bulk remove by using a <see cref="QueryDescription"/> works correctly.
+    /// </summary>
     [Test]
     public void RemoveByQueryDescription()
     {
@@ -293,6 +396,9 @@ public partial class WorldTest
 public partial class WorldTest
 {
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s set get and has operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void SetGetAndHas()
     {
@@ -307,6 +413,9 @@ public partial class WorldTest
         That(transform.Y, Is.EqualTo(10));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s remove operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void Remove()
     {
@@ -321,6 +430,9 @@ public partial class WorldTest
         That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s add operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void Add()
     {
@@ -340,6 +452,9 @@ public partial class WorldTest
 public partial class WorldTest
 {
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s non generic set get and has operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void SetGetAndHas_NonGeneric()
     {
@@ -353,6 +468,9 @@ public partial class WorldTest
         That(transform.Y, Is.EqualTo(10));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s non generic remove operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void Remove_NonGeneric()
     {
@@ -366,6 +484,9 @@ public partial class WorldTest
         That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s non generic add operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void Add_NonGeneric()
     {
@@ -386,6 +507,9 @@ public partial class WorldTest
 public partial class WorldTest
 {
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s source generated create operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void GeneratedCreate()
     {
@@ -396,6 +520,9 @@ public partial class WorldTest
         True(_world.IsAlive(in entity));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s source generated set get has operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void GeneratedSetGetAndHas()
     {
@@ -410,6 +537,9 @@ public partial class WorldTest
         That(references.t1.Y, Is.EqualTo(20));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s source generated remove operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void GeneratedRemove()
     {
@@ -424,6 +554,9 @@ public partial class WorldTest
         That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/>s source generated add operations on <see cref="Entity"/>s works correctly.
+    /// </summary>
     [Test]
     public void GeneratedAdd()
     {

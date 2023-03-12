@@ -344,6 +344,32 @@ public partial class World : IDisposable
     }
 
     /// <summary>
+    ///     Clears or resets this <see cref="World"/> instance, will drop used <see cref="Archetypes"/> and therefore release some memory sooner or later.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        Capacity = 0;
+        Size = 0;
+
+        // Clear
+        EntityInfo.Clear();
+        RecycledIds.Clear();
+        JobHandles.Clear();
+        GroupToArchetype.Clear();
+        EntityInfo.Clear();
+        RecycledIds.Clear();
+        QueryCache.Clear();
+
+        // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
+        for (var index = 0; index < Archetypes.Count; index++)
+        {
+            Archetypes[index] = null;
+        }
+        Archetypes.Clear();
+    }
+
+    /// <summary>
     ///     Creates a <see cref="Arch.Core.Query"/> using a <see cref="QueryDescription"/>
     ///     which can be used to iterate over the matching <see cref="Entity"/>'s, <see cref="Archetype"/>'s and <see cref="Chunk"/>'s.
     /// </summary>
@@ -398,6 +424,29 @@ public partial class World : IDisposable
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
                 list.Add(entity);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>'s.</param>
+    /// <param name="start">The start index inside the <see cref="Span{T}"/>, will append after that index. Default is 0.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
+    {
+        var index = 0;
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query)
+        {
+            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            foreach(var entityIndex in chunk)
+            {
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                list[start+index] = entity;
+                index++;
             }
         }
     }

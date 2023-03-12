@@ -17,7 +17,7 @@ internal sealed class EntityDebugView
     public EntityDebugView(Entity entity)
     {
         _entity = entity;
-        Components = entity.GetAllComponents();
+        Components = IsAlive ? entity.GetAllComponents() : null;
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ public readonly struct Entity : IEquatable<Entity>
     /// <summary>
     ///     Its Id, unique in its <see cref="World"/>.
     /// </summary>
-    public readonly int Id;
+    public readonly int Id = -1;
 
     /// <summary>
     ///     A null entity, used for comparison.
@@ -114,7 +114,6 @@ public readonly struct Entity : IEquatable<Entity>
 [SkipLocalsInit]
 public readonly struct Entity : IEquatable<Entity>
 {
-
     /// <summary>
     ///      Its Id, unique in its <see cref="World"/>.
     /// </summary>
@@ -129,6 +128,15 @@ public readonly struct Entity : IEquatable<Entity>
     ///     A null <see cref="Entity"/> used for comparison.
     /// </summary>
     public static Entity Null = new(-1, 0);
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Entity"/> struct with default values.
+    /// </summary>
+    public Entity()
+    {
+        Id = -1;
+        WorldId = 0;
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Entity"/> struct.
@@ -211,7 +219,7 @@ public readonly struct Entity : IEquatable<Entity>
     /// <returns>Its string.</returns>
     public override string ToString()
     {
-        return $"{nameof(Id)}: {Id}, {nameof(WorldId)}: {WorldId}";
+        return $"Entity = {{ {nameof(Id)} = {Id}, {nameof(WorldId)} = {WorldId} }}";
     }
 }
 #endif
@@ -341,5 +349,14 @@ public readonly struct EntityReference
     public static bool operator !=(EntityReference left, EntityReference right)
     {
         return !left.Equals(right);
+    }
+
+    /// <summary>
+    ///     Converts this <see cref="EntityReference"/> to a string.
+    /// </summary>
+    /// <returns>Its string.</returns>
+    public override string ToString()
+    {
+        return $"EntityReference = {{ {nameof(Entity)} = {Entity}, {nameof(Version)} = {Version} }}";
     }
 }

@@ -197,7 +197,7 @@ public class CommandBuffer : IDisposable
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in Entity entity, in T component)
+    public void Set<T>(in Entity entity, in T component = default)
     {
         BufferedEntityInfo info;
         lock (this)
@@ -220,7 +220,7 @@ public class CommandBuffer : IDisposable
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in Entity entity, in T component)
+    public void Add<T>(in Entity entity, in T component = default)
     {
         BufferedEntityInfo info;
         lock (this)

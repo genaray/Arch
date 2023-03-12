@@ -105,7 +105,7 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="cmp">The instance, optional.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Set<T>(this in Entity entity, in T component)
+    public static void Set<T>(this in Entity entity, in T component = default)
     {
         var world = World.Worlds[entity.WorldId];
         world.Set(in entity, in component);
