@@ -1,3 +1,4 @@
+#if !PURE_ECS
 using Arch.Core.Extensions;
 
 namespace Arch.Core.Utils;
@@ -45,3 +46,5 @@ internal sealed class EntityDebugView
     /// </summary>
     public World World => IsAlive ? World.Worlds[_entity.WorldId] : null;
 }
+
+#endif
