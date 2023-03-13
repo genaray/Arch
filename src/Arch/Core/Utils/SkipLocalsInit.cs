@@ -1,4 +1,4 @@
-namespace System.Runtime.CompilerServices;
+﻿namespace System.Runtime.CompilerServices;
 
 [AttributeUsage(
     AttributeTargets.Module
@@ -9,7 +9,6 @@ namespace System.Runtime.CompilerServices;
     | AttributeTargets.Method
     | AttributeTargets.Property
     | AttributeTargets.Event, Inherited = false)]
-public sealed class SkipLocalsInitAttribute : Attribute
+internal sealed class SkipLocalsInitAttribute : Attribute
 {
-    public SkipLocalsInitAttribute() { }
 }
