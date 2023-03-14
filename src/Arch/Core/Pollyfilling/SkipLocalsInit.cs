@@ -1,5 +1,8 @@
 ﻿namespace System.Runtime.CompilerServices;
 
+/// <summary>
+///     Forwards the SkipLocalInit to .NetStandard2.1.
+/// </summary>
 [AttributeUsage(
     AttributeTargets.Module
     | AttributeTargets.Class

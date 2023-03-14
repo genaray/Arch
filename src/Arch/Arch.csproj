@@ -14,7 +14,7 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.3-beta</Version>
+    <Version>1.2.3.1-beta</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
@@ -23,6 +23,9 @@
       Added DebugViews for Entity and some other classes.
       Removed struct constraints from entity methods.
       Fixed `entity.Set` method to have a default value set.
+      Commandbuffer operations now feature default values.
+      `World.Clear()´ now clears the whole world.
+      `World.GetEntities(Span{Entity})` as an alternative to the list variant.
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
