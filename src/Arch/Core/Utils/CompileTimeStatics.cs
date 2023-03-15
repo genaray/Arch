@@ -111,9 +111,46 @@ public static class ComponentRegistry
     /// </summary>
     public static int Size { get; private set; }
 
+    /// <summary>
+    ///     Converts a <see cref="Type"/> into a fitting <see cref="ComponentType"/>.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType ToComponentType(Type type)
+    {
+        // Get size of type
+        int size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
+        bool managed = !type.IsValueType;
+
+        // Check if struct is managed by escalation
+        if (type.IsValueType)
+        {
+            var handle = new GCHandle();
+            var obj = RuntimeHelpers.GetUninitializedObject(type);
+            try
+            {
+                handle = GCHandle.Alloc(obj, GCHandleType.Pinned);
+                managed = false;
+            }
+            catch
+            {
+                managed = true;
+            }
+
+            // Free otherwhise handle will never be freed.
+            if(!managed)
+            {
+                handle.Free();
+            }
+        }
+
+        return new ComponentType(Size, type, managed, size, type.GetFields().Length == 0);
+    }
 
     /// <summary>
     ///     Adds a new <see cref="ComponentType"/> manually and registers it.
+    ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
@@ -147,8 +184,7 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
-        meta = new ComponentType(Size, type, !type.IsValueType, size, type.GetFields().Length == 0);
+        meta = ToComponentType(type);
         _types.Add(type, meta);
 
         Size++;

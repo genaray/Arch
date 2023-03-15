@@ -53,7 +53,6 @@ public unsafe partial struct Chunk
         // Calculate capacity and init arrays.
         Size = 0;
         Capacity = capacity;
-        ComponentsSize = types.Length;
 
         Entities = (Entity*)Marshal.AllocHGlobal(sizeof(Entity) * Capacity);
         Components = new ComponentArray[types.Length];
@@ -90,10 +89,6 @@ public unsafe partial struct Chunk
     /// </summary>
     public readonly ComponentArray[] Components { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-    /// <summary>
-    ///
-    /// </summary>
-    internal int ComponentsSize { get; set; }
 
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
@@ -218,7 +213,7 @@ public unsafe partial struct Chunk
 
         // Copy last entity to replace the removed one.
         Entities[index] = Entities[lastIndex];
-        for (var i = 0; i < ComponentsSize; i++)
+        for (var i = 0; i < Components.Length; i++)
         {
             var array = Components[i];
             var indexPtr = array.NativeArray + (array.ByteSize * index);

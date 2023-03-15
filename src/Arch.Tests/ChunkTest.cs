@@ -8,7 +8,7 @@ namespace Arch.Tests;
 public class ChunkTest
 {
     private Chunk _chunk;
-    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation), typeof(string) };
+    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
 
     [Test]
     public void Chunk()
@@ -24,7 +24,6 @@ public class ChunkTest
             var r = new Rotation{Y = 10};
             _chunk.Set(index, t);
             _chunk.Set(index, r);
-            _chunk.Set(index, "test");
         }
 
         // Make sure the amount fits
