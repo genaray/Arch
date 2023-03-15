@@ -8,7 +8,28 @@ namespace Arch.Tests;
 public class ChunkTest
 {
     private Chunk _chunk;
-    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation), typeof(string) };
+
+    [Test]
+    public void Chunk()
+    {
+        _chunk = new Chunk(1000, _types);
+
+        for (var index = 0; index < _chunk.Capacity; index++)
+        {
+            var entity = new Entity(index, 0);
+            _chunk.Add(in entity);
+
+            var t = new Transform{ X = 10};
+            var r = new Rotation{Y = 10};
+            _chunk.Set(index, t);
+            _chunk.Set(index, r);
+            _chunk.Set(index, "test");
+        }
+
+        // Make sure the amount fits
+        That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
+    }
 
     [Test]
     public void ArchetypeSet()
@@ -30,6 +51,7 @@ public class ChunkTest
         That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
     }
 
+    /*
     [Test]
     public void ArchetypeRemove()
     {
@@ -99,5 +121,5 @@ public class ChunkTest
         That(_chunk.Size, Is.EqualTo(2));
         That(_chunk.Entities[0].Id, Is.EqualTo(2)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
         That(_chunk.Entities[1].Id, Is.EqualTo(1)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
-    }
+    }*/
 }

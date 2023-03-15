@@ -19,6 +19,7 @@ public class ArchetypeIterationTechniquesBenchmark
     private Consumer? _consumer;
     private Archetype? _globalArchetype;
 
+    /*
     [GlobalSetup]
     public void Setup()
     {
@@ -189,5 +190,5 @@ public class ArchetypeIterationTechniquesBenchmark
                 entityLastElement = ref Unsafe.Subtract(ref entityLastElement, 1);
             }
         }
-    }
+    }*/
 }

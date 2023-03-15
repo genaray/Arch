@@ -15,6 +15,7 @@ public class ArchetypeIterationBenchmark
     private Consumer? _consumer;
     private Archetype? _globalArchetype;
 
+    /*
     [GlobalSetup]
     public void Setup()
     {
@@ -181,5 +182,5 @@ public class ArchetypeIterationBenchmark
                 _consumer.Consume(currentRotation);
             }
         }
-    }
+    }*/
 }

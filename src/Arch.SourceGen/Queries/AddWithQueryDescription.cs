@@ -81,7 +81,7 @@ public static class AddWithQueryDescription
                     for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
                     {
                         ref var chunk = ref archetype.GetChunk(chunkIndex);
-                        ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                        ref var entityFirstElement = ref chunk.Entity(0);
                         for (var index = archetypeSlot.Index; index >= 0; --index)
                         {
                             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);

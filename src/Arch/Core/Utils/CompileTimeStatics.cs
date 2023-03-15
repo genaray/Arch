@@ -22,6 +22,11 @@ public readonly record struct ComponentType
     public readonly Type Type;
 
     /// <summary>
+    ///     True if its a managed class or a managed struct.
+    /// </summary>
+    public readonly bool IsManaged;
+
+    /// <summary>
     ///     Its size in bytes.
     /// </summary>
     public readonly int ByteSize;
@@ -31,6 +36,7 @@ public readonly record struct ComponentType
     /// </summary>
     public readonly bool ZeroSized;
 
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
     /// </summary>
@@ -38,10 +44,11 @@ public readonly record struct ComponentType
     /// <param name="type">Its type.</param>
     /// <param name="byteSize">Its size in bytes.</param>
     /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
-    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
+    public ComponentType(int id, Type type, bool isManaged, int byteSize, bool zeroSized)
     {
         Id = id;
         Type = type;
+        IsManaged = isManaged;
         ByteSize = byteSize;
         ZeroSized = zeroSized;
     }
@@ -104,15 +111,26 @@ public static class ComponentRegistry
     /// </summary>
     public static int Size { get; private set; }
 
+
     /// <summary>
-    ///     Adds a new component and registers it.
+    ///     Adds a new <see cref="ComponentType"/> manually and registers it.
     /// </summary>
-    /// <typeparam name="T">The generic type.</typeparam>
+    /// <param name="type">Its <see cref="Type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ComponentType Add<T>()
+    public static ComponentType Add(ComponentType type)
     {
-        return Add(typeof(T));
+        if (TryGet(type, out var meta))
+        {
+            return meta;
+        }
+
+        // Register and assign component id
+        meta = type;
+        _types.Add(type, meta);
+
+        Size++;
+        return meta;
     }
 
     /// <summary>
@@ -130,7 +148,7 @@ public static class ComponentRegistry
 
         // Register and assign component id
         var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
-        meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
+        meta = new ComponentType(Size, type, !type.IsValueType, size, type.GetFields().Length == 0);
         _types.Add(type, meta);
 
         Size++;
@@ -221,7 +239,7 @@ public static class ComponentRegistry
         }
 
         var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
-        _types.Add(newType, new ComponentType(id, newType, size, newType.GetFields().Length == 0));
+        _types.Add(newType, new ComponentType(id, newType, oldComponentType.IsManaged, size, newType.GetFields().Length == 0));
     }
 
     /// <summary>
@@ -265,7 +283,7 @@ public static class Component<T>
     /// </summary>
     static Component()
     {
-        ComponentType = ComponentRegistry.Add<T>();
+        ComponentType = ComponentRegistry.Add(typeof(T));
     }
 
     /// <summary>
@@ -273,6 +291,7 @@ public static class Component<T>
     /// </summary>
     public static readonly ComponentType ComponentType;
 }
+
 
 /// <summary>
 ///     The <see cref="Component"/> class provides information about a component during runtime.

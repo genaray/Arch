@@ -46,16 +46,6 @@ public static class StringBuilderExtensions
         return sb;
     }
 
-    public static StringBuilder GetLastGenericElements(this StringBuilder sb, int amount)
-    {
-        for (var localIndex = 0; localIndex <= amount; localIndex++)
-        {
-            sb.AppendLine($"ref var t{localIndex}LastElement = ref ArrayExtensions.DangerousGetReferenceAt(t{localIndex}Array, chunkSize-1);");
-        }
-
-        return sb;
-    }
-
     public static StringBuilder GetGenericComponents(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)

@@ -85,9 +85,9 @@ public struct ForEachJob : IChunkJob
     /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Execute(int index, ref Chunk chunk)
+    public unsafe void Execute(int index, ref Chunk chunk)
     {
-        ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+        ref var entityFirstElement = ref chunk.Entity(0);
         foreach(var entityIndex in chunk)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -116,9 +116,9 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
     /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Execute(int index, ref Chunk chunk)
+    public unsafe void Execute(int index, ref Chunk chunk)
     {
-        ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+        ref var entityFirstElement = ref Unsafe.AsRef<Entity>(chunk.Entities);
         foreach(var entityIndex in chunk)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);

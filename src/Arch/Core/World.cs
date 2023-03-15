@@ -414,12 +414,12 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
     /// <param name="list">The <see cref="IList{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
+    public unsafe void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityFirstElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -435,13 +435,13 @@ public partial class World : IDisposable
     /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>, will append after that index. Default is 0.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
+    public unsafe void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
     {
         var index = 0;
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityFirstElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -594,12 +594,12 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Query(in QueryDescription queryDescription, ForEach forEntity)
+    public unsafe void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var entityLastElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityLastElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityLastElement, entityIndex);
@@ -615,14 +615,14 @@ public partial class World
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    public unsafe void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
         var t = new T();
 
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityFirstElement = ref chunk.Entity(0);;
             foreach (var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -639,12 +639,12 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
+    public unsafe void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+            ref var entityFirstElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -774,7 +774,7 @@ public partial class World
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s will be destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Destroy(in QueryDescription queryDescription)
+    public unsafe void Destroy(in QueryDescription queryDescription)
     {
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
@@ -782,7 +782,7 @@ public partial class World
             Size -= archetype.Entities;
             foreach (ref var chunk in archetype)
             {
-                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                ref var entityFirstElement = ref chunk.Entity(0);
                 foreach (var index in chunk)
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
@@ -828,7 +828,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in QueryDescription queryDescription, in T component = default)
+    public unsafe void Add<T>(in QueryDescription queryDescription, in T component = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -866,7 +866,7 @@ public partial class World
             for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
             {
                 ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                ref var entityFirstElement = ref chunk.Entity(0);
                 for (var index = archetypeSlot.Index; index >= 0; --index)
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
@@ -892,7 +892,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Remove<T>(in QueryDescription queryDescription)
+    public unsafe void Remove<T>(in QueryDescription queryDescription)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -929,7 +929,7 @@ public partial class World
             for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
             {
                 ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+                ref var entityFirstElement = ref chunk.Entity(0);
                 for (var index = archetypeSlot.Index; index >= 0; --index)
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
@@ -1486,6 +1486,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public object[] GetAllComponents(in Entity entity)
     {
+        /*
         // Get archetype and chunk.
         var entityInfo = EntityInfo[entity.Id];
         var archetype = entityInfo.Archetype;
@@ -1503,7 +1504,8 @@ public partial class World
             cmps[index] = component;
         }
 
-        return cmps;
+        return cmps;*/
+        return null;
     }
 }
 

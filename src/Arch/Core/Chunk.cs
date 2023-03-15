@@ -5,12 +5,33 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+public unsafe struct ComponentArray
+{
+    public readonly IntPtr NativeArray;
+    public readonly Array Array;
+    public readonly int ByteSize;
+
+    public ComponentArray(IntPtr nativeArray, int byteSize)
+    {
+        ByteSize = byteSize;
+        NativeArray = nativeArray;
+    }
+
+    public ComponentArray(Array array, int byteSize)
+    {
+        ByteSize = byteSize;
+        Array = array;
+    }
+
+    public static implicit operator void*(ComponentArray instance) => (void*)instance.NativeArray;
+}
+
 /// <summary>
 ///     The <see cref="Chunk"/> struct represents a contiguous block of memory in which various components are stored in Structure of Arrays.
 ///     Chunks are internally allocated and filled by <see cref="Archetype"/>'s.
 ///     Through them it is possible to efficiently provide or trim memory for additional entities.
 /// </summary>
-public partial struct Chunk
+public unsafe partial struct Chunk
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="Chunk"/> struct.
@@ -32,16 +53,26 @@ public partial struct Chunk
         // Calculate capacity and init arrays.
         Size = 0;
         Capacity = capacity;
+        ComponentsSize = types.Length;
 
-        Entities = new Entity[Capacity];
-        Components = new Array[types.Length];
+        Entities = (Entity*)Marshal.AllocHGlobal(sizeof(Entity) * Capacity);
+        Components = new ComponentArray[types.Length];
 
-        // Init mapping.
+        // Allocate arrays for types.
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
-            Components[index] = Array.CreateInstance(type, Capacity);
+            if (!type.IsManaged)
+            {
+                var ptr = Marshal.AllocHGlobal(type.ByteSize * Capacity);
+                Components[index] = new ComponentArray(ptr, type.ByteSize);
+            }
+            else
+            {
+                var array = Array.CreateInstance(type, Capacity);
+                Components[index] = new ComponentArray(array, type.ByteSize);
+            }
         }
     }
 
@@ -50,19 +81,25 @@ public partial struct Chunk
     ///     The <see cref="Arch.Core.Entity"/>'s that are stored in this chunk.
     ///     Can be accessed during the iteration.
     /// </summary>
-    public readonly Entity[] Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public readonly Entity* Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The component arrays in which the components of the <see cref="Arch.Core.Entity"/>'s are stored.
     ///     Represent the component structure.
     ///     They can be accessed quickly using the <see cref="ComponentIdToArrayIndex"/> or one of the chunk methods.
     /// </summary>
-    public readonly Array[] Components { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public readonly ComponentArray[] Components { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <summary>
+    ///
+    /// </summary>
+    internal int ComponentsSize { get; set; }
 
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
     /// </summary>
     public readonly int[] ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
 
     /// <summary>
     ///     The number of occupied <see cref="Arch.Core.Entity"/> slots in this <see cref="Chunk"/>.
@@ -165,7 +202,7 @@ public partial struct Chunk
     [Pure]
     public ref Entity Entity(scoped in int index)
     {
-        return ref Entities.AsSpan()[index];
+        return ref Entities[index];
     }
 
     /// <summary>
@@ -181,10 +218,12 @@ public partial struct Chunk
 
         // Copy last entity to replace the removed one.
         Entities[index] = Entities[lastIndex];
-        for (var i = 0; i < Components.Length; i++)
+        for (var i = 0; i < ComponentsSize; i++)
         {
             var array = Components[i];
-            Array.Copy(array, lastIndex, array, index, 1);
+            var indexPtr = array.NativeArray + (array.ByteSize * index);
+            var lastIndexPtr = array.NativeArray + (array.ByteSize * lastIndex);
+            Buffer.MemoryCopy((void*)lastIndexPtr, (void*)indexPtr, array.ByteSize, array.ByteSize);
         }
 
         // Update the mapping.
@@ -239,30 +278,25 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Returns the component array for a given component in an unsafe manner.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>The array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public T[] GetArray<T>()
-    {
-        var index = Index<T>();
-        ref var array = ref Components.DangerousGetReferenceAt(index);
-        return Unsafe.As<T[]>(array);
-    }
-
-
-    /// <summary>
     ///     Returns the component array <see cref="Span{T}"/> for a given component in an unsafe manner.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array <see cref="Span{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Span<T> GetSpan<T>()
+    public unsafe Span<T> GetSpan<T>()
     {
-        return new Span<T>(GetArray<T>());
+        var index = Index<T>();
+        ref var array = ref Components[index];
+
+        // Handle object components.
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            var arrayRef = Unsafe.As<T[]>(array.Array);
+            return new Span<T>(arrayRef);
+        }
+
+        return new Span<T>((void*)array.NativeArray, Capacity);
     }
 
     /// <summary>
@@ -274,7 +308,7 @@ public partial struct Chunk
     [Pure]
     public ref T GetFirst<T>()
     {
-        return ref GetArray<T>().DangerousGetReference();
+        return ref GetSpan<T>()[0];
     }
 }
 
@@ -350,10 +384,10 @@ public partial struct Chunk
     /// <returns>The <see cref="Array"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public Array GetArray(ComponentType type)
+    public unsafe Array GetArray(ComponentType type)
     {
         var index = Index(type);
-        return Components.DangerousGetReferenceAt(index);
+        return Unsafe.As<Array>(Components[index]);
     }
 }
 
@@ -372,6 +406,7 @@ public partial struct Chunk
     [Pure]
     internal static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
+        /*
         // Arrays
         var entities = source.Entities;
         var sourceComponents = source.Components;
@@ -392,7 +427,7 @@ public partial struct Chunk
 
             var destinationArray = destination.GetArray(sourceType);
             Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
-        }
+        }*/
     }
 
     /// <summary>
@@ -407,6 +442,7 @@ public partial struct Chunk
     [Pure]
     internal static void CopyComponents(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
+        /*
         // Arrays
         var sourceComponents = source.Components;
 
@@ -423,7 +459,7 @@ public partial struct Chunk
 
             var destinationArray = destination.GetArray(sourceType);
             Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
-        }
+        }*/
     }
 
     /// <summary>
@@ -436,6 +472,7 @@ public partial struct Chunk
     [Pure]
     internal int Transfer(int index, ref Chunk chunk)
     {
+        /*
         // Get last entity
         var lastIndex = chunk.Size - 1;
         var lastEntity = chunk.Entities[lastIndex];
@@ -450,7 +487,8 @@ public partial struct Chunk
         }
 
         chunk.Size--;
-        return lastEntity.Id;
+        return lastEntity.Id;*/
+        return 0;
     }
 
     /*

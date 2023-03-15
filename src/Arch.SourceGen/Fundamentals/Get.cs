@@ -2,7 +2,7 @@ namespace Arch.SourceGen;
 
 public static class GetExtensions
 {
-
+/*
     public static StringBuilder AppendChunkGetArrays(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
@@ -49,7 +49,7 @@ public static class GetExtensions
             """;
 
         return sb.AppendLine(template);
-    }
+    }*/
 
     public static StringBuilder AppendChunkGetSpans(this StringBuilder sb, int amount)
     {
@@ -72,26 +72,27 @@ public static class GetExtensions
         }
         outs.Length--;
 
-        var arrays = new StringBuilder();
+        var indexes = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            arrays.Append($"out var t{index}Array,");
+            indexes.Append($"out var t{index}Index,");
         }
-        arrays.Length--;
+        indexes.Length--;
+
 
         var assignComponents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            assignComponents.AppendLine($"t{index}Span = new Span<T{index}>(t{index}Array);");
+            assignComponents.AppendLine($"t{index}Span = new Span<T{index}>(Components[t{index}Index], Capacity);");
         }
 
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public void GetSpan<{{generics}}>({{outs}})
+            public unsafe void GetSpan<{{generics}}>({{outs}})
             {
-                GetArray<{{generics}}>({{arrays}});
+                Index<{{generics}}>({{indexes}});
                 {{assignComponents}}
             }
             """;
@@ -113,24 +114,17 @@ public static class GetExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
 
-        var indexes = new StringBuilder();
+        var spans = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            indexes.Append($"out var t{index}Index,");
+            spans.Append($"out var t{index}Span,");
         }
-        indexes.Length--;
-
-        var arrays = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            arrays.Append($"out var t{index}Array,");
-        }
-        arrays.Length--;
+        spans.Length--;
 
         var insertParams = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            insertParams.Append($"ref t{index}Array.DangerousGetReference(),");
+            insertParams.Append($"ref t{index}Span[0],");
         }
         insertParams.Length--;
 
@@ -140,7 +134,7 @@ public static class GetExtensions
             [Pure]
             public Components<{{generics}}> GetFirst<{{generics}}>()
             {
-                GetArray<{{generics}}>({{arrays}});
+                GetSpan<{{generics}}>({{spans}});
                 return new Components<{{generics}}>({{insertParams}});
             }
             """;
@@ -216,7 +210,7 @@ public static class GetExtensions
             {
                 {{getArrays}}
 
-                ref var entity = ref Entities[index];
+                ref var entity = ref Entity(index);
                 {{gets}}
 
                 return new EntityComponents<{{generics}}>(in entity, {{inParams}});
