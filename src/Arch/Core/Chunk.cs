@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
@@ -9,20 +10,81 @@ public unsafe struct ComponentArray
 {
     public readonly IntPtr NativeArray;
     public readonly Array Array;
-    public readonly int ByteSize;
+    public readonly ComponentType ComponentType;
 
-    public ComponentArray(IntPtr nativeArray, int byteSize)
+    public ComponentArray(IntPtr nativeArray, ComponentType componentType)
     {
-        ByteSize = byteSize;
+        ComponentType = componentType;
         NativeArray = nativeArray;
     }
 
-    public ComponentArray(Array array, int byteSize)
+    public ComponentArray(Array array, ComponentType componentType)
     {
-        ByteSize = byteSize;
+        ComponentType = componentType;
         Array = array;
     }
 
+    public bool IsManaged => Array != null;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set(in int index, object value)
+    {
+        if (Array == null)
+        {
+            var ptr = NativeArray + (ComponentType.ByteSize * index);
+            Marshal.StructureToPtr(value, ptr, false);
+        }
+        else
+        {
+            Array.SetValue(value, index);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public object Get(in int index)
+    {
+        if (Array == null)
+        {
+            var ptr = NativeArray + (ComponentType.ByteSize * index);
+            return Marshal.PtrToStructure(ptr, ComponentType.Type);
+        }
+
+        return Array.GetValue(index);
+    }
+
+    /// <summary>
+    ///  Copies the whole <see cref="Chunk"/> (with all its entities and components) or a part from it to the another <see cref="Chunk"/>.
+    /// </summary>
+    /// <param name="source">The source <see cref="Chunk"/>.</param>
+    /// <param name="index">The start index in the source <see cref="Chunk"/>.</param>
+    /// <param name="destination">The destination <see cref="Chunk"/>.</param>
+    /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
+    /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal static void Copy(ref ComponentArray source, int index, ref ComponentArray destination, int destinationIndex, int length)
+    {
+        // Can not copy since im lazy
+        if (source.IsManaged != destination.IsManaged || source.ComponentType != destination.ComponentType)
+        {
+            return;
+        }
+
+        // Copy content
+        if (!source.IsManaged)
+        {
+            var bytes = source.ComponentType.ByteSize * length;
+            var sourcePtr = (void*)(source.NativeArray + (source.ComponentType.ByteSize*index));
+            var destinationPtr = (void*)(destination.NativeArray + (source.ComponentType.ByteSize*destinationIndex));
+            Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
+        }
+        else
+        {
+            Array.Copy(source.Array, index, destination.Array, destinationIndex, length);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator void*(ComponentArray instance) => (void*)instance.NativeArray;
 }
 
@@ -65,12 +127,12 @@ public unsafe partial struct Chunk
             if (!type.IsManaged)
             {
                 var ptr = Marshal.AllocHGlobal(type.ByteSize * Capacity);
-                Components[index] = new ComponentArray(ptr, type.ByteSize);
+                Components[index] = new ComponentArray(ptr, type);
             }
             else
             {
                 var array = Array.CreateInstance(type, Capacity);
-                Components[index] = new ComponentArray(array, type.ByteSize);
+                Components[index] = new ComponentArray(array, type);
             }
         }
     }
@@ -215,10 +277,9 @@ public unsafe partial struct Chunk
         Entities[index] = Entities[lastIndex];
         for (var i = 0; i < Components.Length; i++)
         {
-            var array = Components[i];
-            var indexPtr = array.NativeArray + (array.ByteSize * index);
-            var lastIndexPtr = array.NativeArray + (array.ByteSize * lastIndex);
-            Buffer.MemoryCopy((void*)lastIndexPtr, (void*)indexPtr, array.ByteSize, array.ByteSize);
+            // Either copy native memory, or the managed elements
+            ref var array = ref Components[i];
+            ComponentArray.Copy(ref array, lastIndex, ref array, index, 1);
         }
 
         // Update the mapping.
@@ -318,8 +379,8 @@ public partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(in int index, in object cmp)
     {
-        var array = GetArray(cmp.GetType());
-        array.SetValue(cmp, index);
+        var componentArray = GetComponentArray(cmp.GetType());
+        componentArray.Set(in index, cmp);
     }
 
     /// <summary>
@@ -350,8 +411,8 @@ public partial struct Chunk
     [Pure]
     public object Get(scoped in int index, ComponentType type)
     {
-        var array = GetArray(type);
-        return array.GetValue(index);
+        var array = GetComponentArray(type);
+        return array.Get(in index);
     }
 
     /// <summary>
@@ -379,10 +440,23 @@ public partial struct Chunk
     /// <returns>The <see cref="Array"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public unsafe Array GetArray(ComponentType type)
+    public Array GetArray(ComponentType type)
     {
         var index = Index(type);
-        return Unsafe.As<Array>(Components[index]);
+        return Unsafe.As<Array>(Components[index].Array);
+    }
+
+    /// <summary>
+    ///      Returns the <see cref="ComponentArray"/> for a given component type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <returns>The <see cref="Array"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public ref ComponentArray GetComponentArray(ComponentType type)
+    {
+        var index = Index(type);
+        return ref Components[index];
     }
 }
 
@@ -399,30 +473,12 @@ public partial struct Chunk
     /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
+    internal unsafe static void Copy(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
-        /*
-        // Arrays
-        var entities = source.Entities;
-        var sourceComponents = source.Components;
-
         // Copy entities array
-        Array.Copy(entities, index, destination.Entities, destinationIndex, length);
-
-        // Copy component arrays
-        for (var i = 0; i < sourceComponents.Length; i++)
-        {
-            var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
-
-            if (!destination.Has(sourceType))
-            {
-                continue;
-            }
-
-            var destinationArray = destination.GetArray(sourceType);
-            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
-        }*/
+        var bytes = sizeof(Entity) * length;
+        Buffer.MemoryCopy(source.Entities + index, destination.Entities + destinationIndex, bytes, bytes );
+        CopyComponents(ref source, index, ref destination, destinationIndex, length);
     }
 
     /// <summary>
@@ -437,24 +493,21 @@ public partial struct Chunk
     [Pure]
     internal static void CopyComponents(ref Chunk source, int index, ref Chunk destination, int destinationIndex, int length)
     {
-        /*
         // Arrays
         var sourceComponents = source.Components;
 
         // Copy component arrays
         for (var i = 0; i < sourceComponents.Length; i++)
         {
-            var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
-
-            if (!destination.Has(sourceType))
+            ref var sourceArray = ref sourceComponents[i];
+            if (!destination.Has(sourceArray.ComponentType))
             {
                 continue;
             }
 
-            var destinationArray = destination.GetArray(sourceType);
-            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
-        }*/
+            var destinationArray = destination.GetComponentArray(sourceArray.ComponentType);
+            ComponentArray.Copy(ref sourceArray, index, ref destinationArray, destinationIndex, length);
+        }
     }
 
     /// <summary>
@@ -465,58 +518,22 @@ public partial struct Chunk
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    internal int Transfer(int index, ref Chunk chunk)
+    internal unsafe int Transfer(int index, ref Chunk chunk)
     {
-        /*
         // Get last entity
         var lastIndex = chunk.Size - 1;
-        var lastEntity = chunk.Entities[lastIndex];
+        var lastEntity = chunk.Entity(lastIndex);
 
         // Replace index entity with the last entity from the other chunk
         Entities[index] = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = chunk.Components[i];
-            var desArray = Components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
+            ref var sourceArray = ref chunk.Components[i];
+            ref var desArray = ref Components[i];
+            ComponentArray.Copy(ref sourceArray, lastIndex, ref desArray, index, 1);
         }
 
         chunk.Size--;
-        return lastEntity.Id;*/
-        return 0;
-    }
-
-    /*
-    /// <summary>
-    ///     Transfers an <see cref="Arch.Core.Entity"/> at the index of this chunk to another chunk.
-    /// </summary>
-    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> we want to copy.</param>
-    /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    internal int CoolerTransfer(int index, ref Chunk chunk)
-    {
-        var chunkSize = chunk.Size;
-        var chunkComponents = chunk.Components;
-        var chunkEntities = chunk.Entities;
-        var components = Components;
-        var entities = Entities;
-
-        // Get last entity
-        var lastIndex = chunkSize - 1;
-        var lastEntity = chunkEntities[lastIndex];
-
-        // Replace index entity with the last entity from the other chunk
-        entities[index] = lastEntity;
-        for (var i = 0; i < components.Length; i++)
-        {
-            var sourceArray = chunkComponents[i];
-            var desArray = components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
-        }
-
-        //chunk.Size = chunkSize - 1;
         return lastEntity.Id;
-    }*/
+    }
 }

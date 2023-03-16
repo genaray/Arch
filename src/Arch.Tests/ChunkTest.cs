@@ -4,14 +4,21 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+
+/// <summary>
+///     Checks if all mechanis of the <see cref="Chunk"/> work correctly.
+/// </summary>
 [TestFixture]
 public class ChunkTest
 {
     private Chunk _chunk;
     private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
 
+    /// <summary>
+    ///     Checks if a <see cref="Chunk"/> gets filled correctly.
+    /// </summary>
     [Test]
-    public void Chunk()
+    public void ChunkFill()
     {
         _chunk = new Chunk(1000, _types);
 
@@ -30,29 +37,11 @@ public class ChunkTest
         That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
     }
 
+    /// <summary>
+    ///     Checks if a <see cref="Chunk"/> correctly removes its items
+    /// </summary>
     [Test]
-    public void ArchetypeSet()
-    {
-        _chunk = new Chunk(1000, _types);
-
-        for (var index = 0; index < _chunk.Capacity; index++)
-        {
-            var entity = new Entity(index, 0);
-            _chunk.Add(in entity);
-
-            var t = new Transform();
-            var r = new Rotation();
-            _chunk.Set(index, t);
-            _chunk.Set(index, r);
-        }
-
-        // Make sure the amount fits
-        That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
-    }
-
-    /*
-    [Test]
-    public void ArchetypeRemove()
+    public void ChunkRemove()
     {
         _chunk = new Chunk(1000, _types);
 
@@ -68,15 +57,18 @@ public class ChunkTest
         }
 
         // Get last one, remove first one
-        var last = _chunk.Entities[_chunk.Size - 1];
+        var last = _chunk.Entity(_chunk.Size - 1);
         _chunk.Remove(0);
 
         // Check if the first one was replaced with the last one correctly
-        That(last.Id, Is.EqualTo(_chunk.Entities[0].Id));
+        That(last.Id, Is.EqualTo(_chunk.Entity(0).Id));
     }
 
+    /// <summary>
+    ///     Checks if a <see cref="Chunk"/> correctly removes all its items
+    /// </summary>
     [Test]
-    public void ArchetypeRemoveAll()
+    public void ChunkRemoveAll()
     {
         _chunk = new Chunk(1000, _types);
 
@@ -99,11 +91,14 @@ public class ChunkTest
 
         // Check if the first one was replaced with the last one correctly
         That(_chunk.Size, Is.EqualTo(0));
-        That(_chunk.Entities[0].Id, Is.EqualTo(0)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+        That(_chunk.Entity(0).Id, Is.EqualTo(0)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
     }
 
+    /// <summary>
+    ///     Checks if a <see cref="Chunk"/> correctly sets, removes and sets items.
+    /// </summary>
     [Test]
-    public void ArchetypeRemoveAndSetAgain()
+    public void ChunkRemoveAndSetAgain()
     {
         _chunk = new Chunk(1000, _types);
 
@@ -118,7 +113,7 @@ public class ChunkTest
 
         // Check if the first one was replaced with the last one correctly
         That(_chunk.Size, Is.EqualTo(2));
-        That(_chunk.Entities[0].Id, Is.EqualTo(2)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
-        That(_chunk.Entities[1].Id, Is.EqualTo(1)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
-    }*/
+        That(_chunk.Entity(0).Id, Is.EqualTo(2)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+        That(_chunk.Entity(1).Id, Is.EqualTo(1)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
+    }
 }
