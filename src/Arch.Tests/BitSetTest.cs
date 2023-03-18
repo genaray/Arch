@@ -130,7 +130,7 @@ public class BitSetTest
 
         That(allResult, Is.EqualTo(false));
         That(anyResult, Is.EqualTo(false));
-        That(noneResult, Is.EqualTo(false));
+        That(noneResult, Is.EqualTo(true));
         That(exclusive, Is.EqualTo(false));
     }
 }
