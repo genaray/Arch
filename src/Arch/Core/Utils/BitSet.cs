@@ -191,23 +191,13 @@ public class BitSet
         for (var i = 0; i < count; i++)
         {
             var bit = _bits[i];
-            if ((bit & otherBits[i]) == 0)
+            if ((bit & otherBits[i]) != 0)
             {
-                return true;
+                return false;
             }
         }
 
-        // handle extra bits on our side that might just be all zero
-        var bitCount = _bits.Length;
-        for (var i = count; i < bitCount; i++)
-        {
-            if (_bits[i] != 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 
     /// <summary>

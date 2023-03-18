@@ -105,6 +105,28 @@ public static class ComponentRegistry
     public static int Size { get; private set; }
 
     /// <summary>
+    ///     Adds a new <see cref="ComponentType"/> manually and registers it.
+    ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
+    /// </summary>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType Add(ComponentType type)
+    {
+        if (TryGet(type, out var meta))
+        {
+            return meta;
+        }
+
+        // Register and assign component id
+        meta = type;
+        _types.Add(type, meta);
+
+        Size++;
+        return meta;
+    }
+
+    /// <summary>
     ///     Adds a new component and registers it.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>

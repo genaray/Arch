@@ -860,7 +860,23 @@ public partial class World
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
-            Set(in queryDescription, in component);
+
+            // Set the added component, start from the last slot and move down
+            for (var chunkIndex = newArchetype.LastSlot.ChunkIndex; chunkIndex >= newArchetypeLastSlot.ChunkIndex; --chunkIndex)
+            {
+                ref var chunk = ref archetype.GetChunk(chunkIndex);
+                ref var firstElement = ref chunk.GetFirst<T>();
+                foreach(var index in chunk)
+                {
+                    // Break to prevent old entities receiving the new value.
+                    if (chunkIndex == newArchetypeLastSlot.ChunkIndex && index == newArchetypeLastSlot.Index)
+                    {
+                        break;
+                    }
+                    ref var cmp = ref Unsafe.Add(ref firstElement, index);
+                    cmp = component;
+                }
+            }
 
             // Update the entityInfo of all copied entities.
             for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
