@@ -414,7 +414,7 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
     /// <param name="list">The <see cref="IList{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
+    public void GetEntities(in QueryDescription queryDescription, IList<Entity> list)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
@@ -435,7 +435,7 @@ public partial class World : IDisposable
     /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>, will append after that index. Default is 0.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
+    public void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
     {
         var index = 0;
         var query = Query(in queryDescription);
@@ -594,7 +594,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Query(in QueryDescription queryDescription, ForEach forEntity)
+    public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
@@ -615,7 +615,7 @@ public partial class World
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
         var t = new T();
 
@@ -639,7 +639,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
+    public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
@@ -768,13 +768,46 @@ public partial class World
 
 public partial class World
 {
+
+    /// <summary>
+    ///     Updates the <see cref="EntityInfo"/> and all entities that moved/shifted between the archetypes.
+    /// </summary>
+    /// <param name="archetype">The old <see cref="Archetype"/>.</param>
+    /// <param name="archetypeSlot">The old <see cref="Slot"/> where the shift operation started.</param>
+    /// <param name="newArchetype">The new <see cref="Archetype"/>.</param>
+    /// <param name="newArchetypeSlot">The new <see cref="Slot"/> where the entities were shifted to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ShiftEntityInfo(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
+    {
+        // Update the entityInfo of all copied entities.
+        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        {
+            ref var chunk = ref archetype.GetChunk(chunkIndex);
+            ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+            for (var index = archetypeSlot.Index; index >= 0; --index)
+            {
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+
+                // Calculate new entity slot based on its old slot.
+                var entitySlot = new Slot(index, chunkIndex);
+                var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeSlot, newArchetype.EntitiesPerChunk);
+
+                // Update entity info
+                var entityInfo = EntityInfo[entity.Id];
+                entityInfo.Slot = newSlot;
+                entityInfo.Archetype = newArchetype;
+                EntityInfo[entity.Id] = entityInfo;
+            }
+        }
+    }
+
     /// <summary>
     ///     An efficient method to destroy all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s will be destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Destroy(in QueryDescription queryDescription)
+    public void Destroy(in QueryDescription queryDescription)
     {
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
@@ -828,7 +861,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Add<T>(in QueryDescription queryDescription, in T component = default)
+    public void Add<T>(in QueryDescription queryDescription, in T component = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -856,32 +889,15 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
-            newArchetypeLastSlot++;
+            Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
-            Set(in queryDescription, in component);
 
-            // Update the entityInfo of all copied entities.
-            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
-            {
-                ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entity(0);
-                for (var index = archetypeSlot.Index; index >= 0; --index)
-                {
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                    // Calculate new entity slot based on its old slot.
-                    var entitySlot = new Slot(index, chunkIndex);
-                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-
-                    // Update entity info
-                    var entityInfo = EntityInfo[entity.Id];
-                    entityInfo.Slot = newSlot;
-                    entityInfo.Archetype = newArchetype;
-                    EntityInfo[entity.Id] = entityInfo;
-                }
-            }
+            // Set added value and update the entity info
+            var lastSlot = newArchetype.LastSlot;
+            newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
+            ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }
 
@@ -892,7 +908,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Remove<T>(in QueryDescription queryDescription)
+    public void Remove<T>(in QueryDescription queryDescription)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -920,31 +936,12 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
-            newArchetypeLastSlot++;
+            Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
 
-            // Update the entityInfo of all copied entities.
-            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
-            {
-                ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entity(0);
-                for (var index = archetypeSlot.Index; index >= 0; --index)
-                {
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                    // Calculate new entity slot based on its old slot.
-                    var entitySlot = new Slot(index, chunkIndex);
-                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-
-                    // Update entity info
-                    var entityInfo = EntityInfo[entity.Id];
-                    entityInfo.Slot = newSlot;
-                    entityInfo.Archetype = newArchetype;
-                    EntityInfo[entity.Id] = entityInfo;
-                }
-            }
+            ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }
 }
@@ -1486,7 +1483,6 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public object[] GetAllComponents(in Entity entity)
     {
-        /*
         // Get archetype and chunk.
         var entityInfo = EntityInfo[entity.Id];
         var archetype = entityInfo.Archetype;
@@ -1504,8 +1500,7 @@ public partial class World
             cmps[index] = component;
         }
 
-        return cmps;*/
-        return null;
+        return cmps;
     }
 }
 

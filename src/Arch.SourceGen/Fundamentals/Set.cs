@@ -66,6 +66,57 @@ public static class SetExtensions
         return sb.AppendLine(template);
     }
 
+    public static StringBuilder AppendArchetypeSetRanges(this StringBuilder sb, int amount)
+    {
+        for (var index = 1; index < amount; index++)
+        {
+            sb.AppendArchetypeSetRange(index);
+        }
+
+        return sb;
+    }
+
+    public static StringBuilder AppendArchetypeSetRange(this StringBuilder sb, int amount)
+    {
+        var generics = new StringBuilder().GenericWithoutBrackets(amount);
+        var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
+        var getFirstElements = new StringBuilder().GetFirstGenericElements(amount);
+        var getComponents = new StringBuilder().GetGenericComponents(amount);
+
+        var assignComponents = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            assignComponents.AppendLine($"t{index}Component = t{index}ComponentValue;");
+        }
+
+        var template =
+            $$"""
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal void SetRange<{{generics}}>(in Slot from, in Slot to, {{parameters}})
+            {
+                // Set the added component, start from the last slot and move down
+                for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)
+                {
+                    ref var chunk = ref GetChunk(in chunkIndex);
+                    {{getFirstElements}}
+                    foreach(var entityIndex in chunk)
+                    {
+                        {{getComponents}}
+                        {{assignComponents}}
+
+                        // Break to prevent old entities receiving the new value.
+                        if (chunkIndex == to.ChunkIndex && entityIndex == to.Index)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            """;
+
+        return sb.AppendLine(template);
+    }
+
     public static StringBuilder AppendWorldSets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)

@@ -161,13 +161,17 @@ public class ColorSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToChangeColor = new QueryDescription().WithAll<Sprite>();
     private static GameTime? _gameTime;
+    private static Random _random;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ColorSystem"/> class.
     /// </summary>
     /// <param name="world">Its <see cref="World"/>.</param>
     public ColorSystem(World world)
-        : base(world) { }
+        : base(world)
+    {
+        _random = new Random();
+    }
 
     /// <summary>
     ///     Gets called to execute the color systems logic and to change the <see cref="Entity"/>s color.
@@ -186,7 +190,7 @@ public class ColorSystem : SystemBase<GameTime>
         });
 
         // A demonstration of bulk adding and removing components.
-        World.Add<int>(in _entitiesToChangeColor);
+        World.Add(in _entitiesToChangeColor, _random.Next());
         World.Remove<int>(in _entitiesToChangeColor);
     }
 }

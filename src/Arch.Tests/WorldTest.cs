@@ -371,6 +371,45 @@ public partial class WorldTest
     }
 
     /// <summary>
+    ///     Checks if the <see cref="World"/> bulk add by using a <see cref="QueryDescription"/> works correctly and sets the value correctly too.
+    /// </summary>
+    [Test]
+    public void AddByQueryDescriptionValue()
+    {
+        var withIntQueryDesc = new QueryDescription().WithAll<int>();
+        var withoutIntQueryDesc = new QueryDescription().WithNone<int>();
+
+        using var world = World.Create();
+        for (int index = 0; index < 1000; index++)
+        {
+            world.Create(_entityGroup);
+        }
+
+        // Create entities with int
+        for (int index = 0; index < 1000; index++)
+        {
+            var entity = world.Create(_entityGroup);
+            entity.Add(10);
+        }
+
+        // Add int to all entities without int
+        world.Add(in withoutIntQueryDesc, 100);
+
+        var previousCounter = 0;
+        var counter = 0;
+        world.Query(in withIntQueryDesc, (ref int i) =>
+        {
+            if (i == 10) previousCounter++;
+            if (i == 100) counter++;
+        });
+
+        That(world.CountEntities(in withIntQueryDesc), Is.EqualTo(2000));
+        That(world.CountEntities(in withoutIntQueryDesc), Is.EqualTo(0));
+        That(previousCounter, Is.EqualTo(1000));
+        That(counter, Is.EqualTo(1000));
+    }
+
+    /// <summary>
     ///     Checks if the <see cref="World"/> bulk remove by using a <see cref="QueryDescription"/> works correctly.
     /// </summary>
     [Test]

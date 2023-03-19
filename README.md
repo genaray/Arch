@@ -15,7 +15,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
 ```console
-dotnet add PROJECT package Arch --version 1.2.0
+dotnet add PROJECT package Arch --version 1.2.3
 ```
 
 # Code Sample

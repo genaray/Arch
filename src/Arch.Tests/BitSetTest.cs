@@ -26,6 +26,93 @@ public class BitSetTest
     }
 
     /// <summary>
+    ///     Checks <see cref="BitSet"/> all.
+    /// </summary>
+    [Test]
+    public void BitsetAll()
+    {
+        var bitSet1 = new BitSet();
+        bitSet1.SetBit(5);
+        bitSet1.SetBit(6);
+        var bitSet2 = new BitSet();
+        bitSet2.SetBit(5);
+        bitSet2.SetBit(6);
+
+        // ALl fit
+        var allResult = bitSet2.All(bitSet1);
+        That(allResult, Is.EqualTo(true));
+
+        bitSet2.SetBit(7);
+        allResult = bitSet2.All(bitSet1);
+        That(allResult, Is.EqualTo(false));
+    }
+
+    /// <summary>
+    ///     Checks <see cref="BitSet"/> any.
+    /// </summary>
+    [Test]
+    public void BitsetAny()
+    {
+        var bitSet1 = new BitSet();
+        bitSet1.SetBit(5);
+        bitSet1.SetBit(6);
+        bitSet1.SetBit(35);
+        bitSet1.SetBit(36);
+        var bitSet2 = new BitSet();
+        bitSet2.SetBit(5);
+        bitSet2.SetBit(6);
+
+        // Any fit
+        var allResult = bitSet2.Any(bitSet1);
+        That(allResult, Is.EqualTo(true));
+
+        bitSet2.ClearBit(5);
+        allResult = bitSet2.Any(bitSet1);
+        That(allResult, Is.EqualTo(true));
+
+        // No fit, since there no unions
+        bitSet2.ClearAll();
+        bitSet2.SetBit(37);
+        allResult = bitSet2.Any(bitSet1);
+        That(allResult, Is.EqualTo(false));
+    }
+
+    /// <summary>
+    ///     Checks <see cref="BitSet"/> none.
+    /// </summary>
+    [Test]
+    public void BitsetNone()
+    {
+        var bitSet1 = new BitSet();
+        bitSet1.SetBit(5);
+        bitSet1.SetBit(6);
+        var bitSet2 = new BitSet();
+        bitSet2.SetBit(25);
+        bitSet2.SetBit(38);
+
+        // None of bitset2 is in bitset1
+        var allResult = bitSet2.None(bitSet1);
+        That(allResult, Is.EqualTo(true));
+
+        // One of bitset2 is in bitset1
+        bitSet2.SetBit(5);
+        allResult = bitSet2.None(bitSet1);
+        That(allResult, Is.EqualTo(false));
+
+        // Bitset2 and 1 are the same, so all off bitset2 are in 1 and therefore its invalid.
+        bitSet1.ClearAll();
+        bitSet2.ClearAll();
+
+        bitSet1.SetBit(5);
+        bitSet1.SetBit(4);
+        bitSet2.SetBit(5);
+        bitSet2.SetBit(4);
+
+        allResult = bitSet2.None(bitSet1);
+        That(allResult, Is.EqualTo(false));
+    }
+
+    /// <summary>
     ///     Checks whether different sized <see cref="BitSet"/>'s work correctly.
     /// </summary>
     [Test]

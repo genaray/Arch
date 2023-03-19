@@ -31,13 +31,7 @@ public static class SetWithQueryDesription
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var getFirsts = new StringBuilder().GetFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
-
-        var parameters = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            parameters.Append($"in T{index} t{index}ComponentValue = default,");
-        }
-        parameters.Length--;
+        var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
 
         var assignValues = new StringBuilder();
         for (var index = 0; index <= amount; index++)

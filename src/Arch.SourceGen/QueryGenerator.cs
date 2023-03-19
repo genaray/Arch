@@ -82,6 +82,7 @@ public class QueryGenerator : IIncrementalGenerator
                     {{new StringBuilder().AppendArchetypeHases(25)}}
                     {{new StringBuilder().AppendArchetypeGets(25)}}
                     {{new StringBuilder().AppendArchetypeSets(25)}}
+                    {{new StringBuilder().AppendArchetypeSetRanges(25)}}
                 }
 
                 public partial class World

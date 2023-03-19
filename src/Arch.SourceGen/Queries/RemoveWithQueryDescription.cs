@@ -69,31 +69,12 @@ public static class RemoveWithQueryDesription
                     // Get last slots before copy, for updating entityinfo later
                     var archetypeSlot = archetype.LastSlot;
                     var newArchetypeLastSlot = newArchetype.LastSlot;
-                    newArchetypeLastSlot++;
+                    Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
 
                     Archetype.Copy(archetype, newArchetype);
                     archetype.Clear();
 
-                    // Update the entityInfo of all copied entities.
-                    for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
-                    {
-                        ref var chunk = ref archetype.GetChunk(chunkIndex);
-                        ref var entityFirstElement = ref chunk.Entity(0);
-                        for (var index = archetypeSlot.Index; index >= 0; --index)
-                        {
-                            ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                            // Calculate new entity slot based on its old slot.
-                            var entitySlot = new Slot(index, chunkIndex);
-                            var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-
-                            // Update entity info
-                            var entityInfo = EntityInfo[entity.Id];
-                            entityInfo.Slot = newSlot;
-                            entityInfo.Archetype = newArchetype;
-                            EntityInfo[entity.Id] = entityInfo;
-                        }
-                    }
+                    ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
                 }
             }
             """;

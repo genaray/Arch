@@ -310,6 +310,105 @@ public readonly ref struct QueryChunkIterator
 }
 
 /// <summary>
+///     The <see cref="QueryChunkEnumerator"/> struct
+///     represents an enumerator with which one can iterate over all non empty <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
+/// </summary>
+[SkipLocalsInit]
+public ref struct ChunkRangeEnumerator
+{
+    private Archetype _archetype;
+
+    private int _chunkIndex;
+    private int _toChunkIndex;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryChunkEnumerator"/> struct.
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
+    /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ChunkRangeEnumerator(Archetype archetype, int from, int to)
+    {
+        _archetype = archetype;
+        _chunkIndex = from;
+        _toChunkIndex = to;
+    }
+
+    /// <summary>
+    ///     Moves to the next <see cref="Chunk"/>.
+    /// </summary>
+    /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool MoveNext()
+    {
+        unchecked
+        {
+            // Decrease chunk till its zero
+            return --_chunkIndex >= _toChunkIndex;
+        }
+    }
+
+    /// <summary>
+    ///     Resets this instance.
+    /// </summary>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Reset()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    ///     Returns a reference to the current <see cref="Chunk"/>.
+    /// </summary>
+    public readonly ref Chunk Current
+    {
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _archetype.GetChunk(_chunkIndex);
+    }
+}
+
+/// <summary>
+///     The <see cref="QueryChunkIterator"/> struct
+///     represents an iterator wich wraps the <see cref="QueryChunkEnumerator"/> for using it in foreach loops.
+/// </summary>
+[SkipLocalsInit]
+public readonly ref struct ChunkRangeIterator
+{
+    private readonly Archetype _archetype;
+    private readonly int _from;
+    private readonly int _to;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryChunkIterator"/> struct
+    /// </summary>
+    /// <param name="query">The <see cref="Query"/> each <see cref="QueryChunkEnumerator"/> will use.</param>
+    /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryChunkEnumerator"/> will use.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ChunkRangeIterator(Archetype archetype, int from, int to)
+    {
+        _archetype = archetype;
+        this._from = from;
+        this._to = to;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="QueryChunkEnumerator"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
+    /// </summary>
+    /// <returns>The new <see cref="QueryChunkEnumerator"/> instance.</returns>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ChunkRangeEnumerator GetEnumerator()
+    {
+        return new ChunkRangeEnumerator(_archetype, _from, _to);
+    }
+}
+
+/// <summary>
 ///     The <see cref="EntityEnumerator"/> struct
 ///     represents an enumerator with which one can iterate over all <see cref="Entity"/>'s in a given <see cref="Chunk"/>.
 ///     Each <see cref="Entity"/> is represented by its index inside the <see cref="Chunk"/>.

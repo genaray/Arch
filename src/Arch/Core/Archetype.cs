@@ -77,6 +77,21 @@ internal record struct Slot
     }
 
     /// <summary>
+    ///     Moves or shifts this <see cref="Slot"/> by one slot forward.
+    ///     Ensures that the slots chunkindex updated properly once the end was reached.
+    /// </summary>
+    /// <param name="source">The <see cref="Slot"/> to shift by one.</param>
+    /// <param name="sourceCapacity">The capacity of the chunk the slot is in.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Slot Shift(ref Slot source, int sourceCapacity)
+    {
+        source.Index++;
+        source.Wrap(sourceCapacity);
+        return source;
+    }
+
+    /// <summary>
     ///     Moves or shifts the source <see cref="Slot"/> based on the destination <see cref="Slot"/> and calculates its new position.
     ///     Used for copy operations to predict where the source <see cref="Slot"/> will end up.
     /// </summary>
@@ -332,6 +347,35 @@ public sealed partial class Archetype
     }
 
     /// <summary>
+    ///     Sets a component value for all entities within an <see cref="Archetype"/> in a certain range of <see cref="Slot"/>s
+    /// </summary>
+    /// <param name="from">The <see cref="Slot"/> where we start.</param>
+    /// <param name="to">The <see cref="Slot"/> where we end.</param>
+    /// <param name="component">The component value.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void SetRange<T>(in Slot from, in Slot to, in T component = default)
+    {
+        // Set the added component, start from the last slot and move down
+        for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)
+        {
+            ref var chunk = ref GetChunk(in chunkIndex);
+            ref var firstElement = ref chunk.GetFirst<T>();
+            foreach(var index in chunk)
+            {
+                ref var cmp = ref Unsafe.Add(ref firstElement, index);
+                cmp = component;
+
+                // Break to prevent old entities receiving the new value.
+                if (chunkIndex == to.ChunkIndex && index == to.Index)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     ///     Creates an <see cref="Enumerator{T}"/> which iterates over all <see cref="Chunks"/> in this <see cref="Archetype"/>.
     /// </summary>
     /// <returns>An <see cref="Enumerator{T}"/>.</returns>
@@ -339,6 +383,26 @@ public sealed partial class Archetype
     public Enumerator<Chunk> GetEnumerator()
     {
         return new Enumerator<Chunk>(Chunks.AsSpan(), Size);
+    }
+
+    /// <summary>
+    ///     Creates an <see cref="ChunkRangeEnumerator"/> which iterates over all <see cref="Chunks"/> within a range backwards.
+    /// </summary>
+    /// <returns>A <see cref="ChunkRangeEnumerator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ChunkRangeIterator GetRangeIterator(int from, int to)
+    {
+        return new ChunkRangeIterator(this, from, to);
+    }
+
+    /// <summary>
+    ///     Creates an <see cref="ChunkRangeEnumerator"/> which iterates from the last valid chunk to another <see cref="Chunks"/> within a range backwards.
+    /// </summary>
+    /// <returns>A <see cref="ChunkRangeEnumerator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ChunkRangeIterator GetRangeIterator(int to)
+    {
+        return new ChunkRangeIterator(this, LastSlot.ChunkIndex, to);
     }
 
     /// <summary>

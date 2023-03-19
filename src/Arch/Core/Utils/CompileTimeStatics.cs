@@ -36,7 +36,6 @@ public readonly record struct ComponentType
     /// </summary>
     public readonly bool ZeroSized;
 
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
     /// </summary>
@@ -110,6 +109,28 @@ public static class ComponentRegistry
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
     public static int Size { get; private set; }
+
+    /// <summary>
+    ///     Adds a new <see cref="ComponentType"/> manually and registers it.
+    ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
+    /// </summary>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType Add(ComponentType type)
+    {
+        if (TryGet(type, out var meta))
+        {
+            return meta;
+        }
+
+        // Register and assign component id
+        meta = type;
+        _types.Add(type, meta);
+
+        Size++;
+        return meta;
+    }
 
     /// <summary>
     ///     Converts a <see cref="Type"/> into a fitting <see cref="ComponentType"/>.
@@ -327,7 +348,6 @@ public static class Component<T>
     /// </summary>
     public static readonly ComponentType ComponentType;
 }
-
 
 /// <summary>
 ///     The <see cref="Component"/> class provides information about a component during runtime.

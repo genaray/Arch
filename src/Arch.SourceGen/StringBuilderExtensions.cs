@@ -99,11 +99,11 @@ public static class StringBuilderExtensions
         return sb;
     }
 
-    public static StringBuilder GenericInDefaultParams(this StringBuilder sb, int amount)
+    public static StringBuilder GenericInDefaultParams(this StringBuilder sb, int amount, string name = "Component")
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
         {
-            sb.Append($"in T{localIndex} t{localIndex}Component = default,");
+            sb.Append($"in T{localIndex} t{localIndex}{name} = default,");
         }
 
         sb.Length--;
