@@ -83,7 +83,7 @@ public static class GetExtensions
         var assignComponents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            assignComponents.AppendLine($"t{index}Span = new Span<T{index}>(Components[t{index}Index], Capacity);");
+            assignComponents.AppendLine($"t{index}Span = Components[t{index}Index].AsSpan<T{index}>();");
         }
 
         var template =
