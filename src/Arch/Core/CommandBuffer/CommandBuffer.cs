@@ -355,9 +355,9 @@ public class CommandBuffer : IDisposable
                     continue;
                 }
 
-                /*
+                var componentArray = sparseArray.Components;
                 ref var chunkArray = ref chunk.GetComponentArray(sparseArray.Type);
-                Array.Copy(sparseArray.Components, id, chunkArray, chunkIndex, 1);*/
+                ComponentArray.Copy(ref componentArray, id, ref chunkArray, chunkIndex, 1);
             }
         }
 

@@ -2,7 +2,6 @@ using Arch.Core.Utils;
 
 namespace Arch.Core.CommandBuffer;
 
-// NOTE: Does this really need to be nested?
 /// <summary>
 ///     The <see cref="SparseEntity"/> struct
 ///    represents an <see cref="Entity"/> with its index in the <see cref="SparseSet"/>.
@@ -31,7 +30,7 @@ internal readonly struct SparseEntity
 ///     The see <see cref="SparseArray"/> class
 ///     stores components of a certain type in a sparse array.
 /// </summary>
-internal class SparseArray
+internal class SparseArray : IDisposable
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="SparseArray"/> class
@@ -47,7 +46,7 @@ internal class SparseArray
         Size = 0;
         Entities = new int[Capacity];
         Array.Fill(Entities, -1);
-        Components = Array.CreateInstance(type, Capacity);
+        Components = ComponentArray.CreateInstance(type, Capacity);
     }
 
     /// <summary>
@@ -74,7 +73,7 @@ internal class SparseArray
     /// <summary>
     ///     Gets an array of components contained by the <see cref="SparseArray"/>.
     /// </summary>
-    public Array Components { get; private set; }
+    public ComponentArray Components { get; private set; }
 
     /// <summary>
     ///     Adds an item to the array.
@@ -97,15 +96,18 @@ internal class SparseArray
             Size++;
 
             // Resize components
-            if (Size < Components.Length)
+            if (Size < Components.Capacity)
             {
                 return;
             }
 
             Capacity = Capacity <= 0 ? 1 : Capacity;
-            var array = Array.CreateInstance(Type, Capacity * 2);
 
-            Components.CopyTo(array, 0);
+            // Create new array and copy content
+            var oldArray = Components;
+            var array = ComponentArray.CreateInstance(Type, Capacity * 2);
+            ComponentArray.Copy(ref oldArray, 0, ref array, 0, Size);
+            oldArray.Dispose();
             Components = array;
 
             Capacity *= 2;
@@ -124,18 +126,6 @@ internal class SparseArray
         return index < Entities.Length && Entities[index] != -1;
     }
 
-    // NOTE: If `SparseArray` were generic, this wouldn't have to exist, perhaps?
-    /// <summary>
-    ///     Return an array of the given type.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>The array instance if it exists.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private T[] GetArray<T>()
-    {
-        return Unsafe.As<T[]>(Components);
-    }
-
     // NOTE: If `SparseArray` were generic, this could perhaps be an indexer (T this[int index]).
     /// <summary>
     ///     Sets a component at the index.
@@ -143,11 +133,12 @@ internal class SparseArray
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="index">The index.</param>
     /// <param name="component">The component instance.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T component)
     {
         lock (this)
         {
-            GetArray<T>()[Entities[index]] = component;
+            Components.AsSpan<T>()[Entities[index]] = component;
         }
     }
 
@@ -159,17 +150,25 @@ internal class SparseArray
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="index">The index.</param>
     /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(int index)
     {
-        return ref GetArray<T>()[Entities[index]];
+        return ref Components.AsSpan<T>()[Entities[index]];
     }
 
     /// <summary>
     ///     Clears this <see cref="SparseArray"/> instance and sets its <see cref="Size"/> to 0.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
         Size = 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        Components.Dispose();
     }
 }
 

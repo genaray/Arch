@@ -6,25 +6,30 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
-public unsafe struct ComponentArray
+public readonly unsafe struct ComponentArray : IDisposable
 {
-    public readonly IntPtr NativeArray;
-    public readonly Array Array;
-    public readonly ComponentType ComponentType;
+    private readonly IntPtr NativeArray;
+    private readonly Array Array;
 
-    public ComponentArray(IntPtr nativeArray, ComponentType componentType)
+    public readonly ComponentType ComponentType { get; }
+    public readonly bool IsManaged { get; }
+    public readonly int Capacity { get; }
+
+    public ComponentArray(IntPtr nativeArray, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
         NativeArray = nativeArray;
+        IsManaged = false;
+        Capacity = capacity;
     }
 
-    public ComponentArray(Array array, ComponentType componentType)
+    public ComponentArray(Array array, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
         Array = array;
+        IsManaged = true;
+        Capacity = capacity;
     }
-
-    public bool IsManaged => Array != null;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(in int index, object value)
@@ -50,6 +55,41 @@ public unsafe struct ComponentArray
         }
 
         return Array.GetValue(index);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        if (IsManaged)
+        {
+            return;
+        }
+
+        Marshal.FreeHGlobal(NativeArray);
+    }
+
+    public Span<T> AsSpan<T>()
+    {
+        // Handle object components.
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            var arrayRef = Unsafe.As<T[]>(Array);
+            return new Span<T>(arrayRef);
+        }
+
+        return new Span<T>((void*)NativeArray, Capacity);
+    }
+
+    internal static ComponentArray CreateInstance(ComponentType type, int Capacity)
+    {
+        if (!type.IsManaged)
+        {
+            var ptr = Marshal.AllocHGlobal(type.ByteSize * Capacity);
+            return new ComponentArray(ptr, type, Capacity);
+        }
+
+        var array = Array.CreateInstance(type, Capacity);
+        return new ComponentArray(array, type, Capacity);
     }
 
     /// <summary>
@@ -124,16 +164,7 @@ public unsafe partial struct Chunk
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
-            if (!type.IsManaged)
-            {
-                var ptr = Marshal.AllocHGlobal(type.ByteSize * Capacity);
-                Components[index] = new ComponentArray(ptr, type);
-            }
-            else
-            {
-                var array = Array.CreateInstance(type, Capacity);
-                Components[index] = new ComponentArray(array, type);
-            }
+            Components[index] = ComponentArray.CreateInstance(type, Capacity);
         }
     }
 
@@ -340,19 +371,11 @@ public partial struct Chunk
     /// <returns>The array <see cref="Span{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public unsafe Span<T> GetSpan<T>()
+    public Span<T> GetSpan<T>()
     {
         var index = Index<T>();
         ref var array = ref Components[index];
-
-        // Handle object components.
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-        {
-            var arrayRef = Unsafe.As<T[]>(array.Array);
-            return new Span<T>(arrayRef);
-        }
-
-        return new Span<T>((void*)array.NativeArray, Capacity);
+        return array.AsSpan<T>();
     }
 
     /// <summary>
@@ -431,19 +454,6 @@ public partial struct Chunk
         }
 
         return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
-    }
-
-    /// <summary>
-    ///      Returns the component array for a given component type.
-    /// </summary>
-    /// <param name="type">The type.</param>
-    /// <returns>The <see cref="Array"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public Array GetArray(ComponentType type)
-    {
-        var index = Index(type);
-        return Unsafe.As<Array>(Components[index].Array);
     }
 
     /// <summary>
