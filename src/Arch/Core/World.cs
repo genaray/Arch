@@ -768,6 +768,39 @@ public partial class World
 
 public partial class World
 {
+
+    /// <summary>
+    ///     Updates the <see cref="EntityInfo"/> and all entities that moved/shifted between the archetypes.
+    /// </summary>
+    /// <param name="archetype">The old <see cref="Archetype"/>.</param>
+    /// <param name="archetypeSlot">The old <see cref="Slot"/> where the shift operation started.</param>
+    /// <param name="newArchetype">The new <see cref="Archetype"/>.</param>
+    /// <param name="newArchetypeSlot">The new <see cref="Slot"/> where the entities were shifted to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ShiftEntityInfo(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
+    {
+        // Update the entityInfo of all copied entities.
+        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        {
+            ref var chunk = ref archetype.GetChunk(chunkIndex);
+            ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
+            for (var index = archetypeSlot.Index; index >= 0; --index)
+            {
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+
+                // Calculate new entity slot based on its old slot.
+                var entitySlot = new Slot(index, chunkIndex);
+                var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeSlot, newArchetype.EntitiesPerChunk);
+
+                // Update entity info
+                var entityInfo = EntityInfo[entity.Id];
+                entityInfo.Slot = newSlot;
+                entityInfo.Archetype = newArchetype;
+                EntityInfo[entity.Id] = entityInfo;
+            }
+        }
+    }
+
     /// <summary>
     ///     An efficient method to destroy all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
@@ -856,48 +889,14 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
-            newArchetypeLastSlot++;
+            Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
 
-            // Set the added component, start from the last slot and move down
-            for (var chunkIndex = newArchetype.LastSlot.ChunkIndex; chunkIndex >= newArchetypeLastSlot.ChunkIndex; --chunkIndex)
-            {
-                ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var firstElement = ref chunk.GetFirst<T>();
-                foreach(var index in chunk)
-                {
-                    // Break to prevent old entities receiving the new value.
-                    if (chunkIndex == newArchetypeLastSlot.ChunkIndex && index == newArchetypeLastSlot.Index)
-                    {
-                        break;
-                    }
-                    ref var cmp = ref Unsafe.Add(ref firstElement, index);
-                    cmp = component;
-                }
-            }
-
-            // Update the entityInfo of all copied entities.
-            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
-            {
-                ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
-                for (var index = archetypeSlot.Index; index >= 0; --index)
-                {
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                    // Calculate new entity slot based on its old slot.
-                    var entitySlot = new Slot(index, chunkIndex);
-                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-
-                    // Update entity info
-                    var entityInfo = EntityInfo[entity.Id];
-                    entityInfo.Slot = newSlot;
-                    entityInfo.Archetype = newArchetype;
-                    EntityInfo[entity.Id] = entityInfo;
-                }
-            }
+            // Set added value and update the entity info
+            newArchetype.SetRange(in archetypeSlot, in newArchetypeLastSlot, in component);
+            ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }
 
@@ -936,31 +935,12 @@ public partial class World
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
-            newArchetypeLastSlot++;
+            Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
 
-            // Update the entityInfo of all copied entities.
-            for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
-            {
-                ref var chunk = ref archetype.GetChunk(chunkIndex);
-                ref var entityFirstElement = ref chunk.Entities.DangerousGetReference();
-                for (var index = archetypeSlot.Index; index >= 0; --index)
-                {
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                    // Calculate new entity slot based on its old slot.
-                    var entitySlot = new Slot(index, chunkIndex);
-                    var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-
-                    // Update entity info
-                    var entityInfo = EntityInfo[entity.Id];
-                    entityInfo.Slot = newSlot;
-                    entityInfo.Archetype = newArchetype;
-                    EntityInfo[entity.Id] = entityInfo;
-                }
-            }
+            ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }
 }
