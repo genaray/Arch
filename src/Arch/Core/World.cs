@@ -895,7 +895,8 @@ public partial class World
             archetype.Clear();
 
             // Set added value and update the entity info
-            newArchetype.SetRange(in archetypeSlot, in newArchetypeLastSlot, in component);
+            var lastSlot = newArchetype.LastSlot;
+            newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }

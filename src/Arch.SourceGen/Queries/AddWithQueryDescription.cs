@@ -77,7 +77,8 @@ public static class AddWithQueryDescription
                     archetype.Clear();
 
                     // Set added value and update the entity info
-                    newArchetype.SetRange(in archetypeSlot, in newArchetypeLastSlot, {{inParameters}});
+                    var lastSlot = newArchetype.LastSlot;
+                    newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, {{inParameters}});
                     ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
                 }
             }
