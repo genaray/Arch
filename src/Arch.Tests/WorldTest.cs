@@ -234,6 +234,7 @@ public partial class WorldTest
         // Fill world
         var amount = 1000;
         using var world = World.Create();
+
         for (int index = 0; index < amount; index++)
         {
             world.Create<int>();

@@ -301,34 +301,6 @@ public class CommandBuffer : IDisposable
             _addTypes.Clear();
         }
 
-        // Play back removals.
-        for (var index = 0; index < Removes.Count; index++)
-        {
-            var wrappedEntity = Removes.Entities[index];
-            for (var i = 0; i < Removes.UsedSize; i++)
-            {
-                ref var usedIndex = ref Removes.Used[i];
-                ref var sparseSet = ref Removes.Components[usedIndex];
-                if (!sparseSet.Contains(wrappedEntity.Index))
-                {
-                    continue;
-                }
-
-                _removeTypes.Add(sparseSet.Type);
-            }
-
-            if (_removeTypes.Count <= 0)
-            {
-                continue;
-            }
-
-            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
-            var entity = Entities[entityIndex];
-            World.RemoveRange(in entity, _removeTypes);
-
-            _removeTypes.Clear();
-        }
-
         // Play back sets.
         for (var index = 0; index < Sets.Count; index++)
         {
@@ -359,6 +331,35 @@ public class CommandBuffer : IDisposable
                 Array.Copy(sparseArray.Components, id, chunkArray, chunkIndex, 1);
             }
         }
+
+        // Play back removals.
+        for (var index = 0; index < Removes.Count; index++)
+        {
+            var wrappedEntity = Removes.Entities[index];
+            for (var i = 0; i < Removes.UsedSize; i++)
+            {
+                ref var usedIndex = ref Removes.Used[i];
+                ref var sparseSet = ref Removes.Components[usedIndex];
+                if (!sparseSet.Contains(wrappedEntity.Index))
+                {
+                    continue;
+                }
+
+                _removeTypes.Add(sparseSet.Type);
+            }
+
+            if (_removeTypes.Count <= 0)
+            {
+                continue;
+            }
+
+            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
+            var entity = Entities[entityIndex];
+            World.RemoveRange(in entity, _removeTypes);
+
+            _removeTypes.Clear();
+        }
+
 
         // Play back destructions.
         foreach (var cmd in Destroys)
