@@ -127,7 +127,7 @@ public sealed partial class Archetype : IDisposable
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
     ///     Is being stored here since all <see cref="Chunks"/> share the same instance to reduce allocations.
     /// </summary>
-    private readonly int[] _componentIdToArrayIndex;
+    private readonly UnsafeArray<int> _componentIdToArrayIndex;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.

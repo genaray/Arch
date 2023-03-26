@@ -6,8 +6,96 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
-public readonly unsafe ref struct UnsafeArray<T>
+public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
 {
+
+    internal readonly T* _ptr;
+
+    public UnsafeArray(int count)
+    {
+#if NET6_0_OR_GREATER
+        _ptr = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * count));
+#else
+        _ptr = (T*)Marshal.AllocHGlobal(sizeof(T) * count);
+#endif
+        Count = count;
+    }
+
+    public readonly int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get;
+    }
+
+    public readonly int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Count;
+    }
+
+    public ref T this[int i]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _ptr[i];
+    }
+
+    public void Dispose()
+    {
+#if NET6_0_OR_GREATER
+        NativeMemory.Free(_ptr);
+#else
+        Marshal.FreeHGlobal((IntPtr)_ptr);
+#endif
+    }
+
+    /// <summary>
+    ///     Converts an <see cref="UnsafeArray{T}"/> into a void pointer.
+    /// </summary>
+    /// <param name="instance">The <see cref="UnsafeArray{T}"/> instance.</param>
+    /// <returns>A void pointer.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator void*(UnsafeArray<T> instance)
+    {
+        return (void*)instance._ptr;
+    }
+}
+
+public unsafe struct UnsafeArray
+{
+    /// <summary>
+    ///  Copies the a part of the <see cref="UnsafeArray{T}"/> to the another <see cref="UnsafeArray{T}"/>.
+    /// </summary>
+    /// <param name="source">The source <see cref="UnsafeArray{T}"/>.</param>
+    /// <param name="index">The start index in the source <see cref="UnsafeArray{T}"/>.</param>
+    /// <param name="destination">The destination <see cref="UnsafeArray{T}"/>.</param>
+    /// <param name="destinationIndex">The start index in the destination <see cref="UnsafeArray{T}"/>.</param>
+    /// <param name="length">The length indicating the amount of items being copied.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal static void Copy<T>(ref UnsafeArray<T> source, int index, ref UnsafeArray<T> destination, int destinationIndex, int length) where T : unmanaged
+    {
+        var size = sizeof(T);
+        var bytes = size * length;
+        var sourcePtr = (void*)(source._ptr + (size*index));
+        var destinationPtr = (void*)(destination._ptr + (size*destinationIndex));
+        Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
+    }
+
+
+    /// <summary>
+    ///     Fills an <see cref="UnsafeArray{T}"/> with a given value.
+    /// </summary>
+    /// <param name="source">The <see cref="UnsafeArray{T}"/> instance.</param>
+    /// <param name="value">The value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
+    {
+        for (int index = 0; index < source.Count; index++)
+        {
+            source[index] = value;
+        }
+    }
 
 }
 
@@ -226,7 +314,7 @@ public unsafe partial struct Chunk : IDisposable
     /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
     /// <param name="componentIdToArrayIndex">A lookup array which maps the component id to the array index of the component array.</param>
     /// <param name="types">The respective component structure of all entities in this <see cref="Chunk"/>.</param>
-    internal Chunk(int capacity, int[] componentIdToArrayIndex, params ComponentType[] types)
+    internal Chunk(int capacity, UnsafeArray<int> componentIdToArrayIndex, params ComponentType[] types)
     {
         // Calculate capacity and init arrays.
         Size = 0;
@@ -262,7 +350,7 @@ public unsafe partial struct Chunk : IDisposable
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
     /// </summary>
-    public readonly int[] ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public readonly UnsafeArray<int> ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
 
     /// <summary>
@@ -312,7 +400,7 @@ public unsafe partial struct Chunk : IDisposable
     public bool Has<T>()
     {
         var id = Component<T>.ComponentType.Id;
-        return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
+        return id < ComponentIdToArrayIndex.Count && ComponentIdToArrayIndex[id] != 1;
     }
 
     /// <summary>
@@ -450,7 +538,7 @@ public partial struct Chunk
     private int Index<T>()
     {
         var id = Component<T>.ComponentType.Id;
-        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return ComponentIdToArrayIndex[id];
     }
 
     /// <summary>
@@ -505,12 +593,12 @@ public partial struct Chunk
     public bool Has(ComponentType t)
     {
         var id = Component.GetComponentType(t).Id;
-        if (id >= ComponentIdToArrayIndex.Length)
+        if (id >= ComponentIdToArrayIndex.Count)
         {
             return false;
         }
 
-        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id) != -1;
+        return ComponentIdToArrayIndex[id] != -1;
     }
 
     /// <summary>
@@ -537,12 +625,12 @@ public partial struct Chunk
     private int Index(ComponentType type)
     {
         var id = type.Id;
-        if (id >= ComponentIdToArrayIndex.Length)
+        if (id >= ComponentIdToArrayIndex.Count)
         {
             return -1;
         }
 
-        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return ComponentIdToArrayIndex[id];
     }
 
     /// <summary>

@@ -50,7 +50,7 @@ public static class ComponentTypeExtensions
     /// <param name="types">The <see cref="ComponentType"/> array.</param>
     /// <returns>The lookup array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int[] ToLookupArray(this ComponentType[] types)
+    public static UnsafeArray<int> ToLookupArray(this ComponentType[] types)
     {
         // Get maximum component ID.
         var max = 0;
@@ -64,8 +64,8 @@ public static class ComponentTypeExtensions
         }
 
         // Create lookup table where the component ID points to the component index.
-        var array = new int[max + 1];
-        Array.Fill(array, -1);
+        var array = new UnsafeArray<int>(max+1);
+        UnsafeArray.Fill(ref array, -1);
 
         for (var index = 0; index < types.Length; index++)
         {

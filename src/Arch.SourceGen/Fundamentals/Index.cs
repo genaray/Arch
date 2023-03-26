@@ -27,7 +27,7 @@ public static class IndexExtensions
         var assignIds = new StringBuilder();
         for (int i = 0; i <= amount; i++)
         {
-            assignIds.AppendLine($"t{i}Index = Unsafe.Add(ref componentIdToArrayFirstElement, Component<T{i}>.ComponentType.Id);");
+            assignIds.AppendLine($"t{i}Index = ComponentIdToArrayIndex[Component<T{i}>.ComponentType.Id];");
         }
 
         var template = $$"""
@@ -35,7 +35,6 @@ public static class IndexExtensions
         [Pure]
         private void Index<{{generics}}>({{outs}})
         {
-            ref var componentIdToArrayFirstElement = ref ComponentIdToArrayIndex.DangerousGetReference();
             {{assignIds}}
         }
         """;
