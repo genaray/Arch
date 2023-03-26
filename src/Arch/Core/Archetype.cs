@@ -116,7 +116,7 @@ internal record struct Slot
 ///     These are stored in multiple <see cref="Chunk"/>'s located within the <see cref="Chunks"/>-Array.
 ///     The <see cref="Archetype"/> class provides several methods to manage its stored <see cref="Arch.Core.Entity"/>'s and their <see cref="Chunk"/>'s.
 /// </summary>
-public sealed partial class Archetype
+public sealed partial class Archetype : IDisposable
 {
     /// <summary>
     ///     The minimum size of a regular L1 cache.
@@ -428,6 +428,19 @@ public sealed partial class Archetype
     {
         var types =  string.Join(",", Types.Select(p => p.Type.Name).ToArray());
         return $"Archetype {{ {nameof(Types)} = {{ {types} }}, {nameof(BitSet)} = {{ {BitSet} }}, {nameof(EntitiesPerChunk)} = {EntitiesPerChunk}, {nameof(ChunkSize)} = {ChunkSize}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size}, {nameof(Entities)} = {Entities} }}";
+    }
+
+    /// <summary>
+    ///     Disposes this <see cref="Archetype"/> instance and releases all its occupied memory.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        for (var index = 0; index < Capacity; index++)
+        {
+            ref var chunk = ref GetChunk(index);
+            chunk.Dispose();
+        }
     }
 }
 

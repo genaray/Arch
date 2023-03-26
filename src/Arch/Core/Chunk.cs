@@ -37,7 +37,7 @@ public readonly unsafe struct ComponentArray : IDisposable
     /// <param name="nativeArray">The <see cref="IntPtr"/> pointing towards the native allocated memory block indicating an array.</param>
     /// <param name="componentType">The <see cref="ComponentType"/> stored.</param>
     /// <param name="capacity">The capacity.</param>
-    public ComponentArray(IntPtr nativeArray, ComponentType componentType, int capacity)
+    internal ComponentArray(IntPtr nativeArray, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
         NativeArray = nativeArray;
@@ -52,7 +52,7 @@ public readonly unsafe struct ComponentArray : IDisposable
     /// <param name="array">The <see cref="Array"/>.</param>
     /// <param name="componentType">The <see cref="ComponentType"/> stored.</param>
     /// <param name="capacity">The capacity.</param>
-    public ComponentArray(Array array, ComponentType componentType, int capacity)
+    internal ComponentArray(Array array, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
         Array = array;

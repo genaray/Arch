@@ -201,6 +201,8 @@ public partial class World : IDisposable
         // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
         for (var index = 0; index < world.Archetypes.Count; index++)
         {
+            var archetype = world.Archetypes[index];
+            archetype.Dispose();
             world.Archetypes[index] = null;
         }
 
