@@ -232,6 +232,25 @@ internal class SparseSet : IDisposable
     public SparseArray[] Components;
 
     /// <summary>
+    ///     Ensures the capacity for registered components types.
+    ///     Resizes the existing <see cref="Components"/> and <see cref="Used"/> array properly to fit the id in.
+    ///     <remarks>Does not ensure the capacity in terms of how many operations or components are recorded.</remarks>
+    /// </summary>
+    /// <param name="capacity">The new capacity, the id of the component which will be ensured to fit into the arrays.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void EnsureTypeCapacity(int capacity)
+    {
+        // Allocate new `SparseArray` for new component type.
+        if (capacity < Components.Length)
+        {
+            return;
+        }
+
+        Array.Resize(ref Used, UsedSize + 1);
+        Array.Resize(ref Components, capacity + 1);
+    }
+
+    /// <summary>
     ///     Adds an <see cref="Entity"/> to the <see cref="SparseSet"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
@@ -250,6 +269,41 @@ internal class SparseSet : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Adds an <see cref="SparseArray"/> to the <see cref="Components"/> list and updates the <see cref="Used"/> properly.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/> of the <see cref="SparseArray"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddSparseArray(ComponentType type)
+    {
+        Components[type.Id] = new SparseArray(type, type.Id);
+
+        Used[UsedSize] = type.Id;
+        UsedSize++;
+    }
+
+    /// <summary>
+    ///     Checks whether a <see cref="SparseArray"/> for a certain <see cref="ComponentType"/> exists in the <see cref="Components"/>.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/> to check.</param>
+    /// <returns>True if it does, false if not.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool HasSparseArray(ComponentType type)
+    {
+        return Components[type.Id] != null;
+    }
+
+    /// <summary>
+    ///     Returns the existing <see cref="StructuralSparseArray"/> for the registered <see cref="ComponentType"/>.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/>.</param>
+    /// <returns>The existing <see cref="StructuralSparseArray"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private SparseArray GetSparseArray(ComponentType type)
+    {
+        return Components[type.Id];
+    }
+
     // NOTE: If `SparseSet` were generic, this could perhaps be an indexer (T this[int index]).
     /// <summary>
     ///     Sets a component at the index.
@@ -260,24 +314,19 @@ internal class SparseSet : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T component)
     {
-        var id = Component<T>.ComponentType.Id;
+        var componentType = Component<T>.ComponentType;
         lock (_setLock)
         {
-            // Allocate new `SparseArray` for new component type.
-            if (id >= Components.Length)
+            // Ensure that enough capacity for the component array exists and add it
+            EnsureTypeCapacity(componentType.Id);
+            if (!HasSparseArray(componentType))
             {
-                Array.Resize(ref Components, id + 1);
-                Components[id] = new SparseArray(typeof(T), Capacity);
-
-                Array.Resize(ref Used, UsedSize + 1);
-
-                Used[UsedSize] = id;
-                UsedSize++;
+                AddSparseArray(componentType);
             }
         }
 
         // Add and set to `SparseArray`.
-        var array = Components[id];
+        var array = GetSparseArray(componentType);
         lock (array)
         {
             if (!array.Contains(index))
