@@ -6,15 +6,32 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+/// <summary>
+///     The <see cref="ComponentArray"/> struct
+///     represents an hybrid array that either wraps an <see cref="Array"/> or an <see cref="NativeArray"/>.
+///     It mirrors the most important array operations to acess the underlaying array regardless of its implementation.
+/// </summary>
 public readonly unsafe struct ComponentArray : IDisposable
 {
+
+    /// <summary>
+    ///     An <see cref="IntPtr"/> pointing to native memory that represents the array.
+    /// </summary>
     private readonly IntPtr NativeArray;
+
+    /// <summary>
+    ///     An gc managed <see cref="Array"/> that represents the array.
+    /// </summary>
     private readonly Array Array;
 
-    public readonly ComponentType ComponentType { get; }
-    public readonly bool IsManaged { get; }
-    public readonly int Capacity { get; }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentArray"/> struct.
+    ///     Accepts a <see cref="IntPtr"/> and creates an unmanaged <see cref="ComponentArray"/> instance.
+    /// </summary>
+    /// <param name="nativeArray">The <see cref="IntPtr"/> pointing towards the native allocated memory block indicating an array.</param>
+    /// <param name="componentType">The <see cref="ComponentType"/> stored.</param>
+    /// <param name="capacity">The capacity.</param>
     public ComponentArray(IntPtr nativeArray, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
@@ -23,6 +40,13 @@ public readonly unsafe struct ComponentArray : IDisposable
         Capacity = capacity;
     }
 
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentArray"/> struct.
+    ///     Accepts a <see cref="Array"/> and creates an managed <see cref="ComponentArray"/> instance.
+    /// </summary>
+    /// <param name="array">The <see cref="Array"/>.</param>
+    /// <param name="componentType">The <see cref="ComponentType"/> stored.</param>
+    /// <param name="capacity">The capacity.</param>
     public ComponentArray(Array array, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
@@ -31,10 +55,30 @@ public readonly unsafe struct ComponentArray : IDisposable
         Capacity = capacity;
     }
 
+    /// <summary>
+    ///     The <see cref="ComponentType"/> that is stored by this array.
+    /// </summary>
+    public readonly ComponentType ComponentType { get; }
+
+    /// <summary>
+    ///     True if the underlaying array is a managed <see cref="Array"/> and no native memory <see cref="NativeArray"/>.
+    /// </summary>
+    public readonly bool IsManaged { get; }
+
+    /// <summary>
+    ///     The arrays allocated capacity.
+    /// </summary>
+    public readonly int Capacity { get; }
+
+    /// <summary>
+    ///     Sets an item at an index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="value">The item value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(in int index, object value)
     {
-        if (Array == null)
+        if (!IsManaged)
         {
             var ptr = NativeArray + (ComponentType.ByteSize * index);
             Marshal.StructureToPtr(value, ptr, false);
@@ -45,6 +89,11 @@ public readonly unsafe struct ComponentArray : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Returns an item from an index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <returns>The item casted to an <see cref="object"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public object Get(in int index)
     {
@@ -57,6 +106,9 @@ public readonly unsafe struct ComponentArray : IDisposable
         return Array.GetValue(index);
     }
 
+    /// <summary>
+    ///     Disposes this <see cref="ComponentArray"/> instance and releases memory.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
@@ -68,6 +120,12 @@ public readonly unsafe struct ComponentArray : IDisposable
         Marshal.FreeHGlobal(NativeArray);
     }
 
+    /// <summary>
+    ///     Converts this <see cref="ComponentArray"/> instance into its <see cref="Span{T}"/> representation.
+    /// </summary>
+    /// <typeparam name="T">The generic type of this underlaying array.</typeparam>
+    /// <returns>A new instance of an <see cref="Span{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan<T>()
     {
         // Handle object components.
@@ -80,6 +138,14 @@ public readonly unsafe struct ComponentArray : IDisposable
         return new Span<T>((void*)NativeArray, Capacity);
     }
 
+    /// <summary>
+    ///     Creates a new instance of the <see cref="ComponentArray"/> struct.
+    ///     Determines if the passed <see cref="ComponentType"/> is managed and therefore will either allocate a native <see cref="ComponentArray"/> or a gc one.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/> that the <see cref="ComponentArray"/> should store.</param>
+    /// <param name="Capacity">The capacity.</param>
+    /// <returns>A new <see cref="ComponentArray"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ComponentArray CreateInstance(ComponentType type, int Capacity)
     {
         if (!type.IsManaged)
@@ -124,6 +190,11 @@ public readonly unsafe struct ComponentArray : IDisposable
         }
     }
 
+    /// <summary>
+    ///     Converts an <see cref="ComponentArray"/> into a void pointer.
+    /// </summary>
+    /// <param name="instance">The <see cref="ComponentArray"/> instance.</param>
+    /// <returns>A void pointer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator void*(ComponentArray instance) => (void*)instance.NativeArray;
 }
