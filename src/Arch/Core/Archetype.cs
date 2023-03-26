@@ -554,10 +554,18 @@ public sealed unsafe partial class Archetype
     ///     Trims the capacity of the <see cref="Chunks"/> array to its used minimum.
     ///     Reduces the <see cref="Capacity"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void TrimExcess()
     {
         // This always spares one single chunk.
         var minimalSize = Size > 0 ? Size : 1;
+
+        // Dispose chunks that are not needed anymore
+        for (var index = Capacity-1; index >= minimalSize; index--)
+        {
+            ref var chunk = ref GetChunk(index);
+            chunk.Dispose();
+        }
 
         // Decrease chunk size
         var newChunks = ArrayPool<Chunk>.Shared.Rent(minimalSize);

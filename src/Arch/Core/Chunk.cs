@@ -6,6 +6,11 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+public readonly unsafe ref struct UnsafeArray<T>
+{
+
+}
+
 /// <summary>
 ///     The <see cref="ComponentArray"/> struct
 ///     represents an hybrid array that either wraps an <see cref="Array"/> or an <see cref="NativeArray"/>.
@@ -204,7 +209,7 @@ public readonly unsafe struct ComponentArray : IDisposable
 ///     Chunks are internally allocated and filled by <see cref="Archetype"/>'s.
 ///     Through them it is possible to efficiently provide or trim memory for additional entities.
 /// </summary>
-public unsafe partial struct Chunk
+public unsafe partial struct Chunk : IDisposable
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="Chunk"/> struct.
@@ -406,6 +411,19 @@ public unsafe partial struct Chunk
     public void Clear()
     {
         Size = 0;
+    }
+
+    /// <summary>
+    ///     Disposes this <see cref="Chunk"/> and all underlaying allocated arrays.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        for (var index = 0; index < Components.Length; index++)
+        {
+            ref var components = ref Components[index];
+            components.Dispose();
+        }
     }
 
     /// <summary>
