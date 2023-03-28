@@ -114,7 +114,7 @@ public partial class World : IDisposable
 
         // Entity stuff.
         Archetypes = new PooledList<Archetype>(8, ClearMode.Never);
-        EntityInfo = new PooledDictionary<int, EntityInfo>(256);
+        EntityInfo = new EntityInfoDictionary(256);
         RecycledIds = new PooledQueue<RecycledEntity>(256);
 
         // Query.
@@ -155,7 +155,7 @@ public partial class World : IDisposable
     /// <summary>
     ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
     /// </summary>
-    internal PooledDictionary<int, EntityInfo> EntityInfo { get; }
+    internal EntityInfoDictionary EntityInfo { get; }
 
     /// <summary>
     ///     Stores recycled <see cref="Entity"/> ids and their last version.
@@ -194,7 +194,6 @@ public partial class World : IDisposable
         // Dispose
         world.JobHandles.Dispose();
         world.GroupToArchetype.Dispose();
-        world.EntityInfo.Dispose();
         world.RecycledIds.Dispose();
         world.QueryCache.Dispose();
 
@@ -353,7 +352,6 @@ public partial class World : IDisposable
         Size = 0;
 
         // Clear
-        EntityInfo.Clear();
         RecycledIds.Clear();
         JobHandles.Clear();
         GroupToArchetype.Clear();
