@@ -270,20 +270,18 @@ public partial class World : IDisposable
         var id = entity.Id;
 
         // Copy entity to other archetype
-        var entityInfo = EntityInfo[id];
+        ref var entityInfo = ref EntityInfo[id];
         var created = to.Add(in entity, out newSlot);
         Archetype.CopyComponents(from, ref entityInfo.Slot, to,ref newSlot);
         from.Remove(ref entityInfo.Slot, out var movedEntity);
 
         // Update moved entity from the remove
-        var movedEntityInfo = EntityInfo[movedEntity];
+        ref var movedEntityInfo = ref EntityInfo[movedEntity];
         movedEntityInfo.Slot = entityInfo.Slot;
-        EntityInfo[movedEntity] = movedEntityInfo;
 
         // Update mapping of target entity
         entityInfo.Archetype = to;
         entityInfo.Slot = newSlot;
-        EntityInfo[id] = entityInfo;
 
         // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
         var difference = 0;
