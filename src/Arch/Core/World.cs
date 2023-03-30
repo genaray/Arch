@@ -1255,7 +1255,7 @@ public partial class World
         return true;
     }
 
-        /// <summary>
+    /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
@@ -1266,12 +1266,15 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length + 1];
-        oldArchetype.Types.WriteComponentIds(ids);
-        ids[^1] = Component.GetComponentType(cmp.GetType()).Id;
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
 
-        if (!TryGetArchetype(ids, out var newArchetype))
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+        spanBitSet.SetBit(Component.GetComponentType(cmp.GetType()).Id);
+
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
         }
@@ -1290,21 +1293,21 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Length];
-        oldArchetype.Types.WriteComponentIds(ids);
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
 
-        // Add ids from array to all ids
-        var newComponents = new ComponentType[components.Length];
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
         for (var index = 0; index < components.Length; index++)
         {
             var type = Component.GetComponentType(components[index].GetType());
-            newComponents[index] = type;
-            ids[oldArchetype.Types.Length + index] = type.Id;
+            spanBitSet.SetBit(type.Id);
         }
 
-        if (!TryGetArchetype(ids, out var newArchetype))
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
+            var newComponents = components.Select(o => (ComponentType)o).ToArray();
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
@@ -1322,20 +1325,48 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length + components.Count];
-        oldArchetype.Types.WriteComponentIds(ids);
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
 
-        // Add ids from array to all ids
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
         for (var index = 0; index < components.Count; index++)
         {
-            var type = components[index];
-            ids[oldArchetype.Types.Length + index] = type.Id;
+            var type = Component.GetComponentType(components[index]);
+            spanBitSet.SetBit(type.Id);
         }
 
-        if (!TryGetArchetype(ids, out var newArchetype))
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
+        }
+
+        Move(in entity, oldArchetype, newArchetype, out _);
+    }
+
+    /// <summary>
+    ///     Removes one single of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The <see cref="ComponentType"/> to remove from the the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove(in Entity entity, ComponentType type)
+    {
+        var oldArchetype = EntityInfo[entity.Id].Archetype;
+
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
+        oldArchetype.BitSet.AsSpan(stack);
+
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+        spanBitSet.ClearBit(type.Id);
+
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
         Move(in entity, oldArchetype, newArchetype, out _);
@@ -1352,16 +1383,19 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
-        oldArchetype.Types.WriteComponentIds(ids);
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
+        oldArchetype.BitSet.AsSpan(stack);
 
-        foreach (var type in types)
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+        for (var index = 0; index < types.Length; index++)
         {
-            ids.Remove(type.Id);
+            ref var cmp = ref types[index];
+            spanBitSet.ClearBit(cmp.Id);
         }
 
-        if (!TryGetArchetype(ids, out var newArchetype))
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
         }
@@ -1380,16 +1414,19 @@ public partial class World
     {
         var oldArchetype = EntityInfo[entity.Id].Archetype;
 
-        // Create a stack array with all component we now search an archetype for.
-        Span<int> ids = stackalloc int[oldArchetype.Types.Length];
-        oldArchetype.Types.WriteComponentIds(ids);
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
+        oldArchetype.BitSet.AsSpan(stack);
 
-        foreach (var type in types)
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+        for (var index = 0; index < types.Count; index++)
         {
-            ids.Remove(type.Id);
+            var cmp = types[index];
+            spanBitSet.ClearBit(cmp.Id);
         }
 
-        if (!TryGetArchetype(ids, out var newArchetype))
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
         }
