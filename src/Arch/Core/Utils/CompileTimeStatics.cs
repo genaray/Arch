@@ -332,7 +332,6 @@ public static class Component
             foreach (var type in obj)
             {
                 int x = type.Id + 1;
-
                 x ^= x >> 17;
                 x *= 830770091;   // 0xed5ad4bb
                 x ^= x >> 11;
@@ -349,93 +348,17 @@ public static class Component
     }
 
     /// <summary>
-    ///     Calculates the hash code of a <see cref="ComponentType"/> Id array, which is unique for the elements contained in the array.
-    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
-    /// </summary>
-    /// <param name="obj">The <see cref="ComponentType"/> array.</param>
-    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetHashCode(Span<int> obj)
-    {
-        // From https://stackoverflow.com/a/52172541.
-        unchecked
-        {
-            int hash = 0;
-            foreach (var type in obj)
-            {
-                int x = type + 1;
-
-                x ^= x >> 17;
-                x *= 830770091;   // 0xed5ad4bb
-                x ^= x >> 11;
-                x *= -1404298415; // 0xac4c1b51
-                x ^= x >> 15;
-                x *= 830770091;   // 0x31848bab
-                x ^= x >> 14;
-
-                hash += x;
-            }
-
-            return hash;
-        }
-    }
-
-    /// <summary>
-    ///     Calculates the hash code of a <see cref="BitSet"/>, which is unique for the elements contained in the array.
+    ///     Calculates the hash code of a bitset span, which is unique for the elements contained in the array.
     ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
     /// </summary>
     /// <param name="obj">The <see cref="BitSet"/>.</param>
     /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetHashCode(BitSet obj)
+    public static int GetHashCode(Span<uint> span)
     {
         // From https://stackoverflow.com/a/52172541.
         unchecked
         {
-            var span = obj.AsSpan();
-            int hash = 0;
-            for (var index = 0; index < span.Length; index++)
-            {
-                var value = span[index];
-                for (var i = 0; i < BitSet.BitSize; i++)
-                {
-                    if ((value & 1) != 1)
-                    {
-                        continue;
-                    }
-
-                    int x = (index*BitSet.BitSize)+i + 1;
-
-                    x ^= x >> 17;
-                    x *= 830770091;   // 0xed5ad4bb
-                    x ^= x >> 11;
-                    x *= -1404298415; // 0xac4c1b51
-                    x ^= x >> 15;
-                    x *= 830770091;   // 0x31848bab
-                    x ^= x >> 14;
-
-                    hash += x;
-                    value >>= 1;
-                }
-            }
-
-            return hash;
-        }
-    }
-
-    /// <summary>
-    ///     Calculates the hash code of a <see cref="SpanBitSet"/>, which is unique for the elements contained in the array.
-    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
-    /// </summary>
-    /// <param name="obj">The <see cref="SpanBitSet"/>.</param>
-    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetHashCode(ref SpanBitSet obj)
-    {
-        // From https://stackoverflow.com/a/52172541.
-        unchecked
-        {
-            var span = obj.AsSpan();
             int hash = 0;
             for (var index = 0; index < span.Length; index++)
             {
@@ -449,7 +372,6 @@ public static class Component
                     }
 
                     int x = (index*BitSet.BitSize)+i + 1;
-
                     x ^= x >> 17;
                     x *= 830770091;   // 0xed5ad4bb
                     x ^= x >> 11;

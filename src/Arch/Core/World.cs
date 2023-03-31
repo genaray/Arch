@@ -540,19 +540,6 @@ public partial class World
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
 
-    /// <summary>
-    ///     Trys to find an <see cref="Archetype"/> by the ids of its components.
-    ///     Those are being represented as a <see cref="Span{T}"/> array of ints.
-    /// </summary>
-    /// <param name="ids">A <see cref="Span{T}"/> with the component ids.</param>
-    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetArchetype(Span<int> ids, out Archetype archetype)
-    {
-        var hash = Component.GetHashCode(ids);
-        return GroupToArchetype.TryGetValue(hash, out archetype);
-    }
 
     /// <summary>
     ///     Returned an <see cref="Archetype"/> based on its components. If it does not exist, it will be created.
