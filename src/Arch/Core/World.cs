@@ -859,8 +859,8 @@ public partial class World
             }
 
             // Create local bitset on the stack and set bits to get a new fitting bitset of the new archetype.
-            var bitSet = archetype.BitSet;
-            var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
+            archetype.BitSet.AsSpan(stack);
+            var spanBitSet = new SpanBitSet(stack);
             spanBitSet.SetBit(Component<T>.ComponentType.Id);
 
             // Get or create new archetype.

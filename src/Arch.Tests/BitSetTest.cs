@@ -26,6 +26,32 @@ public class BitSetTest
     }
 
     /// <summary>
+    ///     Checks if hash values are the same for <see cref="BitSet"/>s and <see cref="ComponentType"/> arrays.
+    /// </summary>
+    [Test]
+    public void HashSimilarity()
+    {
+        var array = new ComponentType[]
+        {
+            new (1, null, 0, false),
+            new (36, null, 0, false),
+            new (65, null, 0, false),
+            new (5, null, 0, false),
+        };
+
+        var bitSet = new BitSet();
+        bitSet.SetBit(1);
+        bitSet.SetBit(36);
+        bitSet.SetBit(5);
+        bitSet.SetBit(65);
+
+        var hashCode = Component.GetHashCode(array);
+        var otherHashCode = bitSet.GetHashCode();
+
+        That(hashCode, Is.EqualTo(otherHashCode));
+    }
+
+    /// <summary>
     ///     Checks <see cref="BitSet"/> all.
     /// </summary>
     [Test]

@@ -316,7 +316,7 @@ public static class Component
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
 
-    /// <summary>
+      /// <summary>
     ///     Calculates the hash code of a <see cref="ComponentType"/> array, which is unique for the elements contained in the array.
     ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
     /// </summary>
@@ -332,6 +332,7 @@ public static class Component
             foreach (var type in obj)
             {
                 int x = type.Id + 1;
+
                 x ^= x >> 17;
                 x *= 830770091;   // 0xed5ad4bb
                 x ^= x >> 11;
@@ -371,7 +372,8 @@ public static class Component
                         continue;
                     }
 
-                    int x = (index*BitSet.BitSize)+i + 1;
+                    int x = (index*(BitSet.BitSize+1))+i + 1;
+
                     x ^= x >> 17;
                     x *= 830770091;   // 0xed5ad4bb
                     x ^= x >> 11;
