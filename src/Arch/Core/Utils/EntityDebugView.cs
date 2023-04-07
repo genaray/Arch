@@ -12,7 +12,7 @@ internal sealed class EntityDebugView
     private readonly Entity _entity;
 
     /// <summary>
-    /// Constructs an <see cref="EntityDebugView"/>.
+    ///     Constructs an <see cref="EntityDebugView"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to debug.</param>
     public EntityDebugView(Entity entity)

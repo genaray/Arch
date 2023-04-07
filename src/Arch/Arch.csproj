@@ -14,11 +14,16 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
+<<<<<<< HEAD
     <Version>1.2.3</Version>
+=======
+    <Version>1.2.3.4-beta</Version>
+>>>>>>> master
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>
+<<<<<<< HEAD
       Fixed a bug where frequent adding/removing components cause a messed up EntityInfo dictionary and therefore mostly a crash sooner or later.
       Fixed a bug where adding components by a QueryDescription did not set its value correctly, this was now fixed aswell.
       Fixed `BitSet.None`, which now works correctly with large amounts of components.
@@ -29,6 +34,21 @@
       `World.Clear()´ now clears the whole world.
       `World.GetEntities(Span{Entity})` as an alternative to the list variant.
       `ComponentRegistry` now features a method to register `ComponentTypes` by yourself to bypass c# restrictions.
+=======
+      CommandBuffer Operations were now fixed and do record Add and Sets correctly.
+      CommandBuffer resizes its internal arrays now correctly.
+      EntityInfoDictionary replaced the previous used PooledDictionary to offer much better lookup speeds for entity interactions.
+      Non generic World.Add, World.AddRange, World.RemoveRange were fixed, they created wrong archetypes with doubled components in some cases.
+      Added non generic World.Remove.
+      Some slight performance improvements during entity move operations.
+>>>>>>> master
+    <Version>1.2.3.4-beta</Version>
+      CommandBuffer Operations were now fixed and do record Add and Sets correctly.
+      CommandBuffer resizes its internal arrays now correctly.
+      EntityInfoDictionary replaced the previous used PooledDictionary to offer much better lookup speeds for entity interactions.
+      Non generic World.Add, World.AddRange, World.RemoveRange were fixed, they created wrong archetypes with doubled components in some cases.
+      Added non generic World.Remove.
+      Some slight performance improvements during entity move operations.
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 

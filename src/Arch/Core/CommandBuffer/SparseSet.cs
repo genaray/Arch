@@ -233,7 +233,7 @@ internal class SparseSet : IDisposable
 
     /// <summary>
     ///     Ensures the capacity for registered components types.
-    ///     Resizes the existing <see cref="Components"/> and <see cref="Used"/> array properly to fit the id in.
+    ///     Resizes the existing <see cref="Components"/> array properly to fit the id in.
     ///     <remarks>Does not ensure the capacity in terms of how many operations or components are recorded.</remarks>
     /// </summary>
     /// <param name="capacity">The new capacity, the id of the component which will be ensured to fit into the arrays.</param>
@@ -245,9 +245,22 @@ internal class SparseSet : IDisposable
         {
             return;
         }
-
-        Array.Resize(ref Used, UsedSize + 1);
         Array.Resize(ref Components, capacity + 1);
+    }
+
+    /// <summary>
+    ///     Ensures the capacity for the <see cref="Used"/> array.
+    /// </summary>
+    /// <param name="capacity">The new capacity.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void EnsureUsedCapacity(int capacity)
+    {
+        // Resize UsedSize array.
+        if (capacity < UsedSize)
+        {
+            return;
+        }
+        Array.Resize(ref Used, UsedSize + 1);
     }
 
     /// <summary>
@@ -321,6 +334,7 @@ internal class SparseSet : IDisposable
             EnsureTypeCapacity(componentType.Id);
             if (!HasSparseArray(componentType))
             {
+                EnsureUsedCapacity(UsedSize+1);
                 AddSparseArray(componentType);
             }
         }

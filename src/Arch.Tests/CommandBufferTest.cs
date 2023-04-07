@@ -16,6 +16,7 @@ public partial class CommandBufferTest
     [Test]
     public void CommandBufferSparseSet()
     {
+
         var mySet = new SparseSet();
 
         var first = mySet.Create(new Entity(0, 0));
