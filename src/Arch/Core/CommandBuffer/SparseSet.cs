@@ -169,6 +169,10 @@ internal class SparseArray
     /// </summary>
     public void Clear()
     {
+        for (var index = 0; index < Size; index++)
+        {
+            Entities[index] = -1;
+        }
         Size = 0;
     }
 }
@@ -181,7 +185,7 @@ internal class SparseArray
 ///     The <see cref="SparseSet"/> class
 ///     Stores a series of <see cref="SparseArray"/>'s and their associated components.
 /// </summary>
-internal class SparseSet : IDisposable
+internal class SparseSet
 {
     private readonly object _createLock = new(); // Lock for create operations
     private readonly object _setLock = new();    // Lock for set operations
@@ -386,10 +390,10 @@ internal class SparseSet : IDisposable
     }
 
     /// <summary>
-    ///     Disposes the <see cref="SparseSet"/>.
+    ///     Clears the <see cref="SparseSet"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
+    public void Clear()
     {
         Count = 0;
         Entities.Clear();

@@ -372,9 +372,9 @@ public class CommandBuffer : IDisposable
         Entities?.Clear();
         BufferedEntityInfo?.Clear();
         Creates?.Clear();
-        Sets?.Dispose();
-        Adds?.Dispose();
-        Removes?.Dispose();
+        Sets?.Clear();
+        Adds?.Clear();
+        Removes?.Clear();
         Destroys?.Clear();
         _addTypes?.Clear();
         _removeTypes?.Clear();
@@ -388,9 +388,9 @@ public class CommandBuffer : IDisposable
         Entities?.Dispose();
         BufferedEntityInfo?.Dispose();
         Creates?.Dispose();
-        Sets?.Dispose();
-        Adds?.Dispose();
-        Removes?.Dispose();
+        Sets?.Clear();
+        Adds?.Clear();
+        Removes?.Clear();
         Destroys?.Dispose();
         _addTypes?.Dispose();
         _removeTypes?.Dispose();
