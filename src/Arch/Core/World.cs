@@ -266,6 +266,9 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Move(in Entity entity, Archetype from, Archetype to, out Slot newSlot)
     {
+        // A common mistake, happening in many cases.
+        Debug.Assert(from != to, "From-Archetype is the same as the To-Archetype. Entities cannot move within the same archetype using this function. Probably an attempt was made to attach already existing components to the entity or to remove non-existing ones.");
+
         // Cache id since in Entity is basically ref readonly entity.
         var id = entity.Id;
 
