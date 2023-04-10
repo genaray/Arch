@@ -27,7 +27,7 @@ public static class SetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Set<{{generics}}>(in int index, {{parameters}})
+            public void Set<{{generics}}>(int index, {{parameters}})
             {
                 {{arrays}}
                 {{sets}}
@@ -97,7 +97,7 @@ public static class SetExtensions
                 // Set the added component, start from the last slot and move down
                 for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)
                 {
-                    ref var chunk = ref GetChunk(in chunkIndex);
+                    ref var chunk = ref GetChunk(chunkIndex);
                     {{getFirstElements}}
                     foreach(var entityIndex in chunk)
                     {
@@ -136,7 +136,7 @@ public static class SetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Set<{{generics}}>(in Entity entity, {{parameters}})
+            public void Set<{{generics}}>(Entity entity, {{parameters}})
             {
                 var entityInfo = EntityInfo[entity.Id];
                 var archetype = entityInfo.Archetype;
@@ -166,10 +166,10 @@ public static class SetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Set<{{generics}}>(this in Entity entity, {{parameters}})
+            public static void Set<{{generics}}>(this Entity entity, {{parameters}})
             {
                 var world = World.Worlds[entity.WorldId];
-                world.Set<{{generics}}>(in entity, {{insertParams}});
+                world.Set<{{generics}}>(entity, {{insertParams}});
             }
             """;
 

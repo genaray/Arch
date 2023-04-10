@@ -29,7 +29,7 @@ public static class StructuralChangesExtensions
             $$"""
             [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Add<{{generics}}>(in Entity entity, {{parameters}})
+            public void Add<{{generics}}>(Entity entity, {{parameters}})
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -77,7 +77,7 @@ public static class StructuralChangesExtensions
             $$"""
             [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Remove<{{generics}}>(in Entity entity)
+            public void Remove<{{generics}}>(Entity entity)
             {
                 var oldArchetype = EntityInfo[entity.Id].Archetype;
 
@@ -117,10 +117,10 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Add<{{generics}}>(this in Entity entity, {{parameters}})
+            public static void Add<{{generics}}>(this Entity entity, {{parameters}})
             {
                 var world = World.Worlds[entity.WorldId];
-                world.Add<{{generics}}>(in entity);
+                world.Add<{{generics}}>(entity);
             }
             """;
 
@@ -144,10 +144,10 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Remove<{{generics}}>(this in Entity entity)
+            public static void Remove<{{generics}}>(this Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];
-                world.Remove<{{generics}}>(in entity);
+                world.Remove<{{generics}}>(entity);
             }
             """;
 

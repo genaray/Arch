@@ -232,7 +232,7 @@ public sealed partial class Archetype
     /// <param name="slot">The <see cref="Slot"/> in which it was deposited.</param>
     /// <returns>True if a new <see cref="Chunk"/> was allocated, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool Add(in Entity entity, out Slot slot)
+    internal bool Add(Entity entity, out Slot slot)
     {
         // Increase size by one if the current chunk is full and theres capcity to prevent new chunk allocation.
         ref var lastChunk = ref LastChunk;
@@ -242,7 +242,7 @@ public sealed partial class Archetype
         lastChunk = ref LastChunk;
         if (lastChunk.Size != lastChunk.Capacity)
         {
-            slot.Index = lastChunk.Add(in entity);
+            slot.Index = lastChunk.Add(entity);
             slot.ChunkIndex = Size - 1;
 
             return false;
@@ -250,7 +250,7 @@ public sealed partial class Archetype
 
         // Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
-        slot.Index = newChunk.Add(in entity);
+        slot.Index = newChunk.Add(entity);
         slot.ChunkIndex = Size;
 
         // Resize chunks & map entity
@@ -319,7 +319,7 @@ public sealed partial class Archetype
     internal ref T Get<T>(scoped ref Slot slot)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        return ref chunk.Get<T>(in slot.Index);
+        return ref chunk.Get<T>(slot.Index);
     }
 
     /// <summary>
@@ -331,7 +331,7 @@ public sealed partial class Archetype
     internal ref Entity Entity(scoped ref Slot slot)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        return ref chunk.Entity(in slot.Index);
+        return ref chunk.Entity(slot.Index);
     }
 
     /// NOTE: Causes bounds check, any way to avoid that ?
@@ -341,7 +341,7 @@ public sealed partial class Archetype
     /// <param name="index"></param>
     /// <returns>A reference to the <see cref="Chunk"/> at the given index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref Chunk GetChunk(scoped in int index)
+    public ref Chunk GetChunk(int index)
     {
         return ref Chunks[index];
     }
@@ -359,7 +359,7 @@ public sealed partial class Archetype
         // Set the added component, start from the last slot and move down
         for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)
         {
-            ref var chunk = ref GetChunk(in chunkIndex);
+            ref var chunk = ref GetChunk(chunkIndex);
             ref var firstElement = ref chunk.GetFirst<T>();
             foreach(var index in chunk)
             {
@@ -443,7 +443,7 @@ public sealed unsafe partial class Archetype
     internal void Set(ref Slot slot, in object cmp)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        chunk.Set(slot.Index, in cmp);
+        chunk.Set(slot.Index, cmp);
     }
 
     /// <summary>
@@ -468,7 +468,7 @@ public sealed unsafe partial class Archetype
     internal object Get(scoped ref Slot slot, ComponentType type)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        return chunk.Get(in slot.Index, type);
+        return chunk.Get(slot.Index, type);
     }
 }
 

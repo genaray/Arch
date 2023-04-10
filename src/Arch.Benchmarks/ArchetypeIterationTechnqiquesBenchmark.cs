@@ -30,7 +30,7 @@ public class ArchetypeIterationTechniquesBenchmark
         for (var index = 0; index < Amount; index++)
         {
             var entity = new Entity(index, 0);
-            _globalArchetype.Add(in entity, out var slot);
+            _globalArchetype.Add(entity, out var slot);
 
             var t = new Transform();
             var r = new Rotation();

@@ -20,7 +20,7 @@ public static partial class EntityExtensions
     public static Archetype GetArchetype(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.GetArchetype(in entity);
+        return world.GetArchetype(entity);
     }
 
     /// <summary>
@@ -32,7 +32,7 @@ public static partial class EntityExtensions
     public static ref readonly Chunk GetChunk(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return ref world.GetChunk(in entity);
+        return ref world.GetChunk(entity);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public static partial class EntityExtensions
     public static ComponentType[] GetComponentTypes(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.GetComponentTypes(in entity);
+        return world.GetComponentTypes(entity);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public static partial class EntityExtensions
     public static object[] GetAllComponents(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.GetAllComponents(in entity);
+        return world.GetAllComponents(entity);
     }
 
 
@@ -70,7 +70,7 @@ public static partial class EntityExtensions
     public static bool IsAlive(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.IsAlive(in entity);
+        return world.IsAlive(entity);
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static partial class EntityExtensions
     public static int Version(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.Version(in entity);
+        return world.Version(entity);
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public static partial class EntityExtensions
     public static EntityReference Reference(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.Reference(in entity);
+        return world.Reference(entity);
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public static partial class EntityExtensions
     public static void Set<T>(this in Entity entity, in T component = default)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Set(in entity, in component);
+        world.Set(entity, in component);
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public static partial class EntityExtensions
     public static bool Has<T>(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.Has<T>(in entity);
+        return world.Has<T>(entity);
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public static partial class EntityExtensions
     public static bool TryGet<T>(this in Entity entity, out T component)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.TryGet(in entity, out component);
+        return world.TryGet(entity, out component);
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public static partial class EntityExtensions
     public static ref T TryGetRef<T>(this in Entity entity, out bool exists)
     {
         var world = World.Worlds[entity.WorldId];
-        return ref world.TryGetRef<T>(in entity, out exists);
+        return ref world.TryGetRef<T>(entity, out exists);
     }
 
     /// <summary>
@@ -176,7 +176,7 @@ public static partial class EntityExtensions
     public static void Add<T>(this in Entity entity, in T cmp = default)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Add(in entity, cmp);
+        world.Add(entity, cmp);
     }
 
     /// <summary>
@@ -188,7 +188,7 @@ public static partial class EntityExtensions
     public static void Remove<T>(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Remove<T>(in entity);
+        world.Remove<T>(entity);
     }
 #endif
 }
@@ -208,7 +208,7 @@ public static partial class EntityExtensions
     public static void Set(this in Entity entity, object cmp)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Set(in entity, cmp);
+        world.Set(entity, cmp);
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public static partial class EntityExtensions
     public static void SetRange(this in Entity entity, params object[] components)
     {
         var world = World.Worlds[entity.WorldId];
-        world.SetRange(in entity, components);
+        world.SetRange(entity, components);
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ public static partial class EntityExtensions
     public static bool Has(this in Entity entity, ComponentType type)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.Has(in entity, type);
+        return world.Has(entity, type);
     }
 
     /// <summary>
@@ -246,7 +246,7 @@ public static partial class EntityExtensions
     public static bool HasRange(this in Entity entity, params ComponentType[] types)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.HasRange(in entity, types);
+        return world.HasRange(entity, types);
     }
 
     /// <summary>
@@ -259,7 +259,7 @@ public static partial class EntityExtensions
     public static object Get(this in Entity entity, ComponentType type)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.Get(in entity, type);
+        return world.Get(entity, type);
     }
 
     /// <summary>
@@ -272,7 +272,7 @@ public static partial class EntityExtensions
     public static object[] GetRange(this in Entity entity, params ComponentType[] types)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.GetRange(in entity, types);
+        return world.GetRange(entity, types);
     }
 
     /// <summary>
@@ -286,7 +286,7 @@ public static partial class EntityExtensions
     public static void GetRange(this in Entity entity, ComponentType[] types, IList<object> components)
     {
         var world = World.Worlds[entity.WorldId];
-        world.GetRange(in entity, types, components);
+        world.GetRange(entity, types, components);
     }
 
     /// <summary>
@@ -301,7 +301,7 @@ public static partial class EntityExtensions
     public static bool TryGet(this in Entity entity, ComponentType type, out object component)
     {
         var world = World.Worlds[entity.WorldId];
-        return world.TryGet(in entity, type, out component);
+        return world.TryGet(entity, type, out component);
     }
 
     /// <summary>
@@ -314,7 +314,7 @@ public static partial class EntityExtensions
     public static void Add(this in Entity entity, in object cmp)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Add(in entity, cmp);
+        world.Add(entity, cmp);
     }
 
     /// <summary>
@@ -327,7 +327,7 @@ public static partial class EntityExtensions
     public static void AddRange(this in Entity entity, params object[] components)
     {
         var world = World.Worlds[entity.WorldId];
-        world.AddRange(in entity, components);
+        world.AddRange(entity, components);
     }
 
     /// <summary>
@@ -340,7 +340,7 @@ public static partial class EntityExtensions
     public static void AddRange(this in Entity entity, IList<ComponentType> components)
     {
         var world = World.Worlds[entity.WorldId];
-        world.AddRange(in entity, components);
+        world.AddRange(entity, components);
     }
 
 
@@ -354,7 +354,7 @@ public static partial class EntityExtensions
     public static void RemoveRange(this in Entity entity, params ComponentType[] types)
     {
         var world = World.Worlds[entity.WorldId];
-        world.RemoveRange(in entity, types);
+        world.RemoveRange(entity, types);
     }
 
     /// <summary>
@@ -367,7 +367,7 @@ public static partial class EntityExtensions
     public static void RemoveRange(this in Entity entity, IList<ComponentType> types)
     {
         var world = World.Worlds[entity.WorldId];
-        world.RemoveRange(in entity, types);
+        world.RemoveRange(entity, types);
     }
 
 #endif

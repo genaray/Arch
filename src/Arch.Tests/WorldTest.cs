@@ -49,7 +49,7 @@ public partial class WorldTest
         var entity = _world.Create(_entityGroup);
 
         That(_world.Size, Is.EqualTo(size + 1));
-        True(_world.IsAlive(in entity));
+        True(_world.IsAlive(entity));
     }
 
     /// <summary>
@@ -61,11 +61,11 @@ public partial class WorldTest
         var worldSizeBefore = _world.Size;
         var entity = _world.Create(_entityGroup);
         var worldSizeAfter = _world.Size;
-        _world.Destroy(in entity);
+        _world.Destroy(entity);
 
         That(_world.Size, Is.EqualTo(worldSizeBefore));
         Less(worldSizeBefore, worldSizeAfter);
-        False(_world.IsAlive(in entity));
+        False(_world.IsAlive(entity));
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public partial class WorldTest
         for (var i = 0; i < entities.Count; i++)
         {
             var entity = entities[i];
-            _world.Destroy(in entity);
+            _world.Destroy(entity);
         }
 
         That(_world.Size, Is.EqualTo(0));
@@ -100,7 +100,7 @@ public partial class WorldTest
 
         // Destroy & create new entity to see if it was recycled
         var entity = localWorld.Create(_entityGroup);
-        localWorld.Destroy(in entity);
+        localWorld.Destroy(entity);
         var recycledEntity = localWorld.Create(_entityGroup);
         var newEntity = localWorld.Create(_entityGroup);
 
@@ -259,7 +259,7 @@ public partial class WorldTest
         var entity1 = _world.Create(archTypes1);
         var entity2 = _world.Create(archTypes2);
 
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity1)));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity1)));
     }
 
     /// <summary>
@@ -444,10 +444,10 @@ public partial class WorldTest
     {
 
         var entity = _world.Create(_entityGroup);
-        True(_world.Has<Transform>(in entity));
+        True(_world.Has<Transform>(entity));
 
         _world.Set(entity, new Transform { X = 10, Y = 10 });
-        ref var transform = ref _world.Get<Transform>(in entity);
+        ref var transform = ref _world.Get<Transform>(entity);
 
         That(transform.X, Is.EqualTo(10));
         That(transform.Y, Is.EqualTo(10));
@@ -462,12 +462,12 @@ public partial class WorldTest
 
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.Remove<Transform>(in entity);
-        _world.Remove<Transform>(in entity2);
+        _world.Remove<Transform>(entity);
+        _world.Remove<Transform>(entity2);
 
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
-        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(_world.GetArchetype(entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -478,12 +478,12 @@ public partial class WorldTest
     {
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.Add<Ai>(in entity);
-        _world.Add<Ai>(in entity2);
+        _world.Add<Ai>(entity);
+        _world.Add<Ai>(entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
 }
 
@@ -499,10 +499,10 @@ public partial class WorldTest
     public void SetGetAndHas_NonGeneric()
     {
         var entity = _world.Create(_entityGroup);
-        True(_world.Has(in entity, typeof(Transform)));
+        True(_world.Has(entity, typeof(Transform)));
 
         _world.Set(entity, (object)new Transform { X = 10, Y = 10 });
-        var transform = (Transform)_world.Get(in entity, typeof(Transform));
+        var transform = (Transform)_world.Get(entity, typeof(Transform));
 
         That(transform.X, Is.EqualTo(10));
         That(transform.Y, Is.EqualTo(10));
@@ -516,12 +516,12 @@ public partial class WorldTest
     {
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.RemoveRange(in entity, typeof(Transform));
-        _world.RemoveRange(in entity2, typeof(Transform));
+        _world.RemoveRange(entity, typeof(Transform));
+        _world.RemoveRange(entity2, typeof(Transform));
 
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
-        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(_world.GetArchetype(entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -532,12 +532,12 @@ public partial class WorldTest
     {
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.AddRange(in entity, new Ai());
-        _world.AddRange(in entity2, new Ai());
+        _world.AddRange(entity, new Ai());
+        _world.AddRange(entity2, new Ai());
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
 }
 
@@ -557,7 +557,7 @@ public partial class WorldTest
         var entity = _world.Create(new Transform(), new Rotation());
 
         That(_world.Size, Is.EqualTo(size + 1));
-        True(_world.IsAlive(in entity));
+        True(_world.IsAlive(entity));
     }
 
     /// <summary>
@@ -567,10 +567,10 @@ public partial class WorldTest
     public void GeneratedSetGetAndHas()
     {
         var entity = _world.Create(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
-        True(_world.Has<Transform, Rotation>(in entity));
+        True(_world.Has<Transform, Rotation>(entity));
 
         _world.Set(entity, new Transform { X = 20, Y = 20 }, new Rotation { X = 20, Y = 20 });
-        var references = _world.Get<Transform, Rotation>(in entity);
+        var references = _world.Get<Transform, Rotation>(entity);
         That(references.t0.X, Is.EqualTo(20));
         That(references.t0.Y, Is.EqualTo(20));
         That(references.t1.X, Is.EqualTo(20));
@@ -586,12 +586,12 @@ public partial class WorldTest
 
         var entity = _world.Create(new Transform(), new Rotation(), new Ai());
         var entity2 = _world.Create(new Transform(), new Rotation(), new Ai());
-        _world.Remove<Rotation, Ai>(in entity);
-        _world.Remove<Rotation, Ai>(in entity2);
+        _world.Remove<Rotation, Ai>(entity);
+        _world.Remove<Rotation, Ai>(entity2);
 
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(_world.GetArchetype(in entity).Size, Is.EqualTo(1));
-        That(_world.GetArchetype(in entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(_world.GetArchetype(entity).Size, Is.EqualTo(1));
+        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -602,11 +602,11 @@ public partial class WorldTest
     {
         var entity = _world.Create<Transform>();
         var entity2 = _world.Create<Transform>();
-        _world.Add<Rotation, Ai>(in entity);
-        _world.Add<Rotation, Ai>(in entity2);
+        _world.Add<Rotation, Ai>(entity);
+        _world.Add<Rotation, Ai>(entity2);
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
-        That(_world.GetArchetype(in entity2), Is.EqualTo(_world.GetArchetype(in entity)));
-        That(arch, Is.EqualTo(_world.GetArchetype(in entity)));
+        That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
+        That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
 }

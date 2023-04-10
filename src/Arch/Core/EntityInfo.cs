@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +6,157 @@ using System.Threading.Tasks;
 using Arch.Core;
 using Arch.Core.Extensions;
 
-namespace Arch.Core.Utils;
+namespace Arch.Core;
+
+/// <summary>
+///     The <see cref="EntityInfo"/> struct
+///     stores information about an <see cref="Entity"/> to quickly access its data and location.
+/// </summary>
+[SkipLocalsInit]
+internal record struct EntityInfo
+{
+    /// <summary>
+    /// Its <see cref="Archetype"/>.
+    /// </summary>
+    public Archetype Archetype;
+
+    /// <summary>
+    /// Its slot inside its <see cref="Archetype"/>.
+    /// </summary>
+    public Slot Slot;
+
+    /// <summary>
+    /// Its version.
+    /// </summary>
+    public int Version;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="EntityInfo"/> struct.
+    /// </summary>
+    /// <param name="archetype">Its <see cref="Archetype"/>.</param>
+    /// <param name="slot">Its <see cref="Slot"/>.</param>
+    /// <param name="version">Its version.</param>
+    public EntityInfo(Archetype archetype, Slot slot, int version)
+    {
+        Slot = slot;
+        Archetype = archetype;
+        Version = version;
+    }
+}
+
+internal class EntityInfoStorage
+{
+
+    private EntityInfoDictionary _entityInfoDictionary;
+
+    public EntityInfoStorage()
+    {
+        _entityInfoDictionary = new EntityInfoDictionary();
+    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(int id, int version, Archetype archetype, Slot slot)
+    {
+        var entityInfo = new EntityInfo(archetype, slot, version);
+        _entityInfoDictionary.Add(id, entityInfo);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Has(int id)
+    {
+        return _entityInfoDictionary.TryGetValue(id, out _);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetValue(int id, out EntityInfo entityInfo)
+    {
+        return _entityInfoDictionary.TryGetValue(id, out entityInfo);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Remove(int id)
+    {
+        _entityInfoDictionary.Remove(id);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Version(int id)
+    {
+        return _entityInfoDictionary[id].Version;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Move(int id, Slot slot)
+    {
+        _entityInfoDictionary[id].Slot = slot;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Move(int id, Archetype archetype, Slot slot)
+    {
+        ref var entityInfo = ref _entityInfoDictionary[id];
+        entityInfo.Archetype = archetype;
+        entityInfo.Slot = slot;
+    }
+
+    /// <summary>
+    ///     Updates the <see cref="EntityInfo"/> and all entities that moved/shifted between the archetypes.
+    /// </summary>
+    /// <param name="archetype">The old <see cref="Archetype"/>.</param>
+    /// <param name="archetypeSlot">The old <see cref="Slot"/> where the shift operation started.</param>
+    /// <param name="newArchetype">The new <see cref="Archetype"/>.</param>
+    /// <param name="newArchetypeSlot">The new <see cref="Slot"/> where the entities were shifted to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Shift(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
+    {
+        // Update the entityInfo of all copied entities.
+        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        {
+            ref var chunk = ref archetype.GetChunk(chunkIndex);
+            ref var entityFirstElement = ref chunk.Entity(0);
+            for (var index = archetypeSlot.Index; index >= 0; --index)
+            {
+                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+
+                // Calculate new entity slot based on its old slot.
+                var entitySlot = new Slot(index, chunkIndex);
+                var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeSlot, newArchetype.EntitiesPerChunk);
+
+                // Update entity info
+                Move(entity.Id, newArchetype, newSlot);
+            }
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void EnsureCapacity(int capacity)
+    {
+        _entityInfoDictionary.EnsureCapacity(capacity);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess()
+    {
+        _entityInfoDictionary.TrimExcess();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        _entityInfoDictionary.Clear();
+    }
+
+    /// <summary>
+    ///     Returns a reference to a <see cref="EntityInfo"/> at an given index.
+    /// </summary>
+    /// <param name="id">The index.</param>
+    public ref EntityInfo this[int id]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ref _entityInfoDictionary[id];
+    }
+}
 
 /// <summary>
 ///     The <see cref="EntityInfoDictionary"/> class
@@ -235,3 +385,4 @@ internal class EntityInfoDictionary
         }
     }
 }
+

@@ -74,7 +74,7 @@ public static class RemoveWithQueryDesription
                     Archetype.Copy(archetype, newArchetype);
                     archetype.Clear();
 
-                    ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
+                    EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
                 }
             }
             """;

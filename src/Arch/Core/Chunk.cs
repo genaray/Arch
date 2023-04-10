@@ -80,7 +80,7 @@ public partial struct Chunk
     /// <param name="entity">The <see cref="Arch.Core.Entity"/> that will be inserted.</param>
     /// <returns>The index occupied by the <see cref="Arch.Core.Entity"/> in the chunk.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int Add(in Entity entity)
+    internal int Add(Entity entity)
     {
         Entities[Size] = entity;
         Size++;
@@ -95,7 +95,7 @@ public partial struct Chunk
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in int index, in T cmp)
+    public void Set<T>(int index, in T cmp)
     {
         var array = GetSpan<T>();
         array[index] = cmp;
@@ -122,7 +122,7 @@ public partial struct Chunk
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T Get<T>(scoped in int index)
+    public ref T Get<T>(int index)
     {
         var array = GetSpan<T>();
         return ref array[index];
@@ -137,7 +137,7 @@ public partial struct Chunk
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref T Get<T>(ref T first, in int index)
+    public ref T Get<T>(ref T first, int index)
     {
         return ref Unsafe.Add(ref first, index);
     }
@@ -150,10 +150,10 @@ public partial struct Chunk
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public EntityComponents<T> GetRow<T>(scoped in int index)
+    public EntityComponents<T> GetRow<T>(int index)
     {
         var array = GetSpan<T>();
-        return new EntityComponents<T>(in Entities[index], ref array[index]);
+        return new EntityComponents<T>(ref Entities[index], ref array[index]);
     }
 
     /// <summary>
@@ -163,7 +163,7 @@ public partial struct Chunk
     /// <returns>A reference to the <see cref="Arch.Core.Entity"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public ref Entity Entity(scoped in int index)
+    public ref Entity Entity(int index)
     {
         return ref Entities.AsSpan()[index];
     }
@@ -174,7 +174,7 @@ public partial struct Chunk
     /// </summary>
     /// <param name="index">Its index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Remove(in int index)
+    internal void Remove(int index)
     {
         // Last entity in archetype.
         var lastIndex = Size - 1;
@@ -287,7 +287,7 @@ public partial struct Chunk
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(in int index, in object cmp)
+    public void Set(int index, object cmp)
     {
         var array = GetArray(cmp.GetType());
         array.SetValue(cmp, index);
@@ -319,7 +319,7 @@ public partial struct Chunk
     /// <returns>A component casted to an <see cref="object"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public object Get(scoped in int index, ComponentType type)
+    public object Get(int index, ComponentType type)
     {
         var array = GetArray(type);
         return array.GetValue(index);
