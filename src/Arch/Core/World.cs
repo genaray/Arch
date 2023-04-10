@@ -264,16 +264,13 @@ public partial class World : IDisposable
     /// <param name="to">The new <see cref="Archetype"/>.</param>
     /// <param name="newSlot">The new <see cref="Slot"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Move(in Entity entity, Archetype from, Archetype to, out Slot newSlot)
+    internal void Move(Entity entity, Archetype from, Archetype to, out Slot newSlot)
     {
         // A common mistake, happening in many cases.
         Debug.Assert(from != to, "From-Archetype is the same as the To-Archetype. Entities cannot move within the same archetype using this function. Probably an attempt was made to attach already existing components to the entity or to remove non-existing ones.");
 
-        // Cache id since in Entity is basically ref readonly entity.
-        var id = entity.Id;
-
         // Copy entity to other archetype
-        ref var entityInfo = ref EntityInfo[id];
+        ref var entityInfo = ref EntityInfo[entity.Id];
         var created = to.Add(in entity, out newSlot);
         Archetype.CopyComponents(from, ref entityInfo.Slot, to,ref newSlot);
         from.Remove(ref entityInfo.Slot, out var movedEntity);
@@ -287,11 +284,9 @@ public partial class World : IDisposable
         entityInfo.Slot = newSlot;
 
         // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
-        var difference = 0;
         if (created)
         {
-            difference += to.EntitiesPerChunk;
-            Capacity += difference;
+            Capacity += to.EntitiesPerChunk;
             EntityInfo.EnsureCapacity(Capacity);
         }
     }
@@ -1041,7 +1036,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1070,7 +1065,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out var slot);
+        Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
     }
 
@@ -1100,7 +1095,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 }
 
@@ -1267,7 +1262,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1299,7 +1294,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1330,7 +1325,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(components));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1357,7 +1352,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1388,7 +1383,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1419,7 +1414,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(types));
         }
 
-        Move(in entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out _);
     }
 }
 

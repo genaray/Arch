@@ -44,7 +44,7 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
-                Move(in entity, oldArchetype, newArchetype, out var newSlot);
+                Move(entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
             }
             """;
@@ -92,7 +92,7 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
-                Move(in entity, oldArchetype, newArchetype, out _);
+                Move(entity, oldArchetype, newArchetype, out _);
             }
             """;
 
