@@ -31,7 +31,7 @@ public static class StructuralChangesExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Add<{{generics}}>(Entity entity, {{parameters}})
             {
-                var oldArchetype = EntityInfo[entity.Id].Archetype;
+                var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
                 // BitSet to stack/span bitset, size big enough to contain ALL registered components.
                 Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -79,7 +79,7 @@ public static class StructuralChangesExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Remove<{{generics}}>(Entity entity)
             {
-                var oldArchetype = EntityInfo[entity.Id].Archetype;
+                var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
                 // BitSet to stack/span bitset, size big enough to contain ALL registered components.
                 Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];

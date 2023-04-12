@@ -111,7 +111,7 @@ public static class HasExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool Has<{{generics}}>(Entity entity)
             {
-                var archetype = EntityInfo[entity.Id].Archetype;
+                var archetype = EntityInfo.GetArchetype(entity.Id);
                 return archetype.Has<{{generics}}>();
             }
             """;

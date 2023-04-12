@@ -272,9 +272,9 @@ public static class GetExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
-                var entityInfo = EntityInfo[entity.Id];
-                var archetype = entityInfo.Archetype;
-                return archetype.Get<{{generics}}>(ref entityInfo.Slot);
+                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+                var archetype = entitySlot.Archetype;
+                return archetype.Get<{{generics}}>(ref entitySlot.Slot);
             }
             """;
 

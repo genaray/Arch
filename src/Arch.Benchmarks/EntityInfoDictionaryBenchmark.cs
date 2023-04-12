@@ -9,7 +9,7 @@ using Collections.Pooled;
 using BenchmarkDotNet.Attributes;
 
 namespace Arch.Benchmarks;
-
+/*
 [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
 public class EntityInfoDictionaryBenchmark
 {
@@ -17,12 +17,12 @@ public class EntityInfoDictionaryBenchmark
     public int N;
 
     private PooledDictionary<int, EntityInfo> _items1;
-    private EntityInfoDictionary _items2;
+    private JaggedArray<EntityInfo> _items2;
 
     [GlobalSetup]
     public void Setup()
     {
-        _items2 = new EntityInfoDictionary(N);
+        _items2 = new JaggedArray<EntityInfo>(N);
         _items1 = new PooledDictionary<int, EntityInfo>(N);
     }
 
@@ -45,4 +45,4 @@ public class EntityInfoDictionaryBenchmark
             items[i] = default;
         }
     }
-}
+}*/
