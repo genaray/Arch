@@ -474,7 +474,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool TryGetArchetype(int hash, out Archetype archetype)
+    internal bool TryGetArchetype(int hash, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(hash, out archetype);
     }
@@ -486,7 +486,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetArchetype(ComponentType[] types, out Archetype archetype)
+    public bool TryGetArchetype(ComponentType[] types, [MaybeNullWhen(false)] out Archetype archetype)
     {
         var hash = Component.GetHashCode(types);
         return GroupToArchetype.TryGetValue(hash, out archetype);
