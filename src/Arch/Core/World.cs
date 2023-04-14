@@ -114,7 +114,7 @@ public partial class World : IDisposable
     /// <summary>
     ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
     /// </summary>
-    public PooledList<Archetype?> Archetypes { get; }
+    public PooledList<Archetype> Archetypes { get; }
 
     /// <summary>
     ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
@@ -164,7 +164,7 @@ public partial class World : IDisposable
         // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
         for (var index = 0; index < world.Archetypes.Count; index++)
         {
-            world.Archetypes[index] = null;
+            world.Archetypes[index] = null!;
         }
 
         world.Archetypes.Dispose();
@@ -311,8 +311,9 @@ public partial class World : IDisposable
         // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
         for (var index = 0; index < Archetypes.Count; index++)
         {
-            Archetypes[index] = null;
+            Archetypes[index] = null!;
         }
+
         Archetypes.Clear();
     }
 
