@@ -818,14 +818,13 @@ public partial class World
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+            EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
+            // Copy, set and clear
             Archetype.Copy(archetype, newArchetype);
-            archetype.Clear();
-
-            // Set added value and update the entity info
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
-            EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
+            archetype.Clear();
         }
     }
 
@@ -865,10 +864,10 @@ public partial class World
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+            EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
-            EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
         }
     }
 }

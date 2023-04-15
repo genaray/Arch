@@ -361,16 +361,18 @@ public sealed partial class Archetype
         {
             ref var chunk = ref GetChunk(chunkIndex);
             ref var firstElement = ref chunk.GetFirst<T>();
-            foreach(var index in chunk)
+
+            // Only move within the range, depening on which chunk we are at.
+            var isStart = chunkIndex == from.ChunkIndex;
+            var isEnd = chunkIndex == to.ChunkIndex;
+
+            var upper = isStart ? from.Index : chunk.Size;
+            var lower = isEnd ? to.Index : 0;
+
+            for (var index = upper; index >= lower; --index)
             {
                 ref var cmp = ref Unsafe.Add(ref firstElement, index);
                 cmp = component;
-
-                // Break to prevent old entities receiving the new value.
-                if (chunkIndex == to.ChunkIndex && index == to.Index)
-                {
-                    break;
-                }
             }
         }
     }

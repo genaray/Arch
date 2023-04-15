@@ -14,17 +14,12 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.3.4-beta</Version>
+    <Version>1.2.4</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>
-      CommandBuffer Operations were now fixed and do record Add and Sets correctly.
-      CommandBuffer resizes its internal arrays now correctly.
-      EntityInfoDictionary replaced the previous used PooledDictionary to offer much better lookup speeds for entity interactions.
-      Non generic World.Add, World.AddRange, World.RemoveRange were fixed, they created wrong archetypes with doubled components in some cases.
-      Added non generic World.Remove.
-      Some slight performance improvements during entity move operations.
+      Look at : https://github.com/genaray/Arch/releases/tag/1.2.4
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
