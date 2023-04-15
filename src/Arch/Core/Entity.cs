@@ -276,7 +276,7 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive(World world)
     {
-        var reference = world.Reference(in Entity);
+        var reference = world.Reference(Entity);
         return this == reference;
     }
 #else
