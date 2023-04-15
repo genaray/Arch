@@ -88,6 +88,14 @@ public static class ComponentRegistry
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _types;
     }
+    
+    private static readonly Dictionary<ComponentType, IComponentHookRegistry> _componentHookRegistries = new(128);
+    
+    public static Dictionary<ComponentType, IComponentHookRegistry> ComponentHookRegistries
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _componentHookRegistries;
+    }
 
     /// <summary>
     ///     TODO: Store array somewhere and update it to reduce allocations.
@@ -121,6 +129,10 @@ public static class ComponentRegistry
         // Register and assign component id
         meta = type;
         _types.Add(type, meta);
+        if (!_componentHookRegistries.ContainsKey(meta))
+        {
+            _componentHookRegistries.Add(meta, (IComponentHookRegistry)Activator.CreateInstance(typeof(ComponentHookRegistry<>).MakeGenericType(type)));
+        }
 
         Size++;
         return meta;
@@ -154,6 +166,10 @@ public static class ComponentRegistry
         var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
         meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
         _types.Add(type, meta);
+        if (!_componentHookRegistries.ContainsKey(meta))
+        {
+            _componentHookRegistries.Add(meta, (IComponentHookRegistry)Activator.CreateInstance(typeof(ComponentHookRegistry<>).MakeGenericType(type)));
+        }
 
         Size++;
         return meta;
@@ -269,6 +285,172 @@ public static class ComponentRegistry
     {
         return _types.TryGetValue(type, out componentType);
     }
+
+    public static ComponentHookRegistry<T> GetHookRegistry<T>()
+    {
+        ComponentHookRegistries.TryGetValue(Component<T>.ComponentType, out var result);
+        return result as ComponentHookRegistry<T>;
+    }
+    
+    public static IComponentHookRegistry GetHookRegistry(in ComponentType componentType)
+    {
+        ComponentHookRegistries.TryGetValue(componentType, out var result);
+        return result;
+    }
+    
+    public static IComponentHookRegistry GetHookRegistry(Type componentType)
+    {
+        ComponentHookRegistries.TryGetValue(componentType, out var result);
+        return result;
+    }
+}
+
+public enum ComponentChangedType {
+    Construct,
+    // Deconstruct,
+    // Copy,
+    // Move,
+    Add,
+    Set,
+    Remove
+}
+
+public delegate void ComponentChangedEvent< T >( in Entity entity, ref T component );
+
+public readonly record struct ComponentHookRecord<T>(ComponentChangedEvent< T > Constructor, ComponentChangedEvent< T > Deconstructor, ComponentChangedEvent< T > OnAdd, ComponentChangedEvent< T > OnSet, ComponentChangedEvent< T > OnRemove )
+{
+    public readonly ComponentChangedEvent< T >? Constructor = Constructor;
+    public readonly ComponentChangedEvent< T >? Deconstructor = Deconstructor;
+    // public ComponentChangedEvent< T >? Copy;
+    // public ComponentChangedEvent< T >? Move;
+    public readonly ComponentChangedEvent<T>? OnAdd = OnAdd;
+    public readonly ComponentChangedEvent<T>? OnSet = OnSet;
+    public readonly ComponentChangedEvent<T>? OnRemove = OnRemove;
+}
+
+public interface IComponentHookRegistry {
+    void BroadcastComponentConstructEvent( in Entity entity, in EcsComponentReference comp );
+    // void BroadcastComponentDeconstructEvent( in Entity entity, in EcsComponentReference comp );
+    void BroadcastComponentAddEvent( in Entity entity, in EcsComponentReference comp );
+    void BroadcastComponentSetEvent( in Entity entity, in EcsComponentReference comp );
+    void BroadcastComponentRemoveEvent( in Entity entity, in EcsComponentReference comp );
+}
+
+public class ComponentHookRegistry<T> : IComponentHookRegistry
+{
+    private readonly Dictionary<World, List<ComponentHookRecord<T>>> _componentHooks = new();
+    // private readonly ComponentType _componentType = Component<T>.ComponentType;
+
+    public void RegisterHook( World world, ComponentHookRecord<T> hook )
+    {
+        if (!_componentHooks.ContainsKey(world))
+        {
+            _componentHooks.Add(world, new List< ComponentHookRecord<T>>());
+        }
+        _componentHooks[world].Add(hook);
+    }
+    
+    public void UnregisterHook( World world, ComponentHookRecord<T> hook )
+    {
+        if (!_componentHooks.ContainsKey(world))
+        {
+            return;
+        }
+        _componentHooks[world].Remove(hook);
+    }
+
+    public void BroadcastComponentChanged( World world, in Entity entity, ref T component, ComponentChangedType changedType )
+    {
+        if (!_componentHooks.ContainsKey(world))
+        {
+            return;
+        }
+
+        foreach (var hookRecord in _componentHooks[world])
+        {
+            switch (changedType)
+            {
+                case ComponentChangedType.Construct:
+                    hookRecord.Constructor?.Invoke( entity, ref component );
+                    break;
+                // case ComponentChangedType.Deconstruct:
+                //     hookRecord.Deconstructor?.Invoke( entity, ref component );
+                //     break;
+                case ComponentChangedType.Add:
+                    hookRecord.OnAdd?.Invoke( entity, ref component );
+                    break;
+                case ComponentChangedType.Set:
+                    hookRecord.OnSet?.Invoke( entity, ref component );
+                    break;
+                case ComponentChangedType.Remove:
+                    hookRecord.OnRemove?.Invoke( entity, ref component );
+                    break;
+            }
+        }
+    }
+    
+    public void BroadcastComponentConstructEvent( in Entity entity, in EcsComponentReference comp )
+    {
+        BroadcastComponentChanged(comp.World, entity, ref comp.World.Get<T>(entity), ComponentChangedType.Construct);
+    }
+    
+    // public void BroadcastComponentDeconstructEvent( in Entity entity, in EcsComponentReference comp )
+    // {
+    //     BroadcastComponentChanged(comp.World, entity, ref comp.World.Get<T>(entity), ComponentChangedType.Deconstruct);
+    // }
+
+    public void BroadcastComponentAddEvent( in Entity entity, in EcsComponentReference comp )
+    {
+        BroadcastComponentChanged(comp.World, entity, ref comp.World.Get<T>(entity), ComponentChangedType.Add);
+    }
+
+    public void BroadcastComponentSetEvent( in Entity entity, in EcsComponentReference comp )
+    {
+        BroadcastComponentChanged(comp.World, entity, ref comp.World.Get<T>(entity), ComponentChangedType.Set);
+    }
+
+    public void BroadcastComponentRemoveEvent( in Entity entity, in EcsComponentReference comp )
+    {
+        if (comp.World.Has<T>(entity))
+        {
+            BroadcastComponentChanged(comp.World, entity, ref comp.World.Get<T>(entity), ComponentChangedType.Remove);
+        }
+    }
+
+    public void Clear( World world )
+    {
+        if (!_componentHooks.ContainsKey(world))
+        {
+            return;
+        }
+        _componentHooks[world].Clear();
+    }
+
+    public void ClearAll()
+    {
+        _componentHooks.Clear();
+    }
+}
+
+public readonly record struct EcsComponentReference(World World, in Entity Entity, ComponentType ComponentType )
+{
+    public readonly World World = World;
+    public readonly Entity Entity = Entity;
+    public readonly ComponentType ComponentType = ComponentType;
+}
+
+public static class EcsComponentRefExtensions {
+    
+    [MethodImpl( MethodImplOptions.AggressiveInlining )]
+    public static object Unref( in this EcsComponentReference wrapper ) {
+        var entityInfo = wrapper.World.EntityInfo[wrapper.Entity.Id];
+        return entityInfo.Archetype.Get(ref entityInfo.Slot, wrapper.ComponentType);
+    }
+
+    // [MethodImpl( MethodImplOptions.AggressiveInlining )]
+    // public static bool IsNull( in this EcsComponentReference wrapper ) {
+    //     return wrapper.ComponentType == null;
+    // }
 }
 
 /// <summary>
@@ -288,12 +470,15 @@ public static class Component<T>
     static Component()
     {
         ComponentType = ComponentRegistry.Add<T>();
+        ComponentHooks = ComponentRegistry.GetHookRegistry<T>();
     }
 
     /// <summary>
     ///     A static reference to information about the compile time static registered class.
     /// </summary>
     public static readonly ComponentType ComponentType;
+    
+    public static readonly ComponentHookRegistry<T> ComponentHooks;
 }
 
 /// <summary>

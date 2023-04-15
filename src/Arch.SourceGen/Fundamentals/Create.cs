@@ -48,6 +48,9 @@ public static class CreateExtensions
                 // Map
                 EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
+                {{StringBuilderExtensions.MakeGenericBroadcastComponentEvent(amount, StringBuilderExtensions.SourceGenComponentChangedType.Construct)}}
+                {{StringBuilderExtensions.MakeGenericBroadcastComponentEvent(amount, StringBuilderExtensions.SourceGenComponentChangedType.Add)}}
+
                 Size++;
                 return entity;
             }

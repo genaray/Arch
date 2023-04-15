@@ -216,6 +216,12 @@ public partial class World : IDisposable
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
+        foreach (var type in types)
+        {
+            ComponentRegistry.GetHookRegistry(type).BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, type));
+            ComponentRegistry.GetHookRegistry(type).BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, type));
+        }
+
         Size++;
         return entity;
     }
@@ -864,6 +870,15 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, in cmp);
+        if (entitySlot.Archetype.Has< T >())
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        }
+        else
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        }
     }
 
     /// <summary>
@@ -957,8 +972,19 @@ public partial class World
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
         }
+        
+        if (oldArchetype.Has<T>())
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        }
+        else
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        }
 
         Move(entity, oldArchetype, newArchetype, out _);
+        
     }
 
     /// <summary>
@@ -985,6 +1011,16 @@ public partial class World
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
+        }
+        
+        if (oldArchetype.Has<T>())
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        }
+        else
+        {
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
@@ -1016,6 +1052,8 @@ public partial class World
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
         }
+        
+        ComponentRegistry.GetHookRegistry<T>().BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
 
         Move(entity, oldArchetype, newArchetype, out _);
     }
@@ -1440,6 +1478,22 @@ public partial class World
         }
 
         return cmps;
+    }
+}
+
+public partial class World
+{
+    // public event Action<EntityReference> OnEntityCreated;
+    // public event Action<EntityReference> OnEntityDestroyed;
+
+    public void RegisterComponentHook<T>(ComponentHookRecord<T> func)
+    {
+        ComponentRegistry.GetHookRegistry<T>().RegisterHook(this, func);
+    }
+
+    public void UnregisterComponentHook<T>(ComponentHookRecord<T> func)
+    {
+        ComponentRegistry.GetHookRegistry<T>().UnregisterHook(this, func);
     }
 }
 

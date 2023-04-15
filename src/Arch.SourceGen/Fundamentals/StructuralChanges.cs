@@ -24,6 +24,23 @@ public static class StructuralChangesExtensions
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
         }
+        
+        var componentEvent = new StringBuilder();
+        for (int i = 0; i <= amount; i++)
+        {
+            componentEvent.AppendLine(
+                $$"""
+                    if (oldArchetype.Has<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>())
+                    {
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    }
+                    else
+                    {
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    }
+                    """);
+        }
 
         var template =
             $$"""
@@ -43,6 +60,8 @@ public static class StructuralChangesExtensions
 
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
+
+                {{componentEvent}}
 
                 Move(entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
@@ -72,6 +91,12 @@ public static class StructuralChangesExtensions
         {
             removes.AppendLine($"spanBitSet.ClearBit(Component<T{index}>.ComponentType.Id);");
         }
+        
+        var componentEvent = new StringBuilder();
+        for (int i = 0; i <= amount; i++)
+        {
+            componentEvent.AppendLine($"ComponentRegistry.GetHookRegistry<{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}>().BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, typeof({StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)})));");
+        }
 
         var template =
             $$"""
@@ -91,6 +116,8 @@ public static class StructuralChangesExtensions
 
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
+
+                {{componentEvent}}
 
                 Move(entity, oldArchetype, newArchetype, out _);
             }

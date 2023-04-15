@@ -610,3 +610,49 @@ public partial class WorldTest
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
 }
+
+public partial class WorldTest
+{
+    [Test]
+    public void ComponentHookTest()
+    {
+        bool ctorCalled = false;
+        bool dctorCalled = false;
+        int onAddCalledCount = 0;
+        int onSetCalledCount = 0;
+        int onRemoveCalledCount = 0;
+        
+        var componentHook = new ComponentHookRecord< Transform >(
+            ( in Entity entity, ref Transform component ) =>
+            {
+                ctorCalled = true;
+            },
+            ( in Entity entity, ref Transform component ) =>
+            {
+                dctorCalled = true;
+            }, 
+            ( in Entity entity, ref Transform component ) =>
+            {
+                onAddCalledCount++;
+            }, 
+            ( in Entity entity, ref Transform component ) =>
+            {
+                onSetCalledCount++;
+            }, 
+            ( in Entity entity, ref Transform component ) =>
+            {
+                onRemoveCalledCount++;
+            });
+        _world.RegisterComponentHook(componentHook);
+        
+        var entity = _world.Create(new Transform(), new Rotation());
+        entity.Set<Transform>(new Transform{ X = 1, Y = 2 });
+        entity.Set<Transform, Rotation>(new Transform{ X = 1, Y = 2 }, new Rotation());
+        entity.Remove<Transform>();
+        
+        IsTrue(ctorCalled);
+        AreEqual(1, onAddCalledCount);
+        AreEqual(2, onSetCalledCount);
+        AreEqual(1, onRemoveCalledCount);
+    }
+}

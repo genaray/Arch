@@ -133,6 +133,23 @@ public static class SetExtensions
         var parameters = new StringBuilder().GenericInParams(amount);
         var insertParams = new StringBuilder().InsertGenericInParams(amount);
 
+        var componentEvent = new StringBuilder();
+        for (int i = 0; i <= amount; i++)
+        {
+            componentEvent.AppendLine(
+                $$"""
+                    if (archetype.Has<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>())
+                    {
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    }
+                    else
+                    {
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    }
+                    """);
+        }
+
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -141,6 +158,7 @@ public static class SetExtensions
                 var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
                 var archetype = entitySlot.Archetype;
                 archetype.Set<{{generics}}>(ref entitySlot.Slot, {{insertParams}});
+                {{componentEvent}}
             }
             """;
 

@@ -177,4 +177,28 @@ public static class StringBuilderExtensions
         sb.Length -= 3;
         return sb;
     }
+    
+    
+    public enum SourceGenComponentChangedType {
+        Construct,
+        Deconstruct,
+        // Copy,
+        // Move,
+        Add,
+        Set,
+        Remove
+    }
+    
+    public static string MakeGenericBroadcastComponentEventT(int idx) => $"T{idx}";
+    public static string MakeGenericBroadcastComponentEventTArg(int idx) => $"t{idx}Component";
+    public static string MakeGenericBroadcastComponentEvent(int amount, SourceGenComponentChangedType componentChangedType)
+    {
+        string result = default;
+        for (int i = 0; i <= amount; i++)
+        {
+            result += $"ComponentRegistry.GetHookRegistry<{MakeGenericBroadcastComponentEventT(i)}>().BroadcastComponent{componentChangedType}Event(entity, new EcsComponentReference(this, entity, typeof({MakeGenericBroadcastComponentEventT(i)})));\n";
+        }
+        return result;
+    }
+
 }
