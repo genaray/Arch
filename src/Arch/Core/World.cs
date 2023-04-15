@@ -194,6 +194,18 @@ public partial class World : IDisposable
     /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Entity Create(params ComponentType[] types)
+    {
+        return Create(types.AsSpan());
+    }
+
+    /// <summary>
+    ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
+    ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
+    /// </summary>
+    /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
+    /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Entity Create(Span<ComponentType> types)
     {
         // Recycle id or increase

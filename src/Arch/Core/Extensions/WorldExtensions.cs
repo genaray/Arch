@@ -11,18 +11,6 @@ public static class WorldExtensions
 {
 
     /// <summary>
-    ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
-    ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
-    /// </summary>
-    /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Entity Create(this World world, params ComponentType[] types)
-    {
-        return world.Create(types);
-    }
-
-    /// <summary>
     ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
     /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
