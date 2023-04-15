@@ -104,7 +104,7 @@ or
 var archetype = new ComponentType[]{ typeof(Position), typeof(Velocity), ... };
 var entity = world.Create(archetype);
 
-world.Destroy(in entity);
+world.Destroy(entity);
 ```
 
 ## Component
