@@ -1,3 +1,8 @@
+#if !PURE_ECS
+using Arch.Core.Extensions;
+using Arch.Core.Utils;
+#endif
+
 namespace Arch.Core;
 
 #if PURE_ECS
