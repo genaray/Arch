@@ -130,6 +130,7 @@ internal class StructuralSparseSet
     {
         Capacity = capacity;
         Entities = new List<StructuralEntity>(capacity);
+        Used = Array.Empty<int>();
         Components = Array.Empty<StructuralSparseArray>();
     }
 
