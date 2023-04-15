@@ -138,7 +138,10 @@ public class ChunkIterationJob<T> : IJob where T : IChunkJob
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
     /// </summary>
-    public ChunkIterationJob() { }
+    public ChunkIterationJob()
+    {
+        Chunks = Array.Empty<Chunk>();
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.

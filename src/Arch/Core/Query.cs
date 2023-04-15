@@ -109,7 +109,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is QueryDescription other && Equals(other);
     }
@@ -266,7 +266,7 @@ public readonly partial struct Query : IEquatable<Query>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/>.</param>
     /// <returns>True if they are equal, false if not.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Query other && Equals(other);
     }
