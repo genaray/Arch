@@ -9,21 +9,6 @@ namespace Arch.Core.Extensions;
 /// </summary>
 public static class ComponentTypeExtensions
 {
-    /// <summary>
-    ///     Writes all component ids from the <see cref="ComponentType"/>'s inside the array into a <see cref="Span"/>.
-    /// </summary>
-    /// <param name="types">The <see cref="ComponentType"/> array.</param>
-    /// <param name="ids">The <see cref="Span"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteComponentIds(this ComponentType[] types, Span<int> ids)
-    {
-        var typeSpan = new Span<ComponentType>(types);
-        for (var index = 0; index < typeSpan.Length; index++)
-        {
-            ref var t = ref typeSpan[index];
-            ids[index] = t.Id;
-        }
-    }
 
     /// <summary>
     ///     Calculates the byte size of all components inside the <see cref="ComponentType"/> array.
@@ -31,7 +16,7 @@ public static class ComponentTypeExtensions
     /// <param name="types">The <see cref="ComponentType"/> array.</param>
     /// <returns>Their combined byte size.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int ToByteSize(this ComponentType[] types)
+    internal static int ToByteSize(this ComponentType[] types)
     {
         var size = 0;
         foreach (var type in types)
@@ -50,7 +35,7 @@ public static class ComponentTypeExtensions
     /// <param name="types">The <see cref="ComponentType"/> array.</param>
     /// <returns>The lookup array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int[] ToLookupArray(this ComponentType[] types)
+    internal static int[] ToLookupArray(this ComponentType[] types)
     {
         // Get maximum component ID.
         var max = 0;

@@ -16,7 +16,7 @@ public static class ArrayExtensions
     /// <param name="items">The array of items which will be added.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Add<T>(this T[] target, params T[] items) {
+    internal static T[] Add<T>(this T[] target, params T[] items) {
 
         var result = new T[target.Length + items.Length];
         target.CopyTo(result, 0);
@@ -37,7 +37,7 @@ public static class ArrayExtensions
     /// <param name="items">The <see cref="IList"/> of items which will be added.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Add<T>(this T[] target, IList<T> items)
+    internal static T[] Add<T>(this T[] target, IList<T> items)
     {
         var result = new T[target.Length + items.Count];
         target.CopyTo(result, 0);
@@ -52,26 +52,6 @@ public static class ArrayExtensions
 
 
     /// <summary>
-    ///     Removes a item from the <see cref="Span{T}"/> and returns a slice without the removed item.
-    /// </summary>
-    /// <param name="target">The target <see cref="Span{T}"/>.</param>
-    /// <param name="item">The item to remove.</param>
-    /// <typeparam name="T">The generic.</typeparam>
-    /// <returns>A <see cref="Span{T}"/> without the removed item.</returns>
-    public static void Remove<T>(this ref Span<T> target, T item) where T : IEquatable<T>?
-    {
-        var index = target.IndexOf(item);
-        if (index == -1)
-        {
-            return;
-        }
-
-        target[index] = target[^1];
-        target = target[..index];
-    }
-
-
-    /// <summary>
     ///     Removes a list of items from an array by value equality.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
@@ -79,7 +59,7 @@ public static class ArrayExtensions
     /// <param name="toRemove">The <see cref="IList"/> of items which will be removed.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Remove<T>(this T[] array, params T[] toRemove)
+    internal static T[] Remove<T>(this T[] array, params T[] toRemove)
     {
         // Count how many items exist in target array to remove
         var count = 0;
@@ -121,7 +101,7 @@ public static class ArrayExtensions
     /// <param name="items">The <see cref="IList"/> of items which will be removed.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T[] Remove<T>(this T[] array, IList<T> toRemove)
+    internal static T[] Remove<T>(this T[] array, IList<T> toRemove)
     {
         // Count how many items exist in target array to remove
         var count = 0;

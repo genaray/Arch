@@ -66,7 +66,7 @@ public static class StringBuilderChunkJobExtensions
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
-                    ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                    ref var entityFirstElement = ref chunk.Entity(0);
                     {{getFirstElement}}
 
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
@@ -147,7 +147,7 @@ public static class StringBuilderChunkJobExtensions
                 public void Execute(int index, ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
-                    ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                    ref var entityFirstElement = ref chunk.Entity(0);
                     {{getFirstElement}}
 
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)

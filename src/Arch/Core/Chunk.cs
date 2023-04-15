@@ -438,7 +438,7 @@ public partial struct Chunk
     {
         // Get last entity
         var lastIndex = chunk.Size - 1;
-        var lastEntity = chunk.Entities[lastIndex];
+        var lastEntity = chunk.Entity(lastIndex);
 
         // Replace index entity with the last entity from the other chunk
         Entities[index] = lastEntity;

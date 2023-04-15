@@ -1,3 +1,4 @@
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
@@ -297,7 +298,6 @@ public class CommandBuffer : IDisposable
             var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
             var entity = Entities[entityIndex];
             World.AddRange(entity, (IList<ComponentType>)_addTypes);
-
             _addTypes.Clear();
         }
 

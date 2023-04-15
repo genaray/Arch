@@ -1,3 +1,4 @@
+using Arch.Core;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
