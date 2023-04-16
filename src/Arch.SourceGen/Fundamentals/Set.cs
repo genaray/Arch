@@ -140,9 +140,9 @@ public static class SetExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Set<{{generics}}>(Entity entity, {{parameters}})
             {
-                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-                var archetype = entitySlot.Archetype;
-                archetype.Set<{{generics}}>(ref entitySlot.Slot, {{insertParams}});
+                var slot = EntityInfo.GetSlot(entity.Id);
+                var archetype = EntitySlot.GetArchetype(entity.Id);
+                archetype.Set<{{generics}}>(ref slot, {{insertParams}});
             }
             """;
 

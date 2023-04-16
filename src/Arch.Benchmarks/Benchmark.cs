@@ -19,5 +19,10 @@ public class Benchmark
         // NOTE: Is `-- --job` a typo?
         // Use: dotnet run -c Release --framework net7.0 -- --job short --filter *IterationBenchmark*
         BenchmarkSwitcher.FromAssembly(typeof(Benchmark).Assembly).Run(args, config);
+
+/*
+        var bc = new QueryBenchmark { Amount = 1000000 };
+        bc.Setup();
+        bc.WorldEntityQuery();*/
     }
 }

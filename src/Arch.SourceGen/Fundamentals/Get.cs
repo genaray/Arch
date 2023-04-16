@@ -161,8 +161,8 @@ public static class GetExtensions
     public static StringBuilder AppendChunkIndexGet(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getArrays = new StringBuilder().GetChunkArrays(amount);
         var inParams = new StringBuilder().InsertGenericParams(amount);
+        var arrays = new StringBuilder().GetChunkArrays(amount);
 
         var gets = new StringBuilder();
         for (var index = 0; index <= amount; index++)
@@ -176,7 +176,7 @@ public static class GetExtensions
             [Pure]
             public Components<{{generics}}> Get<{{generics}}>(int index)
             {
-                {{getArrays}}
+                GetArray<{{generics}}>({{arrays}});
                 {{gets}}
 
                 return new Components<{{generics}}>({{inParams}});
@@ -272,9 +272,9 @@ public static class GetExtensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
-                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-                var archetype = entitySlot.Archetype;
-                return archetype.Get<{{generics}}>(ref entitySlot.Slot);
+                var slot = EntityInfo.GetSlot(entity.Id);
+                var archetype = EntityInfo.GetArchetype(entity.Id);
+                return archetype.Get<{{generics}}>(ref slot);
             }
             """;
 
