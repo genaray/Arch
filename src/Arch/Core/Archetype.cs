@@ -366,7 +366,7 @@ public sealed partial class Archetype : IDisposable
             var isStart = chunkIndex == from.ChunkIndex;
             var isEnd = chunkIndex == to.ChunkIndex;
 
-            var upper = isStart ? from.Index : chunk.Size;
+            var upper = isStart ? from.Index : chunk.Size-1;
             var lower = isEnd ? to.Index : 0;
 
             for (var index = upper; index >= lower; --index)

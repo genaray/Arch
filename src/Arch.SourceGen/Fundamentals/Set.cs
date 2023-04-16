@@ -99,16 +99,18 @@ public static class SetExtensions
                 {
                     ref var chunk = ref GetChunk(chunkIndex);
                     {{getFirstElements}}
-                    foreach(var entityIndex in chunk)
+
+                    // Only move within the range, depening on which chunk we are at.
+                    var isStart = chunkIndex == from.ChunkIndex;
+                    var isEnd = chunkIndex == to.ChunkIndex;
+
+                    var upper = isStart ? from.Index : chunk.Size-1;
+                    var lower = isEnd ? to.Index : 0;
+
+                    for (var entityIndex = upper; entityIndex >= lower; --entityIndex)
                     {
                         {{getComponents}}
                         {{assignComponents}}
-
-                        // Break to prevent old entities receiving the new value.
-                        if (chunkIndex == to.ChunkIndex && entityIndex == to.Index)
-                        {
-                            break;
-                        }
                     }
                 }
             }
