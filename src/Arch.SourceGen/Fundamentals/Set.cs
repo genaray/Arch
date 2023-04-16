@@ -141,7 +141,7 @@ public static class SetExtensions
             public void Set<{{generics}}>(Entity entity, {{parameters}})
             {
                 var slot = EntityInfo.GetSlot(entity.Id);
-                var archetype = EntitySlot.GetArchetype(entity.Id);
+                var archetype = EntityInfo.GetArchetype(entity.Id);
                 archetype.Set<{{generics}}>(ref slot, {{insertParams}});
             }
             """;

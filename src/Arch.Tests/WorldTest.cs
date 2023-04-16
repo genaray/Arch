@@ -408,7 +408,7 @@ public partial class WorldTest
 
         var previousCounter = 0;
         var counter = 0;
-        world.BestQuery(in withIntQueryDesc, (ref int i) =>
+        world.Query(in withIntQueryDesc, (ref int i) =>
         {
             if (i == 10) previousCounter++;
             if (i == 100) counter++;

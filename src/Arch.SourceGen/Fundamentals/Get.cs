@@ -112,20 +112,7 @@ public static class GetExtensions
     public static StringBuilder AppendChunkGetFirst(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-
-        var indexes = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            indexes.Append($"out var t{index}Index,");
-        }
-        indexes.Length--;
-
-        var arrays = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            arrays.Append($"out var t{index}Array,");
-        }
-        arrays.Length--;
+        var arrays = new StringBuilder().GetChunkArrays(amount);
 
         var insertParams = new StringBuilder();
         for (var index = 0; index <= amount; index++)
@@ -140,7 +127,7 @@ public static class GetExtensions
             [Pure]
             public Components<{{generics}}> GetFirst<{{generics}}>()
             {
-                GetArray<{{generics}}>({{arrays}});
+                {{arrays}}
                 return new Components<{{generics}}>({{insertParams}});
             }
             """;
@@ -176,7 +163,7 @@ public static class GetExtensions
             [Pure]
             public Components<{{generics}}> Get<{{generics}}>(int index)
             {
-                GetArray<{{generics}}>({{arrays}});
+                {{arrays}}
                 {{gets}}
 
                 return new Components<{{generics}}>({{inParams}});

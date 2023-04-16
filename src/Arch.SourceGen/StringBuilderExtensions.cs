@@ -229,7 +229,7 @@ public static class StringBuilderExtensions
         var arrays = new StringBuilder();
         for (var localIndex = 0; localIndex <= amount; localIndex++)
         {
-            arrays.AppendLine($"out var t{localIndex}Array,");
+            arrays.Append($"out var t{localIndex}Array,");
         }
         arrays.Length--;
 

@@ -782,22 +782,6 @@ public partial class World
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void BestQuery<T0>(in QueryDescription description, ForEach<T0> forEach)
-    {
-        var query = Query(in description);
-        foreach (ref var chunk in query)
-        {
-            var chunkSize = chunk.Size;
-            ref var t0FirstElement = ref chunk.GetFirst<T0>();
-            foreach (var entityIndex in chunk)
-            {
-                ref var t0Component = ref Unsafe.Add(ref t0FirstElement, entityIndex);
-                forEach(ref t0Component);
-            }
-        }
-    }
-
     /// <summary>
     ///     An efficient method to add one component to all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
@@ -901,8 +885,9 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(Entity entity, in T cmp = default)
     {
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        entitySlot.Archetype.Set(ref entitySlot.Slot, in cmp);
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+        archetype.Set(ref slot, in cmp);
     }
 
     /// <summary>
@@ -927,8 +912,9 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T Get<T>(Entity entity)
     {
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        return ref entitySlot.Archetype.Get<T>(ref entitySlot.Slot);
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+        return ref archetype.Get<T>(ref slot);
     }
 
     /// <summary>
@@ -948,8 +934,9 @@ public partial class World
             return false;
         }
 
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        component = entitySlot.Archetype.Get<T>(ref entitySlot.Slot);
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+        component = archetype.Get<T>(ref slot);
         return true;
     }
 
@@ -968,8 +955,9 @@ public partial class World
             return ref Unsafe.NullRef<T>();
         }
 
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        return ref entitySlot.Archetype.Get<T>(ref entitySlot.Slot);
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+        return ref archetype.Get<T>(ref slot);
     }
 
     /// <summary>
