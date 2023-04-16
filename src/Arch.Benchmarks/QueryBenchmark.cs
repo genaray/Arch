@@ -28,7 +28,7 @@ public class QueryBenchmark
         for (var index = 0; index < Amount; index++)
         {
             var entity = _world.Create(_group);
-            _world.Set(in entity, new Transform { X = 0, Y = 0 }, new Velocity { X = 1, Y = 1 });
+            _world.Set(entity, new Transform { X = 0, Y = 0 }, new Velocity { X = 1, Y = 1 });
         }
     }
 
@@ -44,7 +44,7 @@ public class QueryBenchmark
     {
         _world.Query(in _queryDescription, static (in Entity entity) =>
         {
-            var refs = _world.Get<Transform, Velocity>(in entity);
+            var refs = _world.Get<Transform, Velocity>(entity);
 
             refs.t0.X += refs.t1.X;
             refs.t0.Y += refs.t1.Y;

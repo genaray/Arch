@@ -169,12 +169,106 @@ public class ArchetypeTest
 
     /// <summary>
     ///     Checks if a copy operation between <see cref="Archetype"/> was successful.
-    ///     This is checked by the <see cref="Entity"/> shift through slots.
+    ///     This is checked by value equality of the items and their correct order.
     /// </summary>
     /// <param name="sourceAmount">Different test entity amounts.</param>
     /// <param name="destinationAmount">Different test entity amounts.</param>
     [Test]
     public void CopyTo([Values(1111,2222,3333)] int sourceAmount, [Values(1111,2222,3333)] int destinationAmount)
+    {
+        var source = new Archetype(_group);
+        var destination = new Archetype(_heavyGroup);
+
+        // Fill chunks with data to copy
+        for (int index = 0; index < sourceAmount; index++)
+        {
+            var entity = new Entity(index, 0);
+            source.Add(entity, out var entityOneSlot);
+            source.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
+            source.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
+        }
+
+        // Fill chunks with data to copy
+        for (int index = 0; index < destinationAmount; index++)
+        {
+            var entity = new Entity(index, 0);
+            destination.Add(entity, out var entityOneSlot);
+            destination.Set(ref entityOneSlot, new Transform { X = 100, Y = 100 });
+            destination.Set(ref entityOneSlot, new Rotation { X = 100, Y = 100 });
+        }
+
+        // Copy from one chunk into other.
+        Archetype.Copy(source, destination);
+        source.Clear();
+
+        var sourceCounter = sourceAmount;
+        var destinationCounter = destinationAmount;
+        var countedSourceItems = 0;
+        var countedDestinationItems = 0;
+
+        // Check if the first n items match the data from the destination chunk correctly
+        foreach (ref var chunk in destination)
+        {
+            chunk.GetSpan<Transform, Rotation>(out var transforms, out var rotations);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref chunk.Entity(index);
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
+
+                // All source items done, break loop
+                if (sourceCounter == 0)
+                {
+                    break;
+                }
+
+                // Verify that all source items were correctly copied
+                That(entity.Id == sourceCounter-1 && transform.X == 10 && transform.Y == 10 && rotation.X == 10 && rotation.Y == 10, Is.True);
+
+                countedSourceItems++;
+                sourceCounter--;
+            }
+        }
+
+        // Check if the copied values are attached to the destination archetype correctly.
+        sourceCounter = sourceAmount;
+        foreach (ref var chunk in destination)
+        {
+            chunk.GetSpan<Transform, Rotation>(out var transforms, out var rotations);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref chunk.Entity(index);
+                ref var transform = ref transforms[index];
+                ref var rotation = ref rotations[index];
+
+                // Skip all entrys till we are at the end of the old destination archetype where the new values should begin
+                if (sourceCounter > 0)
+                {
+                    sourceCounter--;
+                    continue;
+                }
+
+                That(entity.Id == destinationCounter-1 && transform.X == 100 && transform.Y == 100 && rotation.X == 100 && rotation.Y == 100, Is.True);
+
+                countedDestinationItems++;
+                destinationCounter--;
+            }
+        }
+
+        // Make sure that EVERY single entity was copied correctly
+        That(destination.Entities, Is.EqualTo(sourceAmount+destinationAmount));
+        That(countedSourceItems, Is.EqualTo(sourceAmount));
+        That(countedDestinationItems, Is.EqualTo(destinationAmount));
+    }
+
+    /// <summary>
+    ///     Checks if a copy operation between <see cref="Archetype"/> was successful.
+    ///     This is checked by the <see cref="Entity"/> shift through slots.
+    /// </summary>
+    /// <param name="sourceAmount">Different test entity amounts.</param>
+    /// <param name="destinationAmount">Different test entity amounts.</param>
+    [Test]
+    public void CopyToShift([Values(1111,2222,3333)] int sourceAmount, [Values(1111,2222,3333)] int destinationAmount)
     {
         var source = new Archetype(_group);
         var destination = new Archetype(_heavyGroup);

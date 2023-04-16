@@ -118,7 +118,7 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void Execute(int index, ref Chunk chunk)
     {
-        ref var entityFirstElement = ref Unsafe.AsRef<Entity>(chunk.Entities);
+        ref var entityFirstElement = ref chunk.Entity(0);
         foreach(var entityIndex in chunk)
         {
             ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
@@ -138,7 +138,10 @@ public class ChunkIterationJob<T> : IJob where T : IChunkJob
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
     /// </summary>
-    public ChunkIterationJob() { }
+    public ChunkIterationJob()
+    {
+        Chunks = Array.Empty<Chunk>();
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.

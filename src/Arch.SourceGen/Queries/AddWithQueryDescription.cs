@@ -72,14 +72,13 @@ public static class AddWithQueryDescription
                     var archetypeSlot = archetype.LastSlot;
                     var newArchetypeLastSlot = newArchetype.LastSlot;
                     Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+                    EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
+                    // Copy, set and clear
                     Archetype.Copy(archetype, newArchetype);
-                    archetype.Clear();
-
-                    // Set added value and update the entity info
                     var lastSlot = newArchetype.LastSlot;
                     newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, {{inParameters}});
-                    ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
+                    archetype.Clear();
                 }
             }
             """;

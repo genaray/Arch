@@ -9,20 +9,21 @@ using Arch.Core.Utils;
 namespace Arch.Tests;
 
 /// <summary>
-///     Tests the <see cref="EntityInfoDictionary"/> for its functionality.
+///     Tests the <see cref="JaggedArray"/> for its functionality.
 /// </summary>
 [TestFixture]
 public class EntityInfoDictionaryTests
 {
 
+
     /// <summary>
-    ///     Checks whether the <see cref="EntityInfoDictionary"/> adds <see cref="EntityInfo"/> correctly.
+    ///     Checks whether the <see cref="JaggedArray"/> adds <see cref="EntityInfo"/> correctly.
     /// </summary>
     [Test]
     public void Add()
     {
         var size = 1000;
-        var entityInfo = new EntityInfoDictionary(size);
+        var entityInfo = new JaggedArray<EntityInfo>(size);
 
         // Adds
         for (var i = 0; i < size; i++)
@@ -45,13 +46,13 @@ public class EntityInfoDictionaryTests
     }
 
     /// <summary>
-    ///     Checks whether the <see cref="EntityInfoDictionary"/> trims correctly.
+    ///     Checks whether the <see cref="JaggedArray"/> trims correctly.
     /// </summary>
     [Test]
     public void TrimExcess()
     {
         var size = 10000;
-        var entityInfo = new EntityInfoDictionary(size);
+        var entityInfo = new JaggedArray<EntityInfo>(size);
 
         // Add infos
         for(var i = 0; i < size; i++)
@@ -68,7 +69,7 @@ public class EntityInfoDictionaryTests
             var version = entityInfo[i].Version;
             if(version != i)
             {
-                Assert.Fail($"{nameof(EntityInfoDictionary.TrimExcess)} method deleted items");
+                Assert.Fail($"{nameof(JaggedArray<EntityInfo>.TrimExcess)} method deleted items");
             }
         }
     }

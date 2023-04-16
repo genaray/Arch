@@ -29,9 +29,9 @@ public static class StructuralChangesExtensions
             $$"""
             [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Add<{{generics}}>(in Entity entity, {{parameters}})
+            public void Add<{{generics}}>(Entity entity, {{parameters}})
             {
-                var oldArchetype = EntityInfo[entity.Id].Archetype;
+                var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
                 // BitSet to stack/span bitset, size big enough to contain ALL registered components.
                 Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -44,7 +44,7 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
-                Move(in entity, oldArchetype, newArchetype, out var newSlot);
+                Move(entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
             }
             """;
@@ -77,9 +77,9 @@ public static class StructuralChangesExtensions
             $$"""
             [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Remove<{{generics}}>(in Entity entity)
+            public void Remove<{{generics}}>(Entity entity)
             {
-                var oldArchetype = EntityInfo[entity.Id].Archetype;
+                var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
                 // BitSet to stack/span bitset, size big enough to contain ALL registered components.
                 Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -92,7 +92,7 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
-                Move(in entity, oldArchetype, newArchetype, out _);
+                Move(entity, oldArchetype, newArchetype, out _);
             }
             """;
 
@@ -117,10 +117,10 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Add<{{generics}}>(this in Entity entity, {{parameters}})
+            public static void Add<{{generics}}>(this Entity entity, {{parameters}})
             {
                 var world = World.Worlds[entity.WorldId];
-                world.Add<{{generics}}>(in entity);
+                world.Add<{{generics}}>(entity);
             }
             """;
 
@@ -144,10 +144,10 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Remove<{{generics}}>(this in Entity entity)
+            public static void Remove<{{generics}}>(this Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];
-                world.Remove<{{generics}}>(in entity);
+                world.Remove<{{generics}}>(entity);
             }
             """;
 

@@ -168,7 +168,7 @@ public static class GetExtensions
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public Components<{{generics}}> Get<{{generics}}>(scoped in int index)
+            public Components<{{generics}}> Get<{{generics}}>(int index)
             {
                 {{getArrays}}
                 {{gets}}
@@ -206,14 +206,14 @@ public static class GetExtensions
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [Pure]
-            public EntityComponents<{{generics}}> GetRow<{{generics}}>(scoped in int index)
+            public EntityComponents<{{generics}}> GetRow<{{generics}}>(int index)
             {
                 {{getArrays}}
 
                 ref var entity = ref Entity(index);
                 {{gets}}
 
-                return new EntityComponents<{{generics}}>(in entity, {{inParams}});
+                return new EntityComponents<{{generics}}>(ref entity, {{inParams}});
             }
             """;
 
@@ -264,11 +264,11 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Components<{{generics}}> Get<{{generics}}>(in Entity entity)
+            public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
-                var entityInfo = EntityInfo[entity.Id];
-                var archetype = entityInfo.Archetype;
-                return archetype.Get<{{generics}}>(ref entityInfo.Slot);
+                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+                var archetype = entitySlot.Archetype;
+                return archetype.Get<{{generics}}>(ref entitySlot.Slot);
             }
             """;
 
@@ -292,7 +292,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Components<{{generics}}> Get<{{generics}}>(this in Entity entity)
+            public static Components<{{generics}}> Get<{{generics}}>(this Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];
                 return world.Get<{{generics}}>(entity);

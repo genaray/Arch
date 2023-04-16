@@ -70,11 +70,10 @@ public static class RemoveWithQueryDesription
                     var archetypeSlot = archetype.LastSlot;
                     var newArchetypeLastSlot = newArchetype.LastSlot;
                     Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+                    EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
                     Archetype.Copy(archetype, newArchetype);
                     archetype.Clear();
-
-                    ShiftEntityInfo(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
                 }
             }
             """;

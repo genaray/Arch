@@ -43,10 +43,10 @@ public partial class CommandBufferTest
         commandBuffer.Remove<int>(in entity);
 
         commandBuffer.Playback();
-        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        IsTrue(world.Has<Ai>(in entity));
-        IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(entity));
+        IsFalse(world.Has<int>(entity));
 
         World.Destroy(world);
     }
@@ -66,10 +66,10 @@ public partial class CommandBufferTest
         commandBuffer.Playback();
 
         entity = new Entity(0, 0);
-        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        IsTrue(world.Has<Ai>(in entity));
-        IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(entity));
+        IsFalse(world.Has<int>(entity));
 
         World.Destroy(world);
     }
@@ -95,15 +95,15 @@ public partial class CommandBufferTest
 
         bufferedEntity = new Entity(1, 0);
 
-        That(world.Get<Transform>(in entity).X, Is.EqualTo(20));
-        That(world.Get<Transform>(in entity).Y, Is.EqualTo(20));
-        IsTrue(world.Has<Ai>(in entity));
-        IsFalse(world.Has<int>(in entity));
+        That(world.Get<Transform>(entity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(entity));
+        IsFalse(world.Has<int>(entity));
 
-        That(world.Get<Transform>(in bufferedEntity).X, Is.EqualTo(20));
-        That(world.Get<Transform>(in bufferedEntity).Y, Is.EqualTo(20));
-        IsTrue(world.Has<Ai>(in bufferedEntity));
-        IsFalse(world.Has<int>(in bufferedEntity));
+        That(world.Get<Transform>(bufferedEntity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(bufferedEntity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(bufferedEntity));
+        IsFalse(world.Has<int>(bufferedEntity));
 
         World.Destroy(world);
     }

@@ -15,7 +15,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
 ```console
-dotnet add PROJECT package Arch --version 1.2.3
+dotnet add PROJECT package Arch --version 1.2.4
 ```
 
 # Code Sample
@@ -104,7 +104,7 @@ or
 var archetype = new ComponentType[]{ typeof(Position), typeof(Velocity), ... };
 var entity = world.Create(archetype);
 
-world.Destroy(in entity);
+world.Destroy(entity);
 ```
 
 ## Component

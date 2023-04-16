@@ -102,6 +102,10 @@ internal class StructuralSparseArray
     /// </summary>
     public void Clear()
     {
+        for (var index = 0; index < Size; index++)
+        {
+            Entities[index] = -1;
+        }
         Size = 0;
     }
 }
@@ -112,7 +116,7 @@ internal class StructuralSparseArray
 ///     The <see cref="StructuralSparseSet"/> class
 ///     stores a series of <see cref="StructuralSparseArray"/>'s and their associated components.
 /// </summary>
-internal class StructuralSparseSet : IDisposable
+internal class StructuralSparseSet
 {
     private readonly object _createLock = new();
     private readonly object _setLock = new();
@@ -126,6 +130,7 @@ internal class StructuralSparseSet : IDisposable
     {
         Capacity = capacity;
         Entities = new List<StructuralEntity>(capacity);
+        Used = Array.Empty<int>();
         Components = Array.Empty<StructuralSparseArray>();
     }
 
@@ -291,10 +296,10 @@ internal class StructuralSparseSet : IDisposable
     }
 
     /// <summary>
-    ///     Disposes the <see cref="StructuralSparseSet"/>.
+    ///     Clears the <see cref="StructuralSparseSet"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
+    public void Clear()
     {
         Count = 0;
         Entities.Clear();

@@ -112,7 +112,7 @@ public static class ReferencesExtensions
 
                 [SkipLocalsInit]
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public EntityComponents(in Entity entity, {{parameters}}){
+                public EntityComponents(ref Entity entity, {{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0
                 Entity = new ReadOnlyRef<Entity>(in entity);

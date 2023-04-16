@@ -5,6 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Arch.Core.Extensions;
+
+/// <summary>
+///     The <see cref="MathExtensions"/>
+///     contains several methods for math operations.
+/// </summary>
 internal static class MathExtensions
 {
     /// <summary>
@@ -12,6 +17,7 @@ internal static class MathExtensions
     /// </summary>
     /// <param name="num"></param>
     /// <returns></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int RoundToPowerOfTwo(int num)
     {
         // If num is a power of 2, return it
@@ -19,13 +25,13 @@ internal static class MathExtensions
         {
             return num;
         }
-        
+
         // Find the exponent of the nearest power of 2 (rounded down)
         int exponent = (int)Math.Floor(Math.Log(num) / Math.Log(2));
-        
+
         // Calculate the nearest power of 2
         int result = (int)Math.Pow(2, exponent);
-        
+
         return result;
     }
 }

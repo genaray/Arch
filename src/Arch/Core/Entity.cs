@@ -1,5 +1,7 @@
+#if !PURE_ECS
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+#endif
 
 namespace Arch.Core;
 
@@ -50,7 +52,7 @@ public readonly struct Entity : IEquatable<Entity>
     /// <param name="obj">The other <see cref="Entity"/> object.</param>
     /// <returns>True if equal, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Entity other && Equals(other);
     }
@@ -276,7 +278,7 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive(World world)
     {
-        var reference = world.Reference(in Entity);
+        var reference = world.Reference(Entity);
         return this == reference;
     }
 #else

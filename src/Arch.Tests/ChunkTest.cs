@@ -25,7 +25,7 @@ public class ChunkTest
         for (var index = 0; index < _chunk.Capacity; index++)
         {
             var entity = new Entity(index, 0);
-            _chunk.Add(in entity);
+            _chunk.Add(entity);
 
             var t = new Transform{ X = 10};
             var r = new Rotation{Y = 10};
@@ -48,7 +48,7 @@ public class ChunkTest
         for (var index = 0; index < _chunk.Capacity; index++)
         {
             var entity = new Entity(index, 0);
-            _chunk.Add(in entity);
+            _chunk.Add(entity);
 
             var t = new Transform();
             var r = new Rotation();
@@ -75,7 +75,7 @@ public class ChunkTest
         for (var index = 0; index < 5; index++)
         {
             var entity = new Entity(index, 0);
-            _chunk.Add(in entity);
+            _chunk.Add(entity);
 
             var t = new Transform();
             var r = new Rotation();
@@ -105,11 +105,11 @@ public class ChunkTest
         var newEntity = new Entity(1, 0);
         var newEntityTwo = new Entity(2, 0);
 
-        var firstIndex = _chunk.Add(in newEntity);
-        _chunk.Add(in newEntityTwo);
+        var firstIndex = _chunk.Add(newEntity);
+        _chunk.Add(newEntityTwo);
 
         _chunk.Remove(firstIndex);
-        _chunk.Add(in newEntity);
+        _chunk.Add(newEntity);
 
         // Check if the first one was replaced with the last one correctly
         That(_chunk.Size, Is.EqualTo(2));
