@@ -73,7 +73,6 @@ public class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendChunkIndexGets(25)}}
                         {{new StringBuilder().AppendChunkIndexGetRows(25)}}
                         {{new StringBuilder().AppendChunkIndexSets(25)}}
-                        {{new StringBuilder().AppendChunkIndexSets(25)}}
 
                         {{new StringBuilder().AppendChunkGetSpans(25)}}
                         {{new StringBuilder().AppendChunkGetFirsts(25)}}
