@@ -288,6 +288,10 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive()
     {
+        if (this == Null)
+        {
+            return false;
+        }
         var reference = Entity.Reference();
         return this == reference;
     }

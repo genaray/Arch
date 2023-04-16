@@ -1341,7 +1341,14 @@ public partial class World
     public EntityReference Reference(Entity entity)
     {
         var entityInfo = EntityInfo.TryGetVersion(entity.Id, out var version);
-        return new EntityReference(in entity, entityInfo ? version : 0);
+        if (entityInfo)
+        {
+            return new EntityReference(in entity, version);
+        }
+        else
+        {
+            return EntityReference.Null;
+        }
     }
 
     /// <summary>
