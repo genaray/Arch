@@ -803,6 +803,22 @@ public partial class World
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void BestQuery<T0>(in QueryDescription description, ForEach<T0> forEach)
+    {
+        var query = Query(in description);
+        foreach (ref var chunk in query)
+        {
+            var chunkSize = chunk.Size;
+            ref var t0FirstElement = ref chunk.GetFirst<T0>();
+            foreach (var entityIndex in chunk)
+            {
+                ref var t0Component = ref Unsafe.Add(ref t0FirstElement, entityIndex);
+                forEach(ref t0Component);
+            }
+        }
+    }
+
     /// <summary>
     ///     An efficient method to add one component to all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
@@ -1362,7 +1378,7 @@ public partial class World
     public EntityReference Reference(Entity entity)
     {
         var entityInfo = EntityInfo.TryGetVersion(entity.Id, out var version);
-        return new EntityReference(in entity, entityInfo ? version : 0);
+        return entityInfo ? new EntityReference(in entity, version) : EntityReference.Null;
     }
 
     /// <summary>

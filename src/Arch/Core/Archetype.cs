@@ -529,6 +529,7 @@ public sealed unsafe partial class Archetype
         Capacity = newCapacity;
     }
 
+    /// TODO : Currently this only ensures additional entity capacity, instead it should take the whole capacity in count.
     /// <summary>
     ///     Ensures the capacity of the <see cref="Chunks"/> array.
     ///     Increases the <see cref="Capacity"/>.
@@ -543,7 +544,7 @@ public sealed unsafe partial class Archetype
         var neededSpots = newCapacity - freeSpots;
         var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
 
-        if (Capacity > neededChunks)
+        if (Capacity-Size > neededChunks)
         {
             return;
         }
@@ -633,7 +634,7 @@ public sealed partial class Archetype
     internal static void Copy(Archetype source, Archetype destination)
     {
         // Make sure other archetype can fit additional entities from this archetype.
-        destination.EnsureEntityCapacity(destination.Entities+source.Entities);
+        destination.EnsureEntityCapacity(source.Entities);
 
         // Copy chunks into destination chunks
         var sourceChunkIndex = 0;
