@@ -249,7 +249,7 @@ internal class EntityInfoStorage
             var isStart = chunkIndex == archetypeSlot.ChunkIndex;
             var isEnd = chunkIndex == newArchetypeSlot.ChunkIndex;
 
-            var upper = isStart ? archetypeSlot.Index : chunk.Size;
+            var upper = isStart ? archetypeSlot.Index : chunk.Size-1;
             var lower = isEnd ? newArchetypeSlot.Index : 0;
 
             for (var index = upper; index >= lower; --index)
