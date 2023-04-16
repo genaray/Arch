@@ -136,13 +136,23 @@ public partial class WorldTest
 
         // Check if reference takes care of wrong version
         That(recycledReference != otherReference, Is.EqualTo(true));
-        That(otherReference.IsAlive(_world), Is.EqualTo(false));
+#if PURE_ECS
+        That(otherReference.IsAlive(localWorld), Is.EqualTo(false));
+#else
+        That(otherReference.IsAlive(), Is.EqualTo(false));
+#endif
 
         // Entity reference null is NOT alive.
         EntityReference cons = new EntityReference{};
         EntityReference refs = EntityReference.Null;
-        That(refs.IsAlive(_world), Is.EqualTo(false));
-        That(cons.IsAlive(_world), Is.EqualTo(false));
+
+#if PURE_ECS
+        That(refs.IsAlive(localWorld), Is.EqualTo(false));
+        That(cons.IsAlive(localWorld), Is.EqualTo(false));
+#else
+        That(refs.IsAlive(), Is.EqualTo(false));
+        That(cons.IsAlive(), Is.EqualTo(false));
+#endif
     }
 
     /// <summary>
@@ -390,7 +400,7 @@ public partial class WorldTest
         for (int index = 0; index < 1000; index++)
         {
             var entity = world.Create(_entityGroup);
-            _world.Add(entity, 10);
+            world.Add(entity,10);
         }
 
         // Add int to all entities without int
@@ -398,7 +408,7 @@ public partial class WorldTest
 
         var previousCounter = 0;
         var counter = 0;
-        world.Query(in withIntQueryDesc, (ref int i) =>
+        world.BestQuery(in withIntQueryDesc, (ref int i) =>
         {
             if (i == 10) previousCounter++;
             if (i == 100) counter++;

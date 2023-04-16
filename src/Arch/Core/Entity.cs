@@ -5,6 +5,7 @@ using Arch.Core.Utils;
 
 namespace Arch.Core;
 
+
 #if PURE_ECS
 
 /// <summary>
@@ -278,6 +279,11 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive(World world)
     {
+        if (this == Null)
+        {
+            return false;
+        }
+
         var reference = world.Reference(Entity);
         return this == reference;
     }
@@ -292,6 +298,7 @@ public readonly struct EntityReference
         {
             return false;
         }
+
         var reference = Entity.Reference();
         return this == reference;
     }
