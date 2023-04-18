@@ -224,7 +224,7 @@ Arch has some extensions that add more features and tools. Among them for exampl
 Arch is already used in some projects, for a more detailed look, take a look at the wiki!
 > https://github.com/genaray/Arch/wiki/Projects-using-Arch
 
-## [Rougelite-Survivor](https://github.com/proc-gen/roguelite-survivor)
+## [Roguelite-Survivor](https://github.com/proc-gen/roguelite-survivor)
 An action-packed c# clone of the hit "vampire survivor" based on monogame and arch!
 Fight your way through hordes of different enemies, level up your character, collect permanent items and explore various maps!
 Try it out!
