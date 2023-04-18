@@ -1,3 +1,0 @@
-We welcome any bug fixes or performance improvements. 
-If a pull request contains a new feature, it should be wrapped in preprocessor variables as an optional feature if it affects Archs performance. 
-Additional features that do not impact performance are always welcome. 
