@@ -365,6 +365,20 @@ public readonly struct EntityReference
     }
 
     /// <summary>
+    ///     Implicitly converts an <see cref="EntityReference"/> into the
+    ///     <see cref="Entity"/> that it is referencing.
+    /// </summary>
+    /// <param name="reference">The <see cref="EntityReference"/> to convert.</param>
+    /// <returns>
+    ///     The <see cref="Entity"/> referenced by this <see cref="EntityReference"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Entity(EntityReference reference)
+    {
+        return reference.Entity;
+    }
+
+    /// <summary>
     ///     Converts this <see cref="EntityReference"/> to a string.
     /// </summary>
     /// <returns>Its string.</returns>
