@@ -59,7 +59,7 @@ public class Game
 - [Performance](#performance)
   * [Benchmark](#benchmark)
 - [Extensions](#extensions)
-- [Contributing](#contributing)
+- [Projects using Arch](#projects-using-arch)
 
 # Quick start
 
@@ -198,17 +198,17 @@ The following performance was achieved with Arch for the scenario under heavy lo
 
 |            Method |  Amount |          Mean |         Error |      StdDev | CacheMisses/Op | Allocated |
 |------------------ |-------- |--------------:|--------------:|------------:|---------------:|----------:|
-|  WorldEntityQuery |   10000 |    147.660 us |    13.2838 us |   0.7281 us |            746 |         - |
+|  WorldEntityQuery |   10000 |    111.003 us |    13.2838 us |   0.7281 us |            409 |         - |
 |             Query |   10000 |     20.159 us |     1.4188 us |   0.0778 us |            103 |         - |
 |       EntityQuery |   10000 |     17.711 us |     1.1311 us |   0.0620 us |             49 |         - |
 |       StructQuery |   10000 |      7.767 us |     0.1572 us |   0.0086 us |              7 |         - |
 | StructEntityQuery |   10000 |      7.338 us |     1.7188 us |   0.0942 us |             12 |         - |
-|  WorldEntityQuery |  100000 |  1,726.959 us | 3,058.5935 us | 167.6518 us |         11,761 |         - |
+|  WorldEntityQuery |  100000 |  1,326.959 us | 3,058.5935 us | 167.6518 us |          5,753 |         - |
 |             Query |  100000 |    203.555 us |     4.6038 us |   0.2523 us |          2,977 |         - |
 |       EntityQuery |  100000 |    228.222 us |    17.4030 us |   0.9539 us |          2,708 |         - |
 |       StructQuery |  100000 |    115.466 us |     8.8355 us |   0.4843 us |          2,726 |         - |
 | StructEntityQuery |  100000 |     76.823 us |     2.1875 us |   0.1199 us |          2,544 |         - |
-|  WorldEntityQuery | 1000000 | 20,419.798 us | 4,491.2760 us | 246.1820 us |         90,624 |         - |
+|  WorldEntityQuery | 1000000 | 12,519.798 us | 4,491.2760 us | 246.1820 us |         45,604 |         - |
 |             Query | 1000000 |  2,679.153 us |    35.1696 us |   1.9278 us |         28,579 |         - |
 |       EntityQuery | 1000000 |  2,462.296 us |   322.4767 us |  17.6760 us |         28,113 |         - |
 |       StructQuery | 1000000 |  1,514.479 us |   296.5311 us |  16.2539 us |         29,723 |         - |
@@ -220,7 +220,11 @@ Arch has some extensions that add more features and tools. Among them for exampl
 - 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
 - ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
 
-# Contributing
+# Projects using Arch
+Arch is already used in some projects, for a more detailed look, take a look at the wiki!
+> https://github.com/genaray/Arch/wiki/Projects-using-Arch
 
-I will accept contributions, especially bug fixes, performance improvements, and new features.
-New features however should not harm its performance, if they do, they should be wrapped within predecessor variables for enabling/disabling them. 
+## [Rougelite-Survivor](https://github.com/proc-gen/roguelite-survivor)
+An action-packed c# clone of the hit "vampire survivor" based on monogame and arch!
+Fight your way through hordes of different enemies, level up your character, collect permanent items and explore various maps!
+Try it out!
