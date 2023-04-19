@@ -34,6 +34,7 @@ public static class StringBuilderExtensions
 
     // Queries, set, has & get
 
+    /// TODO : Probably use chunk.GetFirst<...>(); overloads instead?
     /// <summary>
     ///     Gets all generic first elements from an chunk and lists them up under each other.
     ///     <example>
@@ -53,7 +54,6 @@ public static class StringBuilderExtensions
         {
             sb.AppendLine($"ref var t{localIndex}FirstElement = ref chunk.GetFirst<T{localIndex}>();");
         }
-
         return sb;
     }
 
@@ -190,6 +190,31 @@ public static class StringBuilderExtensions
         return sb;
     }
 
+
+    /// <summary>
+    ///     Gets out params and appends them after each other
+    ///     <example>
+    ///         <code>
+    ///             out var t1Array, out var t2Array
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="appendix">The appendix.</param>
+    /// <param name="sb"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public static StringBuilder InsertGenericOutParams(this StringBuilder sb, string appendix, int amount)
+    {
+        var arrays = new StringBuilder();
+        for (var localIndex = 0; localIndex <= amount; localIndex++)
+        {
+            arrays.Append($"out var t{localIndex}{appendix},");
+        }
+        arrays.Length--;
+
+        return arrays;
+    }
+
     /// <summary>
     ///     Lists the types of generics in a row.
     ///     <example>
@@ -226,12 +251,7 @@ public static class StringBuilderExtensions
     public static StringBuilder GetChunkArrays(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var arrays = new StringBuilder();
-        for (var localIndex = 0; localIndex <= amount; localIndex++)
-        {
-            arrays.Append($"out var t{localIndex}Array,");
-        }
-        arrays.Length--;
+        var arrays = new StringBuilder().InsertGenericOutParams("Array", amount);
 
         sb.Append($"GetArray<{generics}>({arrays});");
         return sb;

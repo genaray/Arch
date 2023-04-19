@@ -1,3 +1,4 @@
+using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
@@ -50,6 +51,62 @@ public partial class WorldTest
 
         That(_world.Size, Is.EqualTo(size + 1));
         True(_world.IsAlive(entity));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
+    /// </summary>
+    [Test]
+    public void CreateBulk()
+    {
+        using var world = World.Create();
+
+        for (int i = 0; i < 200; i++)
+        {
+
+            var entity = world.Create(new ComponentType[] {
+                typeof(int),
+                typeof(long),
+                typeof(double),
+                typeof(char),
+                typeof(string),
+                typeof(object),
+                typeof(StringBuilder),
+                typeof(WorldTest),
+                typeof(EntityTest),
+                typeof(QueryTest),
+                typeof(ArchetypeTest),
+                typeof(BitSetTest),
+                typeof(ChunkTest),
+                typeof(CommandBufferTest),
+                typeof(EntityInfoDictionaryTests),
+                typeof(Entity),
+                typeof(Archetype),
+                typeof(List<int>),
+                typeof(BitSet),
+                typeof(JaggedArray<int>),
+                typeof(List<string>),
+                typeof(List<object>),
+                typeof(List<long>),
+                typeof(List<double>),
+                typeof(List<char>),
+                typeof(List<uint>),
+                typeof(List<byte>),
+                typeof(List<BitSet>),
+                typeof(List<Entity>),
+                typeof(List<Archetype>),
+                typeof(List<ArchetypeTest>),
+                typeof(Dictionary<int, BitSet>),
+                typeof(Dictionary<bool, Entity>),
+                typeof(Dictionary<string, Archetype>),
+            });
+        }
+
+        var query = new QueryDescription().WithAll<Dictionary<uint, ArchetypeTest>>();
+
+        var newEntity = world.Create(new Dictionary<uint, ArchetypeTest>());
+        var amount = world.CountEntities(query);
+        Console.WriteLine(world.CountEntities(query)); // outputs 0
     }
 
     /// <summary>
