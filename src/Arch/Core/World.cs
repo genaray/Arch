@@ -1209,7 +1209,8 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
         }
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out var slot);
+        newArchetype.Set(ref slot, cmp);
     }
 
     /// <summary>
