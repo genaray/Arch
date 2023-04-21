@@ -1247,7 +1247,11 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, oldArchetype, newArchetype, out var slot);
+        foreach (var cmp in components)
+        {
+            newArchetype.Set(ref slot, cmp);
+        }
     }
 
 
