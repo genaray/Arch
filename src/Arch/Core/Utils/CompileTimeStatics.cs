@@ -1,4 +1,3 @@
-using CommunityToolkit.HighPerformance;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
@@ -153,7 +152,7 @@ public static class ComponentRegistry
 
         // Register and assign component id
         var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
-        meta = new ComponentType(Size, type, size, type.GetFields().Length == 0);
+        meta = new ComponentType(Size + 1, type, size, type.GetFields().Length == 0);
         _types.Add(type, meta);
 
         Size++;
@@ -239,8 +238,7 @@ public static class ComponentRegistry
         }
         else
         {
-            id = Size;
-            Size++;
+            id = ++Size;
         }
 
         var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
