@@ -253,7 +253,7 @@ public static class StringBuilderExtensions
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var arrays = new StringBuilder().InsertGenericOutParams("Array", amount);
 
-        sb.Append($"GetArray<{generics}>({arrays});");
+        sb.Append($"GetSpan<{generics}>({arrays});");
         return sb;
     }
 }

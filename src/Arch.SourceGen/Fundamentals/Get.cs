@@ -118,7 +118,7 @@ public static class GetExtensions
         var insertParams = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            insertParams.Append($"ref t{index}Span[0],");
+            insertParams.Append($"ref t{index}Array[0],");
         }
         insertParams.Length--;
 
