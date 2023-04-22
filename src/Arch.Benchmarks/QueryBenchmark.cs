@@ -6,12 +6,11 @@ namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
-[HardwareCounters(HardwareCounter.CacheMisses)]
+//[HardwareCounters(HardwareCounter.CacheMisses)]
 public class QueryBenchmark
 {
     [Params(10000, 100000, 1000000)] public int Amount;
 
-    private readonly JobScheduler.JobScheduler? _jobScheduler;
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
     private readonly QueryDescription _queryDescription = new() { All = _group };
 
@@ -20,8 +19,6 @@ public class QueryBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        // _jobScheduler = new JobScheduler.JobScheduler("Arch");
-
         _world = World.Create();
         _world.Reserve(_group, Amount);
 
@@ -31,13 +28,6 @@ public class QueryBenchmark
             _world.Set(entity, new Transform { X = 0, Y = 0 }, new Velocity { X = 1, Y = 1 });
         }
     }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        //_jobScheduler.Dispose();
-    }
-
 
     [Benchmark]
     public void WorldEntityQuery()
@@ -64,7 +54,7 @@ public class QueryBenchmark
         });
     }
 #endif
-
+/*
     [Benchmark]
     public void Query()
     {
@@ -135,5 +125,5 @@ public class QueryBenchmark
             t.X += v.X;
             t.Y += v.Y;
         }
-    }
+    }*/
 }

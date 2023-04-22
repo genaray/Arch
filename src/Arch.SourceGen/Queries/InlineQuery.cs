@@ -93,7 +93,6 @@ public static class StringBuilderHpQueryExtensions
                     var query = Query(in description);
                     foreach (ref var chunk in query)
                     {
-                        var chunkSize = chunk.Size;
                         {{getFirstElement}}
 
                         foreach(var entityIndex in chunk)

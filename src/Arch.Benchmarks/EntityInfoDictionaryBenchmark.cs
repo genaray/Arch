@@ -9,7 +9,7 @@ using Collections.Pooled;
 using BenchmarkDotNet.Attributes;
 
 namespace Arch.Benchmarks;
-/*
+
 [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
 public class EntityInfoDictionaryBenchmark
 {
@@ -45,4 +45,4 @@ public class EntityInfoDictionaryBenchmark
             items[i] = default;
         }
     }
-}*/
+}

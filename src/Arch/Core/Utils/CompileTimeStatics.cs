@@ -269,8 +269,7 @@ public static class ComponentRegistry
         }
         else
         {
-            id = Size;
-            Size++;
+            id = ++Size;
         }
 
         var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
@@ -347,7 +346,8 @@ public static class Component
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
     }
 
-      /// <summary>
+    /// TODO : Find a nicer way? Probably cache hash somewhere in Query or Description instead to avoid calculating it every call?
+    /// <summary>
     ///     Calculates the hash code of a <see cref="ComponentType"/> array, which is unique for the elements contained in the array.
     ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
     /// </summary>
@@ -356,27 +356,28 @@ public static class Component
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<ComponentType> obj)
     {
-        // From https://stackoverflow.com/a/52172541.
-        unchecked
-        {
-            int hash = 0;
-            foreach (var type in obj)
-            {
-                int x = type.Id + 1;
+          // Search for the highest id to determine how much uints we need for the stack.
+          var highestId = 0;
+          foreach (ref var cmp in obj)
+          {
+              if (cmp.Id > highestId)
+              {
+                  highestId = cmp.Id;
+              }
+          }
 
-                x ^= x >> 17;
-                x *= 830770091;   // 0xed5ad4bb
-                x ^= x >> 11;
-                x *= -1404298415; // 0xac4c1b51
-                x ^= x >> 15;
-                x *= 830770091;   // 0x31848bab
-                x ^= x >> 14;
+          // Allocate the stack and set bits to replicate a bitset
+          var length = BitSet.RequiredLength(highestId);
+          Span<uint> stack = stackalloc uint[length];
+          var spanBitSet = new SpanBitSet(stack);
 
-                hash += x;
-            }
+          foreach (ref var type in obj)
+          {
+              var x = type.Id;
+              spanBitSet.SetBit(x);
+          }
 
-            return hash;
-        }
+          return GetHashCode(stack);
     }
 
     /// <summary>
@@ -388,38 +389,8 @@ public static class Component
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<uint> span)
     {
-        // From https://stackoverflow.com/a/52172541.
-        unchecked
-        {
-            int hash = 0;
-            for (var index = 0; index < span.Length; index++)
-            {
-                var value = span[index];
-                for (var i = 0; i < BitSet.BitSize; i++)
-                {
-                    if ((value & 1) != 1)
-                    {
-                        value >>= 1;
-                        continue;
-                    }
-
-                    int x = (index*(BitSet.BitSize+1))+i + 1;
-
-                    x ^= x >> 17;
-                    x *= 830770091;   // 0xed5ad4bb
-                    x ^= x >> 11;
-                    x *= -1404298415; // 0xac4c1b51
-                    x ^= x >> 15;
-                    x *= 830770091;   // 0x31848bab
-                    x ^= x >> 14;
-
-                    hash += x;
-                    value >>= 1;
-                }
-            }
-
-            return hash;
-        }
+        var bytes = MemoryMarshal.AsBytes(span);
+        return (int)MurmurHash3.Hash32(bytes, 0);
     }
 }
 

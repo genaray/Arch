@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
@@ -297,6 +296,7 @@ public readonly unsafe struct ComponentArray : IDisposable
 ///     Chunks are internally allocated and filled by <see cref="Archetype"/>'s.
 ///     Through them it is possible to efficiently provide or trim memory for additional entities.
 /// </summary>
+[SkipLocalsInit]  // Really a speed improvements? The benchmark only showed a slight improvement
 public unsafe partial struct Chunk : IDisposable
 {
     /// <summary>
@@ -346,12 +346,10 @@ public unsafe partial struct Chunk : IDisposable
     /// </summary>
     public readonly ComponentArray[] Components { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
-
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
     /// </summary>
     public readonly UnsafeArray<int> ComponentIdToArrayIndex { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-
 
     /// <summary>
     ///     The number of occupied <see cref="Arch.Core.Entity"/> slots in this <see cref="Chunk"/>.
@@ -551,6 +549,7 @@ public partial struct Chunk
     public Span<T> GetSpan<T>()
     {
         var index = Index<T>();
+        Debug.Assert(index != -1, "Index is out of bounds");
         ref var array = ref Components[index];
         return array.AsSpan<T>();
     }

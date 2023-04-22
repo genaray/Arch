@@ -537,6 +537,7 @@ internal class JaggedArray<T>
     ///     Returns a reference to a <see cref="EntityInfo"/> at an given index.
     /// </summary>
     /// <param name="id">The index.</param>
+    [SkipLocalsInit]
     public ref T this[int id]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
