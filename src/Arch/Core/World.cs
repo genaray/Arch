@@ -929,13 +929,15 @@ public partial class World
     public bool TryGet<T>(Entity entity, out T component)
     {
         component = default;
-        if (!Has<T>(entity))
+
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+
+        if (!archetype.Has<T>())
         {
             return false;
         }
 
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
         component = archetype.Get<T>(ref slot);
         return true;
     }
@@ -950,14 +952,35 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        if (!(exists = Has<T>(entity)))
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+
+        if (!(exists = archetype.Has<T>()))
         {
             return ref Unsafe.NullRef<T>();
         }
 
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
         return ref archetype.Get<T>(ref slot);
+    }
+
+    /// <summary>
+    ///     Ensures the existence of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T AddOrGet<T>(Entity entity, T cmp = default)
+    {
+        ref var component = ref TryGetRef<T>(entity, out var exists);
+        if (exists)
+        {
+            return ref component;
+        }
+
+        Add(entity, cmp);
+        return ref Get<T>(entity);
     }
 
     /// <summary>

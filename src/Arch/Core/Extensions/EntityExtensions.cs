@@ -168,6 +168,20 @@ public static partial class EntityExtensions
     }
 
     /// <summary>
+    ///    Ensures the existance of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T AddOrGet<T>(this in Entity entity, T cmp = default)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return ref world.AddOrGet(entity, cmp);
+    }
+
+    /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
