@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
 ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
-A high-performance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data-oriented programming.    
+A high-performance C# based Archetype & Chunks [Entity Component System](https://www.wikiwand.com/en/Entity_component_system) (ECS) for game development and data-oriented programming.     
 
 - 🚀 **_FAST_** > Best cache efficiency, iteration, and allocation speed. Plays in the same league as C++/Rust ECS Libs! 
 - 🚀🚀 **_FASTER_** > Arch is on average quite faster than other ECS implemented in C#. Check out this [Benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark)!
@@ -13,7 +13,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 - 💪 _**MAINTAINED**_ > It's actively being worked on, maintained, and supported! 
 - 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7 and therefore you may use it with Unity or Godot!
 
-Download the [package](https://github.com/genaray/Arch/packages/1697222) and get started today! 
+Download the [package](https://github.com/genaray/Arch/packages/1697222), get started today and join the [Discord](https://discord.gg/htc8tX3NxZ)!
 ```console
 dotnet add PROJECT package Arch --version 1.2.4.2-beta
 ```
