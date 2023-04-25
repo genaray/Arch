@@ -72,6 +72,23 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         return world.IsAlive(entity);
     }
+    
+    /// <summary>
+    ///     Destroys an <see cref="Entity"/>.
+    ///     Might resize its target <see cref="Archetype"/> and release memory.
+    /// </summary>
+    /// <returns>TODO</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Destroy(this in Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        if (world.IsAlive(entity))
+        {
+            world.Destroy(entity);
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>
     ///     Returns the version of an <see cref="Entity"/>.
@@ -342,7 +359,22 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.AddRange(entity, components);
     }
-
+    
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Remove(this in Entity entity, in object cmp)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Remove(entity, Component.GetComponentType(cmp.GetType()));
+    }
+    
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Remove(this in Entity entity, ComponentType type)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Remove(entity, type);
+    }
 
     /// <summary>
     ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
