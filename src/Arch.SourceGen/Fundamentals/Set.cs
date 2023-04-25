@@ -144,7 +144,6 @@ public static class SetExtensions
                     }
                     else
                     {
-                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
                         ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
                     }
                     """);
@@ -158,7 +157,9 @@ public static class SetExtensions
                 var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
                 var archetype = entitySlot.Archetype;
                 archetype.Set<{{generics}}>(ref entitySlot.Slot, {{insertParams}});
+                #if ARCH_EVENT
                 {{componentEvent}}
+                #endif
             }
             """;
 

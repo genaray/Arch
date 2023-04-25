@@ -30,16 +30,15 @@ public static class StructuralChangesExtensions
         {
             componentEvent.AppendLine(
                 $$"""
-                    if (oldArchetype.Has<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>())
-                    {
-                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
-                    }
-                    else
-                    {
-                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
-                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
-                    }
-                    """);
+                    // if (oldArchetype.Has<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>())
+                    // {
+                    //     ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponent{{StringBuilderExtensions.SourceGenComponentChangedType.Set}}Event(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    // }
+                    // else
+                    // {
+                        ComponentRegistry.GetHookRegistry<{{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}}>().BroadcastComponent{{StringBuilderExtensions.SourceGenComponentChangedType.Add}}Event(entity, new EcsComponentReference(this, entity, typeof({{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}})));
+                    // }
+                """);
         }
 
         var template =
@@ -61,7 +60,9 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
+                #if ARCH_EVENT
                 {{componentEvent}}
+                #endif
 
                 Move(entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
@@ -95,7 +96,7 @@ public static class StructuralChangesExtensions
         var componentEvent = new StringBuilder();
         for (int i = 0; i <= amount; i++)
         {
-            componentEvent.AppendLine($"ComponentRegistry.GetHookRegistry<{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}>().BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, typeof({StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)})));");
+            componentEvent.AppendLine($"ComponentRegistry.GetHookRegistry<{StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)}>().BroadcastComponent{StringBuilderExtensions.SourceGenComponentChangedType.Remove}Event(entity, new EcsComponentReference(this, entity, typeof({StringBuilderExtensions.MakeGenericBroadcastComponentEventT(i)})));");
         }
 
         var template =
@@ -117,7 +118,9 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
+                #if ARCH_EVENT
                 {{componentEvent}}
+                #endif
 
                 Move(entity, oldArchetype, newArchetype, out _);
             }

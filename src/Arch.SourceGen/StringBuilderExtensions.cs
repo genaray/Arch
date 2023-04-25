@@ -180,10 +180,6 @@ public static class StringBuilderExtensions
     
     
     public enum SourceGenComponentChangedType {
-        Construct,
-        Deconstruct,
-        // Copy,
-        // Move,
         Add,
         Set,
         Remove

@@ -216,11 +216,14 @@ public partial class World : IDisposable
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.Creat);
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
         foreach (var type in types)
         {
-            ComponentRegistry.GetHookRegistry(type).BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, type));
             ComponentRegistry.GetHookRegistry(type).BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, type));
         }
+        #endif
 
         Size++;
         return entity;
@@ -276,6 +279,10 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
+
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.Destroy);
+        #endif
     }
 
     /// <summary>
@@ -735,6 +742,10 @@ public partial class World
 
                     RecycledIds.Enqueue(recycledEntity);
                     EntityInfo.Remove(entity.Id);
+
+                    #if ARCH_EVENT
+                    OnEntityChanged?.Invoke(in entity, EntityChangedType.Destroy);
+                    #endif
                 }
 
                 chunk.Clear();
@@ -870,14 +881,32 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, in cmp);
-        if (entitySlot.Archetype.Has< T >())
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.ComponentChange);
+        ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        #endif
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TrySet<T>(Entity entity, in T cmp = default)
+    {
+        if (Has<T>(entity))
         {
+            var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+            entitySlot.Archetype.Set(ref entitySlot.Slot, in cmp);
+            #if ARCH_EVENT
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.ComponentChange);
             ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            #endif
+            return false;
         }
         else
         {
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            Add<T>(entity);
+            #if ARCH_EVENT
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+            #endif
+            return true;
         }
     }
 
@@ -972,19 +1001,13 @@ public partial class World
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
         }
-        
-        if (oldArchetype.Has<T>())
-        {
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
-        }
-        else
-        {
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
-        }
 
         Move(entity, oldArchetype, newArchetype, out _);
         
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+        ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        #endif
     }
 
     /// <summary>
@@ -1013,20 +1036,36 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
         }
         
-        if (oldArchetype.Has<T>())
+        Move(entity, oldArchetype, newArchetype, out var slot);
+        newArchetype.Set(ref slot, cmp);
+        
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+        ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        #endif
+    }
+
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryAdd<T>(Entity entity, in T? cmp)
+    {
+        if (!Has<T>(entity))
         {
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            return false;
         }
         else
         {
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentConstructEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
-            ComponentRegistry.GetHookRegistry<T>().BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+            if (cmp != null)
+            {
+                Add<T>(entity, cmp);
+            }
+            else
+            {
+                Add<T>(entity);
+            }
+            return true;
         }
-
-        Move(entity, oldArchetype, newArchetype, out var slot);
-        newArchetype.Set(ref slot, cmp);
     }
-
 
     /// <summary>
     ///     Removes an component from an <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
@@ -1053,9 +1092,24 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
         }
         
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.RemoveComponent);
         ComponentRegistry.GetHookRegistry<T>().BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, typeof(T)));
+        #endif
 
         Move(entity, oldArchetype, newArchetype, out _);
+    }
+
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryRemove<T>(Entity entity)
+    {
+        if (Has<T>(entity))
+        {
+            Remove<T>(entity);
+            return true;
+        }
+        return false;
     }
 }
 
@@ -1074,6 +1128,10 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.ComponentChange);
+        ComponentRegistry.GetHookRegistry(Component.GetComponentType(cmp.GetType())).BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, Component.GetComponentType(cmp.GetType())));
+        #endif
     }
 
     /// <summary>
@@ -1088,6 +1146,10 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+            #if ARCH_EVENT
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.ComponentChange);
+            ComponentRegistry.GetHookRegistry(Component.GetComponentType(cmp.GetType())).BroadcastComponentSetEvent(entity, new EcsComponentReference(this, entity, Component.GetComponentType(cmp.GetType())));
+            #endif
         }
     }
 
@@ -1207,6 +1269,7 @@ public partial class World
     public void Add(Entity entity, in object cmp)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var componentType = Component.GetComponentType(cmp.GetType());
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -1214,14 +1277,20 @@ public partial class World
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component.GetComponentType(cmp.GetType()).Id);
+        spanBitSet.SetBit(componentType.Id);
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(componentType));
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+        newArchetype.Set(ref EntityInfo.GetSlot(entity.Id), cmp);
+        
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+        ComponentRegistry.GetHookRegistry(componentType).BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, componentType));
+        #endif
     }
 
     /// <summary>
@@ -1254,6 +1323,14 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+
+        #if ARCH_EVENT
+        for (var index = 0; index < components.Length; index++)
+        {
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+            ComponentRegistry.GetHookRegistry(Component.GetComponentType(components[index].GetType())).BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, Component.GetComponentType(components[index].GetType())));
+        }
+        #endif
     }
 
     /// <summary>
@@ -1285,6 +1362,14 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+
+        #if ARCH_EVENT
+        for (var index = 0; index < components.Count; index++)
+        {
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.AddComponent);
+            ComponentRegistry.GetHookRegistry(Component.GetComponentType(components[index].GetType())).BroadcastComponentAddEvent(entity, new EcsComponentReference(this, entity, Component.GetComponentType(components[index].GetType())));
+        }
+        #endif
     }
 
     /// <summary>
@@ -1312,6 +1397,11 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+
+        #if ARCH_EVENT
+        OnEntityChanged?.Invoke(in entity, EntityChangedType.RemoveComponent);
+        ComponentRegistry.GetHookRegistry(type).BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, type));
+        #endif
     }
 
     /// <summary>
@@ -1343,6 +1433,14 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+
+        #if ARCH_EVENT
+        for (var index = 0; index < types.Length; index++)
+        {
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.RemoveComponent);
+            ComponentRegistry.GetHookRegistry(types[index]).BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, types[index]));
+        }
+        #endif
     }
 
     /// <summary>
@@ -1374,6 +1472,14 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+
+        #if ARCH_EVENT
+        for (var index = 0; index < types.Count; index++)
+        {
+            OnEntityChanged?.Invoke(in entity, EntityChangedType.RemoveComponent);
+            ComponentRegistry.GetHookRegistry(types[index]).BroadcastComponentRemoveEvent(entity, new EcsComponentReference(this, entity, types[index]));
+        }
+        #endif
     }
 }
 
@@ -1481,10 +1587,31 @@ public partial class World
     }
 }
 
+#if ARCH_EVENT
 public partial class World
 {
-    // public event Action<EntityReference> OnEntityCreated;
-    // public event Action<EntityReference> OnEntityDestroyed;
+
+    public delegate void EntityChangedEvent(in Entity entity, EntityChangedType entityChangedType);
+
+    public enum EntityChangedType {
+		Creat,
+		Destroy,
+		AddComponent,
+		RemoveComponent,
+		ComponentChange
+	}
+
+    protected event EntityChangedEvent OnEntityChanged;
+
+    public void RegisterEntityChangedListener(EntityChangedEvent handle)
+    {
+        OnEntityChanged += handle;
+    }
+
+    public void UnregisterEntityChangedListener(EntityChangedEvent handle)
+    {
+        OnEntityChanged -= handle;
+    }
 
     public void RegisterComponentHook<T>(ComponentHookRecord<T> func)
     {
@@ -1496,4 +1623,4 @@ public partial class World
         ComponentRegistry.GetHookRegistry<T>().UnregisterHook(this, func);
     }
 }
-
+#endif

@@ -12,6 +12,8 @@ public static class CreateExtensions
         return sb;
     }
 
+
+    
     public static StringBuilder AppendCreate(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
@@ -48,8 +50,9 @@ public static class CreateExtensions
                 // Map
                 EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
-                {{StringBuilderExtensions.MakeGenericBroadcastComponentEvent(amount, StringBuilderExtensions.SourceGenComponentChangedType.Construct)}}
+                #if ARCH_EVENT
                 {{StringBuilderExtensions.MakeGenericBroadcastComponentEvent(amount, StringBuilderExtensions.SourceGenComponentChangedType.Add)}}
+                #endif
 
                 Size++;
                 return entity;
