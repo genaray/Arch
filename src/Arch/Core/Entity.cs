@@ -1,7 +1,10 @@
+#if !PURE_ECS
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
+#endif
 
 namespace Arch.Core;
+
 
 #if PURE_ECS
 
@@ -50,7 +53,7 @@ public readonly struct Entity : IEquatable<Entity>
     /// <param name="obj">The other <see cref="Entity"/> object.</param>
     /// <returns>True if equal, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Entity other && Equals(other);
     }
@@ -276,6 +279,11 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive(World world)
     {
+        if (this == Null)
+        {
+            return false;
+        }
+
         var reference = world.Reference(Entity);
         return this == reference;
     }
@@ -286,6 +294,11 @@ public readonly struct EntityReference
     /// <returns>True if its alive, otherwhise false.</returns>
     public bool IsAlive()
     {
+        if (this == Null)
+        {
+            return false;
+        }
+
         var reference = Entity.Reference();
         return this == reference;
     }
@@ -349,6 +362,20 @@ public readonly struct EntityReference
     public static bool operator !=(EntityReference left, EntityReference right)
     {
         return !left.Equals(right);
+    }
+
+    /// <summary>
+    ///     Implicitly converts an <see cref="EntityReference"/> into the
+    ///     <see cref="Entity"/> that it is referencing.
+    /// </summary>
+    /// <param name="reference">The <see cref="EntityReference"/> to convert.</param>
+    /// <returns>
+    ///     The <see cref="Entity"/> referenced by this <see cref="EntityReference"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Entity(EntityReference reference)
+    {
+        return reference.Entity;
     }
 
     /// <summary>

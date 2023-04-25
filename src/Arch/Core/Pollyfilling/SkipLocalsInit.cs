@@ -1,4 +1,5 @@
-﻿namespace System.Runtime.CompilerServices;
+﻿#if !NET5_0_OR_GREATER
+namespace System.Runtime.CompilerServices;
 
 /// <summary>
 ///     Forwards the SkipLocalInit to .NetStandard2.1.
@@ -15,3 +16,4 @@
 internal sealed class SkipLocalsInitAttribute : Attribute
 {
 }
+#endif

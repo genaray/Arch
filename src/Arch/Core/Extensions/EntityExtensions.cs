@@ -1,3 +1,4 @@
+using Arch.Core;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
@@ -181,6 +182,20 @@ public static partial class EntityExtensions
     {
         var world = World.Worlds[entity.WorldId];
         return ref world.TryGetRef<T>(entity, out exists);
+    }
+
+    /// <summary>
+    ///    Ensures the existance of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T AddOrGet<T>(this in Entity entity, T cmp = default)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return ref world.AddOrGet(entity, cmp);
     }
 
     /// <summary>

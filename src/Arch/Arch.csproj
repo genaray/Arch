@@ -14,17 +14,13 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.3.4-beta</Version>
+    <Version>1.2.4.1-beta</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>
-      CommandBuffer Operations were now fixed and do record Add and Sets correctly.
-      CommandBuffer resizes its internal arrays now correctly.
-      EntityInfoDictionary replaced the previous used PooledDictionary to offer much better lookup speeds for entity interactions.
-      Non generic World.Add, World.AddRange, World.RemoveRange were fixed, they created wrong archetypes with doubled components in some cases.
-      Added non generic World.Remove.
-      Some slight performance improvements during entity move operations.
+      Fixed a bug where certain structural changes and range operations caused a IndexOutOfRangeException.
+      Fixed warnings.
     </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
@@ -39,6 +35,14 @@
     <PackageLicenseUrl></PackageLicenseUrl>
 
     <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

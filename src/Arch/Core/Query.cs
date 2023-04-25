@@ -109,7 +109,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is QueryDescription other && Equals(other);
     }
@@ -204,8 +204,9 @@ public readonly partial struct Query : IEquatable<Query>
 
         // Otherwise an Any value of 0 always returns false somehow.
         if (description.Any.Length == 0)
-        {
-            _any.SetAll();
+        {   // TODO : Better solution?
+            _any.SetBit(ComponentRegistry.Size); // This increases the array to account ALL components
+            _any.SetAll();                       // Set all to any since all are wanted
         }
 
         _queryDescription = description;
@@ -266,7 +267,7 @@ public readonly partial struct Query : IEquatable<Query>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/>.</param>
     /// <returns>True if they are equal, false if not.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Query other && Equals(other);
     }

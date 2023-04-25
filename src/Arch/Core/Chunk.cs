@@ -10,6 +10,7 @@ namespace Arch.Core;
 ///     Chunks are internally allocated and filled by <see cref="Archetype"/>'s.
 ///     Through them it is possible to efficiently provide or trim memory for additional entities.
 /// </summary>
+[SkipLocalsInit]  // Really a speed improvements? The benchmark only showed a slight improvement
 public partial struct Chunk
 {
     /// <summary>
@@ -235,6 +236,7 @@ public partial struct Chunk
     private int Index<T>()
     {
         var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1 && id < ComponentIdToArrayIndex.Length, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
         return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
     }
 
@@ -438,7 +440,7 @@ public partial struct Chunk
     {
         // Get last entity
         var lastIndex = chunk.Size - 1;
-        var lastEntity = chunk.Entities[lastIndex];
+        var lastEntity = chunk.Entity(lastIndex);
 
         // Replace index entity with the last entity from the other chunk
         Entities[index] = lastEntity;

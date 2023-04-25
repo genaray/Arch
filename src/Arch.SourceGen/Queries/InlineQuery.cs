@@ -93,7 +93,6 @@ public static class StringBuilderHpQueryExtensions
                     var query = Query(in description);
                     foreach (ref var chunk in query)
                     {
-                        var chunkSize = chunk.Size;
                         {{getFirstElement}}
 
                         foreach(var entityIndex in chunk)
@@ -162,7 +161,7 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                        ref var entityFirstElement = ref chunk.Entity(0);
                         {{getFirstElement}}
 
                         foreach(var entityIndex in chunk)
@@ -197,7 +196,7 @@ public static class StringBuilderHpQueryExtensions
                     foreach (ref var chunk in query)
                     {
                         var chunkSize = chunk.Size;
-                        ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(chunk.Entities);
+                        ref var entityFirstElement = ref chunk.Entity(0);
                         {{getFirstElement}}
 
                         foreach (var entityIndex in chunk)

@@ -87,17 +87,17 @@ internal class EntityInfoStorage
     /// <summary>
     ///     The <see cref="Entity"/> versions in an jagged array.
     /// </summary>
-    private JaggedArray<int> _versions;
+    private readonly JaggedArray<int> _versions;
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Archetype"/>s in an jagged array.
     /// </summary>
-    private JaggedArray<Archetype> _archetypes;
+    private readonly JaggedArray<Archetype> _archetypes;
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Slot"/>s in an jagged array.
     /// </summary>
-    private JaggedArray<Slot> _slots;
+    private readonly JaggedArray<Slot> _slots;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
@@ -227,6 +227,7 @@ internal class EntityInfoStorage
         _slots[id] = slot;
     }
 
+    /// TODO : Find a cleaner way to break? One that does NOT require a branching?
     /// <summary>
     ///     Updates the <see cref="EntityInfo"/> and all entities that moved/shifted between the archetypes.
     /// </summary>
@@ -238,11 +239,20 @@ internal class EntityInfoStorage
     public void Shift(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
     {
         // Update the entityInfo of all copied entities.
-        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= newArchetypeSlot.ChunkIndex; --chunkIndex)
         {
+            // Get data
             ref var chunk = ref archetype.GetChunk(chunkIndex);
             ref var entityFirstElement = ref chunk.Entity(0);
-            for (var index = archetypeSlot.Index; index >= 0; --index)
+
+            // Only move within the range, depening on which chunk we are at.
+            var isStart = chunkIndex == archetypeSlot.ChunkIndex;
+            var isEnd = chunkIndex == newArchetypeSlot.ChunkIndex;
+
+            var upper = isStart ? archetypeSlot.Index : chunk.Size-1;
+            var lower = isEnd ? newArchetypeSlot.Index : 0;
+
+            for (var index = upper; index >= lower; --index)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
 
@@ -527,6 +537,7 @@ internal class JaggedArray<T>
     ///     Returns a reference to a <see cref="EntityInfo"/> at an given index.
     /// </summary>
     /// <param name="id">The index.</param>
+    [SkipLocalsInit]
     public ref T this[int id]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

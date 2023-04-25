@@ -15,9 +15,15 @@ public class BitSet
     // NOTE: Is a byte not 8 bits?
     internal const int ByteSize = 5; // log_2(BitSize + 1)
 
+    /// <summary>
+    ///     Determines the required length of an <see cref="BitSet"/> to hold the passed id or bit.
+    /// </summary>
+    /// <param name="id">The id or bit.</param>
+    /// <returns>A size of required <see cref="uint"/>s for the bitset.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int RequiredLength(int id)
     {
-        return (int)Math.Ceiling((float)id / (float)32);
+        return (int)Math.Ceiling((float)id / (float)31);
     }
 
     private uint[] _bits;
