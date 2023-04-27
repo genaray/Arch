@@ -49,9 +49,13 @@ public static class StructuralChangesExtensions
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
                 Move(entity, oldArchetype, newArchetype, out var newSlot);
+            #if EVENTS
                 {{addEvents}}
+            #endif
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
+            #if EVENTS
                 {{setEvents}}
+            #endif
             }
             """;
 
