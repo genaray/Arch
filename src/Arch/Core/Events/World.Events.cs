@@ -116,7 +116,7 @@ public partial class World
         var index = EventType<T>.Id;
         if (index >= _compEvents.Length)
         {
-            Array.Resize(ref _compEvents, index * 2);
+            Array.Resize(ref _compEvents, (index * 2) + 1);
         }
 
         ref var events = ref _compEvents[index];
@@ -131,7 +131,7 @@ public partial class World
         var index = EventType.EventIds[compType];
         if (index >= _compEvents.Length)
         {
-            Array.Resize(ref _compEvents, index * 2);
+            Array.Resize(ref _compEvents, (index * 2) + 1);
         }
 
         ref var events = ref _compEvents[index];
