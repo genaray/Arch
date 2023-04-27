@@ -135,6 +135,12 @@ public static class SetExtensions
         var parameters = new StringBuilder().GenericInParams(amount);
         var insertParams = new StringBuilder().InsertGenericInParams(amount);
 
+        var events = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            events.AppendLine($"OnComponentSet(in entity, in t{index}Component);");
+        }
+
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -143,6 +149,9 @@ public static class SetExtensions
                 var slot = EntityInfo.GetSlot(entity.Id);
                 var archetype = EntityInfo.GetArchetype(entity.Id);
                 archetype.Set<{{generics}}>(ref slot, {{insertParams}});
+            #if EVENTS
+                {{events}}
+            #endif
             }
             """;
 

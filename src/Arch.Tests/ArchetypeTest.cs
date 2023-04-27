@@ -26,7 +26,7 @@ public class ArchetypeTest
     public void CreateChunk()
     {
         // Create archetype
-        var archetype = new Archetype(_group);
+        var archetype = new Archetype(default!, _group);
         var entities = archetype.CalculateEntitiesPerChunk(_group);
 
         // Fill archetype
@@ -45,7 +45,7 @@ public class ArchetypeTest
     [Test]
     public void ScaleChunkCapacity()
     {
-        var archetype = new Archetype(_heavyGroup);
+        var archetype = new Archetype(default!, _heavyGroup);
         That(archetype.ChunkSize, Is.EqualTo(Archetype.BaseSize * 2)); // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
     }
 
@@ -55,7 +55,7 @@ public class ArchetypeTest
     [Test]
     public void CreateMultipleChunk()
     {
-        var archetype = new Archetype(_group);
+        var archetype = new Archetype(default!, _group);
         var entities = archetype.CalculateEntitiesPerChunk(_group) * 2;
 
         for (var index = 0; index < entities; index++)
@@ -73,7 +73,7 @@ public class ArchetypeTest
     [Test]
     public void Reserve()
     {
-        var archetype = new Archetype(_group);
+        var archetype = new Archetype(default!, _group);
         var entities = archetype.CalculateEntitiesPerChunk(_group) * 10;
         archetype.Reserve(entities);
 
@@ -93,7 +93,7 @@ public class ArchetypeTest
     [Test]
     public void RemoveFromChunkWithReplacement()
     {
-        var archetype = new Archetype(_group);
+        var archetype = new Archetype(default!, _group);
         var entities = archetype.CalculateEntitiesPerChunk(_group) + 50;
 
         for (var index = 0; index < entities; index++)
@@ -118,7 +118,7 @@ public class ArchetypeTest
     [Test]
     public void RemoveChunk()
     {
-        var archetype = new Archetype(_group);
+        var archetype = new Archetype(default!, _group);
         var entities = archetype.CalculateEntitiesPerChunk(_group) + 1;
 
         for (var index = 0; index < entities; index++)
@@ -142,8 +142,8 @@ public class ArchetypeTest
     [Test]
     public void Move()
     {
-        var archetype = new Archetype(_group);
-        var otherArchetype = new Archetype(_otherGroup);
+        var archetype = new Archetype(default!, _group);
+        var otherArchetype = new Archetype(default!, _otherGroup);
 
         // Add two entities into different archetypes to move one to the other later.
         var entity = new Entity(1, 0);
@@ -176,8 +176,8 @@ public class ArchetypeTest
     [Test]
     public void CopyTo([Values(1111,2222,3333)] int sourceAmount, [Values(1111,2222,3333)] int destinationAmount)
     {
-        var source = new Archetype(_group);
-        var destination = new Archetype(_heavyGroup);
+        var source = new Archetype(default!, _group);
+        var destination = new Archetype(default!, _heavyGroup);
 
         // Fill chunks with data to copy
         for (int index = 0; index < sourceAmount; index++)
@@ -270,8 +270,8 @@ public class ArchetypeTest
     [Test]
     public void CopyToShift([Values(1111,2222,3333)] int sourceAmount, [Values(1111,2222,3333)] int destinationAmount)
     {
-        var source = new Archetype(_group);
-        var destination = new Archetype(_heavyGroup);
+        var source = new Archetype(default!, _group);
+        var destination = new Archetype(default!, _heavyGroup);
 
         // Fill chunks with data to copy
         for (int index = 0; index < sourceAmount; index++)

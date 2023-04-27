@@ -49,6 +49,9 @@ public static class CreateExtensions
                 EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
                 Size++;
+            #if EVENTS
+                OnEntityCreated(in entity);
+            #endif
                 return entity;
             }
             """;

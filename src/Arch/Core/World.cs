@@ -228,8 +228,10 @@ public partial class World : IDisposable
 
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
-
         Size++;
+#if EVENTS
+        OnEntityCreated(in entity);
+#endif
         return entity;
     }
 
@@ -283,6 +285,8 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
+
+        OnEntityDestroyed(in entity);
     }
 
     /// <summary>
@@ -531,7 +535,7 @@ public partial class World
         }
 
         // Create archetype
-        archetype = new Archetype(types.ToArray());
+        archetype = new Archetype(this, types.ToArray());
         var hash = Component.GetHashCode(types);
 
         GroupToArchetype[hash] = archetype;
@@ -737,6 +741,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in QueryDescription queryDescription)
     {
+        var a = new string[5];
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
@@ -1009,6 +1014,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        OnComponentAdded<T>(in entity);
+#endif
     }
 
     /// <summary>
@@ -1038,7 +1046,13 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
+#if EVENTS
+        OnComponentAdded<T>(in entity);
+#endif
         newArchetype.Set(ref slot, cmp);
+#if EVENTS
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
 
@@ -1068,6 +1082,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        OnComponentRemoved<T>(in entity);
+#endif
     }
 }
 
@@ -1233,7 +1250,13 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
+#if EVENTS
+        OnComponentAdded(in entity, cmp.GetType());
+#endif
         newArchetype.Set(ref slot, cmp);
+#if EVENTS
+        OnComponentSet(in entity, cmp);
+#endif
     }
 
     /// <summary>
@@ -1271,9 +1294,19 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
+#if EVENTS
+        foreach (var cmp in components)
+        {
+            OnComponentAdded(in entity, cmp.GetType());
+        }
+#endif
+
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
+#if EVENTS
+            OnComponentSet(in entity, in cmp);
+#endif
         }
     }
 
@@ -1303,6 +1336,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        OnComponentRemoved(in entity, type.Type);
+#endif
     }
 
     /// <summary>
@@ -1334,6 +1370,12 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        foreach (var type in types)
+        {
+            OnComponentRemoved(in entity, type.Type);
+        }
+#endif
     }
 }
 
