@@ -105,7 +105,9 @@ public static class StructuralChangesExtensions
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
                 Move(entity, oldArchetype, newArchetype, out _);
+            #if EVENTS
                 {{events}}
+            #endif
             }
             """;
 

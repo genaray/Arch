@@ -286,7 +286,9 @@ public partial class World : IDisposable
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
 
+#if EVENTS
         OnEntityDestroyed(in entity);
+#endif
     }
 
     /// <summary>
@@ -741,7 +743,6 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(in QueryDescription queryDescription)
     {
-        var a = new string[5];
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
