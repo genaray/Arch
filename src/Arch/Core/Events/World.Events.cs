@@ -8,22 +8,42 @@ public partial class World
     private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(StartingSize);
     private Events[] _compEvents = new Events[StartingSize];
 
+    /// <summary>
+    ///     Adds a delegate to be called when an entity is created.
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
     public void SubscribeEntityCreated(EntityCreatedHandler handler)
     {
         _entityCreatedHandlers.Add(handler);
     }
 
+    /// <summary>
+    ///     Adds a delegate to be called when an entity is destroyed.
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
     public void SubscribeEntityDestroyed(EntityDestroyedHandler handler)
     {
         _entityDestroyedHandlers.Add(handler);
     }
 
+    /// <summary>
+    ///     Adds a delegate to be called when a component of type <see cref="T"/> is added to an entity.
+    ///     <see cref="Add"/>
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
+    /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentAdded<T>(ComponentAddedHandler handler)
     {
         ref readonly var events = ref GetEvents<T>();
         events.ComponentAddedHandlers.Add(handler);
     }
 
+    /// <summary>
+    ///     Adds a delegate to be called when a component of type <see cref="T"/> is set on an entity.
+    ///     <see cref="Set"/>
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
+    /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentSet<T>(ComponentSetHandler<T> handler)
     {
         ref readonly var events = ref GetEvents<T>();
@@ -35,13 +55,23 @@ public partial class World
         });
     }
 
+    /// <summary>
+    ///     Adds a delegate to be called when a component of type <see cref="T"/> is removed from an entity.
+    ///     <see cref="Remove"/>
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
+    /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentRemoved<T>(ComponentRemovedHandler handler)
     {
         ref readonly var events = ref GetEvents<T>();
         events.ComponentRemovedHandlers.Add(handler);
     }
 
-    internal void OnEntityCreated(in Entity entity)
+    /// <summary>
+    ///     Calls all handlers subscribed to entity creation.
+    /// </summary>
+    /// <param name="entity">The entity that got created.</param>
+    private void OnEntityCreated(in Entity entity)
     {
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
         {
@@ -49,7 +79,11 @@ public partial class World
         }
     }
 
-    internal void OnEntityDestroyed(in Entity entity)
+    /// <summary>
+    ///     Calls all handlers subscribed to entity deletion.
+    /// </summary>
+    /// <param name="entity">The entity that got destroyed.</param>
+    private void OnEntityDestroyed(in Entity entity)
     {
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
         {
@@ -57,7 +91,12 @@ public partial class World
         }
     }
 
-    internal void OnComponentAdded<T>(in Entity entity)
+    /// <summary>
+    ///     Calls all handlers subscribed to component addition of this type.
+    /// </summary>
+    /// <param name="entity">The entity that the component was added to.</param>
+    /// <typeparam name="T">The type of component that got added.</typeparam>
+    private void OnComponentAdded<T>(in Entity entity)
     {
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
@@ -66,6 +105,11 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Calls all handlers subscribed to component addition of this type.
+    /// </summary>
+    /// <param name="entity">The entity that the component was added to.</param>
+    /// <param name="compType">The type of component that got added.</param>
     internal void OnComponentAdded(in Entity entity, Type compType)
     {
         ref readonly var events = ref GetEvents(compType);
@@ -75,6 +119,12 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Calls all handlers subscribed to component setting of this type.
+    /// </summary>
+    /// <param name="entity">The entity that the component was set on.</param>
+    /// <param name="comp">The component instance that got set.</param>
+    /// <typeparam name="T">The type of component that got set.</typeparam>
     internal void OnComponentSet<T>(in Entity entity, in T comp)
     {
         ref readonly var events = ref GetEvents<T>();
@@ -84,6 +134,11 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Calls all handlers subscribed to component setting of this type.
+    /// </summary>
+    /// <param name="entity">The entity that the component was set on.</param>
+    /// <param name="comp">The component instance that got set.</param>
     internal void OnComponentSet(in Entity entity, in object comp)
     {
         ref readonly var events = ref GetEvents(comp.GetType());
@@ -93,6 +148,11 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Calls all handlers subscribed to component removal.
+    /// </summary>
+    /// <param name="entity">The entity that the component was removed from.</param>
+    /// <typeparam name="T">The type of component that got removed.</typeparam>
     internal void OnComponentRemoved<T>(in Entity entity)
     {
         ref readonly var events = ref GetEvents<T>();
@@ -102,6 +162,11 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Calls all handlers subscribed to component removal.
+    /// </summary>
+    /// <param name="entity">The entity that the component was removed from.</param>
+    /// <param name="compType">The type of component that got removed.</param>
     internal void OnComponentRemoved(in Entity entity, Type compType)
     {
         ref readonly var events = ref GetEvents(compType);
@@ -111,6 +176,11 @@ public partial class World
         }
     }
 
+    /// <summary>
+    ///     Gets all event handlers for a certain component type.
+    /// </summary>
+    /// <typeparam name="T">The type of component to get handlers for.</typeparam>
+    /// <returns>All handlers for the given component type.</returns>
     private ref readonly Events<T> GetEvents<T>()
     {
         var index = EventType<T>.Id;
@@ -126,6 +196,11 @@ public partial class World
         return ref Unsafe.As<Events, Events<T>>(ref events);
     }
 
+    /// <summary>
+    ///     Gets all event handlers for a certain component type.
+    /// </summary>
+    /// <param name="compType">The type of component to get handlers for.</param>
+    /// <returns>All handlers for the given component type.</returns>
     private ref readonly Events GetEvents(Type compType)
     {
         var index = EventType.EventIds[compType];
