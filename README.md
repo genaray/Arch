@@ -228,3 +228,8 @@ Arch is already used in some projects, for a more detailed look, take a look at 
 An action-packed c# clone of the hit "vampire survivor" based on monogame and arch!
 Fight your way through hordes of different enemies, level up your character, collect permanent items and explore various maps!
 Try it out!
+
+## [EquilibriumEngine-CSharp](https://github.com/clibequilibrium/EquilibriumEngine-CSharp)
+Equilibrium Engine is a data-oriented C# game engine that takes advantage of ECS pattern followed by Hot-Reloading of your libraries which allows you to quickly iterate on different aspects of your projects.
+
+![Equilibrium Engine screenshot](https://raw.githubusercontent.com/clibequilibrium/EquilibriumEngine-CSharp/master/docs/home.png)
