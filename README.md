@@ -176,6 +176,12 @@ There's more to explore, for example...
 - Pure ECS
 - More API 
 
+# Extensions
+
+Arch has some extensions that add more features and tools. Among them for example : 
+- 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
+- ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
+
 # Performance
 Well... it's fast, like REALLY fast.  
 However, the iteration speed depends, the less you query, the faster it is.  
@@ -214,11 +220,6 @@ The following performance was achieved with Arch for the scenario under heavy lo
 |       StructQuery | 1000000 |  1,514.479 us |   296.5311 us |  16.2539 us |         29,723 |         - |
 | StructEntityQuery | 1000000 |  1,483.142 us |   329.9446 us |  18.0854 us |         31,272 |         - |
 
-# Extensions
-
-Arch has some extensions that add more features and tools. Among them for example : 
-- 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
-- ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
 
 # Projects using Arch
 Arch is already used in some projects, for a more detailed look, take a look at the wiki!
