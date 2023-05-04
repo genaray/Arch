@@ -49,12 +49,10 @@ public static class StructuralChangesExtensions
                     newArchetype = GetOrCreate(oldArchetype.Types.Add({{types}}));
 
                 Move(entity, oldArchetype, newArchetype, out var newSlot);
-            #if EVENTS
-                {{addEvents}}
-            #endif
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
             #if EVENTS
-                {{setEvents}}
+                {{addEvents}}
+                {{setEvents.ToString().TrimEnd()}}
             #endif
             }
             """;
@@ -106,7 +104,7 @@ public static class StructuralChangesExtensions
 
                 Move(entity, oldArchetype, newArchetype, out _);
             #if EVENTS
-                {{events}}
+                {{events.ToString().TrimEnd()}}
             #endif
             }
             """;

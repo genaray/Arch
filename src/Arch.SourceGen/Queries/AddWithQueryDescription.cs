@@ -98,7 +98,7 @@ public static class AddWithQueryDescription
                     for (i = 0; i < entitiesLength; i++)
                     {
                         ref var entity = ref entitiesSpan[i];
-                        {{addEvents}}
+                        {{addEvents.ToString().TrimEnd()}}
                     }
             #endif
                     var lastSlot = newArchetype.LastSlot;
@@ -107,7 +107,7 @@ public static class AddWithQueryDescription
                     for (i = 0; i < entitiesLength; i++)
                     {
                         ref var entity = ref entitiesSpan[i];
-                        {{setEvents}}
+                        {{setEvents.ToString().TrimEnd()}}
                     }
 
                     ArrayPool<Entity>.Shared.Return(entities, true);

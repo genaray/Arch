@@ -537,7 +537,7 @@ public partial class World
         }
 
         // Create archetype
-        archetype = new Archetype(this, types.ToArray());
+        archetype = new Archetype(types.ToArray());
         var hash = Component.GetHashCode(types);
 
         GroupToArchetype[hash] = archetype;
@@ -894,6 +894,9 @@ public partial class World
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in cmp);
+#if EVENTS
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
     /// <summary>
@@ -1047,11 +1050,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
-#if EVENTS
-        OnComponentAdded<T>(in entity);
-#endif
         newArchetype.Set(ref slot, cmp);
 #if EVENTS
+        OnComponentAdded<T>(in entity);
         OnComponentSet(in entity, in cmp);
 #endif
     }
@@ -1104,6 +1105,9 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+#if EVENTS
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
     /// <summary>
@@ -1118,6 +1122,9 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+#if EVENTS
+            OnComponentSet(in entity, in cmp);
+#endif
         }
     }
 

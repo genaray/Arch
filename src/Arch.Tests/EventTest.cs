@@ -46,8 +46,8 @@ public class EventTest
         entity = _world.Create<EventTestComponentOne>();
         var comp = _world.Get<EventTestComponentOne>(entity);
 
-        // Creating an entity with component sets the component, it doesn't add it
-        asserter.AssertEvents(created: 1, compOneSet: 1);
+        // World.Create<T> doesn't check if the component is default before raising a set event
+        asserter.AssertEvents(created: 1, compOneAdded: 1, compOneSet: 1);
         Assert.That(asserter.Created, Does.Contain(entity));
         Assert.That(asserter.CompOneSet, Does.Contain((entity, comp)));
         asserter.Clear();
@@ -72,6 +72,30 @@ public class EventTest
         var query = new QueryDescription().WithAll<EventTestComponentOne, EventTestComponentTwo>();
         _world.Remove<EventTestComponentOne, EventTestComponentTwo>(query);
         asserter.AssertEvents(compOneRemoved: 1, compTwoRemoved: 1);
+        asserter.Clear();
+
+        _world.Add<EventTestComponentOne>(entity);
+        asserter.AssertEvents(compOneAdded: 1);
+        asserter.Clear();
+
+        _world.Set(entity, new EventTestComponentOne());
+        asserter.AssertEvents(compOneSet: 1);
+        asserter.Clear();
+
+        _world.Set(entity, (object) new EventTestComponentOne());
+        asserter.AssertEvents(compOneSet: 1);
+        asserter.Clear();
+
+        _world.Add<EventTestComponentTwo>(entity);
+        asserter.AssertEvents(compTwoAdded: 1);
+        asserter.Clear();
+
+        _world.Set(entity, new EventTestComponentOne(), new EventTestComponentTwo());
+        asserter.AssertEvents(compOneSet: 1, compTwoSet: 1);
+        asserter.Clear();
+
+        _world.SetRange(entity, new object[] { new EventTestComponentOne(), new EventTestComponentTwo() });
+        asserter.AssertEvents(compOneSet: 1, compTwoSet: 1);
         asserter.Clear();
     }
 

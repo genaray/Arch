@@ -93,7 +93,7 @@ public static class RemoveWithQueryDesription
                     for (i = 0; i < entitiesLength; i++)
                     {
                         ref var entity = ref entitiesSpan[i];
-                        {{events}}
+                        {{events.ToString().TrimEnd()}}
                     }
             #endif
                     archetype.Clear();

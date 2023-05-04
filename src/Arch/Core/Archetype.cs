@@ -132,13 +132,9 @@ public sealed partial class Archetype
     /// <summary>
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
-    /// <param name="world">The world that this archetype is a part of.</param>
     /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
-    internal Archetype(World world, ComponentType[] types)
+    internal Archetype(ComponentType[] types)
     {
-#if EVENTS
-        World = world;
-#endif
         Types = types;
 
         // Calculations
@@ -299,9 +295,6 @@ public sealed partial class Archetype
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         chunk.Set(slot.Index, in cmp);
-#if EVENTS
-        World.OnComponentSet(in chunk.Entity(slot.Index), in cmp);
-#endif
     }
 
     /// <summary>
@@ -453,9 +446,6 @@ public sealed unsafe partial class Archetype
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         chunk.Set(slot.Index, cmp);
-#if EVENTS
-        World.OnComponentSet(in chunk.Entity(slot.Index), in cmp);
-#endif
     }
 
     /// <summary>
