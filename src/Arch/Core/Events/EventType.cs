@@ -15,11 +15,12 @@ internal static class EventType<T>
 {
     static EventType()
     {
+        Id = Interlocked.Increment(ref EventType.NextEventTypeId);
         EventType.EventIds.TryAdd(typeof(T), Id);
     }
 
     // ReSharper disable once StaticMemberInGenericType
-    public static readonly int Id = Interlocked.Increment(ref EventType.NextEventTypeId);
+    internal static readonly int Id;
 
 }
 #endif
