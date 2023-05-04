@@ -21,7 +21,7 @@ public class ArchetypeIterationBenchmark
         _consumer = new Consumer();
         // jobScheduler = new JobScheduler();
 
-        _globalArchetype = new Archetype(default!, _group);
+        _globalArchetype = new Archetype(_group);
         _globalArchetype.Reserve(Amount);
 
         for (var index = 0; index < Amount; index++)
