@@ -72,7 +72,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got created.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void OnEntityCreated(in Entity entity)
+    public void OnEntityCreated(in Entity entity)
     {
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
         {
@@ -85,7 +85,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void OnEntityDestroyed(in Entity entity)
+    public void OnEntityDestroyed(in Entity entity)
     {
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
         {
@@ -99,7 +99,7 @@ public partial class World
     /// <param name="entity">The entity that the component was added to.</param>
     /// <typeparam name="T">The type of component that got added.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void OnComponentAdded<T>(in Entity entity)
+    public void OnComponentAdded<T>(in Entity entity)
     {
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
@@ -114,7 +114,7 @@ public partial class World
     /// <param name="entity">The entity that the component was added to.</param>
     /// <param name="compType">The type of component that got added.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void OnComponentAdded(in Entity entity, Type compType)
+    public void OnComponentAdded(in Entity entity, Type compType)
     {
         ref readonly var events = ref GetEvents(compType);
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
@@ -130,7 +130,7 @@ public partial class World
     /// <param name="comp">The component instance that got set.</param>
     /// <typeparam name="T">The type of component that got set.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void OnComponentSet<T>(in Entity entity, in T comp)
+    public void OnComponentSet<T>(in Entity entity, in T comp)
     {
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentSetHandlers.Count; i++)
@@ -145,7 +145,7 @@ public partial class World
     /// <param name="entity">The entity that the component was set on.</param>
     /// <param name="comp">The component instance that got set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void OnComponentSet(in Entity entity, in object comp)
+    public void OnComponentSet(in Entity entity, in object comp)
     {
         ref readonly var events = ref GetEvents(comp.GetType());
         for (var i = 0; i < events.NonGenericComponentSetHandlers.Count; i++)
@@ -160,7 +160,7 @@ public partial class World
     /// <param name="entity">The entity that the component was removed from.</param>
     /// <typeparam name="T">The type of component that got removed.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void OnComponentRemoved<T>(in Entity entity)
+    public void OnComponentRemoved<T>(in Entity entity)
     {
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
@@ -175,7 +175,7 @@ public partial class World
     /// <param name="entity">The entity that the component was removed from.</param>
     /// <param name="compType">The type of component that got removed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void OnComponentRemoved(in Entity entity, Type compType)
+    public void OnComponentRemoved(in Entity entity, Type compType)
     {
         ref readonly var events = ref GetEvents(compType);
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
