@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
@@ -356,6 +357,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public int CountEntities(in QueryDescription queryDescription)
     {
         var counter = 0;
@@ -434,6 +436,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <returns>A new <see cref="Enumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Enumerator<Archetype> GetEnumerator()
     {
         return new Enumerator<Archetype>(Archetypes.Span);
@@ -453,6 +456,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <returns>A string.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public override string ToString()
     {
         return $"World {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
@@ -474,6 +478,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     internal bool TryGetArchetype(int hash, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(hash, out archetype);
@@ -486,6 +491,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(BitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(bitset.GetHashCode(), out archetype);
@@ -498,6 +504,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(SpanBitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(bitset.GetHashCode(), out archetype);
@@ -510,6 +517,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(Span<ComponentType> types, [MaybeNullWhen(false)] out Archetype archetype)
     {
         var hash = Component.GetHashCode(types);
@@ -897,6 +905,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has<T>(Entity entity)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -910,6 +919,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T Get<T>(Entity entity)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
@@ -926,6 +936,7 @@ public partial class World
     /// <param name="component">The found component.</param>
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGet<T>(Entity entity, out T component)
     {
         component = default;
@@ -950,6 +961,7 @@ public partial class World
     /// <param name="exists">True if it exists, oterhwhise false.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
@@ -1110,6 +1122,7 @@ public partial class World
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has(Entity entity, ComponentType type)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1123,6 +1136,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool HasRange(Entity entity, Span<ComponentType> types)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1143,6 +1157,7 @@ public partial class World
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object Get(Entity entity, ComponentType type)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1156,6 +1171,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/> as a <see cref="Span{T}"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object[] GetRange(Entity entity, Span<ComponentType> types)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1169,6 +1185,7 @@ public partial class World
         return array;
     }
 
+    // ReSharper disable once PureAttributeOnVoidMethod
     /// <summary>
     ///     Returns an array of components of an <see cref="Entity"/>.
     /// </summary>
@@ -1176,6 +1193,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> where the components are put it.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public void GetRange(Entity entity, Span<ComponentType> types, Span<object> components)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1195,6 +1213,7 @@ public partial class World
     /// <param name="component">The found component.</param>
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object component)
     {
         component = default;
@@ -1347,6 +1366,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it exists and is alive, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool IsAlive(Entity entity)
     {
         return EntityInfo.Has(entity.Id);
@@ -1359,6 +1379,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its version.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public int Version(Entity entity)
     {
         return EntityInfo.GetVersion(entity.Id);
@@ -1370,6 +1391,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="EntityReference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public EntityReference Reference(Entity entity)
     {
         var entityInfo = EntityInfo.TryGetVersion(entity.Id, out var version);
@@ -1382,6 +1404,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Archetype GetArchetype(Entity entity)
     {
         return EntityInfo.GetArchetype(entity.Id);
@@ -1393,6 +1416,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to its <see cref="Chunk"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref readonly Chunk GetChunk(Entity entity)
     {
         var entityInfo = EntityInfo.GetEntitySlot(entity.Id);
@@ -1405,6 +1429,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>'s array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ComponentType[] GetComponentTypes(Entity entity)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1418,6 +1443,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A newly allocated array containing the entities components.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object[] GetAllComponents(Entity entity)
     {
         // Get archetype and chunk.
