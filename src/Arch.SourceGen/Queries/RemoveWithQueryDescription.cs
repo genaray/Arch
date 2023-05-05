@@ -95,6 +95,8 @@ public static class RemoveWithQueryDesription
                         ref var entity = ref entitiesSpan[i];
                         {{events.ToString().TrimEnd()}}
                     }
+
+                    ArrayPool<Entity>.Shared.Return(entities, true);
             #endif
                     archetype.Clear();
                 }
