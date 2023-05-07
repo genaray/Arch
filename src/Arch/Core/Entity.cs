@@ -147,7 +147,7 @@ public readonly struct Entity : IEquatable<Entity>
     /// <param name="id">Its unique id.</param>
     /// <param name="worldId">Its <see cref="World"/> id.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Entity(int id, int worldId)
+    public Entity(int id, int worldId)
     {
         Id = id;
         WorldId = worldId;
@@ -255,7 +255,7 @@ public readonly struct EntityReference
     /// </summary>
     /// <param name="entity">The referenced <see cref="Entity"/>.</param>
     /// <param name="version">Its version.</param>
-    internal EntityReference(in Entity entity, in int version)
+    public EntityReference(in Entity entity, in int version)
     {
         Entity = entity;
         Version = version;
