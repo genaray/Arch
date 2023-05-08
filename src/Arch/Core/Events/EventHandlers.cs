@@ -1,6 +1,7 @@
-﻿#if EVENTS
+﻿
 namespace Arch.Core.Events;
 
+#if EVENTS
 /// <summary>
 ///     A delegate called once a new <see cref="Entity"/> was created.
 /// </summary>

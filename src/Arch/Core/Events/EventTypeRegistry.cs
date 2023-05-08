@@ -1,8 +1,10 @@
-﻿#if EVENTS
+﻿
 using System.Collections.Concurrent;
 using System.Threading;
 
 namespace Arch.Core.Events;
+
+#if EVENTS
 
 /// <summary>
 ///     The <see cref="EventTypeRegistry"/> class
