@@ -94,6 +94,32 @@ public static class ArrayExtensions
     }
 
     /// <summary>
+    ///     Gets the element at an index in the array, or resizes it to fit an element
+    ///     at that index.
+    /// </summary>
+    /// <param name="array">The array to get the element from.</param>
+    /// <param name="index">The index of the element.</param>
+    /// <param name="exists">
+    ///     Whether or not the index was within the bounds of the array.
+    ///     When false, the array has been resized.
+    /// </param>
+    /// <typeparam name="T">The element type of the array.</typeparam>
+    /// <returns>The element at that index. May be null.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ref T GetOrGrow<T>(ref T[] array, int index, out bool exists)
+    {
+        if (index < array.Length)
+        {
+            exists = true;
+            return ref array[index];
+        }
+
+        exists = false;
+        Array.Resize(ref array, (index * 2) + 1);
+        return ref array[index];
+    }
+
+    /// <summary>
     ///     Removes a list of items from an array by value equality.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>

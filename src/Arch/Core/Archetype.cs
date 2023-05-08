@@ -124,6 +124,12 @@ public sealed partial class Archetype
     internal const int BaseSize = 16000; // 16KB Chunk size
 
     /// <summary>
+    ///     The max <see cref="ComponentType.Id"/> that <see cref="AddEdgesArray"/>
+    ///     will be used for before using <see cref="AddEdgesDict"/>.
+    /// </summary>
+    internal const int EdgesArrayMaxSize = 256;
+
+    /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
     ///     Is being stored here since all <see cref="Chunks"/> share the same instance to reduce allocations.
     /// </summary>
@@ -151,6 +157,9 @@ public sealed partial class Archetype
 
         Size = 1;
         Capacity = 1;
+
+        AddEdgesArray = Array.Empty<Archetype>();
+        AddEdgesDict = new Dictionary<int, Archetype>();
     }
 
     /// <summary>
@@ -223,6 +232,24 @@ public sealed partial class Archetype
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => (Size * EntitiesPerChunk) - (EntitiesPerChunk - GetChunk(Size - 1).Size);
     }
+
+    /// <summary>
+    ///     Caches other <see cref="Archetype"/>s indexed by the
+    ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
+    ///     Only caches those that can be reached with a <see cref="ComponentType.Id"/>
+    ///     lower than <see cref="EdgesArrayMaxSize"/>, otherwise
+    ///     <see cref="AddEdgesDict"/> is used.
+    /// </summary>
+    internal Archetype[] AddEdgesArray;
+
+    /// <summary>
+    ///     Caches other <see cref="Archetype"/>s indexed by the
+    ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
+    ///     Only caches those that can be reached with a <see cref="ComponentType.Id"/>
+    ///     equal to or bigger than <see cref="EdgesArrayMaxSize"/>, otherwise
+    ///     <see cref="AddEdgesArray"/> is used.
+    /// </summary>
+    internal Dictionary<int, Archetype> AddEdgesDict { get; }
 
     /// <summary>
     ///     Adds an <see cref="Arch.Core.Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.
