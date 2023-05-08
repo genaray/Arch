@@ -163,7 +163,6 @@ public static class WorldExtensions
             var type = Component.GetComponentType(components[index]);
             spanBitSet.SetBit(type.Id);
 #if EVENTS
-            // TODO replace this when EventType and ComponentType are merged
             componentTypes[index] = type.Type;
 #endif
         }

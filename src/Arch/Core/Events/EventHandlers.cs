@@ -1,7 +1,5 @@
-﻿
-namespace Arch.Core.Events;
+﻿namespace Arch.Core.Events;
 
-#if EVENTS
 /// <summary>
 ///     A delegate called once a new <see cref="Entity"/> was created.
 /// </summary>
@@ -32,4 +30,3 @@ internal delegate void ComponentSetHandler(in Entity entity, in object comp);
 ///     A delegate called once a component was removed from a specific <see cref="Entity"/>.
 /// </summary>
 public delegate void ComponentRemovedHandler(in Entity entity);
-#endif

@@ -231,9 +231,7 @@ public partial class World : IDisposable
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
         Size++;
-#if EVENTS
         OnEntityCreated(in entity);
-#endif
         return entity;
     }
 
@@ -288,9 +286,7 @@ public partial class World : IDisposable
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
 
-#if EVENTS
         OnEntityDestroyed(in entity);
-#endif
     }
 
     /// <summary>
@@ -794,9 +790,7 @@ public partial class World
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in cmp);
-#if EVENTS
         OnComponentSet(in entity, in cmp);
-#endif
     }
 
     /// <summary>
@@ -922,9 +916,7 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
-#if EVENTS
         OnComponentAdded<T>(in entity);
-#endif
     }
 
     /// <summary>
@@ -954,11 +946,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
-        newArchetype.Set(ref slot, cmp);
-#if EVENTS
         OnComponentAdded<T>(in entity);
+        newArchetype.Set(ref slot, cmp);
         OnComponentSet(in entity, in cmp);
-#endif
     }
 
 
@@ -988,9 +978,7 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
-#if EVENTS
         OnComponentRemoved<T>(in entity);
-#endif
     }
 }
 
@@ -1009,9 +997,7 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-#if EVENTS
         OnComponentSet(in entity, in cmp);
-#endif
     }
 
     /// <summary>
@@ -1026,9 +1012,7 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-#if EVENTS
             OnComponentSet(in entity, in cmp);
-#endif
         }
     }
 
@@ -1161,21 +1145,18 @@ public partial class World
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component.GetComponentType(cmp.GetType()).Id);
+        var cmpType = cmp.GetType();
+        spanBitSet.SetBit(Component.GetComponentType(cmpType).Id);
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmpType));
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
-#if EVENTS
-        OnComponentAdded(in entity, cmp.GetType());
-#endif
+        OnComponentAdded(in entity, cmpType);
         newArchetype.Set(ref slot, cmp);
-#if EVENTS
         OnComponentSet(in entity, cmp);
-#endif
     }
 
     /// <summary>
@@ -1223,9 +1204,7 @@ public partial class World
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
-#if EVENTS
             OnComponentSet(in entity, in cmp);
-#endif
         }
     }
 
@@ -1255,9 +1234,7 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
-#if EVENTS
         OnComponentRemoved(in entity, type.Type);
-#endif
     }
 
     /// <summary>
@@ -1289,12 +1266,10 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
-#if EVENTS
         foreach (var type in types)
         {
             OnComponentRemoved(in entity, type.Type);
         }
-#endif
     }
 }
 
