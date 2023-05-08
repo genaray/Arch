@@ -1,5 +1,6 @@
 using System.Buffers;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 
 namespace Arch.Core;

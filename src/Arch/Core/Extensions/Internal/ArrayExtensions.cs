@@ -1,12 +1,10 @@
-using CommunityToolkit.HighPerformance;
-
-namespace Arch.Core.Extensions;
+namespace Arch.Core.Extensions.Internal;
 
 /// <summary>
 ///     The <see cref="ArrayExtensions"/> class
 ///     adds several extensions methods for arrays and array related types.
 /// </summary>
-public static class ArrayExtensions
+internal static class ArrayExtensions
 {
     /// <summary>
     ///     Adds a list of items to an array.

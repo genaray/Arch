@@ -1,4 +1,6 @@
+using System.Buffers;
 using Arch.Core;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions;
@@ -153,10 +155,17 @@ public static class WorldExtensions
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
+#if EVENTS
+        var componentTypes = ArrayPool<Type>.Shared.Rent(components.Count);
+#endif
         for (var index = 0; index < components.Count; index++)
         {
             var type = Component.GetComponentType(components[index]);
             spanBitSet.SetBit(type.Id);
+#if EVENTS
+            // TODO replace this when EventType and ComponentType are merged
+            componentTypes[index] = type.Type;
+#endif
         }
 
         if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
@@ -165,6 +174,14 @@ public static class WorldExtensions
         }
 
         world.Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        for (var i = 0; i < components.Count; i++)
+        {
+            world.OnComponentAdded(in entity, componentTypes[i]);
+        }
+
+        ArrayPool<Type>.Shared.Return(componentTypes, true);
+#endif
     }
 
         /// <summary>

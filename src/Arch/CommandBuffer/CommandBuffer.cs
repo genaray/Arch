@@ -1,8 +1,9 @@
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
-namespace Arch.Core.CommandBuffer;
+namespace Arch.CommandBuffer;
 
 /// <summary>
 ///     The <see cref="CreateCommand"/> struct
@@ -131,7 +132,7 @@ public class CommandBuffer : IDisposable
 
     /// <summary>
     ///     Registers a new <see cref="Entity"/> into the <see cref="CommandBuffer"/>.
-    ///     An <see langword="out"/> parameter contains its <see cref="Core.CommandBuffer.BufferedEntityInfo"/>.
+    ///     An <see langword="out"/> parameter contains its <see cref="Arch.CommandBuffer.BufferedEntityInfo"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to register.</param>
     /// <param name="info">Its <see cref="BufferedEntityInfo"/> which stores indexes used for <see cref="CommandBuffer"/> operations.</param>

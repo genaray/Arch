@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
@@ -230,8 +231,10 @@ public partial class World : IDisposable
 
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
-
         Size++;
+#if EVENTS
+        OnEntityCreated(in entity);
+#endif
         return entity;
     }
 
@@ -285,6 +288,10 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
+
+#if EVENTS
+        OnEntityDestroyed(in entity);
+#endif
     }
 
     /// <summary>
@@ -642,115 +649,6 @@ public partial class World
     }
 }
 
-// Multithreading / Parallel
-
-public partial class World
-{
-
-    /// <summary>
-    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
-    /// </summary>
-    private PooledList<JobHandle> JobHandles { get; }
-
-    /// <summary>
-    ///     A cache used for the parallel queries to prevent list allocations.
-    /// </summary>
-    internal List<IJob> JobsCache { get; set; }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
-    {
-        var foreachJob = new ForEachJob
-        {
-            ForEach = forEntity
-        };
-
-        InlineParallelChunkQuery(in queryDescription, foreachJob);
-    }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
-    {
-        var iForEachJob = new IForEachJob<T>();
-        InlineParallelChunkQuery(in queryDescription, iForEachJob);
-    }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
-    {
-        InlineParallelChunkQuery(in queryDescription, in iForEach);
-    }
-
-    /// <summary>
-    ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
-    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
-    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
-    {
-        // Job scheduler needs to be initialized.
-        if (JobScheduler.JobScheduler.Instance is null)
-        {
-            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
-        }
-
-        // Cast pool in an unsafe fast way and run the query.
-        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
-        var query = Query(in queryDescription);
-        foreach (var archetype in query.GetArchetypeIterator())
-        {
-            var archetypeSize = archetype.Size;
-            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-            foreach (var range in part)
-            {
-                var job = pool.Get();
-                job.Start = range.Start;
-                job.Size = range.Length;
-                job.Chunks = archetype.Chunks;
-                job.Instance = innerJob;
-                JobsCache.Add(job);
-            }
-
-            // Schedule, flush, wait, return.
-            IJob.Schedule(JobsCache, JobHandles);
-            JobScheduler.JobScheduler.Instance.Flush();
-            JobHandle.Complete(JobHandles);
-            JobHandle.Return(JobHandles);
-
-            // Return jobs to pool.
-            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
-            {
-                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[jobIndex]);
-                pool.Return(job);
-            }
-
-            JobHandles.Clear();
-            JobsCache.Clear();
-        }
-    }
-}
 
 // Batch query operations
 
@@ -917,6 +815,9 @@ public partial class World
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in cmp);
+#if EVENTS
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
     /// <summary>
@@ -1033,6 +934,9 @@ public partial class World
         newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
 
         Move(entity, oldArchetype, newArchetype, out slot);
+#if EVENTS
+        OnComponentAdded(in entity, cmp.GetType());
+#endif
     }
 
     /// <summary>
@@ -1073,6 +977,10 @@ public partial class World
     {
         Add<T>(entity, out var newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
+#if EVENTS
+        OnComponentAdded<T>(in entity);
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
     /// <summary>
@@ -1101,6 +1009,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        OnComponentRemoved<T>(in entity);
+#endif
     }
 }
 
@@ -1119,6 +1030,9 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+#if EVENTS
+        OnComponentSet(in entity, in cmp);
+#endif
     }
 
     /// <summary>
@@ -1133,6 +1047,9 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+#if EVENTS
+            OnComponentSet(in entity, in cmp);
+#endif
         }
     }
 
@@ -1259,6 +1176,9 @@ public partial class World
     {
         Add(entity, cmp.GetType(), out var newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
+#if EVENTS
+        OnComponentSet(in entity, cmp);
+#endif
     }
 
     /// <summary>
@@ -1296,9 +1216,19 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
+#if EVENTS
+        foreach (var cmp in components)
+        {
+            OnComponentAdded(in entity, cmp.GetType());
+        }
+#endif
+
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
+#if EVENTS
+            OnComponentSet(in entity, in cmp);
+#endif
         }
     }
 
@@ -1328,6 +1258,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        OnComponentRemoved(in entity, type.Type);
+#endif
     }
 
     /// <summary>
@@ -1359,6 +1292,12 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
+#if EVENTS
+        foreach (var type in types)
+        {
+            OnComponentRemoved(in entity, type.Type);
+        }
+#endif
     }
 }
 
