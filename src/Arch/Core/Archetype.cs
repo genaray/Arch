@@ -159,7 +159,7 @@ public sealed partial class Archetype
         Capacity = 1;
 
         AddEdgesArray = Array.Empty<Archetype>();
-        AddEdgesDict = new Dictionary<int, Archetype>();
+        AddEdgesDict = new Dictionary<int, Archetype>(0);
     }
 
     /// <summary>

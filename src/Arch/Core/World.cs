@@ -1012,7 +1012,7 @@ public partial class World
 
         if (typeId < Archetype.EdgesArrayMaxSize)
         {
-            ref var newArchetypeRef = ref ArchArrayExtensions.GetOrGrow(ref oldArchetype.AddEdgesArray, typeId, out var exists);
+            ref var newArchetypeRef = ref ArchArrayExtensions.GetOrResize(ref oldArchetype.AddEdgesArray, typeId, out var exists, Archetype.EdgesArrayMaxSize);
             if (!exists)
             {
                 newArchetypeRef = GetOrCreate(oldArchetype.Types.Add(type));

@@ -103,10 +103,11 @@ public static class ArrayExtensions
     ///     Whether or not the index was within the bounds of the array.
     ///     When false, the array has been resized.
     /// </param>
+    /// <param name="maxSize">The max size to grow the array to.</param>
     /// <typeparam name="T">The element type of the array.</typeparam>
     /// <returns>The element at that index. May be null.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ref T GetOrGrow<T>(ref T[] array, int index, out bool exists)
+    internal static ref T GetOrResize<T>(ref T[] array, int index, out bool exists, int? maxSize = null)
     {
         if (index < array.Length)
         {
@@ -115,7 +116,16 @@ public static class ArrayExtensions
         }
 
         exists = false;
-        Array.Resize(ref array, (index * 2) + 1);
+
+        if (maxSize == null)
+        {
+            Array.Resize(ref array, (index * 2) + 1);
+        }
+        else
+        {
+            Array.Resize(ref array, Math.Min((index * 2) + 1, maxSize.Value));
+        }
+
         return ref array[index];
     }
 
