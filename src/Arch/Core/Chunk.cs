@@ -77,6 +77,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
+    ///     This won't fire an event for <see cref="EntityCreatedHandler"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Arch.Core.Entity"/> that will be inserted.</param>
     /// <returns>The index occupied by the <see cref="Arch.Core.Entity"/> in the chunk.</returns>
@@ -91,6 +92,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
+    ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index in the array.</param>
@@ -172,6 +174,7 @@ public partial struct Chunk
     /// <summary>
     ///     Removes the <see cref="Arch.Core.Entity"/> at an index with all its components.
     ///     Copies the last <see cref="Arch.Core.Entity"/> in its place to ensure a uniform array.
+    ///     This won't fire an event for <see cref="ComponentRemovedHandler"/>.
     /// </summary>
     /// <param name="index">Its index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,6 +288,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
+    ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>

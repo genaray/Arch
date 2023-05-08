@@ -34,10 +34,17 @@ public static class SetWithQueryDesription
         var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
 
         var assignValues = new StringBuilder();
+        var assignValuesEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             assignValues.AppendLine($"t{index}Component = t{index}ComponentValue;");
+            assignValuesEvents.AppendLine(
+$"""
+                    t{index}Component = t{index}ComponentValue;
+                    OnComponentSet(in entity, in t{index}ComponentValue);
+""");
         }
+
 
         var template =
             $$"""
@@ -51,7 +58,12 @@ public static class SetWithQueryDesription
                     foreach (var entityIndex in chunk)
                     {
                         {{getComponents}}
+            #if EVENTS
+                        var entity = chunk.Entity(entityIndex);
+                        {{assignValuesEvents}}
+            #else
                         {{assignValues}}
+            #endif
                     }
                 }
             }
