@@ -1,12 +1,16 @@
-﻿#if EVENTS
+﻿using Arch.Core.Events;
+
+#if EVENTS
+
+// ReSharper disable once CheckNamespace
 namespace Arch.Core;
 
 public partial class World
 {
-    private const int StartingSize = 128;
-    private readonly List<EntityCreatedHandler> _entityCreatedHandlers = new(StartingSize);
-    private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(StartingSize);
-    private Events[] _compEvents = new Events[StartingSize];
+    private const int InitialCapacity = 128;
+    private readonly List<EntityCreatedHandler> _entityCreatedHandlers = new(InitialCapacity);
+    private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(InitialCapacity);
+    private Events.Events[] _compEvents = new Events.Events[InitialCapacity];
 
     /// <summary>
     ///     Adds a delegate to be called when an entity is created.
@@ -202,7 +206,7 @@ public partial class World
         // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         events ??= new Events<T>();
 
-        return ref Unsafe.As<Events, Events<T>>(ref events);
+        return ref Unsafe.As<Events.Events, Events<T>>(ref events);
     }
 
     /// <summary>
@@ -211,9 +215,9 @@ public partial class World
     /// <param name="compType">The type of component to get handlers for.</param>
     /// <returns>All handlers for the given component type.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref readonly Events GetEvents(Type compType)
+    private ref readonly Events.Events GetEvents(Type compType)
     {
-        var index = EventType.EventIds[compType];
+        var index = EventTypeRegistry.EventIds[compType];
         if (index >= _compEvents.Length)
         {
             Array.Resize(ref _compEvents, (index * 2) + 1);
@@ -222,7 +226,7 @@ public partial class World
         ref var events = ref _compEvents[index];
         // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         // Better hope it is not null
-        events ??= (Events?) Activator.CreateInstance(typeof(Events<>).MakeGenericType(compType))!;
+        events ??= (Events.Events?) Activator.CreateInstance(typeof(Events<>).MakeGenericType(compType))!;
 
         return ref events;
     }

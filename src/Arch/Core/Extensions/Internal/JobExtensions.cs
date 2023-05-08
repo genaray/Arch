@@ -1,10 +1,10 @@
-namespace Arch.Core.Extensions;
+namespace Arch.Core.Extensions.Internal;
 
 /// <summary>
 ///     The <see cref="JobExtensions"/> class
 ///     contains some job related methods.
 /// </summary>
-public static class JobExtensions
+internal static class JobExtensions
 {
     /// <summary>
     ///     Calculates how an array should be partionated based on the threadcount.

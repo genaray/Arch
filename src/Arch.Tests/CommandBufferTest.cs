@@ -1,5 +1,5 @@
+using Arch.CommandBuffer;
 using Arch.Core;
-using Arch.Core.CommandBuffer;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
@@ -35,7 +35,7 @@ public partial class CommandBufferTest
     public void CommandBufferForExistingEntity()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer(world);
+        var commandBuffer = new CommandBuffer.CommandBuffer(world);
 
         var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
@@ -55,7 +55,7 @@ public partial class CommandBufferTest
     public void CommandBuffer()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer(world);
+        var commandBuffer = new CommandBuffer.CommandBuffer(world);
 
         var entity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
@@ -77,7 +77,7 @@ public partial class CommandBufferTest
     public void CommandBufferCombined()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer(world);
+        var commandBuffer = new CommandBuffer.CommandBuffer(world);
 
         var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         var bufferedEntity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });

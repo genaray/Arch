@@ -1,5 +1,7 @@
 using System.Diagnostics.Contracts;
+using Arch.Core.Events;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
 

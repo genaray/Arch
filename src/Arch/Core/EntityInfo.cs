@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 
 namespace Arch.Core;
 
@@ -85,17 +86,17 @@ internal class EntityInfoStorage
     /// <summary>
     ///     The <see cref="Entity"/> versions in an jagged array.
     /// </summary>
-    private JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get;}
+    internal JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get;}
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Archetype"/>s in an jagged array.
     /// </summary>
-    private JaggedArray<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    internal JaggedArray<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Slot"/>s in an jagged array.
     /// </summary>
-    private JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    internal JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
@@ -549,6 +550,17 @@ internal class JaggedArray<T>
             IdToSlot(id, out var outerIndex, out var innerIndex);
             return ref _entityInfos[outerIndex][innerIndex];
         }
+    }
+
+    /// <summary>
+    ///     A explicit operator converting a <see cref="JaggedArray{T}"/> intance to its underlaying T[][] array.
+    /// </summary>
+    /// <param name="jaggedArray">The <see cref="JaggedArray{T}"/> instance.</param>
+    /// <returns>The underlaying T[][] array. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static explicit operator T[][](JaggedArray<T> jaggedArray)
+    {
+        return jaggedArray._entityInfos;
     }
 }
 

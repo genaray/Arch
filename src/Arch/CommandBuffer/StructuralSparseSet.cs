@@ -1,6 +1,7 @@
+using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core.CommandBuffer;
+namespace Arch.CommandBuffer;
 
 /// <summary>
 ///     The <see cref="StructuralEntity"/> struct
