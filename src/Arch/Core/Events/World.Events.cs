@@ -120,7 +120,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentAdded(in Entity entity, Type compType)
     {
-        ref readonly var events = ref GetEvents(compType);
+        var events = GetEvents(compType);
+        if (events == null)
+        {
+            return;
+        }
+        
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
             events.ComponentAddedHandlers[i](in entity);
@@ -151,7 +156,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentSet(in Entity entity, in object comp)
     {
-        ref readonly var events = ref GetEvents(comp.GetType());
+        var events = GetEvents(comp.GetType());
+        if (events == null)
+        {
+            return;
+        }
+        
         for (var i = 0; i < events.NonGenericComponentSetHandlers.Count; i++)
         {
             events.NonGenericComponentSetHandlers[i](in entity, in comp);
@@ -181,7 +191,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentRemoved(in Entity entity, Type compType)
     {
-        ref readonly var events = ref GetEvents(compType);
+        var events = GetEvents(compType);
+        if (events == null)
+        {
+            return;
+        }
+        
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
             events.ComponentRemovedHandlers[i](in entity);
@@ -215,9 +230,14 @@ public partial class World
     /// <param name="compType">The type of component to get handlers for.</param>
     /// <returns>All handlers for the given component type.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private ref readonly Events.Events GetEvents(Type compType)
+    private Events.Events? GetEvents(Type compType)
     {
-        var index = EventTypeRegistry.EventIds[compType];
+        // Try to get the event from the registry, otherwhise return a null ref since theres none
+        if (!EventTypeRegistry.EventIds.TryGetValue(compType, out var index))
+        {
+            return null;
+        }
+        
         if (index >= _compEvents.Length)
         {
             Array.Resize(ref _compEvents, (index * 2) + 1);
@@ -228,7 +248,7 @@ public partial class World
         // Better hope it is not null
         events ??= (Events.Events?) Activator.CreateInstance(typeof(Events<>).MakeGenericType(compType))!;
 
-        return ref events;
+        return events;
     }
 }
 #endif
