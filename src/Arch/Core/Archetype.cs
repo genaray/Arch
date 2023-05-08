@@ -158,8 +158,7 @@ public sealed partial class Archetype
         Size = 1;
         Capacity = 1;
 
-        AddEdgesArray = Array.Empty<Archetype>();
-        AddEdgesDict = new Dictionary<int, Archetype>(0);
+        AddEdges = new ArrayDictionary<Archetype>(EdgesArrayMaxSize);
     }
 
     /// <summary>
@@ -236,20 +235,12 @@ public sealed partial class Archetype
     /// <summary>
     ///     Caches other <see cref="Archetype"/>s indexed by the
     ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
-    ///     Only caches those that can be reached with a <see cref="ComponentType.Id"/>
-    ///     lower than <see cref="EdgesArrayMaxSize"/>, otherwise
-    ///     <see cref="AddEdgesDict"/> is used.
+    ///     Those with a <see cref="ComponentType.Id"/> equal to or lower than
+    ///     <see cref="EdgesArrayMaxSize"/> are accessed through an array lookup,
+    ///     otherwise a dictionary is used.
     /// </summary>
-    internal Archetype[] AddEdgesArray;
-
-    /// <summary>
-    ///     Caches other <see cref="Archetype"/>s indexed by the
-    ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
-    ///     Only caches those that can be reached with a <see cref="ComponentType.Id"/>
-    ///     equal to or bigger than <see cref="EdgesArrayMaxSize"/>, otherwise
-    ///     <see cref="AddEdgesArray"/> is used.
-    /// </summary>
-    internal Dictionary<int, Archetype> AddEdgesDict { get; }
+    /// <remarks>The index used is <see cref="ComponentType.Id"/> minus one.</remarks>
+    internal ArrayDictionary<Archetype> AddEdges;
 
     /// <summary>
     ///     Adds an <see cref="Arch.Core.Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.

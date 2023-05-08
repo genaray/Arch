@@ -466,6 +466,20 @@ public partial class World : IDisposable
 
 public partial class World
 {
+    private struct ArchetypeCreationData
+    {
+        internal World World;
+        internal ComponentType[] Types;
+        internal ComponentType Type;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
+        {
+            World = world;
+            Types = types;
+            Type = type;
+        }
+    };
 
     /// <summary>
     ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
@@ -551,6 +565,12 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         return archetype;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Archetype GetOrCreate(ArchetypeCreationData data)
+    {
+        return data.World.GetOrCreate(data.Types.Add(data.Type));
     }
 }
 
@@ -1008,36 +1028,9 @@ public partial class World
     internal void Add(Entity entity, ComponentType type, out Archetype newArchetype, out Slot slot)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-        var typeId = type.Id - 1;
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
 
-        if (typeId < Archetype.EdgesArrayMaxSize)
-        {
-            ref var newArchetypeRef = ref ArchArrayExtensions.GetOrResize(ref oldArchetype.AddEdgesArray, typeId, out var exists, Archetype.EdgesArrayMaxSize);
-            if (!exists)
-            {
-                newArchetypeRef = GetOrCreate(oldArchetype.Types.Add(type));
-            }
-
-            newArchetype = newArchetypeRef;
-        }
-#if NET5_0_OR_GREATER
-        else
-        {
-            ref var newArchetypeRef = ref CollectionsMarshal.GetValueRefOrAddDefault(oldArchetype.AddEdgesDict, typeId, out var exists);
-            if (!exists)
-            {
-                newArchetypeRef = GetOrCreate(oldArchetype.Types.Add(type));
-            }
-
-            newArchetype = newArchetypeRef!;
-        }
-#else
-        else if (!oldArchetype.AddEdgesDict.TryGetValue(typeId, out newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.AddEdgesDict[typeId] = newArchetype;
-        }
-#endif
+        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
 
         Move(entity, oldArchetype, newArchetype, out slot);
     }
