@@ -149,9 +149,7 @@ public static class SetExtensions
                 var slot = EntityInfo.GetSlot(entity.Id);
                 var archetype = EntityInfo.GetArchetype(entity.Id);
                 archetype.Set<{{generics}}>(ref slot, {{insertParams}});
-            #if EVENTS
-                {{events.ToString().TrimEnd()}}
-            #endif
+                {{events}}
             }
             """;
 

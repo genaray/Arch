@@ -1,5 +1,4 @@
-﻿#if EVENTS
-using Arch.Core;
+﻿using Arch.Core;
 
 namespace Arch.Tests;
 
@@ -17,6 +16,10 @@ public class EventTest
     [Test]
     public void EntityEventsTest()
     {
+#if !EVENTS
+        Assert.Ignore("Events are not enabled");
+        return;
+#else
         var asserter = new EventAsserter();
 
         _world.SubscribeEntityCreated((in Entity entity) => asserter.Created.Add(entity));
@@ -97,6 +100,7 @@ public class EventTest
         _world.SetRange(entity, new object[] { new EventTestComponentOne(), new EventTestComponentTwo() });
         asserter.AssertEvents(compOneSet: 1, compTwoSet: 1);
         asserter.Clear();
+#endif
     }
 
     private class EventAsserter
@@ -150,4 +154,3 @@ public class EventTest
     {
     }
 }
-#endif
