@@ -1,4 +1,4 @@
-﻿using Arch.Core.Extensions;
+﻿using Arch.Core.Extensions.Internal;
 
 namespace Arch.Core.Utils;
 

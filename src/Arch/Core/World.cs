@@ -6,7 +6,7 @@ using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using JobScheduler;
 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
-using ArchArrayExtensions = Arch.Core.Extensions.ArrayExtensions;
+using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -921,28 +921,6 @@ public partial class World
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="type">The type of component to add to the entity.</param>
-    /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
-    /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
-    [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Add(Entity entity, ComponentType type, out Archetype newArchetype, out Slot slot)
-    {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
-
-        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
-
-        Move(entity, oldArchetype, newArchetype, out slot);
-#if EVENTS
-        OnComponentAdded(in entity, cmp.GetType());
-#endif
-    }
-
-    /// <summary>
-    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
     /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
     /// <typeparam name="T">The component type.</typeparam>
@@ -950,7 +928,16 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
     {
-        Add(entity, Component<T>.ComponentType, out newArchetype, out slot);
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = Component<T>.ComponentType;
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+
+        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+
+        Move(entity, oldArchetype, newArchetype, out slot);
+#if EVENTS
+        OnComponentAdded<T>(in entity);
+#endif
     }
 
     /// <summary>
@@ -978,7 +965,6 @@ public partial class World
         Add<T>(entity, out var newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
 #if EVENTS
-        OnComponentAdded<T>(in entity);
         OnComponentSet(in entity, in cmp);
 #endif
     }
@@ -1174,7 +1160,16 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(Entity entity, in object cmp)
     {
-        Add(entity, cmp.GetType(), out var newArchetype, out var slot);
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = (ComponentType) cmp.GetType();
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+
+        var newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+
+        Move(entity, oldArchetype, newArchetype, out var slot);
+#if EVENTS
+        OnComponentAdded(in entity, type);
+#endif
         newArchetype.Set(ref slot, cmp);
 #if EVENTS
         OnComponentSet(in entity, cmp);
