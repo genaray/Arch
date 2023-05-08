@@ -48,7 +48,7 @@ public class ArchetypeChangeBenchmark
     [Benchmark]
     public void AddArchetypeFive()
     {
-        foreach (var entity in _entitiesOne.AsSpan())
+        foreach (var entity in _entitiesFive.AsSpan())
         {
             _world.Add<Health>(entity);
         }
