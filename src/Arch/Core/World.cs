@@ -473,14 +473,14 @@ public partial class World : IDisposable
 
 public partial class World
 {
-    private struct ArchetypeCreationData
+    private readonly struct ArchetypeCreationData
     {
-        internal World World;
-        internal ComponentType[] Types;
-        internal ComponentType Type;
+        internal readonly World World;
+        internal readonly ComponentType[] Types;
+        internal readonly ComponentType Type;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
+        internal ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
         {
             World = world;
             Types = types;
