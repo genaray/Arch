@@ -310,7 +310,7 @@ public partial struct Chunk
     [Pure]
     public bool Has(ComponentType t)
     {
-        var id = Component.GetComponentType(t).Id;
+        var id = t.Id;
         if (id >= ComponentIdToArrayIndex.Length)
         {
             return false;
@@ -391,7 +391,7 @@ public partial struct Chunk
         for (var i = 0; i < sourceComponents.Length; i++)
         {
             var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
+            var sourceType = (ComponentType) sourceArray.GetType().GetElementType()!;
 
             if (!destination.Has(sourceType))
             {
@@ -422,7 +422,7 @@ public partial struct Chunk
         for (var i = 0; i < sourceComponents.Length; i++)
         {
             var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
+            var sourceType = (ComponentType) sourceArray.GetType().GetElementType()!;
 
             if (!destination.Has(sourceType))
             {

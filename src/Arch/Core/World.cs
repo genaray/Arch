@@ -1145,8 +1145,8 @@ public partial class World
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-        var cmpType = cmp.GetType();
-        spanBitSet.SetBit(Component.GetComponentType(cmpType).Id);
+        var cmpType = Component.GetComponentType(cmp.GetType());
+        spanBitSet.SetBit(cmpType.Id);
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {

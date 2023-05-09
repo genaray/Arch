@@ -160,7 +160,7 @@ public static class WorldExtensions
 #endif
         for (var index = 0; index < components.Count; index++)
         {
-            var type = Component.GetComponentType(components[index]);
+            var type = components[index];
             spanBitSet.SetBit(type.Id);
 #if EVENTS
             componentTypes[index] = type.Type;
