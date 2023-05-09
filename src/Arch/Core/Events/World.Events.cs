@@ -1,7 +1,5 @@
 ﻿using Arch.Core.Events;
 
-#if EVENTS
-
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
 
@@ -18,7 +16,9 @@ public partial class World
     /// <param name="handler">The delegate to call.</param>
     public void SubscribeEntityCreated(EntityCreatedHandler handler)
     {
+#if EVENTS
         _entityCreatedHandlers.Add(handler);
+#endif
     }
 
     /// <summary>
@@ -27,7 +27,9 @@ public partial class World
     /// <param name="handler">The delegate to call.</param>
     public void SubscribeEntityDestroyed(EntityDestroyedHandler handler)
     {
+#if EVENTS
         _entityDestroyedHandlers.Add(handler);
+#endif
     }
 
     /// <summary>
@@ -38,8 +40,10 @@ public partial class World
     /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentAdded<T>(ComponentAddedHandler handler)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         events.ComponentAddedHandlers.Add(handler);
+#endif
     }
 
     /// <summary>
@@ -50,6 +54,7 @@ public partial class World
     /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentSet<T>(ComponentSetHandler<T> handler)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         events.ComponentSetHandlers.Add(handler);
         events.NonGenericComponentSetHandlers.Add((in Entity entity, in object comp) =>
@@ -57,6 +62,7 @@ public partial class World
             ref var compGeneric = ref Unsafe.As<object, T>(ref Unsafe.AsRef(comp));
             handler(entity, in compGeneric);
         });
+#endif
     }
 
     /// <summary>
@@ -67,8 +73,10 @@ public partial class World
     /// <typeparam name="T">The component type.</typeparam>
     public void SubscribeComponentRemoved<T>(ComponentRemovedHandler handler)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         events.ComponentRemovedHandlers.Add(handler);
+#endif
     }
 
     /// <summary>
@@ -78,10 +86,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnEntityCreated(in Entity entity)
     {
+#if EVENTS
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
         {
             _entityCreatedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -91,10 +101,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnEntityDestroyed(in Entity entity)
     {
+#if EVENTS
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
         {
             _entityDestroyedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -105,11 +117,13 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentAdded<T>(in Entity entity)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
             events.ComponentAddedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -120,16 +134,18 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentAdded(in Entity entity, Type compType)
     {
+#if EVENTS
         var events = GetEvents(compType);
         if (events == null)
         {
             return;
         }
-        
+
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
             events.ComponentAddedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -141,11 +157,13 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentSet<T>(in Entity entity, in T comp)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentSetHandlers.Count; i++)
         {
             events.ComponentSetHandlers[i](in entity, in comp);
         }
+#endif
     }
 
     /// <summary>
@@ -156,16 +174,18 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentSet(in Entity entity, in object comp)
     {
+#if EVENTS
         var events = GetEvents(comp.GetType());
         if (events == null)
         {
             return;
         }
-        
+
         for (var i = 0; i < events.NonGenericComponentSetHandlers.Count; i++)
         {
             events.NonGenericComponentSetHandlers[i](in entity, in comp);
         }
+#endif
     }
 
     /// <summary>
@@ -176,11 +196,13 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentRemoved<T>(in Entity entity)
     {
+#if EVENTS
         ref readonly var events = ref GetEvents<T>();
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
             events.ComponentRemovedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -191,16 +213,18 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnComponentRemoved(in Entity entity, Type compType)
     {
+#if EVENTS
         var events = GetEvents(compType);
         if (events == null)
         {
             return;
         }
-        
+
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
             events.ComponentRemovedHandlers[i](in entity);
         }
+#endif
     }
 
     /// <summary>
@@ -237,7 +261,7 @@ public partial class World
         {
             return null;
         }
-        
+
         if (index >= _compEvents.Length)
         {
             Array.Resize(ref _compEvents, (index * 2) + 1);
@@ -251,4 +275,3 @@ public partial class World
         return events;
     }
 }
-#endif
