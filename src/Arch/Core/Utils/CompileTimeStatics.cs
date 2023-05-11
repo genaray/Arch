@@ -109,9 +109,10 @@ public static class ComponentRegistry
     ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <param name="typeSize">The size in memory of <see cref="type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ComponentType Add(ComponentType type)
+    private static ComponentType Add(Type type, int typeSize)
     {
         if (TryGet(type, out var meta))
         {
@@ -119,11 +120,23 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        meta = type;
+        meta = new ComponentType(Size + 1, type, typeSize, type.GetFields().Length == 0);
         _types.Add(type, meta);
 
         Size++;
         return meta;
+    }
+
+    /// <summary>
+    ///     Adds a new <see cref="ComponentType"/> manually and registers it.
+    ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
+    /// </summary>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType Add(ComponentType type)
+    {
+        return Add(type.Type, type.ByteSize);
     }
 
     /// <summary>
@@ -134,18 +147,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add<T>()
     {
-        var type = typeof(T);
-        if (TryGet(type, out var meta))
-        {
-            return meta;
-        }
-
-        // Register and assign component id
-        meta = new ComponentType(Size + 1, type, SizeOf<T>(), type.GetFields().Length == 0);
-        _types.Add(type, meta);
-
-        Size++;
-        return meta;
+        return Add(typeof(T), SizeOf<T>());
     }
 
     /// <summary>
@@ -156,17 +158,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(Type type)
     {
-        if (TryGet(type, out var meta))
-        {
-            return meta;
-        }
-
-        // Register and assign component id
-        meta = new ComponentType(Size + 1, type, SizeOf(type), type.GetFields().Length == 0);
-        _types.Add(type, meta);
-
-        Size++;
-        return meta;
+        return Add(type, SizeOf(type));
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
@@ -232,14 +224,12 @@ public static class ComponentRegistry
     ///     The new <see cref="Type"/> will receive the id from the old one.
     ///     <remarks>Use with caution, might cause undefined behaviour if you do not know what exactly you are doing.</remarks>
     /// </summary>
-    /// <typeparam name="T0">The old component to be replaced.</typeparam>
-    /// <typeparam name="T1">The new component that replaced the old one.</typeparam>
+    /// <param name="oldType">The old component <see cref="Type"/> to be replaced.</param>
+    /// <param name="newType">The new component <see cref="Type"/> that replaced the old one.</param>
+    /// <param name="newTypeSize">The size in memory of <see cref="newType"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Replace<T0, T1>()
+    public static void Replace(Type oldType, Type newType, int newTypeSize)
     {
-        var oldType = typeof(T0);
-        var newType = typeof(T1);
-
         var id = 0;
         if (Remove(oldType, out var oldComponentType))
         {
@@ -250,7 +240,20 @@ public static class ComponentRegistry
             id = ++Size;
         }
 
-        _types.Add(newType, new ComponentType(id, newType, SizeOf<T1>(), newType.GetFields().Length == 0));
+        _types.Add(newType, new ComponentType(id, newType, newTypeSize, newType.GetFields().Length == 0));
+    }
+
+    /// <summary>
+    ///     Replaces a registered component by its <see cref="Type"/> with another one.
+    ///     The new <see cref="Type"/> will receive the id from the old one.
+    ///     <remarks>Use with caution, might cause undefined behaviour if you do not know what exactly you are doing.</remarks>
+    /// </summary>
+    /// <typeparam name="T0">The old component to be replaced.</typeparam>
+    /// <typeparam name="T1">The new component that replaced the old one.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Replace<T0, T1>()
+    {
+        Replace(typeof(T0), typeof(T1), SizeOf<T1>());
     }
 
     /// <summary>
@@ -263,17 +266,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Replace(Type oldType, Type newType)
     {
-        var id = 0;
-        if (Remove(oldType, out var oldComponentType))
-        {
-            id = oldComponentType.Id;
-        }
-        else
-        {
-            id = ++Size;
-        }
-
-        _types.Add(newType, new ComponentType(id, newType, SizeOf(newType), newType.GetFields().Length == 0));
+        Replace(oldType, newType, SizeOf(newType));
     }
 
     /// <summary>
