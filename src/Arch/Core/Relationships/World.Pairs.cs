@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.Contracts;
+using Arch.Core.Relationships;
 
 namespace Arch.Core;
 
@@ -11,9 +12,9 @@ public partial class World
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <returns>The relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ref EntityPairBuffer<T> AddOrGetPairs<T>(Entity source)
+    internal ref EntityRelationshipBuffer<T> AddOrGetRelationships<T>(Entity source)
     {
-        return ref AddOrGet(source, static () => new EntityPairBuffer<T>());
+        return ref AddOrGet(source, static () => new EntityRelationshipBuffer<T>());
     }
 
     /// <summary>
@@ -24,14 +25,14 @@ public partial class World
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <param name="relationship">The relationship instance.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddPair<T>(Entity source, Entity target, in T relationship = default)
+    public void AddRelationship<T>(Entity source, Entity target, in T relationship = default)
     {
-        ref var buffer = ref AddOrGetPairs<T>(source);
+        ref var buffer = ref AddOrGetRelationships<T>(source);
         buffer.Add(in relationship, target);
 
-        var pairComponent = new ArchRelationshipComponent(buffer);
-        ref var targetBuffer = ref AddOrGetPairs<ArchRelationshipComponent>(target);
-        targetBuffer.Add(in pairComponent, source);
+        var targetComp = new ArchRelationshipComponent(buffer);
+        ref var targetBuffer = ref AddOrGetRelationships<ArchRelationshipComponent>(target);
+        targetBuffer.Add(in targetComp, source);
     }
 
     /// <summary>
@@ -43,16 +44,16 @@ public partial class World
     /// <param name="relationship">The relationship value used if its being added.</param>
     /// <returns>The relationship.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T AddOrGetPair<T>(Entity source, Entity target, in T relationship = default)
+    public T AddOrGetRelationship<T>(Entity source, Entity target, in T relationship = default)
     {
-        ref var pair = ref TryGetRefPairs<T>(source, out var exists);
+        ref var relationships = ref TryGetRefRelationships<T>(source, out var exists);
         if (exists)
         {
-            return pair.Elements[target];
+            return relationships.Elements[target];
         }
 
-        AddPair(source, target, in relationship);
-        return GetPair<T>(source, target);
+        AddRelationship(source, target, in relationship);
+        return GetRelationship<T>(source, target);
     }
 
     /// <summary>
@@ -62,9 +63,9 @@ public partial class World
     /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal ref EntityPairBuffer<T> GetPairs<T>(Entity source)
+    internal ref EntityRelationshipBuffer<T> GetRelationships<T>(Entity source)
     {
-        return ref Get<EntityPairBuffer<T>>(source);
+        return ref Get<EntityRelationshipBuffer<T>>(source);
     }
 
     /// <summary>
@@ -75,10 +76,10 @@ public partial class World
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <returns>The relationship.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public T GetPair<T>(Entity source, Entity target)
+    public T GetRelationship<T>(Entity source, Entity target)
     {
-        ref var pairs = ref GetPairs<T>(source);
-        return pairs.Elements[target];
+        ref var relationships = ref GetRelationships<T>(source);
+        return relationships.Elements[target];
     }
 
     /// <summary>
@@ -89,15 +90,15 @@ public partial class World
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     /// <returns>True if it has the desired relationship, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool HasPair<T>(Entity source, Entity target)
+    public bool HasRelationship<T>(Entity source, Entity target)
     {
-        ref var pairs = ref TryGetRefPairs<T>(source, out var exists);
+        ref var relationships = ref TryGetRefRelationships<T>(source, out var exists);
         if (!exists)
         {
             return false;
         }
 
-        return pairs.Elements.ContainsKey(target);
+        return relationships.Elements.ContainsKey(target);
     }
 
     /// <summary>
@@ -107,22 +108,22 @@ public partial class World
     /// <param name="source">The <see cref="Entity"/> to remove the relationship from.</param>
     /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void RemovePair<T>(Entity source, Entity target)
+    public void RemoveRelationship<T>(Entity source, Entity target)
     {
-        ref var buffer = ref GetPairs<T>(source);
+        ref var buffer = ref GetRelationships<T>(source);
         buffer.Remove(target);
 
         if (buffer.Count == 0)
         {
-            Remove<EntityPairBuffer<T>>(source);
+            Remove<EntityRelationshipBuffer<T>>(source);
         }
 
-        ref var targetBuffer = ref GetPairs<ArchRelationshipComponent>(target);
+        ref var targetBuffer = ref GetRelationships<ArchRelationshipComponent>(target);
         targetBuffer.Remove(source);
 
         if (targetBuffer.Count == 0)
         {
-            Remove<EntityPairBuffer<ArchRelationshipComponent>>(target);
+            Remove<EntityRelationshipBuffer<ArchRelationshipComponent>>(target);
         }
     }
 
@@ -131,12 +132,12 @@ public partial class World
     /// </summary>
     /// <typeparam name="T">The relationship type.</typeparam>
     /// <param name="source">The <see cref="Entity"/>.</param>
-    /// <param name="pairs">The found relationships.</param>
+    /// <param name="relationships">The found relationships.</param>
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal bool TryGetPairs<T>(Entity source, out EntityPairBuffer<T> pairs)
+    internal bool TryGetRelationships<T>(Entity source, out EntityRelationshipBuffer<T> relationships)
     {
-        return TryGet(source, out pairs);
+        return TryGet(source, out relationships);
     }
 
     /// <summary>
@@ -149,9 +150,9 @@ public partial class World
     /// <param name="relationship">The found relationship.</param>
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool TryGetPair<T>(Entity source, Entity target, out T relationship)
+    public bool TryGetRelationship<T>(Entity source, Entity target, out T relationship)
     {
-        ref var relationships = ref TryGetRefPairs<T>(source, out var exists);
+        ref var relationships = ref TryGetRefRelationships<T>(source, out var exists);
         if (!exists)
         {
             relationship = default;
@@ -170,8 +171,8 @@ public partial class World
     /// <param name="exists">True if it exists, otherwise false.</param>
     /// <returns>A reference to the relationships.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal ref EntityPairBuffer<T> TryGetRefPairs<T>(Entity source, out bool exists)
+    internal ref EntityRelationshipBuffer<T> TryGetRefRelationships<T>(Entity source, out bool exists)
     {
-        return ref TryGetRef<EntityPairBuffer<T>>(source, out exists);
+        return ref TryGetRef<EntityRelationshipBuffer<T>>(source, out exists);
     }
 }

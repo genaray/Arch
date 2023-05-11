@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
+using Arch.Core.Relationships;
 using Arch.Core.Utils;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
@@ -274,7 +275,7 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
-        ref var pairs = ref TryGetRefPairs<ArchRelationshipComponent>(entity, out var exists);
+        ref var relationships = ref TryGetRefRelationships<ArchRelationshipComponent>(entity, out var exists);
 
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
@@ -292,9 +293,9 @@ public partial class World : IDisposable
 
         if (exists)
         {
-            foreach (var (target, relationship) in pairs.Elements)
+            foreach (var (target, relationship) in relationships.Elements)
             {
-                var buffer = relationship.Buffer;
+                var buffer = relationship.Relationships;
                 buffer.Remove(entity);
 
                 if (buffer.Count == 0)

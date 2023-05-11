@@ -1,7 +1,7 @@
-﻿namespace Arch.Core;
+﻿namespace Arch.Core.Relationships;
 
 /// <summary>
-///     Interface implemented by <see cref="EntityPairBuffer{T}"/>.
+///     Interface implemented by <see cref="EntityRelationshipBuffer{T}"/>.
 /// </summary>
 internal interface IBuffer
 {
@@ -38,13 +38,13 @@ internal interface IBuffer
 /// <summary>
 ///     A buffer storing relationships of <see cref="Entity"/> and <see cref="T"/>.
 /// </summary>
-/// <typeparam name="T">The type of the second pair element.</typeparam>
-internal class EntityPairBuffer<T> : IBuffer
+/// <typeparam name="T">The type of the second relationship element.</typeparam>
+internal class EntityRelationshipBuffer<T> : IBuffer
 {
     internal readonly SortedList<Entity, T> Elements;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal EntityPairBuffer()
+    internal EntityRelationshipBuffer()
     {
         Elements = new SortedList<Entity, T>(IBuffer.Comparer);
     }
@@ -78,7 +78,7 @@ internal class EntityPairBuffer<T> : IBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IBuffer.Destroy(World world, Entity source)
     {
-        world.Remove<EntityPairBuffer<T>>(source);
+        world.Remove<EntityRelationshipBuffer<T>>(source);
     }
 
     /// <inheritdoc cref="IBuffer.Destroy(World, Entity)"/>
