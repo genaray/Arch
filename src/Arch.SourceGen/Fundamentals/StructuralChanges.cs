@@ -21,12 +21,10 @@ public static class StructuralChangesExtensions
 
         var setIds = new StringBuilder();
         var addEvents = new StringBuilder();
-        var setEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
             addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
-            setEvents.AppendLine($"OnComponentSet(in entity, in t{index}Component);");
         }
 
         var template =
@@ -50,8 +48,7 @@ public static class StructuralChangesExtensions
 
                 Move(entity, oldArchetype, newArchetype, out var newSlot);
                 newArchetype.Set<{{generics}}>(ref newSlot, {{inParameters}});
-                {{addEvents}}
-                {{setEvents}}
+                 {{addEvents}}
             }
             """;
 
@@ -100,8 +97,8 @@ public static class StructuralChangesExtensions
                 if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
                     newArchetype = GetOrCreate(oldArchetype.Types.Remove({{types}}));
 
-                Move(entity, oldArchetype, newArchetype, out _);
                 {{events}}
+                Move(entity, oldArchetype, newArchetype, out _);
             }
             """;
 

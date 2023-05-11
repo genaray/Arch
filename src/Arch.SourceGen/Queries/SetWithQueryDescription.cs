@@ -41,7 +41,7 @@ public static class SetWithQueryDesription
             assignValuesEvents.AppendLine(
 $"""
                     t{index}Component = t{index}ComponentValue;
-                    OnComponentSet(in entity, in t{index}ComponentValue);
+                    OnComponentSet<T{index}>(in entity);
 """);
         }
 

@@ -138,7 +138,7 @@ public static class SetExtensions
         var events = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            events.AppendLine($"OnComponentSet(in entity, in t{index}Component);");
+            events.AppendLine($"OnComponentSet<T{index}>(in entity);");
         }
 
         var template =

@@ -19,11 +19,9 @@ public static class CreateExtensions
         var inParameters = new StringBuilder().InsertGenericInParams(amount);
 
         var addEvents = new StringBuilder();
-        var setEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
-            setEvents.AppendLine($"OnComponentSet(in entity, in t{index}Component);");
         }
 
         var template =
@@ -60,7 +58,6 @@ public static class CreateExtensions
                 OnEntityCreated(in entity);
 
                 {{addEvents}}
-                {{setEvents}}
                 return entity;
             }
             """;

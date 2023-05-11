@@ -40,7 +40,7 @@ public static class AddWithQueryDescription
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
             addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
-            setEvents.AppendLine($"OnComponentSet(in entity, in t{index}Component);");
+            setEvents.AppendLine($"OnComponentSet<T{index}>(in entity);");
         }
 
         var template =
