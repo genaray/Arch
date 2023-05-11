@@ -129,6 +129,28 @@ public partial class World
     }
 
     /// <summary>
+    ///     Tries to return an <see cref="Entity"/>s relationship of the specified type.
+    ///     Will copy the relationship if its a struct.
+    /// </summary>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <param name="source">The source <see cref="Entity"/> of the relationship.</param>
+    /// <param name="target">The target <see cref="Entity"/> of the relationship.</param>
+    /// <param name="relationship">The found relationship.</param>
+    /// <returns>True if it exists, otherwise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool TryGetPair<T>(Entity source, Entity target, out T relationship)
+    {
+        ref var relationships = ref TryGetRefPairs<T>(source, out var exists);
+        if (!exists)
+        {
+            relationship = default;
+            return false;
+        }
+
+        return relationships.Elements.TryGetValue(target, out relationship);
+    }
+
+    /// <summary>
     ///     Tries to return a reference to an <see cref="Entity"/>s relationships of the
     ///     specified type.
     /// </summary>
