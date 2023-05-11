@@ -255,7 +255,6 @@ public partial struct Chunk
     public T[] GetArray<T>()
     {
         var index = Index<T>();
-        Debug.Assert(index != -1 && index < Components.Length, $"Index is out of bounds, component {typeof(T)} with id {index} does not exist in this chunk.");
         ref var array = ref Components.DangerousGetReferenceAt(index);
         return Unsafe.As<T[]>(array);
     }
