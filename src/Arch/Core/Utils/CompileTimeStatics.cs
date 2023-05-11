@@ -109,7 +109,7 @@ public static class ComponentRegistry
     ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
-    /// <param name="typeSize">The size in memory of <see cref="type"/>.</param>
+    /// <param name="typeSize">The size in bytes of <see cref="type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ComponentType Add(Type type, int typeSize)
@@ -166,7 +166,7 @@ public static class ComponentRegistry
     ///     Checks if a component is registered.
     /// </summary>
     /// <typeparam name="T">Its generic type.</typeparam>
-    /// <returns>True if it is, otherwhise false.</returns>
+    /// <returns>True if it is, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has<T>()
     {
@@ -178,7 +178,7 @@ public static class ComponentRegistry
     ///      Checks if a component is registered.
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
-    /// <returns>True if it is, otherwhise false.</returns>
+    /// <returns>True if it is, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has(Type type)
     {
@@ -189,7 +189,7 @@ public static class ComponentRegistry
     ///     Removes a registered component by its <see cref="Type"/> from the <see cref="ComponentRegistry"/>.
     /// </summary>
     /// <typeparam name="T">The component to remove.</typeparam>
-    /// <returns>True if it was sucessfull, false if not.</returns>
+    /// <returns>True if it was successful, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<T>()
     {
@@ -200,7 +200,7 @@ public static class ComponentRegistry
     ///     Removes a registered component by its <see cref="Type"/> from the <see cref="ComponentRegistry"/>.
     /// </summary>
     /// <param name="type">The component <see cref="Type"/> to remove.</param>
-    /// <returns>True if it was sucessfull, false if not.</returns>
+    /// <returns>True if it was successful, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type)
     {
@@ -212,7 +212,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">The component <see cref="Type"/> to remove.</param>
     /// <param name="compType">The removed <see cref="ComponentType"/>, if it existed.</param>
-    /// <returns>True if it was sucessfull, false if not.</returns>
+    /// <returns>True if it was successful, false if not.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type, out ComponentType compType)
     {
@@ -226,7 +226,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="oldType">The old component <see cref="Type"/> to be replaced.</param>
     /// <param name="newType">The new component <see cref="Type"/> that replaced the old one.</param>
-    /// <param name="newTypeSize">The size in memory of <see cref="newType"/>.</param>
+    /// <param name="newTypeSize">The size in bytes of <see cref="newType"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Replace(Type oldType, Type newType, int newTypeSize)
     {
@@ -274,7 +274,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">Its generic type.</typeparam>
     /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
-    /// <returns>True if it registered, otherwhise false.</returns>
+    /// <returns>True if it registered, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet<T>(out ComponentType componentType)
     {
@@ -286,7 +286,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
-    /// <returns>True if it registered, otherwhise false.</returns>
+    /// <returns>True if it registered, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet(Type type, out ComponentType componentType)
     {
