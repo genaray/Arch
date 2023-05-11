@@ -134,7 +134,18 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add<T>()
     {
-        return Add(typeof(T));
+        var type = typeof(T);
+        if (TryGet(type, out var meta))
+        {
+            return meta;
+        }
+
+        // Register and assign component id
+        meta = new ComponentType(Size + 1, type, SizeOf<T>(), type.GetFields().Length == 0);
+        _types.Add(type, meta);
+
+        Size++;
+        return meta;
     }
 
     /// <summary>
@@ -151,8 +162,7 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
-        meta = new ComponentType(Size + 1, type, size, type.GetFields().Length == 0);
+        meta = new ComponentType(Size + 1, type, SizeOf(type), type.GetFields().Length == 0);
         _types.Add(type, meta);
 
         Size++;
@@ -206,6 +216,18 @@ public static class ComponentRegistry
     }
 
     /// <summary>
+    ///     Removes a registered component by its <see cref="Type"/> from the <see cref="ComponentRegistry"/>.
+    /// </summary>
+    /// <param name="type">The component <see cref="Type"/> to remove.</param>
+    /// <param name="compType">The removed <see cref="ComponentType"/>, if it existed.</param>
+    /// <returns>True if it was sucessfull, false if not.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove(Type type, out ComponentType compType)
+    {
+        return _types.Remove(type, out compType);
+    }
+
+    /// <summary>
     ///     Replaces a registered component by its <see cref="Type"/> with another one.
     ///     The new <see cref="Type"/> will receive the id from the old one.
     ///     <remarks>Use with caution, might cause undefined behaviour if you do not know what exactly you are doing.</remarks>
@@ -213,11 +235,22 @@ public static class ComponentRegistry
     /// <typeparam name="T0">The old component to be replaced.</typeparam>
     /// <typeparam name="T1">The new component that replaced the old one.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Replace<T0,T1>()
+    public static void Replace<T0, T1>()
     {
         var oldType = typeof(T0);
         var newType = typeof(T1);
-        Replace(oldType, newType);
+
+        var id = 0;
+        if (Remove(oldType, out var oldComponentType))
+        {
+            id = oldComponentType.Id;
+        }
+        else
+        {
+            id = ++Size;
+        }
+
+        _types.Add(newType, new ComponentType(id, newType, SizeOf<T1>(), newType.GetFields().Length == 0));
     }
 
     /// <summary>
@@ -231,18 +264,16 @@ public static class ComponentRegistry
     public static void Replace(Type oldType, Type newType)
     {
         var id = 0;
-        if (TryGet(oldType, out var oldComponentType))
+        if (Remove(oldType, out var oldComponentType))
         {
             id = oldComponentType.Id;
-            _types.Remove(oldType);
         }
         else
         {
             id = ++Size;
         }
 
-        var size = newType.IsValueType ? Marshal.SizeOf(newType) : IntPtr.Size;
-        _types.Add(newType, new ComponentType(id, newType, size, newType.GetFields().Length == 0));
+        _types.Add(newType, new ComponentType(id, newType, SizeOf(newType), newType.GetFields().Length == 0));
     }
 
     /// <summary>
@@ -267,6 +298,29 @@ public static class ComponentRegistry
     public static bool TryGet(Type type, out ComponentType componentType)
     {
         return _types.TryGetValue(type, out componentType);
+    }
+
+    private static int SizeOf<T>()
+    {
+        if (typeof(T).IsValueType)
+        {
+            return Unsafe.SizeOf<T>();
+        }
+
+        return IntPtr.Size;
+    }
+
+    private static int SizeOf(Type type)
+    {
+        if (type.IsValueType)
+        {
+            return (int) typeof(Unsafe)
+                .GetMethod(nameof(Unsafe.SizeOf))!
+                .MakeGenericMethod(type)
+                .Invoke(null, null)!;
+        }
+
+        return IntPtr.Size;
     }
 }
 
