@@ -292,7 +292,7 @@ public partial class World : IDisposable
 
         if (exists)
         {
-            foreach (var (relationship, target) in pairs.Elements)
+            foreach (var (target, relationship) in pairs.Elements)
             {
                 var buffer = relationship.Buffer;
                 buffer.Remove(entity);

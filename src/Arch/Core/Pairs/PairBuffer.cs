@@ -4,6 +4,8 @@ namespace Arch.Core;
 
 internal interface IBuffer
 {
+    internal static readonly Comparer<Entity> Comparer = Comparer<Entity>.Create((a, b) => a.Id.CompareTo(b.Id));
+
     int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -19,12 +21,12 @@ internal interface IBuffer
 
 internal class PairBuffer<T> : IBuffer
 {
-    internal readonly List<(T Relationship, Entity Target)> Elements;
+    internal readonly SortedList<Entity, T> Elements;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal PairBuffer()
     {
-        Elements = new List<(T Relationship, Entity Target)>();
+        Elements = new SortedList<Entity, T>(IBuffer.Comparer);
     }
 
     int IBuffer.Count
@@ -34,37 +36,9 @@ internal class PairBuffer<T> : IBuffer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal int FindEntityIndex(Entity target)
-    {
-#if NET5_0_OR_GREATER
-        var span = Elements.AsSpan();
-        for (int i = 0; i < span.Length; i++)
-        {
-            ref var pairEntity = ref span[i].Target;
-            if (pairEntity == target)
-            {
-                return i;
-            }
-        }
-#else
-        for (var i = 0; i < Elements.Count; i++)
-        {
-            if (Elements[i].Target == target)
-            {
-                return i;
-            }
-        }
-#endif
-
-        return -1;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Add(T relationship, Entity target)
     {
-        Debug.Assert(FindEntityIndex(target) == -1,
-            $"Relationship with type {typeof(T)} and entity {target} already exists");
-        Elements.Add((relationship, target));
+        Elements.Add(target, relationship);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -82,8 +56,7 @@ internal class PairBuffer<T> : IBuffer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IBuffer.Remove(Entity target)
     {
-        var index = FindEntityIndex(target);
-        Elements.RemoveAt(index);
+        Elements.Remove(target);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

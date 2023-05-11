@@ -49,47 +49,41 @@ public class PairTest
 
         // Get
         Assert.That(_world.GetPairs<ParentOf>(parent).Elements, Does
-            .Contain((new ParentOf(), childOne)).And
-            .Contain((new ParentOf(), childTwo)));
-        Assert.That(_world.GetPairs<ChildOf>(childOne).Elements, Does.Contain((new ChildOf(), parent)));
-        Assert.That(_world.GetPairs<ChildOf>(childTwo).Elements, Does.Contain((new ChildOf(), parent)));
+            .ContainKey(childOne).And
+            .ContainKey(childTwo));
+        Assert.That(_world.GetPairs<ChildOf>(childOne).Elements, Does.ContainKey(parent));
+        Assert.That(_world.GetPairs<ChildOf>(childTwo).Elements, Does.ContainKey(parent));
 
         // TryGet
         Assert.True(_world.TryGetPairs<ParentOf>(parent, out var parentPairs));
-        Assert.That(parentPairs.Elements, Does
-            .Contain((new ParentOf(), childOne)).And
-            .Contain((new ParentOf(), childTwo)));
+        Assert.That(parentPairs.Elements, Does.ContainKey(childOne).And.ContainKey(childTwo));
 
         Assert.True(_world.TryGetPairs<ChildOf>(childOne, out var childPairs));
-        Assert.That(childPairs.Elements, Does.Contain((new ChildOf(), parent)));
+        Assert.That(childPairs.Elements, Does.ContainKey(parent));
 
         Assert.True(_world.TryGetPairs<ChildOf>(childTwo, out childPairs));
-        Assert.That(childPairs.Elements, Does.Contain((new ChildOf(), parent)));
+        Assert.That(childPairs.Elements, Does.ContainKey(parent));
 
         // TryGetRef
         ref var parentPairsRef = ref _world.TryGetRefPairs<ParentOf>(parent, out exists);
         Assert.True(exists);
-        Assert.That(parentPairsRef.Elements, Does
-            .Contain((new ParentOf(), childOne)).And
-            .Contain((new ParentOf(), childTwo)));
+        Assert.That(parentPairsRef.Elements, Does.ContainKey(childOne).And.ContainKey(childTwo));
 
         ref var childOnePairsRef = ref _world.TryGetRefPairs<ChildOf>(childOne, out exists);
         Assert.True(exists);
-        Assert.That(childOnePairsRef.Elements, Does.Contain((new ChildOf(), parent)));
+        Assert.That(childOnePairsRef.Elements, Does.ContainKey(parent));
 
         ref var childTwoPairsRef = ref _world.TryGetRefPairs<ChildOf>(childTwo, out exists);
         Assert.True(exists);
-        Assert.That(childTwoPairsRef.Elements, Does.Contain((new ChildOf(), parent)));
+        Assert.That(childTwoPairsRef.Elements, Does.ContainKey(parent));
 
         // Destroy childOne, should remove any relationships containing it
         _world.Destroy(childOne);
 
         // Get
-        Assert.That(_world.GetPairs<ParentOf>(parent).Elements, Does.Not
-            .Contain((new ParentOf(), childOne)).And
-            .Contain((new ParentOf(), childTwo)));
+        Assert.That(_world.GetPairs<ParentOf>(parent).Elements, Does.Not.ContainKey(childOne).And.ContainKey(childTwo));
         Assert.That(() => _world.GetPairs<ChildOf>(childOne).Elements, Throws.Exception);
-        Assert.That(_world.GetPairs<ChildOf>(childTwo).Elements, Does.Contain((new ChildOf(), parent)));
+        Assert.That(_world.GetPairs<ChildOf>(childTwo).Elements, Does.ContainKey(parent));
 
         // Destroy childTwo, should remove any relationships containing it
         _world.Destroy(childTwo);
@@ -116,7 +110,7 @@ public class PairTest
         var entities = new List<Entity>();
         _world.Query(query, (in Entity _, ref PairBuffer<ParentOf> parentOf) =>
         {
-            entities.AddRange(parentOf.Elements.Select(p => p.Item2));
+            entities.AddRange(parentOf.Elements.Select(p => p.Key));
         });
 
         Assert.That(entities, Has.Count.EqualTo(2));
