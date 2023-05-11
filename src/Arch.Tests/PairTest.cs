@@ -106,9 +106,9 @@ public class PairTest
         _world.AddPair<ChildOf>(childOne, parent);
         _world.AddPair<ChildOf>(childTwo, parent);
 
-        var query = new QueryDescription().WithAll<PairBuffer<ParentOf>>();
+        var query = new QueryDescription().WithAll<EntityPairBuffer<ParentOf>>();
         var entities = new List<Entity>();
-        _world.Query(query, (in Entity _, ref PairBuffer<ParentOf> parentOf) =>
+        _world.Query(query, (in Entity _, ref EntityPairBuffer<ParentOf> parentOf) =>
         {
             entities.AddRange(parentOf.Elements.Select(p => p.Key));
         });
