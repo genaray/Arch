@@ -1,10 +1,21 @@
 ﻿using System.Diagnostics.Contracts;
-using Arch.Core.Utils;
 
 namespace Arch.Core;
 
 public partial class World
 {
+    /// <summary>
+    ///     Ensures the existence of a buffer of relationships on an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="source">The source <see cref="Entity"/> of the relationships.</param>
+    /// <typeparam name="T">The relationship type.</typeparam>
+    /// <returns>The relationships.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal ref EntityPairBuffer<T> AddOrGetPairs<T>(Entity source)
+    {
+        return ref AddOrGet(source, static () => new EntityPairBuffer<T>());
+    }
+
     /// <summary>
     ///     Adds a new relationship to the <see cref="Entity"/>.
     /// </summary>
@@ -15,11 +26,11 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddPair<T>(Entity source, Entity target, in T relationship = default)
     {
-        ref var buffer = ref AddOrGet(source, static () => new EntityPairBuffer<T>());
+        ref var buffer = ref AddOrGetPairs<T>(source);
         buffer.Add(in relationship, target);
 
         var pairComponent = new ArchRelationshipComponent(buffer);
-        ref var targetBuffer = ref AddOrGet(target, static () => new EntityPairBuffer<ArchRelationshipComponent>());
+        ref var targetBuffer = ref AddOrGetPairs<ArchRelationshipComponent>(target);
         targetBuffer.Add(in pairComponent, source);
     }
 
