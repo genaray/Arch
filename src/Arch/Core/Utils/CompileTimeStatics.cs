@@ -151,7 +151,19 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        var size = type.IsValueType ? Marshal.SizeOf(type) : IntPtr.Size;
+        int size;
+        if (type.IsValueType)
+        {
+            size = (int) typeof(Unsafe)
+                .GetMethod(nameof(Unsafe.SizeOf))!
+                .MakeGenericMethod(type)
+                .Invoke(null, null)!;
+        }
+        else
+        {
+            size = IntPtr.Size;
+        }
+
         meta = new ComponentType(Size + 1, type, size, type.GetFields().Length == 0);
         _types.Add(type, meta);
 

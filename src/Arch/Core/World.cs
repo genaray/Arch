@@ -274,6 +274,8 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
+        ref var pairs = ref TryGetRefPairs<ArchRelationshipComponent>(entity, out var exists);
+
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
@@ -287,6 +289,20 @@ public partial class World : IDisposable
         Size--;
 
         OnEntityDestroyed(in entity);
+
+        if (exists)
+        {
+            foreach (var (relationship, target) in pairs.Elements)
+            {
+                var buffer = relationship.Buffer;
+                buffer.Remove(entity);
+
+                if (buffer.Count == 0)
+                {
+                    buffer.Destroy(this, target);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -887,6 +903,26 @@ public partial class World
         }
 
         Add(entity, cmp);
+        return ref Get<T>(entity);
+    }
+
+    /// <summary>
+    ///     Ensures the existence of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T AddOrGet<T>(Entity entity, Func<T> cmp)
+    {
+        ref var component = ref TryGetRef<T>(entity, out var exists);
+        if (exists)
+        {
+            return ref component;
+        }
+
+        Add(entity, cmp());
         return ref Get<T>(entity);
     }
 
