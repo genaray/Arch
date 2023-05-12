@@ -32,11 +32,11 @@ public static class RemoveWithQueryDesription
         var types = new StringBuilder().GenericTypeParams(amount);
 
         var clearIds = new StringBuilder();
-        var events = new StringBuilder();
+        var removeEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             clearIds.AppendLine($"spanBitSet.ClearBit(Component<T{index}>.ComponentType.Id);");
-            events.AppendLine($"OnComponentRemoved<T{index}>(in entity);");
+            removeEvents.AppendLine($"OnComponentRemoved<T{index}>(archetype);");
         }
 
         var template =
@@ -68,36 +68,15 @@ public static class RemoveWithQueryDesription
                         newArchetype = GetOrCreate(archetype.Types.Remove({{types}}));
                     }
 
+                    {{removeEvents}}
+
                     // Get last slots before copy, for updating entityinfo later
                     var archetypeSlot = archetype.LastSlot;
                     var newArchetypeLastSlot = newArchetype.LastSlot;
                     Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-            #if EVENTS
-                    // TODO stackalloc under a certain size?
-                    var entitiesLength = archetype.Entities;
-                    var entities = ArrayPool<Entity>.Shared.Rent(entitiesLength);
-                    var i = 0;
-                    foreach (ref var chunk in archetype)
-                    {
-                        foreach (var j in chunk)
-                        {
-                            entities[i++] = chunk.Entity(j);
-                        }
-                    }
-            #endif
                     EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
                     Archetype.Copy(archetype, newArchetype);
-            #if EVENTS
-                    var entitiesSpan = entities.AsSpan();
-                    for (i = 0; i < entitiesLength; i++)
-                    {
-                        ref var entity = ref entitiesSpan[i];
-                        {{events.ToString().TrimEnd()}}
-                    }
-
-                    ArrayPool<Entity>.Shared.Return(entities, true);
-            #endif
                     archetype.Clear();
                 }
             }

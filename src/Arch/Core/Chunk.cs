@@ -422,14 +422,15 @@ public partial struct Chunk
         for (var i = 0; i < sourceComponents.Length; i++)
         {
             var sourceArray = sourceComponents[i];
-            var sourceType = (ComponentType) sourceArray.GetType().GetElementType()!;
+            var sourceType = sourceArray.GetType().GetElementType();
+            var compType = (ComponentType) sourceType!;
 
-            if (!destination.Has(sourceType))
+            if (!destination.Has(compType))
             {
                 continue;
             }
 
-            var destinationArray = destination.GetArray(sourceType);
+            var destinationArray = destination.GetArray(compType);
             Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
         }
     }
