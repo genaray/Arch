@@ -6,6 +6,7 @@ using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using JobScheduler;
 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
+using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -468,6 +469,20 @@ public partial class World : IDisposable
 
 public partial class World
 {
+    private readonly struct ArchetypeCreationData
+    {
+        internal readonly World World;
+        internal readonly ComponentType[] Types;
+        internal readonly ComponentType Type;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
+        {
+            World = world;
+            Types = types;
+            Type = type;
+        }
+    };
 
     /// <summary>
     ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
@@ -553,6 +568,12 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         return archetype;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Archetype GetOrCreate(ArchetypeCreationData data)
+    {
+        return data.World.GetOrCreate(data.Types.Add(data.Type));
     }
 }
 
@@ -903,29 +924,33 @@ public partial class World
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
+    /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
+    {
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = Component<T>.ComponentType;
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+
+        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+
+        Move(entity, oldArchetype, newArchetype, out slot);
+        OnComponentAdded<T>(entity);
+    }
+
+    /// <summary>
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component<T>.ComponentType.Id);
-
-        // Search for fitting archetype or create a new one
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
-        }
-
-        Move(entity, oldArchetype, newArchetype, out _);
-        OnComponentAdded<T>(entity);
+        Add<T>(entity, out _, out _);
     }
 
     /// <summary>
@@ -938,27 +963,10 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(Entity entity, in T cmp)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component<T>.ComponentType.Id);
-
-        // Search for fitting archetype or create a new one
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
-        }
-
-        Move(entity, oldArchetype, newArchetype, out var slot);
+        Add<T>(entity, out var newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
         OnComponentAdded<T>(entity);
     }
-
 
     /// <summary>
     ///     Removes an component from an <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
@@ -1146,25 +1154,14 @@ public partial class World
     public void Add(Entity entity, in object cmp)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = (ComponentType) cmp.GetType();
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        var cmpType = cmp.GetType();
-        spanBitSet.SetBit(Component.GetComponentType(cmpType).Id);
-
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmpType));
-        }
+        var newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
-        OnComponentAdded(entity, cmpType);
         newArchetype.Set(ref slot, cmp);
-        OnComponentSet(entity, cmp);
+        OnComponentAdded(in entity, type);
     }
 
     /// <summary>
