@@ -103,7 +103,7 @@ internal record struct Slot
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Slot Shift(in Slot source, int sourceCapacity, in Slot destination, int destinationCapacity)
     {
-        var freeSpot = new Slot(destination.Index, destination.ChunkIndex); // Moving one index further to target an empty destination spot.
+        var freeSpot = destination;
         var resultSlot = source + freeSpot;
         resultSlot.Index += source.ChunkIndex * (sourceCapacity - destinationCapacity); // Berücksichtigen der differenz zwischen den chunks und weiter verschieben.
         resultSlot.Wrap(destinationCapacity);

@@ -231,7 +231,7 @@ public partial class World : IDisposable
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
         Size++;
-        OnEntityCreated(in entity);
+        OnEntityCreated(entity);
         return entity;
     }
 
@@ -286,7 +286,7 @@ public partial class World : IDisposable
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
 
-        OnEntityDestroyed(in entity);
+        OnEntityDestroyed(entity);
     }
 
     /// <summary>
@@ -649,7 +649,8 @@ public partial class World
                 foreach (var index in chunk)
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
+                    OnEntityDestroyed(entity);
+                    
                     var version = EntityInfo.GetVersion(entity.Id);
                     var recycledEntity = new RecycledEntity(entity.Id, version);
 
@@ -678,8 +679,13 @@ public partial class World
             ref var componentFirstElement = ref chunk.GetFirst<T>();
             foreach (var index in chunk)
             {
+#if EVENTS
+                ref var entity = ref chunk.Entity(index);
+#endif
                 ref var component = ref Unsafe.Add(ref componentFirstElement, index);
                 component = value;
+                
+                OnComponentSet<T>(entity);
             }
         }
     }
@@ -727,6 +733,8 @@ public partial class World
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
+            
+            OnComponentAdded<T>(newArchetype);
         }
     }
 
@@ -762,12 +770,14 @@ public partial class World
                 newArchetype = GetOrCreate(archetype.Types.Remove(typeof(T)));
             }
 
+            OnComponentRemoved<T>(archetype);
+            
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
-
+            
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
         }
@@ -790,7 +800,7 @@ public partial class World
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in cmp);
-        OnComponentSet(in entity, cmp);
+        OnComponentSet(entity, cmp);
     }
 
     /// <summary>
@@ -916,7 +926,7 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
-        OnComponentAdded<T>(in entity);
+        OnComponentAdded<T>(entity);
     }
 
     /// <summary>
@@ -947,7 +957,7 @@ public partial class World
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
-        OnComponentAdded<T>(in entity);
+        OnComponentAdded<T>(entity);
     }
 
 
@@ -976,7 +986,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
         }
 
-        OnComponentRemoved<T>(in entity);
+        OnComponentRemoved<T>(entity);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 }
@@ -996,7 +1006,7 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-        OnComponentSet(in entity, cmp);
+        OnComponentSet(entity, cmp);
     }
 
     /// <summary>
@@ -1011,7 +1021,7 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-            OnComponentSet(in entity, cmp);
+            OnComponentSet(entity, cmp);
         }
     }
 
@@ -1153,9 +1163,9 @@ public partial class World
         }
 
         Move(entity, oldArchetype, newArchetype, out var slot);
-        OnComponentAdded(in entity, cmpType);
+        OnComponentAdded(entity, cmpType);
         newArchetype.Set(ref slot, cmp);
-        OnComponentSet(in entity, cmp);
+        OnComponentSet(entity, cmp);
     }
 
     /// <summary>
@@ -1198,7 +1208,7 @@ public partial class World
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
-            OnComponentAdded(in entity, cmp.GetType());
+            OnComponentAdded(entity, cmp.GetType());
         }
     }
 
@@ -1227,7 +1237,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
-        OnComponentRemoved(in entity, type.Type);
+        OnComponentRemoved(entity, type.Type);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
@@ -1263,7 +1273,7 @@ public partial class World
         // Fire events and move
         foreach (var type in types)
         {
-            OnComponentRemoved(in entity, type.Type);
+            OnComponentRemoved(entity, type.Type);
         }
         Move(entity, oldArchetype, newArchetype, out _);
     }

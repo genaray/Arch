@@ -21,7 +21,7 @@ public static class CreateExtensions
         var addEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
+            addEvents.AppendLine($"OnComponentAdded<T{index}>(entity);");
         }
 
         var template =
@@ -55,7 +55,7 @@ public static class CreateExtensions
                 EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
                 Size++;
-                OnEntityCreated(in entity);
+                OnEntityCreated(entity);
 
                 {{addEvents}}
                 return entity;

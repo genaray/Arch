@@ -24,7 +24,7 @@ public static class StructuralChangesExtensions
         for (var index = 0; index <= amount; index++)
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
-            addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
+            addEvents.AppendLine($"OnComponentAdded<T{index}>(entity);");
         }
 
         var template =
@@ -75,7 +75,7 @@ public static class StructuralChangesExtensions
         for (var index = 0; index <= amount; index++)
         {
             removes.AppendLine($"spanBitSet.ClearBit(Component<T{index}>.ComponentType.Id);");
-            events.AppendLine($"OnComponentRemoved<T{index}>(in entity);");
+            events.AppendLine($"OnComponentRemoved<T{index}>(entity);");
         }
 
         var template =

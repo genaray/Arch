@@ -239,7 +239,8 @@ internal class EntityInfoStorage
     public void Shift(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
     {
         // Update the entityInfo of all copied entities.
-        for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        //for (var chunkIndex = archetypeSlot.ChunkIndex; chunkIndex >= 0; --chunkIndex)
+        for (var chunkIndex = 0; chunkIndex <= archetypeSlot.ChunkIndex; chunkIndex++)
         {
             // Get data
             ref var chunk = ref archetype.GetChunk(chunkIndex);
@@ -249,16 +250,20 @@ internal class EntityInfoStorage
             var isStart = chunkIndex == archetypeSlot.ChunkIndex;
             var upper = isStart ? archetypeSlot.Index : chunk.Size-1;
 
-            for (var index = upper; index >= 0; --index)
+            //for (var index = upper; index >= 0; --index)
+            for(var index = 0; index <= upper; index++)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
-                // Calculate new entity slot based on its old slot.
-                var entitySlot = new Slot(index, chunkIndex);
-                var newSlot = Slot.Shift(entitySlot, archetype.EntitiesPerChunk, newArchetypeSlot, newArchetype.EntitiesPerChunk);
-
+                
                 // Update entity info
-                Move(entity.Id, newArchetype, newSlot);
+                Move(entity.Id, newArchetype, newArchetypeSlot);
+                newArchetypeSlot++;
+                
+                if (newArchetypeSlot.Index >= newArchetype.EntitiesPerChunk)
+                {
+                    newArchetypeSlot.Index = 0;
+                    newArchetypeSlot.ChunkIndex++;
+                }
             }
         }
     }

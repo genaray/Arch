@@ -111,7 +111,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got created.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnEntityCreated(in Entity entity)
+    public void OnEntityCreated(Entity entity)
     {
 #if EVENTS
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
@@ -126,7 +126,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnEntityDestroyed(in Entity entity)
+    public void OnEntityDestroyed(Entity entity)
     {
 #if EVENTS
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
@@ -142,7 +142,7 @@ public partial class World
     /// <param name="entity">The entity that the component was added to.</param>
     /// <typeparam name="T">The type of component that got added.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentAdded<T>(in Entity entity)
+    public void OnComponentAdded<T>(Entity entity)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
@@ -158,10 +158,9 @@ public partial class World
     ///     Calls all generic handlers subscribed to component setting of this type.
     /// </summary>
     /// <param name="entity">The entity that the component was set on.</param>
-    /// <param name="comp">The component instance that got set.</param>
     /// <typeparam name="T">The type of component that got set.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentSet<T>(in Entity entity)
+    public void OnComponentSet<T>(Entity entity)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
@@ -180,7 +179,7 @@ public partial class World
     /// <param name="entity">The entity that the component was removed from.</param>
     /// <typeparam name="T">The type of component that got removed.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentRemoved<T>(in Entity entity)
+    public void OnComponentRemoved<T>(Entity entity)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
@@ -199,10 +198,10 @@ public partial class World
     /// <param name="entity">The entity that the component was added to.</param>
     /// <param name="compType">The type of component that got added.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentAdded(in Entity entity, ComponentType cmp)
+    public void OnComponentAdded(Entity entity, ComponentType compType)
     {
 #if EVENTS
-        var events = GetEvents(cmp);
+        var events = GetEvents(compType);
         if (events == null)
         {
             return;
@@ -221,7 +220,7 @@ public partial class World
     /// <param name="entity">The entity that the component was set on.</param>
     /// <param name="comp">The component instance that got set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentSet(in Entity entity, object comp)
+    public void OnComponentSet(Entity entity, object comp)
     {
 #if EVENTS
         var events = GetEvents(comp.GetType());
@@ -243,7 +242,7 @@ public partial class World
     /// <param name="entity">The entity that the component was removed from.</param>
     /// <param name="compType">The type of component that got removed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentRemoved(in Entity entity, ComponentType compType)
+    public void OnComponentRemoved(Entity entity, ComponentType compType)
     {
 #if EVENTS
         var events = GetEvents(compType);
@@ -256,6 +255,50 @@ public partial class World
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
             events.ComponentRemovedHandlers[i](entity);
+        }
+#endif
+    }
+    
+    /// <summary>
+    ///     Calls all handlers subscribed to component addition of this type for entities in a archetype range.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void OnComponentAdded<T>(Archetype archetype)
+    {
+#if EVENTS
+        // Set the added component, start from the last slot and move down
+        foreach(ref var chunk in archetype)
+        {
+            ref var firstEntity = ref chunk.Entity(0);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                OnComponentAdded<T>(entity);
+            }
+        }
+#endif
+    }
+    
+    /// <summary>
+    ///     Calls all handlers subscribed to component removal of this type for entities in a archetype range.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void OnComponentRemoved<T>(Archetype archetype)
+    {
+#if EVENTS
+        // Set the added component, start from the last slot and move down
+        foreach(ref var chunk in archetype)
+        {
+            ref var firstEntity = ref chunk.Entity(0);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                OnComponentRemoved<T>(entity);
+            }
         }
 #endif
     }

@@ -38,13 +38,8 @@ public static class SetWithQueryDesription
         for (var index = 0; index <= amount; index++)
         {
             assignValues.AppendLine($"t{index}Component = t{index}ComponentValue;");
-            assignValuesEvents.AppendLine(
-$"""
-                    t{index}Component = t{index}ComponentValue;
-                    OnComponentSet<T{index}>(in entity);
-""");
+            assignValuesEvents.AppendLine($"OnComponentSet<T{index}>(entity);");
         }
-
 
         var template =
             $$"""
@@ -58,11 +53,10 @@ $"""
                     foreach (var entityIndex in chunk)
                     {
                         {{getComponents}}
+                        {{assignValues}}
             #if EVENTS
                         var entity = chunk.Entity(entityIndex);
                         {{assignValuesEvents}}
-            #else
-                        {{assignValues}}
             #endif
                     }
                 }

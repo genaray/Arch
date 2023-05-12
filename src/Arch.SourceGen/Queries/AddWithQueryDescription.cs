@@ -39,8 +39,7 @@ public static class AddWithQueryDescription
         for (var index = 0; index <= amount; index++)
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
-            addEvents.AppendLine($"OnComponentAdded<T{index}>(in entity);");
-            setEvents.AppendLine($"OnComponentSet<T{index}>(in entity);");
+            addEvents.AppendLine($"OnComponentAdded<T{index}>(archetype);");
         }
 
         var template =
@@ -76,42 +75,13 @@ public static class AddWithQueryDescription
                     var archetypeSlot = archetype.LastSlot;
                     var newArchetypeLastSlot = newArchetype.LastSlot;
                     Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
-            #if EVENTS
-                    // TODO stackalloc under a certain size?
-                    var entitiesLength = archetype.Entities;
-                    var entities = ArrayPool<Entity>.Shared.Rent(entitiesLength);
-                    var i = 0;
-                    foreach (ref var chunk in archetype)
-                    {
-                        foreach (var j in chunk)
-                        {
-                            entities[i++] = chunk.Entity(j);
-                        }
-                    }
-            #endif
                     EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
                     // Copy, set and clear
                     Archetype.Copy(archetype, newArchetype);
-            #if EVENTS
-                    var entitiesSpan = entities.AsSpan();
-                    for (i = 0; i < entitiesLength; i++)
-                    {
-                        ref var entity = ref entitiesSpan[i];
-                        {{addEvents.ToString().TrimEnd()}}
-                    }
-            #endif
                     var lastSlot = newArchetype.LastSlot;
                     newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, {{inParameters}});
-            #if EVENTS
-                    for (i = 0; i < entitiesLength; i++)
-                    {
-                        ref var entity = ref entitiesSpan[i];
-                        {{setEvents.ToString().TrimEnd()}}
-                    }
-
-                    ArrayPool<Entity>.Shared.Return(entities, true);
-            #endif
+                    {{addEvents}}
                     archetype.Clear();
                 }
             }
