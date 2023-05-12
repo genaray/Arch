@@ -9,7 +9,7 @@ using Arch.Core.Utils;
 namespace Arch.Tests;
 
 /// <summary>
-///     Tests the <see cref="JaggedArray"/> for its functionality.
+///     Tests the <see cref="JaggedArray{T}"/> for its functionality.
 /// </summary>
 [TestFixture]
 public class EntityInfoDictionaryTests
@@ -17,7 +17,7 @@ public class EntityInfoDictionaryTests
 
 
     /// <summary>
-    ///     Checks whether the <see cref="JaggedArray"/> adds <see cref="EntityInfo"/> correctly.
+    ///     Checks whether the <see cref="JaggedArray{T}"/> adds <see cref="EntityInfo"/> correctly.
     /// </summary>
     [Test]
     public void Add()
@@ -46,7 +46,7 @@ public class EntityInfoDictionaryTests
     }
 
     /// <summary>
-    ///     Checks whether the <see cref="JaggedArray"/> trims correctly.
+    ///     Checks whether the <see cref="JaggedArray{T}"/> trims correctly.
     /// </summary>
     [Test]
     public void TrimExcess()

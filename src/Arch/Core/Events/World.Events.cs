@@ -1,13 +1,30 @@
 ﻿using Arch.Core.Events;
+using Arch.Core.Extensions;
+using Arch.Core.Utils;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
 
 public partial class World
 {
+    /// <summary>
+    ///     The initial capacity for the <see cref="_compEvents"/> array. 
+    /// </summary>
     private const int InitialCapacity = 128;
+    
+    /// <summary>
+    ///     All <see cref="EntityCreatedHandler"/>s in a <see cref="List{T}"/> which will be called upon entity creation.
+    /// </summary>
     private readonly List<EntityCreatedHandler> _entityCreatedHandlers = new(InitialCapacity);
+    
+    /// <summary>
+    ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called upon entity destruction.
+    /// </summary>
     private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(InitialCapacity);
+    
+    /// <summary>
+    ///     All <see cref="Events"/> in an array which will be acessed for add, remove or set operations. 
+    /// </summary>
     private Events.Events[] _compEvents = new Events.Events[InitialCapacity];
 
     /// <summary>
@@ -38,11 +55,16 @@ public partial class World
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
     /// <typeparam name="T">The component type.</typeparam>
-    public void SubscribeComponentAdded<T>(ComponentAddedHandler handler)
+    public void SubscribeComponentAdded<T>(ComponentAddedHandler<T> handler)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentAddedHandlers.Add(handler);
+        events.ComponentAddedGenericHandlers.Add(handler);
+        events.ComponentAddedHandlers.Add((in Entity entity) =>
+        {
+            ref var compGeneric = ref entity.Get<T>();
+            handler(entity, ref compGeneric);
+        });
 #endif
     }
 
@@ -56,11 +78,11 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentSetHandlers.Add(handler);
-        events.NonGenericComponentSetHandlers.Add((in Entity entity, in object comp) =>
+        events.ComponentSetGenericHandlers.Add(handler);
+        events.ComponentSetHandlers.Add((in Entity entity) =>
         {
-            ref var compGeneric = ref Unsafe.As<object, T>(ref Unsafe.AsRef(comp));
-            handler(entity, in compGeneric);
+            ref var compGeneric = ref entity.Get<T>();
+            handler(entity, ref compGeneric);
         });
 #endif
     }
@@ -71,11 +93,16 @@ public partial class World
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
     /// <typeparam name="T">The component type.</typeparam>
-    public void SubscribeComponentRemoved<T>(ComponentRemovedHandler handler)
+    public void SubscribeComponentRemoved<T>(ComponentRemovedHandler<T> handler)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentRemovedHandlers.Add(handler);
+        events.ComponentRemovedGenericHandlers.Add(handler);
+        events.ComponentRemovedHandlers.Add((in Entity entity) =>
+        {
+            ref var compGeneric = ref entity.Get<T>();
+            handler(entity, ref compGeneric);
+        });
 #endif
     }
 
@@ -84,7 +111,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got created.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnEntityCreated(in Entity entity)
+    public void OnEntityCreated(Entity entity)
     {
 #if EVENTS
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
@@ -99,7 +126,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnEntityDestroyed(in Entity entity)
+    public void OnEntityDestroyed(Entity entity)
     {
 #if EVENTS
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
@@ -110,29 +137,68 @@ public partial class World
     }
 
     /// <summary>
-    ///     Calls all handlers subscribed to component addition of this type.
+    ///     Calls all generic handlers subscribed to component addition of this type.
     /// </summary>
     /// <param name="entity">The entity that the component was added to.</param>
     /// <typeparam name="T">The type of component that got added.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentAdded<T>(in Entity entity)
+    public void OnComponentAdded<T>(Entity entity)
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
+        ref var added = ref entity.Get<T>();
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
-            events.ComponentAddedHandlers[i](in entity);
+            events.ComponentAddedGenericHandlers[i](in entity, ref added);
         }
 #endif
     }
 
+    /// <summary>
+    ///     Calls all generic handlers subscribed to component setting of this type.
+    /// </summary>
+    /// <param name="entity">The entity that the component was set on.</param>
+    /// <typeparam name="T">The type of component that got set.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void OnComponentSet<T>(Entity entity)
+    {
+#if EVENTS
+        ref readonly var events = ref GetEvents<T>();
+        ref var set = ref entity.Get<T>();
+        for (var i = 0; i < events.ComponentSetGenericHandlers.Count; i++)
+        {
+            events.ComponentSetGenericHandlers[i](in entity, ref set);
+        }
+#endif
+    }
+    
+
+    /// <summary>
+    ///     Calls all generic handlers subscribed to component removal.
+    /// </summary>
+    /// <param name="entity">The entity that the component was removed from.</param>
+    /// <typeparam name="T">The type of component that got removed.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void OnComponentRemoved<T>(Entity entity)
+    {
+#if EVENTS
+        ref readonly var events = ref GetEvents<T>();
+        ref var removed = ref entity.Get<T>();
+        for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
+        {
+            events.ComponentRemovedGenericHandlers[i](entity, ref removed);
+        }
+#endif
+    }
+
+    
     /// <summary>
     ///     Calls all handlers subscribed to component addition of this type.
     /// </summary>
     /// <param name="entity">The entity that the component was added to.</param>
     /// <param name="compType">The type of component that got added.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentAdded(in Entity entity, Type compType)
+    public void OnComponentAdded(Entity entity, ComponentType compType)
     {
 #if EVENTS
         var events = GetEvents(compType);
@@ -140,39 +206,21 @@ public partial class World
         {
             return;
         }
-
+        
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
             events.ComponentAddedHandlers[i](in entity);
         }
 #endif
     }
-
-    /// <summary>
-    ///     Calls all handlers subscribed to component setting of this type.
-    /// </summary>
-    /// <param name="entity">The entity that the component was set on.</param>
-    /// <param name="comp">The component instance that got set.</param>
-    /// <typeparam name="T">The type of component that got set.</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentSet<T>(in Entity entity, in T comp)
-    {
-#if EVENTS
-        ref readonly var events = ref GetEvents<T>();
-        for (var i = 0; i < events.ComponentSetHandlers.Count; i++)
-        {
-            events.ComponentSetHandlers[i](in entity, in comp);
-        }
-#endif
-    }
-
+    
     /// <summary>
     ///     Calls all handlers subscribed to component setting of this type.
     /// </summary>
     /// <param name="entity">The entity that the component was set on.</param>
     /// <param name="comp">The component instance that got set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentSet(in Entity entity, in object comp)
+    public void OnComponentSet(Entity entity, object comp)
     {
 #if EVENTS
         var events = GetEvents(comp.GetType());
@@ -181,37 +229,20 @@ public partial class World
             return;
         }
 
-        for (var i = 0; i < events.NonGenericComponentSetHandlers.Count; i++)
+        for (var i = 0; i < events.ComponentSetHandlers.Count; i++)
         {
-            events.NonGenericComponentSetHandlers[i](in entity, in comp);
+            events.ComponentSetHandlers[i](in entity);
         }
 #endif
     }
-
-    /// <summary>
-    ///     Calls all handlers subscribed to component removal.
-    /// </summary>
-    /// <param name="entity">The entity that the component was removed from.</param>
-    /// <typeparam name="T">The type of component that got removed.</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentRemoved<T>(in Entity entity)
-    {
-#if EVENTS
-        ref readonly var events = ref GetEvents<T>();
-        for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
-        {
-            events.ComponentRemovedHandlers[i](in entity);
-        }
-#endif
-    }
-
+    
     /// <summary>
     ///     Calls all handlers subscribed to component removal.
     /// </summary>
     /// <param name="entity">The entity that the component was removed from.</param>
     /// <param name="compType">The type of component that got removed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnComponentRemoved(in Entity entity, Type compType)
+    public void OnComponentRemoved(Entity entity, ComponentType compType)
     {
 #if EVENTS
         var events = GetEvents(compType);
@@ -220,15 +251,60 @@ public partial class World
             return;
         }
 
+        
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
-            events.ComponentRemovedHandlers[i](in entity);
+            events.ComponentRemovedHandlers[i](entity);
+        }
+#endif
+    }
+    
+    /// <summary>
+    ///     Calls all handlers subscribed to component addition of this type for entities in a archetype range.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void OnComponentAdded<T>(Archetype archetype)
+    {
+#if EVENTS
+        // Set the added component, start from the last slot and move down
+        foreach(ref var chunk in archetype)
+        {
+            ref var firstEntity = ref chunk.Entity(0);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                OnComponentAdded<T>(entity);
+            }
+        }
+#endif
+    }
+    
+    /// <summary>
+    ///     Calls all handlers subscribed to component removal of this type for entities in a archetype range.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void OnComponentRemoved<T>(Archetype archetype)
+    {
+#if EVENTS
+        // Set the added component, start from the last slot and move down
+        foreach(ref var chunk in archetype)
+        {
+            ref var firstEntity = ref chunk.Entity(0);
+            foreach (var index in chunk)
+            {
+                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                OnComponentRemoved<T>(entity);
+            }
         }
 #endif
     }
 
     /// <summary>
-    ///     Gets all event handlers for a certain component type.
+    ///     Gets all generic event handlers for a certain component type.
     /// </summary>
     /// <typeparam name="T">The type of component to get handlers for.</typeparam>
     /// <returns>All handlers for the given component type.</returns>
@@ -248,13 +324,14 @@ public partial class World
         return ref Unsafe.As<Events.Events, Events<T>>(ref events);
     }
 
+    /// TODO : Remove creating by activator. Instead we should probably keep two lists. One for object based calls, one for generics.
     /// <summary>
     ///     Gets all event handlers for a certain component type.
     /// </summary>
     /// <param name="compType">The type of component to get handlers for.</param>
     /// <returns>All handlers for the given component type.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private Events.Events? GetEvents(Type compType)
+    private Events.Events? GetEvents(ComponentType compType)
     {
         // Try to get the event from the registry, otherwhise return a null ref since theres none
         if (!EventTypeRegistry.EventIds.TryGetValue(compType, out var index))

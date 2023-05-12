@@ -3,7 +3,6 @@ using Arch.Core.Utils;
 
 namespace Arch.CommandBuffer;
 
-// NOTE: Does this really need to be nested?
 /// <summary>
 ///     The <see cref="SparseEntity"/> struct
 ///    represents an <see cref="Entity"/> with its index in the <see cref="SparseSet"/>.
@@ -26,7 +25,6 @@ internal readonly struct SparseEntity
     }
 }
 
-// NOTE: Why not a generic type?
 // NOTE: Should this have a more descriptive name? `SparseArray` sounds too generic for something that's only for `ComponentType`s.
 /// <summary>
 ///     The see <see cref="SparseArray"/> class
@@ -76,7 +74,7 @@ internal class SparseArray
     ///     Gets an array of components contained by the <see cref="SparseArray"/>.
     /// </summary>
     public Array Components { get; private set; }
-
+    
     /// <summary>
     ///     Adds an item to the array.
     /// </summary>
@@ -86,30 +84,27 @@ internal class SparseArray
     {
         lock (this)
         {
-            // Resize entities
-            if (index >= Entities.Length)
+            // Skip since entity fits into array
+            if (index >= Capacity)
             {
-                var length = Entities.Length;
-                Array.Resize(ref Entities, index + 1);
-                Array.Fill(Entities, -1, length, index - length);
+                // Calculate new array size that fits the passed index
+                var amountOfMultiplications = (int)Math.Ceiling(Math.Log((index+1) / (float)Capacity, 2.0f));
+                var newLength = (int)Math.Pow(2, amountOfMultiplications) * Capacity;
+                newLength = Math.Max(Capacity, newLength+1);
+
+                // Resize entities array
+                Array.Resize(ref Entities, newLength);
+                Array.Fill(Entities, -1, Capacity, newLength-Capacity);
+
+                // Resize component array
+                var array = Array.CreateInstance(Type, newLength);
+                Components.CopyTo(array, 0);
+                Components = array;
+                Capacity = newLength;
             }
 
             Entities[index] = Size;
             Size++;
-
-            // Resize components
-            if (Size < Components.Length)
-            {
-                return;
-            }
-
-            Capacity = Capacity <= 0 ? 1 : Capacity;
-            var array = Array.CreateInstance(Type, Capacity * 2);
-
-            Components.CopyTo(array, 0);
-            Components = array;
-
-            Capacity *= 2;
         }
     }
 
@@ -179,7 +174,6 @@ internal class SparseArray
 }
 
 
-// NOTE: Why not a generic type?
 // NOTE: Should this have a more descriptive name? `SparseSet` sounds too generic for something that's only for `Entity`s.
 // TODO: Tight array like in the structural `SparseSet` to avoid unnecessary iterations!!
 /// <summary>
