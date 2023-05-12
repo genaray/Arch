@@ -158,7 +158,7 @@ public static class WorldExtensions
 
         for (var index = 0; index < components.Count; index++)
         {
-            var type = Component.GetComponentType(components[index]);
+            var type = components[index];
             spanBitSet.SetBit(type.Id);
         }
 

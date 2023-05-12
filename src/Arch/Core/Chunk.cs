@@ -391,7 +391,7 @@ public partial struct Chunk
         for (var i = 0; i < sourceComponents.Length; i++)
         {
             var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
+            var sourceType = (ComponentType) sourceArray.GetType().GetElementType()!;
 
             if (!destination.Has(sourceType))
             {
