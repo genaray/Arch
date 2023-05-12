@@ -1161,7 +1161,7 @@ public partial class World
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
-        OnComponentAdded(in entity, type);
+        OnComponentAdded(entity, type);
     }
 
     /// <summary>
