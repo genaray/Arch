@@ -679,13 +679,12 @@ public partial class World
             ref var componentFirstElement = ref chunk.GetFirst<T>();
             foreach (var index in chunk)
             {
-#if EVENTS
-                ref var entity = ref chunk.Entity(index);
-#endif
                 ref var component = ref Unsafe.Add(ref componentFirstElement, index);
                 component = value;
-                
+#if EVENTS
+                ref var entity = ref chunk.Entity(index);
                 OnComponentSet<T>(entity);
+#endif
             }
         }
     }

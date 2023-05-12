@@ -4,6 +4,8 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+#if EVENTS
+
 /// <summary>
 ///     The <see cref="EventTest"/> class
 ///     adds several methods for checking if events are fired correctly upon entity modifcation. 
@@ -274,3 +276,5 @@ public class EventTest
     {
     }
 }
+
+#endif
