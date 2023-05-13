@@ -912,7 +912,7 @@ public partial class World
         var edgeIndex = type.Id - 1;
 
 #if NET5_0_OR_GREATER
-        newArchetype = oldArchetype.AddOrGetAddEdge(edgeIndex, out var exists);
+        newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
         if (!exists)
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
@@ -1146,7 +1146,7 @@ public partial class World
         var edgeIndex = type.Id - 1;
 
 #if NET5_0_OR_GREATER
-        var newArchetype = oldArchetype.AddOrGetAddEdge(edgeIndex, out var exists);
+        var newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
         if (!exists)
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(type));

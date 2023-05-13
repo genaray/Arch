@@ -48,7 +48,7 @@ public partial class Archetype
     ///     cache if it did not exist.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ref Archetype AddOrGetAddEdge(int index, [UnscopedRef] out bool exists)
+    internal ref Archetype CreateOrGetAddEdge(int index, [UnscopedRef] out bool exists)
     {
         return ref _addEdges.AddOrGet(index, out exists);
     }
