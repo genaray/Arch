@@ -1,11 +1,8 @@
 using System.Diagnostics.Contracts;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
-using CommunityToolkit.HighPerformance;
 using JobScheduler;
-using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
@@ -469,21 +466,6 @@ public partial class World : IDisposable
 
 public partial class World
 {
-    private readonly struct ArchetypeCreationData
-    {
-        internal readonly World World;
-        internal readonly ComponentType[] Types;
-        internal readonly ComponentType Type;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
-        {
-            World = world;
-            Types = types;
-            Type = type;
-        }
-    };
-
     /// <summary>
     ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
     /// </summary>
@@ -568,12 +550,6 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         return archetype;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Archetype GetOrCreate(ArchetypeCreationData data)
-    {
-        return data.World.GetOrCreate(data.Types.Add(data.Type));
     }
 }
 
@@ -671,7 +647,7 @@ public partial class World
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
                     OnEntityDestroyed(entity);
-                    
+
                     var version = EntityInfo.GetVersion(entity.Id);
                     var recycledEntity = new RecycledEntity(entity.Id, version);
 
@@ -753,7 +729,7 @@ public partial class World
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
-            
+
             OnComponentAdded<T>(newArchetype);
         }
     }
@@ -791,13 +767,13 @@ public partial class World
             }
 
             OnComponentRemoved<T>(archetype);
-            
+
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
-            
+
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
         }
@@ -933,9 +909,21 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
-        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+        var edgeIndex = type.Id - 1;
 
-        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+#if NET5_0_OR_GREATER
+        newArchetype = oldArchetype.AddOrGetAddEdge(edgeIndex, out var exists);
+        if (!exists)
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
+        }
+#else
+        if (!oldArchetype.TryGetAddEdge(edgeIndex, out newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
+            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
+        }
+#endif
 
         Move(entity, oldArchetype, newArchetype, out slot);
         OnComponentAdded<T>(entity);
@@ -1155,9 +1143,21 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = (ComponentType) cmp.GetType();
-        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+        var edgeIndex = type.Id - 1;
 
-        var newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+#if NET5_0_OR_GREATER
+        var newArchetype = oldArchetype.AddOrGetAddEdge(edgeIndex, out var exists);
+        if (!exists)
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
+        }
+#else
+        if (!oldArchetype.TryGetAddEdge(edgeIndex, out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
+            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
+        }
+#endif
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
@@ -1199,7 +1199,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
-        // Move and fire events 
+        // Move and fire events
         Move(entity, oldArchetype, newArchetype, out var slot);
         foreach (var cmp in components)
         {
