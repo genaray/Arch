@@ -1,7 +1,9 @@
+using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core.CommandBuffer;
+namespace Arch.CommandBuffer;
 
+// NOTE: Does this really need to be nested?
 /// <summary>
 ///     The <see cref="SparseEntity"/> struct
 ///    represents an <see cref="Entity"/> with its index in the <see cref="SparseSet"/>.
@@ -84,33 +86,28 @@ internal class SparseArray : IDisposable
     {
         lock (this)
         {
-            // Resize entities
-            if (index >= Entities.Length)
+            // Skip since entity fits into array
+            if (index >= Capacity)
             {
-                var length = Entities.Length;
-                Array.Resize(ref Entities, index + 1);
-                Array.Fill(Entities, -1, length, index - length);
+                // Calculate new array size that fits the passed index
+                var amountOfMultiplications = (int)Math.Ceiling(Math.Log((index+1) / (float)Capacity, 2.0f));
+                var newLength = (int)Math.Pow(2, amountOfMultiplications) * Capacity;
+                newLength = Math.Max(Capacity, newLength+1);
+
+                // Resize entities array
+                Array.Resize(ref Entities, newLength);
+                Array.Fill(Entities, -1, Capacity, newLength-Capacity);
+
+                // Resize component array
+                var oldArray = Components;
+                var array = ComponentArray.CreateInstance(Type, newLength);
+                ComponentArray.Copy(ref oldArray, 0, ref array, 0, Size);
+                Components = array;
+                Capacity = newLength;
             }
 
             Entities[index] = Size;
             Size++;
-
-            // Resize components
-            if (Size < Components.Capacity)
-            {
-                return;
-            }
-
-            Capacity = Capacity <= 0 ? 1 : Capacity;
-
-            // Create new array and copy content
-            var oldArray = Components;
-            var array = ComponentArray.CreateInstance(Type, Capacity * 2);
-            ComponentArray.Copy(ref oldArray, 0, ref array, 0, Size);
-            oldArray.Dispose();
-            Components = array;
-
-            Capacity *= 2;
         }
     }
 
@@ -162,7 +159,7 @@ internal class SparseArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        for (var index = 0; index < Size; index++)
+        for (var index = 0; index < Entities.Length; index++)
         {
             Entities[index] = -1;
         }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Arch.Core.Extensions;
+﻿namespace Arch.Core.Extensions.Internal;
 
 /// <summary>
 ///     The <see cref="MathExtensions"/>
@@ -18,7 +12,7 @@ internal static class MathExtensions
     /// <param name="num"></param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int RoundToPowerOfTwo(int num)
+    internal static int RoundToPowerOfTwo(int num)
     {
         // If num is a power of 2, return it
         if (num > 0 && (num & (num - 1)) == 0)

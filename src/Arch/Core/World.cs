@@ -1,9 +1,12 @@
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using JobScheduler;
 using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
+using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -230,8 +233,8 @@ public partial class World : IDisposable
 
         // Map
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
-
         Size++;
+        OnEntityCreated(entity);
         return entity;
     }
 
@@ -285,6 +288,8 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
+
+        OnEntityDestroyed(entity);
     }
 
     /// <summary>
@@ -358,6 +363,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public int CountEntities(in QueryDescription queryDescription)
     {
         var counter = 0;
@@ -455,6 +461,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <returns>A new <see cref="Enumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Enumerator<Archetype> GetEnumerator()
     {
         return new Enumerator<Archetype>(Archetypes.Span);
@@ -474,6 +481,7 @@ public partial class World : IDisposable
     /// </summary>
     /// <returns>A string.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public override string ToString()
     {
         return $"World {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
@@ -482,6 +490,20 @@ public partial class World : IDisposable
 
 public partial class World
 {
+    private readonly struct ArchetypeCreationData
+    {
+        internal readonly World World;
+        internal readonly ComponentType[] Types;
+        internal readonly ComponentType Type;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
+        {
+            World = world;
+            Types = types;
+            Type = type;
+        }
+    };
 
     /// <summary>
     ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
@@ -495,6 +517,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     internal bool TryGetArchetype(int hash, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(hash, out archetype);
@@ -507,6 +530,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(BitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(bitset.GetHashCode(), out archetype);
@@ -519,6 +543,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(SpanBitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
     {
         return GroupToArchetype.TryGetValue(bitset.GetHashCode(), out archetype);
@@ -531,6 +556,7 @@ public partial class World
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGetArchetype(Span<ComponentType> types, [MaybeNullWhen(false)] out Archetype archetype)
     {
         var hash = Component.GetHashCode(types);
@@ -563,6 +589,12 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         return archetype;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Archetype GetOrCreate(ArchetypeCreationData data)
+    {
+        return data.World.GetOrCreate(data.Types.Add(data.Type));
     }
 }
 
@@ -634,115 +666,6 @@ public partial class World
     }
 }
 
-// Multithreading / Parallel
-
-public partial class World
-{
-
-    /// <summary>
-    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
-    /// </summary>
-    private PooledList<JobHandle> JobHandles { get; }
-
-    /// <summary>
-    ///     A cache used for the parallel queries to prevent list allocations.
-    /// </summary>
-    internal List<IJob> JobsCache { get; set; }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
-    {
-        var foreachJob = new ForEachJob
-        {
-            ForEach = forEntity
-        };
-
-        InlineParallelChunkQuery(in queryDescription, foreachJob);
-    }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
-    {
-        var iForEachJob = new IForEachJob<T>();
-        InlineParallelChunkQuery(in queryDescription, iForEachJob);
-    }
-
-    /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
-    /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
-    {
-        InlineParallelChunkQuery(in queryDescription, in iForEach);
-    }
-
-    /// <summary>
-    ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
-    /// </summary>
-    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
-    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
-    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
-    {
-        // Job scheduler needs to be initialized.
-        if (JobScheduler.JobScheduler.Instance is null)
-        {
-            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
-        }
-
-        // Cast pool in an unsafe fast way and run the query.
-        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
-        var query = Query(in queryDescription);
-        foreach (var archetype in query.GetArchetypeIterator())
-        {
-            var archetypeSize = archetype.Size;
-            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-            foreach (var range in part)
-            {
-                var job = pool.Get();
-                job.Start = range.Start;
-                job.Size = range.Length;
-                job.Chunks = archetype.Chunks;
-                job.Instance = innerJob;
-                JobsCache.Add(job);
-            }
-
-            // Schedule, flush, wait, return.
-            IJob.Schedule(JobsCache, JobHandles);
-            JobScheduler.JobScheduler.Instance.Flush();
-            JobHandle.Complete(JobHandles);
-            JobHandle.Return(JobHandles);
-
-            // Return jobs to pool.
-            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
-            {
-                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[jobIndex]);
-                pool.Return(job);
-            }
-
-            JobHandles.Clear();
-            JobsCache.Clear();
-        }
-    }
-}
 
 // Batch query operations
 
@@ -768,7 +691,8 @@ public partial class World
                 foreach (var index in chunk)
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-
+                    OnEntityDestroyed(entity);
+                    
                     var version = EntityInfo.GetVersion(entity.Id);
                     var recycledEntity = new RecycledEntity(entity.Id, version);
 
@@ -799,6 +723,10 @@ public partial class World
             {
                 ref var component = ref Unsafe.Add(ref componentFirstElement, index);
                 component = value;
+#if EVENTS
+                ref var entity = ref chunk.Entity(index);
+                OnComponentSet<T>(entity);
+#endif
             }
         }
     }
@@ -846,6 +774,8 @@ public partial class World
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
+            
+            OnComponentAdded<T>(newArchetype);
         }
     }
 
@@ -881,12 +811,14 @@ public partial class World
                 newArchetype = GetOrCreate(archetype.Types.Remove(typeof(T)));
             }
 
+            OnComponentRemoved<T>(archetype);
+            
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
-
+            
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
         }
@@ -909,6 +841,7 @@ public partial class World
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in cmp);
+        OnComponentSet(entity, cmp);
     }
 
     /// <summary>
@@ -918,6 +851,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has<T>(Entity entity)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -931,6 +865,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T Get<T>(Entity entity)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
@@ -947,16 +882,19 @@ public partial class World
     /// <param name="component">The found component.</param>
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGet<T>(Entity entity, out T component)
     {
         component = default;
-        if (!Has<T>(entity))
+
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+
+        if (!archetype.Has<T>())
         {
             return false;
         }
 
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
         component = archetype.Get<T>(ref slot);
         return true;
     }
@@ -969,16 +907,59 @@ public partial class World
     /// <param name="exists">True if it exists, oterhwhise false.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        if (!(exists = Has<T>(entity)))
+        var slot = EntityInfo.GetSlot(entity.Id);
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+
+        if (!(exists = archetype.Has<T>()))
         {
             return ref Unsafe.NullRef<T>();
         }
 
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
         return ref archetype.Get<T>(ref slot);
+    }
+
+    /// <summary>
+    ///     Ensures the existence of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T AddOrGet<T>(Entity entity, T cmp = default)
+    {
+        ref var component = ref TryGetRef<T>(entity, out var exists);
+        if (exists)
+        {
+            return ref component;
+        }
+
+        Add(entity, cmp);
+        return ref Get<T>(entity);
+    }
+
+    /// <summary>
+    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
+    /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
+    {
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = Component<T>.ComponentType;
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
+
+        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+
+        Move(entity, oldArchetype, newArchetype, out slot);
+        OnComponentAdded<T>(entity);
     }
 
     /// <summary>
@@ -990,23 +971,7 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component<T>.ComponentType.Id);
-
-        // Search for fitting archetype or create a new one
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
-        }
-
-        Move(entity, oldArchetype, newArchetype, out _);
+        Add<T>(entity, out _, out _);
     }
 
     /// <summary>
@@ -1019,26 +984,10 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(Entity entity, in T cmp)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component<T>.ComponentType.Id);
-
-        // Search for fitting archetype or create a new one
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(typeof(T)));
-        }
-
-        Move(entity, oldArchetype, newArchetype, out var slot);
+        Add<T>(entity, out var newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
+        OnComponentAdded<T>(entity);
     }
-
 
     /// <summary>
     ///     Removes an component from an <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
@@ -1065,6 +1014,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
         }
 
+        OnComponentRemoved<T>(entity);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 }
@@ -1084,6 +1034,7 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+        OnComponentSet(entity, cmp);
     }
 
     /// <summary>
@@ -1098,6 +1049,7 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
+            OnComponentSet(entity, cmp);
         }
     }
 
@@ -1108,6 +1060,7 @@ public partial class World
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool Has(Entity entity, ComponentType type)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1121,6 +1074,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool HasRange(Entity entity, Span<ComponentType> types)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1141,6 +1095,7 @@ public partial class World
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object Get(Entity entity, ComponentType type)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1154,6 +1109,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/> as a <see cref="Span{T}"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object[] GetRange(Entity entity, Span<ComponentType> types)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1167,6 +1123,7 @@ public partial class World
         return array;
     }
 
+    // ReSharper disable once PureAttributeOnVoidMethod
     /// <summary>
     ///     Returns an array of components of an <see cref="Entity"/>.
     /// </summary>
@@ -1174,6 +1131,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> where the components are put it.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public void GetRange(Entity entity, Span<ComponentType> types, Span<object> components)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1193,6 +1151,7 @@ public partial class World
     /// <param name="component">The found component.</param>
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object component)
     {
         component = default;
@@ -1216,22 +1175,14 @@ public partial class World
     public void Add(Entity entity, in object cmp)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        var type = (ComponentType) cmp.GetType();
+        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(Component.GetComponentType(cmp.GetType()).Id);
-
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(cmp.GetType()));
-        }
+        var newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
+        OnComponentAdded(entity, type);
     }
 
     /// <summary>
@@ -1257,6 +1208,7 @@ public partial class World
             spanBitSet.SetBit(type.Id);
         }
 
+        // Get existing or new archetype
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             var newComponents = new ComponentType[components.Length];
@@ -1268,10 +1220,12 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
+        // Move and fire events 
         Move(entity, oldArchetype, newArchetype, out var slot);
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
+            OnComponentAdded(entity, cmp.GetType());
         }
     }
 
@@ -1300,6 +1254,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
+        OnComponentRemoved(entity, type.Type);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
@@ -1326,11 +1281,17 @@ public partial class World
             spanBitSet.ClearBit(cmp.Id);
         }
 
+        // Get or Create new archetype
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(types.ToArray()));
         }
 
+        // Fire events and move
+        foreach (var type in types)
+        {
+            OnComponentRemoved(entity, type.Type);
+        }
         Move(entity, oldArchetype, newArchetype, out _);
     }
 }
@@ -1345,6 +1306,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it exists and is alive, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public bool IsAlive(Entity entity)
     {
         return EntityInfo.Has(entity.Id);
@@ -1357,6 +1319,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its version.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public int Version(Entity entity)
     {
         return EntityInfo.GetVersion(entity.Id);
@@ -1368,6 +1331,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="EntityReference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public EntityReference Reference(Entity entity)
     {
         var entityInfo = EntityInfo.TryGetVersion(entity.Id, out var version);
@@ -1380,6 +1344,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Archetype GetArchetype(Entity entity)
     {
         return EntityInfo.GetArchetype(entity.Id);
@@ -1391,6 +1356,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to its <see cref="Chunk"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ref readonly Chunk GetChunk(Entity entity)
     {
         var entityInfo = EntityInfo.GetEntitySlot(entity.Id);
@@ -1403,6 +1369,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>'s array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public ComponentType[] GetComponentTypes(Entity entity)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
@@ -1416,6 +1383,7 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A newly allocated array containing the entities components.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public object[] GetAllComponents(Entity entity)
     {
         // Get archetype and chunk.

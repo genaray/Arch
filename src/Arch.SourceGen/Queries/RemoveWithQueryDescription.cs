@@ -32,9 +32,11 @@ public static class RemoveWithQueryDesription
         var types = new StringBuilder().GenericTypeParams(amount);
 
         var clearIds = new StringBuilder();
+        var removeEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             clearIds.AppendLine($"spanBitSet.ClearBit(Component<T{index}>.ComponentType.Id);");
+            removeEvents.AppendLine($"OnComponentRemoved<T{index}>(archetype);");
         }
 
         var template =
@@ -65,6 +67,8 @@ public static class RemoveWithQueryDesription
                     {
                         newArchetype = GetOrCreate(archetype.Types.Remove({{types}}));
                     }
+
+                    {{removeEvents}}
 
                     // Get last slots before copy, for updating entityinfo later
                     var archetypeSlot = archetype.LastSlot;

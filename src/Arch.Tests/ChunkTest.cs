@@ -4,9 +4,9 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
-
 /// <summary>
-///     Checks if all mechanis of the <see cref="Chunk"/> work correctly.
+///     The <see cref="ChunkTest"/> class
+///     checks if the <see cref="Chunk"/>s work correctly.
 /// </summary>
 [TestFixture]
 public class ChunkTest
@@ -15,10 +15,10 @@ public class ChunkTest
     private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
 
     /// <summary>
-    ///     Checks if a <see cref="Chunk"/> gets filled correctly.
+    ///     Checks if data inside the chunk is being set correctly.
     /// </summary>
     [Test]
-    public void ChunkFill()
+    public void ChunkSet()
     {
         _chunk = new Chunk(1000, _types);
 
@@ -38,7 +38,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if a <see cref="Chunk"/> correctly removes its items
+    ///     Checks if removing of entities form the chunk works correctly. 
     /// </summary>
     [Test]
     public void ChunkRemove()
@@ -65,7 +65,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if a <see cref="Chunk"/> correctly removes all its items
+    ///     Checks if the removal of all entities works correctly. 
     /// </summary>
     [Test]
     public void ChunkRemoveAll()
@@ -95,7 +95,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if a <see cref="Chunk"/> correctly sets, removes and sets items.
+    ///     Checks if removing and setting an entity works correctly. 
     /// </summary>
     [Test]
     public void ChunkRemoveAndSetAgain()

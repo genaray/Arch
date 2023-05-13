@@ -1,12 +1,10 @@
-using CommunityToolkit.HighPerformance;
-
-namespace Arch.Core.Extensions;
+namespace Arch.Core.Extensions.Internal;
 
 /// <summary>
 ///     The <see cref="ArrayExtensions"/> class
 ///     adds several extensions methods for arrays and array related types.
 /// </summary>
-public static class ArrayExtensions
+internal static class ArrayExtensions
 {
     /// <summary>
     ///     Adds a list of items to an array.
@@ -91,6 +89,42 @@ public static class ArrayExtensions
         }
 
         return result;
+    }
+
+    /// <summary>
+    ///     Gets the element at an index in the array, or resizes it to fit an element
+    ///     at that index.
+    /// </summary>
+    /// <param name="array">The array to get the element from.</param>
+    /// <param name="index">The index of the element.</param>
+    /// <param name="exists">
+    ///     Whether or not the index was within the bounds of the array.
+    ///     When false, the array has been resized.
+    /// </param>
+    /// <param name="maxSize">The max size to grow the array to.</param>
+    /// <typeparam name="T">The element type of the array.</typeparam>
+    /// <returns>The element at that index. May be null.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ref T GetOrResize<T>(ref T[] array, int index, out bool exists, int? maxSize = null)
+    {
+        if (index < array.Length)
+        {
+            exists = true;
+            return ref array[index];
+        }
+
+        exists = false;
+
+        if (maxSize == null)
+        {
+            Array.Resize(ref array, (index * 2) + 1);
+        }
+        else
+        {
+            Array.Resize(ref array, Math.Min((index * 2) + 1, maxSize.Value));
+        }
+
+        return ref array[index];
     }
 
     /// <summary>

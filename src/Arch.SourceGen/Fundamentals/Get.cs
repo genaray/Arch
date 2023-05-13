@@ -258,6 +258,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Pure]
             public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
                 var slot = EntityInfo.GetSlot(entity.Id);
@@ -286,6 +287,7 @@ public static class GetExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Pure]
             public static Components<{{generics}}> Get<{{generics}}>(this Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];

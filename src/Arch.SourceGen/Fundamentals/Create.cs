@@ -18,6 +18,12 @@ public static class CreateExtensions
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
         var inParameters = new StringBuilder().InsertGenericInParams(amount);
 
+        var addEvents = new StringBuilder();
+        for (var index = 0; index <= amount; index++)
+        {
+            addEvents.AppendLine($"OnComponentAdded<T{index}>(entity);");
+        }
+
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,6 +55,9 @@ public static class CreateExtensions
                 EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
 
                 Size++;
+                OnEntityCreated(entity);
+
+                {{addEvents}}
                 return entity;
             }
             """;

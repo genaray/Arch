@@ -59,9 +59,11 @@ public class QueryGenerator : IIncrementalGenerator
             accessors.AppendLine("using Arch.Core.Utils;");
             accessors.AppendLine("using System.Diagnostics.Contracts;");
             accessors.AppendLine("using Arch.Core.Extensions;");
+            accessors.AppendLine("using Arch.Core.Extensions.Internal;");
             accessors.AppendLine("using System.Diagnostics.CodeAnalysis;");
             accessors.AppendLine("using CommunityToolkit.HighPerformance;");
             accessors.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
+            accessors.AppendLine("using System.Buffers;");
             accessors.AppendLine(
                 $$"""
                 namespace Arch.Core{

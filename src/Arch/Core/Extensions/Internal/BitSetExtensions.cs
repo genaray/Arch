@@ -1,13 +1,13 @@
 using Arch.Core.Utils;
 
-namespace Arch.Core.Extensions;
+namespace Arch.Core.Extensions.Internal;
 
 // NOTE: Should this really be an extension class? Why not simply add these methods to the `BitSet` type directly?
 /// <summary>
 ///     The <see cref="BitSetExtensions"/> class
 ///     adds several extension methods to the <see cref="BitSet"/> class.
 /// </summary>
-public static class BitSetExtensions
+internal static class BitSetExtensions
 {
     // NOTE: Should this be in `TypeExtensions`?
     /// <summary>

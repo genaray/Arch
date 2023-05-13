@@ -1,13 +1,13 @@
 using Arch.Core.Utils;
 
-namespace Arch.Core.Extensions;
+namespace Arch.Core.Extensions.Internal;
 
 // NOTE: Should this really be an extension class? Why not simply add these methods to the `ComponentType` type directly?
 /// <summary>
 ///     The <see cref="ComponentTypeExtensions"/> class
 ///     adds several extension methods for <see cref="ComponentType"/>.
 /// </summary>
-public static class ComponentTypeExtensions
+internal static class ComponentTypeExtensions
 {
 
     /// <summary>

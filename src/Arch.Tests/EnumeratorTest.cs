@@ -5,7 +5,12 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
-public partial class EnumeratorTest
+/// <summary>
+///     The <see cref="EnumeratorTest"/>
+///     checks if the enumerators inside the common classes work correctly. 
+/// </summary>
+[TestFixture]
+public class EnumeratorTest
 {
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
@@ -31,20 +36,15 @@ public partial class EnumeratorTest
         }
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> <see cref="World.Archetypes"/> are enumerated correctly. 
+    /// </summary>
     [Test]
     public void WorldArchetypeEnumeration()
     {
-
         var bitset = new BitSet();
         bitset.SetBit(1);
         bitset.SetBit(5);
-
-        Span<uint> stack = stackalloc uint[100];
-        bitset.AsSpan(stack);
-
-        var stackSet = new SpanBitSet(stack);
-        //stackSet.SetBit(0);
-        //stackSet.ClearBit(1);
 
         var counter = 0;
         foreach (ref var archetype in _world)
@@ -55,6 +55,9 @@ public partial class EnumeratorTest
         That(counter, Is.EqualTo(2));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="Archetype"/> <see cref="Archetype.Chunks"/> are enumerated correctly. 
+    /// </summary>
     [Test]
     public void ArchetypeChunkEnumeration()
     {
@@ -68,6 +71,9 @@ public partial class EnumeratorTest
         That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / archetype.CalculateEntitiesPerChunk(_group))));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="Query"/> archetypes are enumerated correctly. 
+    /// </summary>
     [Test]
     public void QueryArchetypeEnumeration()
     {
@@ -81,6 +87,9 @@ public partial class EnumeratorTest
         That(counter, Is.EqualTo(2));
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="Query"/> chunks are enumerated correctly. 
+    /// </summary>
     [Test]
     public void QueryChunkEnumeration()
     {

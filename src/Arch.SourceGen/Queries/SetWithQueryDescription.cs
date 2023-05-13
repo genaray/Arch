@@ -34,9 +34,11 @@ public static class SetWithQueryDesription
         var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
 
         var assignValues = new StringBuilder();
+        var assignValuesEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             assignValues.AppendLine($"t{index}Component = t{index}ComponentValue;");
+            assignValuesEvents.AppendLine($"OnComponentSet<T{index}>(entity);");
         }
 
         var template =
@@ -52,6 +54,10 @@ public static class SetWithQueryDesription
                     {
                         {{getComponents}}
                         {{assignValues}}
+            #if EVENTS
+                        var entity = chunk.Entity(entityIndex);
+                        {{assignValuesEvents}}
+            #endif
                     }
                 }
             }

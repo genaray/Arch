@@ -1,6 +1,7 @@
+using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core.CommandBuffer;
+namespace Arch.CommandBuffer;
 
 /// <summary>
 ///     The <see cref="StructuralEntity"/> struct
@@ -102,7 +103,7 @@ internal class StructuralSparseArray
     /// </summary>
     public void Clear()
     {
-        for (var index = 0; index < Size; index++)
+        for (var index = 0; index < Entities.Length; index++)
         {
             Entities[index] = -1;
         }

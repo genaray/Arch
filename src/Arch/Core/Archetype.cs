@@ -1,5 +1,6 @@
 using System.Buffers;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 
 namespace Arch.Core;
@@ -102,7 +103,7 @@ internal record struct Slot
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Slot Shift(in Slot source, int sourceCapacity, in Slot destination, int destinationCapacity)
     {
-        var freeSpot = new Slot(destination.Index, destination.ChunkIndex); // Moving one index further to target an empty destination spot.
+        var freeSpot = destination;
         var resultSlot = source + freeSpot;
         resultSlot.Index += source.ChunkIndex * (sourceCapacity - destinationCapacity); // Berücksichtigen der differenz zwischen den chunks und weiter verschieben.
         resultSlot.Wrap(destinationCapacity);
@@ -122,6 +123,12 @@ public sealed partial class Archetype : IDisposable
     ///     The minimum size of a regular L1 cache.
     /// </summary>
     internal const int BaseSize = 16000; // 16KB Chunk size
+
+    /// <summary>
+    ///     The max <see cref="ComponentType.Id"/> that <see cref="AddEdgesArray"/>
+    ///     will be used for before using <see cref="AddEdgesDict"/>.
+    /// </summary>
+    internal const int EdgesArrayMaxSize = 256;
 
     /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
@@ -151,6 +158,8 @@ public sealed partial class Archetype : IDisposable
 
         Size = 1;
         Capacity = 1;
+
+        AddEdges = new ArrayDictionary<Archetype>(EdgesArrayMaxSize);
     }
 
     /// <summary>
@@ -223,6 +232,16 @@ public sealed partial class Archetype : IDisposable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => (Size * EntitiesPerChunk) - (EntitiesPerChunk - GetChunk(Size - 1).Size);
     }
+
+    /// <summary>
+    ///     Caches other <see cref="Archetype"/>s indexed by the
+    ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
+    ///     Those with a <see cref="ComponentType.Id"/> equal to or lower than
+    ///     <see cref="EdgesArrayMaxSize"/> are accessed through an array lookup,
+    ///     otherwise a dictionary is used.
+    /// </summary>
+    /// <remarks>The index used is <see cref="ComponentType.Id"/> minus one.</remarks>
+    internal ArrayDictionary<Archetype> AddEdges;
 
     /// <summary>
     ///     Adds an <see cref="Arch.Core.Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.
@@ -469,7 +488,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(ComponentType type)
     {
-        var id = Component.GetComponentType(type).Id;
+        var id = type.Id;
         return BitSet.IsSet(id);
     }
 

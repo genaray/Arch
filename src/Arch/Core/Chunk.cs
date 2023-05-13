@@ -1,5 +1,7 @@
 using System.Diagnostics.Contracts;
+using Arch.Core.Events;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
 
@@ -297,7 +299,7 @@ public readonly unsafe struct ComponentArray : IDisposable
 ///     Through them it is possible to efficiently provide or trim memory for additional entities.
 /// </summary>
 [SkipLocalsInit]  // Really a speed improvements? The benchmark only showed a slight improvement
-public unsafe partial struct Chunk : IDisposable
+public unsafe partial struct Chunk
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="Chunk"/> struct.
@@ -363,6 +365,7 @@ public unsafe partial struct Chunk : IDisposable
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
+    ///     This won't fire an event for <see cref="EntityCreatedHandler"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Arch.Core.Entity"/> that will be inserted.</param>
     /// <returns>The index occupied by the <see cref="Arch.Core.Entity"/> in the chunk.</returns>
@@ -377,6 +380,7 @@ public unsafe partial struct Chunk : IDisposable
 
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
+    ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index in the array.</param>
@@ -458,6 +462,7 @@ public unsafe partial struct Chunk : IDisposable
     /// <summary>
     ///     Removes the <see cref="Arch.Core.Entity"/> at an index with all its components.
     ///     Copies the last <see cref="Arch.Core.Entity"/> in its place to ensure a uniform array.
+    ///     This won't fire an event for <see cref="ComponentRemovedHandler"/>.
     /// </summary>
     /// <param name="index">Its index.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -536,6 +541,7 @@ public partial struct Chunk
     private int Index<T>()
     {
         var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1 && id < ComponentIdToArrayIndex.Length, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
         return ComponentIdToArrayIndex[id];
     }
 
@@ -572,6 +578,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
+    ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>
@@ -591,7 +598,7 @@ public partial struct Chunk
     [Pure]
     public bool Has(ComponentType t)
     {
-        var id = Component.GetComponentType(t).Id;
+        var id = t.Id;
         if (id >= ComponentIdToArrayIndex.Count)
         {
             return false;

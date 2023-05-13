@@ -34,9 +34,12 @@ public static class AddWithQueryDescription
         var types = new StringBuilder().GenericTypeParams(amount);
 
         var setIds = new StringBuilder();
+        var addEvents = new StringBuilder();
+        var setEvents = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
             setIds.AppendLine($"spanBitSet.SetBit(Component<T{index}>.ComponentType.Id);");
+            addEvents.AppendLine($"OnComponentAdded<T{index}>(archetype);");
         }
 
         var template =
@@ -78,6 +81,7 @@ public static class AddWithQueryDescription
                     Archetype.Copy(archetype, newArchetype);
                     var lastSlot = newArchetype.LastSlot;
                     newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, {{inParameters}});
+                    {{addEvents}}
                     archetype.Clear();
                 }
             }
