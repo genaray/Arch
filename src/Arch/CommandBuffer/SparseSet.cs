@@ -290,7 +290,7 @@ internal class SparseSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddSparseArray(ComponentType type)
     {
-        Components[type.Id] = new SparseArray(type, type.Id);
+        Components[type.Id] = new SparseArray(type);
 
         Used[UsedSize] = type.Id;
         UsedSize++;
