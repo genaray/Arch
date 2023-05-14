@@ -105,15 +105,12 @@ internal static class ArrayExtensions
     /// <typeparam name="T">The element type of the array.</typeparam>
     /// <returns>The element at that index. May be null.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ref T GetOrResize<T>(ref T[] array, int index, out bool exists, int? maxSize = null)
+    internal static ref T GetOrResize<T>(ref T[] array, int index, int? maxSize = null)
     {
         if (index < array.Length)
         {
-            exists = true;
             return ref array[index];
         }
-
-        exists = false;
 
         if (maxSize == null)
         {
