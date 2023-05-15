@@ -106,6 +106,27 @@ public partial class CommandBufferTest
 
         World.Destroy(world);
     }
+
+    [Test]
+    public void CommandBufferIndexTest()
+    {
+        var world = World.Create();
+        var buffer = new CommandBuffer.CommandBuffer(world);
+
+        var first = world.Create();
+        var second = world.Create<Rotation>();
+
+        buffer.Add<Transform>(first);
+        buffer.Set(first, new Transform());
+        buffer.Set(second, new Rotation { X = 5 });
+
+        buffer.Playback();
+
+        IsTrue(world.Has<Transform>(first));
+        IsFalse(world.Has<Rotation>(first));
+        That(world.Get<Rotation>(second).X, Is.EqualTo(5));
+        IsFalse(world.Has<Transform>(second));
+    }
 }
 
 [TestFixture]
