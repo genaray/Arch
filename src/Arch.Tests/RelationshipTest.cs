@@ -97,6 +97,8 @@ public class RelationshipTest
         Assert.That(() => _world.GetRelationships<ParentOf>(parent), Throws.Exception);
         Assert.That(() => _world.GetRelationships<ChildOf>(childOne), Throws.Exception);
         Assert.That(() => _world.GetRelationships<ChildOf>(childTwo), Throws.Exception);
+
+        _world.Destroy(parent);
     }
 
     [Test]

@@ -37,6 +37,15 @@ public partial class World
             {
                 buffer.Destroy(this, target);
             }
+
+            ref var targetRelationships = ref TryGetRefRelationships<ArchRelationshipComponent>(target, out exists);
+
+            if (!exists)
+            {
+                continue;
+            }
+
+            targetRelationships.Remove(entity);
         }
     }
 
