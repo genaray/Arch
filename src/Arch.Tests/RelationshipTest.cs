@@ -38,10 +38,10 @@ public class RelationshipTest
         Assert.That(Unsafe.IsNullRef(ref _world.TryGetRefRelationships<ParentOf>(parent, out var exists)));
         Assert.False(exists);
 
-        _world.TryGetRefRelationships<ChildOf>(childOne, out exists);
+        Assert.That(Unsafe.IsNullRef(ref _world.TryGetRefRelationships<ChildOf>(childOne, out exists)));
         Assert.False(exists);
 
-        _world.TryGetRefRelationships<ChildOf>(childTwo, out exists);
+        Assert.That(Unsafe.IsNullRef(ref _world.TryGetRefRelationships<ChildOf>(childTwo, out exists)));
         Assert.False(exists);
     }
 
