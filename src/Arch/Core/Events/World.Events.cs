@@ -8,22 +8,27 @@ namespace Arch.Core;
 public partial class World
 {
     /// <summary>
-    ///     The initial capacity for the <see cref="_compEvents"/> array. 
+    ///     The initial capacity for the <see cref="_compEvents"/> array.
     /// </summary>
     private const int InitialCapacity = 128;
-    
+
     /// <summary>
     ///     All <see cref="EntityCreatedHandler"/>s in a <see cref="List{T}"/> which will be called upon entity creation.
     /// </summary>
     private readonly List<EntityCreatedHandler> _entityCreatedHandlers = new(InitialCapacity);
-    
+
     /// <summary>
-    ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called upon entity destruction.
+    ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called before entity destruction.
+    /// </summary>
+    private readonly List<EntityDestroyingHandler> _entityDestroyingHandlers = new(InitialCapacity);
+
+    /// <summary>
+    ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called after entity destruction.
     /// </summary>
     private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(InitialCapacity);
-    
+
     /// <summary>
-    ///     All <see cref="Events"/> in an array which will be acessed for add, remove or set operations. 
+    ///     All <see cref="Events"/> in an array which will be acessed for add, remove or set operations.
     /// </summary>
     private Events.Events[] _compEvents = new Events.Events[InitialCapacity];
 
@@ -39,7 +44,18 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds a delegate to be called when an entity is destroyed.
+    ///     Adds a delegate to be called before an entity is destroyed.
+    /// </summary>
+    /// <param name="handler">The delegate to call.</param>
+    public void SubscribeEntityDestroying(EntityDestroyingHandler handler)
+    {
+#if EVENTS
+        _entityDestroyingHandlers.Add(handler);
+#endif
+    }
+
+    /// <summary>
+    ///     Adds a delegate to be called after an entity is destroyed.
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
     public void SubscribeEntityDestroyed(EntityDestroyedHandler handler)
@@ -126,6 +142,21 @@ public partial class World
     /// </summary>
     /// <param name="entity">The entity that got destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void OnEntityDestroying(Entity entity)
+    {
+#if EVENTS
+        for (var i = 0; i < _entityDestroyingHandlers.Count; i++)
+        {
+            _entityDestroyingHandlers[i](in entity);
+        }
+#endif
+    }
+
+    /// <summary>
+    ///     Calls all handlers subscribed to entity deletion.
+    /// </summary>
+    /// <param name="entity">The entity that got destroyed.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnEntityDestroyed(Entity entity)
     {
 #if EVENTS
@@ -171,7 +202,7 @@ public partial class World
         }
 #endif
     }
-    
+
 
     /// <summary>
     ///     Calls all generic handlers subscribed to component removal.
@@ -191,7 +222,7 @@ public partial class World
 #endif
     }
 
-    
+
     /// <summary>
     ///     Calls all handlers subscribed to component addition of this type.
     /// </summary>
@@ -206,14 +237,14 @@ public partial class World
         {
             return;
         }
-        
+
         for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
         {
             events.ComponentAddedHandlers[i](in entity);
         }
 #endif
     }
-    
+
     /// <summary>
     ///     Calls all handlers subscribed to component setting of this type.
     /// </summary>
@@ -235,7 +266,7 @@ public partial class World
         }
 #endif
     }
-    
+
     /// <summary>
     ///     Calls all handlers subscribed to component removal.
     /// </summary>
@@ -251,14 +282,14 @@ public partial class World
             return;
         }
 
-        
+
         for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
         {
             events.ComponentRemovedHandlers[i](entity);
         }
 #endif
     }
-    
+
     /// <summary>
     ///     Calls all handlers subscribed to component addition of this type for entities in a archetype range.
     /// </summary>
@@ -280,7 +311,7 @@ public partial class World
         }
 #endif
     }
-    
+
     /// <summary>
     ///     Calls all handlers subscribed to component removal of this type for entities in a archetype range.
     /// </summary>

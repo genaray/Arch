@@ -273,7 +273,7 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
-        ref var relationships = ref TryGetRefRelationships<ArchRelationshipComponent>(entity, out var exists);
+        OnEntityDestroying(entity);
 
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
@@ -288,20 +288,6 @@ public partial class World : IDisposable
         Size--;
 
         OnEntityDestroyed(entity);
-
-        if (exists)
-        {
-            foreach (var (target, relationship) in relationships.Elements)
-            {
-                var buffer = relationship.Relationships;
-                buffer.Remove(entity);
-
-                if (buffer.Count == 0)
-                {
-                    buffer.Destroy(this, target);
-                }
-            }
-        }
     }
 
     /// <summary>

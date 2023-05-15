@@ -5,6 +5,41 @@ namespace Arch.Core;
 
 public partial class World
 {
+    private bool _handlingRelationshipCleanup;
+
+    public void HandleRelationshipCleanup()
+    {
+        if (_handlingRelationshipCleanup)
+        {
+            return;
+        }
+
+        SubscribeEntityDestroying(CleanupRelationships);
+
+        _handlingRelationshipCleanup = true;
+    }
+
+    private void CleanupRelationships(in Entity entity)
+    {
+        ref var relationships = ref TryGetRefRelationships<ArchRelationshipComponent>(entity, out var exists);
+
+        if (!exists)
+        {
+            return;
+        }
+
+        foreach (var (target, relationship) in relationships.Elements)
+        {
+            var buffer = relationship.Relationships;
+            buffer.Remove(entity);
+
+            if (buffer.Count == 0)
+            {
+                buffer.Destroy(this, target);
+            }
+        }
+    }
+
     /// <summary>
     ///     Ensures the existence of a buffer of relationships on an <see cref="Entity"/>.
     /// </summary>

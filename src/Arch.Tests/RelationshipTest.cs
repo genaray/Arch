@@ -3,6 +3,8 @@ using Arch.Core.Relationships;
 
 namespace Arch.Tests;
 
+#if EVENTS
+
 [TestFixture]
 public class RelationshipTest
 {
@@ -17,6 +19,8 @@ public class RelationshipTest
     [Test]
     public void CreateRelationship()
     {
+        _world.HandleRelationshipCleanup();
+
         // Create without setting any relationships yet
         var parent = _world.Create();
         var childOne = _world.Create();
@@ -119,3 +123,5 @@ public class RelationshipTest
         Assert.That(entities, Does.Contain(childTwo));
     }
 }
+
+#endif
