@@ -18,11 +18,6 @@ public partial class World
     private readonly List<EntityCreatedHandler> _entityCreatedHandlers = new(InitialCapacity);
 
     /// <summary>
-    ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called before entity destruction.
-    /// </summary>
-    private readonly List<EntityDestroyingHandler> _entityDestroyingHandlers = new(InitialCapacity);
-
-    /// <summary>
     ///     All <see cref="EntityDestroyedHandler"/>s in a <see cref="List{T}"/> which will be called after entity destruction.
     /// </summary>
     private readonly List<EntityDestroyedHandler> _entityDestroyedHandlers = new(InitialCapacity);
@@ -40,17 +35,6 @@ public partial class World
     {
 #if EVENTS
         _entityCreatedHandlers.Add(handler);
-#endif
-    }
-
-    /// <summary>
-    ///     Adds a delegate to be called before an entity is destroyed.
-    /// </summary>
-    /// <param name="handler">The delegate to call.</param>
-    public void SubscribeEntityDestroying(EntityDestroyingHandler handler)
-    {
-#if EVENTS
-        _entityDestroyingHandlers.Add(handler);
 #endif
     }
 
@@ -133,21 +117,6 @@ public partial class World
         for (var i = 0; i < _entityCreatedHandlers.Count; i++)
         {
             _entityCreatedHandlers[i](in entity);
-        }
-#endif
-    }
-
-    /// <summary>
-    ///     Calls all handlers subscribed to entity deletion.
-    /// </summary>
-    /// <param name="entity">The entity that got destroyed.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnEntityDestroying(Entity entity)
-    {
-#if EVENTS
-        for (var i = 0; i < _entityDestroyingHandlers.Count; i++)
-        {
-            _entityDestroyingHandlers[i](in entity);
         }
 #endif
     }

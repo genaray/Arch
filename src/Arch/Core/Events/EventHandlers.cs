@@ -6,11 +6,6 @@
 public delegate void EntityCreatedHandler(in Entity entity);
 
 /// <summary>
-///     A delegate called before a <see cref="Entity"/> is destroyed.
-/// </summary>
-public delegate void EntityDestroyingHandler(in Entity entity);
-
-/// <summary>
 ///     A delegate called once a <see cref="Entity"/> was destroyed.
 /// </summary>
 public delegate void EntityDestroyedHandler(in Entity entity);

@@ -273,7 +273,7 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
-        OnEntityDestroying(entity);
+        OnEntityDestroyed(entity);
 
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
@@ -286,8 +286,6 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
-
-        OnEntityDestroyed(entity);
     }
 
     /// <summary>

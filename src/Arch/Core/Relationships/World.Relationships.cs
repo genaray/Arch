@@ -14,7 +14,7 @@ public partial class World
             return;
         }
 
-        SubscribeEntityDestroying(CleanupRelationships);
+        SubscribeEntityDestroyed(CleanupRelationships);
 
         _handlingRelationshipCleanup = true;
     }
