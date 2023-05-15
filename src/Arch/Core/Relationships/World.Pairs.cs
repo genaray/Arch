@@ -14,7 +14,14 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ref EntityRelationshipBuffer<T> AddOrGetRelationships<T>(Entity source)
     {
-        return ref AddOrGet(source, static () => new EntityRelationshipBuffer<T>());
+        ref var component = ref TryGetRef<EntityRelationshipBuffer<T>>(source, out var exists);
+        if (exists)
+        {
+            return ref component;
+        }
+
+        Add(source, new EntityRelationshipBuffer<T>());
+        return ref Get<EntityRelationshipBuffer<T>>(source);
     }
 
     /// <summary>
