@@ -155,16 +155,11 @@ public static class WorldExtensions
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-#if EVENTS
-        var componentTypes = ArrayPool<Type>.Shared.Rent(components.Count);
-#endif
+
         for (var index = 0; index < components.Count; index++)
         {
-            var type = Component.GetComponentType(components[index]);
+            var type = components[index];
             spanBitSet.SetBit(type.Id);
-#if EVENTS
-            componentTypes[index] = type.Type;
-#endif
         }
 
         if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
@@ -176,10 +171,8 @@ public static class WorldExtensions
 #if EVENTS
         for (var i = 0; i < components.Count; i++)
         {
-            world.OnComponentAdded(in entity, componentTypes[i]);
+            world.OnComponentAdded(entity, components[i]);
         }
-
-        ArrayPool<Type>.Shared.Return(componentTypes, true);
 #endif
     }
 

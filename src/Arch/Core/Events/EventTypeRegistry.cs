@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
+using Arch.Core.Utils;
 
 namespace Arch.Core.Events;
 
@@ -17,7 +18,7 @@ internal static class EventTypeRegistry
     /// <summary>
     ///     A <see cref="Dictionary{TKey,TValue}"/> mapping all EventTypes to their id.
     /// </summary>
-    internal static readonly ConcurrentDictionary<Type, int> EventIds = new();
+    internal static readonly ConcurrentDictionary<ComponentType, int> EventIds = new();
 }
 
 /// <summary>

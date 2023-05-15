@@ -7,7 +7,7 @@
 internal class Events
 {
     internal readonly List<ComponentAddedHandler> ComponentAddedHandlers = new();
-    internal readonly List<ComponentSetHandler> NonGenericComponentSetHandlers = new();
+    internal readonly List<ComponentSetHandler> ComponentSetHandlers = new();
     internal readonly List<ComponentRemovedHandler> ComponentRemovedHandlers = new();
 }
 
@@ -18,5 +18,7 @@ internal class Events
 /// <typeparam name="T"></typeparam>
 internal class Events<T> : Events
 {
-    internal readonly List<ComponentSetHandler<T>> ComponentSetHandlers = new();
+    internal readonly List<ComponentAddedHandler<T>> ComponentAddedGenericHandlers = new();
+    internal readonly List<ComponentSetHandler<T>> ComponentSetGenericHandlers = new();
+    internal readonly List<ComponentRemovedHandler<T>> ComponentRemovedGenericHandlers = new();
 }

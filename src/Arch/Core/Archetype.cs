@@ -103,7 +103,7 @@ internal record struct Slot
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Slot Shift(in Slot source, int sourceCapacity, in Slot destination, int destinationCapacity)
     {
-        var freeSpot = new Slot(destination.Index, destination.ChunkIndex); // Moving one index further to target an empty destination spot.
+        var freeSpot = destination;
         var resultSlot = source + freeSpot;
         resultSlot.Index += source.ChunkIndex * (sourceCapacity - destinationCapacity); // Berücksichtigen der differenz zwischen den chunks und weiter verschieben.
         resultSlot.Wrap(destinationCapacity);
@@ -152,6 +152,8 @@ public sealed partial class Archetype
 
         Size = 1;
         Capacity = 1;
+
+        _addEdges = new ArrayDictionary<Archetype>(EdgesArrayMaxSize);
     }
 
     /// <summary>
@@ -457,7 +459,7 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(ComponentType type)
     {
-        var id = Component.GetComponentType(type).Id;
+        var id = type.Id;
         return BitSet.IsSet(id);
     }
 
