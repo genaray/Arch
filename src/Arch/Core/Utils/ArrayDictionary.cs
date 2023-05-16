@@ -53,10 +53,8 @@ internal class ArrayDictionary<TValue>
             exists = !Equals(value, default(TValue));
             return ref value;
         }
-        else
-        {
-            return ref CollectionsMarshal.GetValueRefOrAddDefault(_dictionary, index, out exists)!;
-        }
+
+        return ref CollectionsMarshal.GetValueRefOrAddDefault(_dictionary, index, out exists)!;
     }
 #else
     /// <summary>

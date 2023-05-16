@@ -909,21 +909,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
-        var edgeIndex = type.Id - 1;
-
-#if NET5_0_OR_GREATER
-        newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
-        if (!exists)
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-        }
-#else
-        if (!oldArchetype.TryGetAddEdge(edgeIndex, out newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
-        }
-#endif
+        newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out slot);
         OnComponentAdded<T>(entity);
@@ -1143,21 +1129,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = (ComponentType) cmp.GetType();
-        var edgeIndex = type.Id - 1;
-
-#if NET5_0_OR_GREATER
-        var newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
-        if (!exists)
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-        }
-#else
-        if (!oldArchetype.TryGetAddEdge(edgeIndex, out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
-        }
-#endif
+        var newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
