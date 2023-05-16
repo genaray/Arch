@@ -1205,7 +1205,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
-        OnComponentRemoved(entity, type.Type);
+        OnComponentRemoved(entity, type);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
@@ -1241,7 +1241,7 @@ public partial class World
         // Fire events and move
         foreach (var type in types)
         {
-            OnComponentRemoved(entity, type.Type);
+            OnComponentRemoved(entity, type);
         }
         Move(entity, oldArchetype, newArchetype, out _);
     }
