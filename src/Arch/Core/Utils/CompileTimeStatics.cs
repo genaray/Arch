@@ -293,6 +293,12 @@ public static class ComponentRegistry
         return _types.TryGetValue(type, out componentType);
     }
 
+    /// <summary>
+    ///     Returns the size in bytes of the passed generic.
+    /// </summary>
+    /// <typeparam name="T">The generic.</typeparam>
+    /// <returns>Its size.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int SizeOf<T>()
     {
         if (typeof(T).IsValueType)
@@ -303,6 +309,13 @@ public static class ComponentRegistry
         return IntPtr.Size;
     }
 
+    /// TODO: Check if this still AOT compatible?
+    /// <summary>
+    ///     Returns the size in bytes of the passed type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <returns>Its size in bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int SizeOf(Type type)
     {
         if (type.IsValueType)
