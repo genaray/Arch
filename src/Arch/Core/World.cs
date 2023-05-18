@@ -930,21 +930,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
-        var edgeIndex = type.Id - 1;
-
-#if NET5_0_OR_GREATER
-        newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
-        if (!exists)
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-        }
-#else
-        if (!oldArchetype.TryGetAddEdge(edgeIndex, out newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
-        }
-#endif
+        newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out slot);
         OnComponentAdded<T>(entity);
@@ -1164,21 +1150,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = (ComponentType) cmp.GetType();
-        var edgeIndex = type.Id - 1;
-
-#if NET5_0_OR_GREATER
-        var newArchetype = oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
-        if (!exists)
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-        }
-#else
-        if (!oldArchetype.TryGetAddEdge(edgeIndex, out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
-        }
-#endif
+        var newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
@@ -1254,7 +1226,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
-        OnComponentRemoved(entity, type.Type);
+        OnComponentRemoved(entity, type);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
@@ -1290,7 +1262,7 @@ public partial class World
         // Fire events and move
         foreach (var type in types)
         {
-            OnComponentRemoved(entity, type.Type);
+            OnComponentRemoved(entity, type);
         }
         Move(entity, oldArchetype, newArchetype, out _);
     }
