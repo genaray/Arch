@@ -95,12 +95,17 @@ public partial class World : IDisposable
     ///     A list of all existing <see cref="Worlds"/>.
     ///     Should not be modified by the user.
     /// </summary>
-    public static List<World> Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(1);
+    public static World[] Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
     
     /// <summary>
     ///     Stores recycled <see cref="World"/> ids.
     /// </summary>
     internal static PooledQueue<int> RecycledWorldIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
+
+    /// <summary>
+    ///     Tracks how many <see cref="Worlds"/> exists. 
+    /// </summary>
+    internal static int WorldSize = 0;
 
     /// <summary>
     ///     The unique <see cref="World"/> id.
@@ -144,11 +149,20 @@ public partial class World : IDisposable
     public static World Create()
     {
         var recycle = RecycledWorldIds.TryDequeue(out var id);
-        var recycledId = recycle ? id : Worlds.Count;
+        var recycledId = recycle ? id : WorldSize++;
         
         var world = new World(recycledId);
-        Worlds.Insert(recycledId, world);
         
+        // If you need to ensure a higher capacity, you can manually check and increase it
+        if (recycledId >= Worlds.Length)
+        {
+            var newCapacity = Worlds.Length * 2;
+            var worlds = Worlds;
+            Array.Resize(ref worlds, newCapacity);
+            Worlds = worlds;
+        }
+
+        Worlds[recycledId] = world;
         return world;
     }
 
@@ -160,7 +174,8 @@ public partial class World : IDisposable
     {
         Worlds[world.Id] = null;
         RecycledWorldIds.Enqueue(world.Id);
-
+        WorldSize--;
+        
         world.Capacity = 0;
         world.Size = 0;
 
