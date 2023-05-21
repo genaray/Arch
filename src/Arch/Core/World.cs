@@ -96,6 +96,11 @@ public partial class World : IDisposable
     ///     Should not be modified by the user.
     /// </summary>
     public static List<World> Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(1);
+    
+    /// <summary>
+    ///     Stores recycled <see cref="World"/> ids.
+    /// </summary>
+    internal static PooledQueue<int> RecycledWorldIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
 
     /// <summary>
     ///     The unique <see cref="World"/> id.
@@ -138,10 +143,12 @@ public partial class World : IDisposable
     /// <returns>The created <see cref="World"/> instance.</returns>
     public static World Create()
     {
-        var worldSize = Worlds.Count;
-        var world = new World(worldSize);
-        Worlds.Add(world);
-
+        var recycle = RecycledWorldIds.TryDequeue(out var id);
+        var recycledId = recycle ? id : Worlds.Count;
+        
+        var world = new World(recycledId);
+        Worlds.Insert(recycledId, world);
+        
         return world;
     }
 
@@ -151,7 +158,8 @@ public partial class World : IDisposable
     /// <param name="world">The <see cref="World"/>.</param>
     public static void Destroy(World world)
     {
-        Worlds.Remove(world);
+        Worlds[world.Id] = null;
+        RecycledWorldIds.Enqueue(world.Id);
 
         world.Capacity = 0;
         world.Size = 0;

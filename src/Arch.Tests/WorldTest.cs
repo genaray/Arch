@@ -41,6 +41,19 @@ public partial class WorldTest
     }
 
     /// <summary>
+    ///     Checks if the <see cref="World"/> is being recycled correctly.
+    /// </summary>
+    [Test]
+    public void WorldRecycle()
+    {
+        var firstWorld = World.Create();
+        World.Destroy(firstWorld);
+
+        var secondWorld = World.Create();
+        That(secondWorld.Id, Is.EqualTo(firstWorld.Id));
+    }
+    
+    /// <summary>
     ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
     /// </summary>
     [Test]
