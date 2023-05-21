@@ -86,17 +86,17 @@ internal class EntityInfoStorage
     /// <summary>
     ///     The <see cref="Entity"/> versions in an jagged array.
     /// </summary>
-    internal JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get;}
+    internal JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Archetype"/>s in an jagged array.
     /// </summary>
-    internal JaggedArray<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    internal JaggedArray<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Slot"/>s in an jagged array.
     /// </summary>
-    internal JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    internal JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
@@ -329,7 +329,7 @@ internal class JaggedArray<T>
     /// <summary>
     ///     The jagged array storing the <see cref="EntityInfo"/>.
     /// </summary>
-    private T[][] _entityInfos = Array.Empty<T[]>();
+    private T[][] _items = Array.Empty<T[]>();
 
     /// <summary>
     ///     The fill value for new initialized arrays.
@@ -369,6 +369,17 @@ internal class JaggedArray<T>
     internal JaggedArray(int capacity, T filler = default)
     {
         EnsureCapacity(capacity);
+        this.filler = filler;
+    }
+    
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="JaggedArray{T}"/> class.
+    /// </summary>
+    /// <param name="array">The initial array.</param>
+    /// <param name="filler">A default value which all slots will be filled with.</param>
+    internal JaggedArray(T[][] array, T filler = default)
+    {
+        this._items = array;
         this.filler = filler;
     }
 
@@ -413,13 +424,13 @@ internal class JaggedArray<T>
         IdToSlot(id, out var outerIndex, out var innerIndex);
 
         // If the item is outside the array. Then it definetly doesn't exist
-        if (outerIndex > _entityInfos.Length)
+        if (outerIndex > _items.Length)
         {
             entityInfo = filler;
             return false;
         }
 
-        ref var item = ref _entityInfos[outerIndex][innerIndex];
+        ref var item = ref _items[outerIndex][innerIndex];
 
         // If the item is the default then the nobody set its value.
         if (EqualityComparer<T>.Default.Equals(item, filler))
@@ -433,7 +444,7 @@ internal class JaggedArray<T>
     }
 
     /// <summary>
-    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_entityInfos"/> array.
+    ///     Converts the passed id to its inner and outer index ( or slot ) inside the <see cref="_items"/> array.
     /// </summary>
     /// <param name="id">The id.</param>
     /// <param name="outerIndex">The outer index.</param>
@@ -460,16 +471,16 @@ internal class JaggedArray<T>
             return;
         }
 
-        var currentSize = _entityInfos.Length;
+        var currentSize = _items.Length;
         var desiredSize = (capacity / _chunkSize) + 1;
 
-        Array.Resize(ref _entityInfos, desiredSize);
+        Array.Resize(ref _items, desiredSize);
 
         // Create the new arrays.
         for (int i = currentSize; i < desiredSize; i++)
         {
             var array = new T[_chunkSize];
-            _entityInfos[i] = new T[_chunkSize];
+            _items[i] = new T[_chunkSize];
             Array.Fill(array, filler);
         }
 
@@ -482,10 +493,10 @@ internal class JaggedArray<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TrimExcess()
     {
-        var lastIndexWithNonDefaultValues = _entityInfos.Length - 1;
+        var lastIndexWithNonDefaultValues = _items.Length - 1;
         for (var i = lastIndexWithNonDefaultValues; i >= 0; i--)
         {
-            if (ArrayContainsNonDefaultValues(_entityInfos[i]))
+            if (ArrayContainsNonDefaultValues(_items[i]))
             {
                 break;
             }
@@ -493,7 +504,7 @@ internal class JaggedArray<T>
             lastIndexWithNonDefaultValues = i - 1;
         }
 
-        Array.Resize(ref _entityInfos, lastIndexWithNonDefaultValues + 1);
+        Array.Resize(ref _items, lastIndexWithNonDefaultValues + 1);
         UpdateLargestId();
     }
 
@@ -503,7 +514,7 @@ internal class JaggedArray<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        foreach (var array in _entityInfos)
+        foreach (var array in _items)
         {
             Array.Fill(array, filler);
         }
@@ -515,7 +526,7 @@ internal class JaggedArray<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateLargestId()
     {
-        _largestId = _entityInfos.Length * _chunkSize;
+        _largestId = _items.Length * _chunkSize;
     }
 
     /// <summary>
@@ -551,7 +562,7 @@ internal class JaggedArray<T>
 
             EnsureCapacity(id);
             IdToSlot(id, out var outerIndex, out var innerIndex);
-            return ref _entityInfos[outerIndex][innerIndex];
+            return ref _items[outerIndex][innerIndex];
         }
     }
 
@@ -563,7 +574,18 @@ internal class JaggedArray<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator T[][](JaggedArray<T> jaggedArray)
     {
-        return jaggedArray._entityInfos;
+        return jaggedArray._items;
+    }
+    
+    /// <summary>
+    ///     A explicit operator converting a T[][] array to its <see cref="JaggedArray{T}"/>.
+    /// </summary>
+    /// <param name="array">The array.</param>
+    /// <returns>The newly created <see cref="JaggedArray{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static explicit operator JaggedArray<T>(T[][] array)
+    {
+        return new JaggedArray<T>(array);
     }
 }
 

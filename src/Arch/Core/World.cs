@@ -149,7 +149,7 @@ public partial class World : IDisposable
     public static World Create()
     {
         var recycle = RecycledWorldIds.TryDequeue(out var id);
-        var recycledId = recycle ? id : WorldSize++;
+        var recycledId = recycle ? id : WorldSize;
         
         var world = new World(recycledId);
         
@@ -163,6 +163,7 @@ public partial class World : IDisposable
         }
 
         Worlds[recycledId] = world;
+        WorldSize++;
         return world;
     }
 

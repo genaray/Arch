@@ -8,12 +8,63 @@ public static class DangerousWorldExtensions
 {
     
     /// <summary>
-    ///     Returns 
+    ///     Returns the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/> for reading or modifiyng it.
     /// </summary>
-    /// <param name="world"></param>
-    /// <returns></returns>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <returns>Its <see cref="EntityInfoStorage.Versions"/> array.</returns>
     public static int[][] GetVersions(this World world)
     {
         return (int[][])world.EntityInfo.Versions;
+    }
+    
+    /// <summary>
+    ///     Sets the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <param name="versions">The new versions array.</param>
+    public static void SetVersions(this World world, int[][] versions)
+    {
+        world.EntityInfo.Versions = (JaggedArray<int>)versions;
+    }
+    
+    /// <summary>
+    ///     Returns the <see cref="EntityInfoStorage.Slots"/> of a <see cref="World"/> for reading or modifiyng it.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <returns>Its <see cref="EntityInfoStorage.Slots"/> array.</returns>
+    public static (int,int)[][] GetSlots(this World world)
+    {
+        var array = (Slot[][])world.EntityInfo.Slots;
+        return Unsafe.As<(int,int)[][]>(array);
+    }
+    
+    /// <summary>
+    ///     Sets the <see cref="EntityInfoStorage.Slots"/> of a <see cref="World"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <param name="slots">The new slots array.</param>
+    public static void SetSlots(this World world, (int,int)[][] slots)
+    {
+        world.EntityInfo.Slots = (JaggedArray<Slot>) Unsafe.As<Slot[][]>(slots);
+    }
+    
+    /// <summary>
+    ///     Returns the <see cref="EntityInfoStorage.Archetypes"/> of a <see cref="World"/> for reading or modifiyng it.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <returns>Its <see cref="EntityInfoStorage.Slots"/> array.</returns>
+    public static Archetype[][] GetArchetypes(this World world)
+    {
+        return (Archetype[][])world.EntityInfo.Archetypes;
+    }
+    
+    /// <summary>
+    ///     Sets the <see cref="EntityInfoStorage.Archetypes"/> of a <see cref="World"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <param name="slots">The new slots array.</param>
+    public static void SetSlots(this World world, Archetype[][] slots)
+    {
+        world.EntityInfo.Archetypes = (JaggedArray<Archetype>)slots;
     }
 }

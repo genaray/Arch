@@ -1,6 +1,7 @@
 using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
