@@ -16,7 +16,7 @@ public static class DangerousEntityExtensions
     public static Entity CreateEntityStruct(int id, int world)
     {
 #if PURE_ECS
-        return new Entity(id);
+        return new Entity(id, 0);
 #else
         return new Entity(id, world);
 #endif

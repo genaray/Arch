@@ -6,6 +6,21 @@ namespace Arch.Core.Extensions.Dangerous;
 /// </summary>
 public static class DangerousWorldExtensions
 {
+
+    /// <summary>
+    ///     Sets the <see cref="World.Archetypes"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <param name="archetypes">The new list of <see cref="Archetype"/>s.</param>
+    public static void SetArchetypes(this World world, List<Archetype> archetypes)
+    {
+        world.Archetypes.AddRange(archetypes);
+        foreach (var archetype in archetypes)
+        {
+            world.Size += archetype.Entities;
+            world.Capacity += archetype.EntitiesPerChunk * archetype.ChunkSize;
+        }
+    }
     
     /// <summary>
     ///     Returns the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/> for reading or modifiyng it.

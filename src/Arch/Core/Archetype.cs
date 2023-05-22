@@ -187,18 +187,18 @@ public sealed partial class Archetype
     ///     How many <see cref="Chunk"/>' have been deposited within the <see cref="Chunks"/> array.
     ///     The total capacity.
     /// </summary>
-    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     The number of occupied/used <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
     /// </summary>
-    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     An array which stores the <see cref="Chunk"/>'s.
     ///     May contain null references since its being pooled, therefore use the <see cref="Size"/> and <see cref="Capacity"/> for acessing it.
     /// </summary>
-    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     Points to the last <see cref="Chunk"/> that is not yet full.

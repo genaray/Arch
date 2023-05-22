@@ -115,12 +115,12 @@ public partial class World : IDisposable
     /// <summary>
     ///     The amount of <see cref="Entity"/>'s stored by this instance.
     /// </summary>
-    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
     ///     The available capacity for <see cref="Entity"/>'s by this instance.
     /// </summary>
-    public int Capacity {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Capacity {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
     ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
@@ -148,6 +148,9 @@ public partial class World : IDisposable
     /// <returns>The created <see cref="World"/> instance.</returns>
     public static World Create()
     {
+#if PURE_ECS
+        return new World(-1);
+#else
         var recycle = RecycledWorldIds.TryDequeue(out var id);
         var recycledId = recycle ? id : WorldSize;
         
@@ -165,6 +168,7 @@ public partial class World : IDisposable
         Worlds[recycledId] = world;
         WorldSize++;
         return world;
+#endif
     }
 
     /// <summary>
@@ -173,10 +177,13 @@ public partial class World : IDisposable
     /// <param name="world">The <see cref="World"/>.</param>
     public static void Destroy(World world)
     {
+        
+#if !PURE_ECS
         Worlds[world.Id] = null;
         RecycledWorldIds.Enqueue(world.Id);
-        WorldSize--;
-        
+        WorldSize--;  
+#endif
+
         world.Capacity = 0;
         world.Size = 0;
 
