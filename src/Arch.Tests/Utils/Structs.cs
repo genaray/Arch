@@ -11,3 +11,7 @@ public struct Rotation
 }
 
 public struct Ai { }
+
+public record struct ParentOf;
+
+public record struct ChildOf;

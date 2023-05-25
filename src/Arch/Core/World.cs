@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Arch.Core.Extensions.Internal;
+using Arch.Core.Relationships;
 using Arch.Core.Utils;
 using Collections.Pooled;
 using JobScheduler;
@@ -303,6 +304,8 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
+        OnEntityDestroyed(entity);
+
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
@@ -314,8 +317,6 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
-
-        OnEntityDestroyed(entity);
     }
 
     /// <summary>
@@ -924,6 +925,26 @@ public partial class World
         }
 
         Add(entity, cmp);
+        return ref Get<T>(entity);
+    }
+
+    /// <summary>
+    ///     Ensures the existence of an component on an <see cref="Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="cmp">The component value used if its being added.</param>
+    /// <returns>A reference to the component.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref T AddOrGet<T>(Entity entity, Func<T> cmp)
+    {
+        ref var component = ref TryGetRef<T>(entity, out var exists);
+        if (exists)
+        {
+            return ref component;
+        }
+
+        Add(entity, cmp());
         return ref Get<T>(entity);
     }
 
