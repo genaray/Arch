@@ -166,7 +166,8 @@ This is all you need to know, with this little knowledge you are already able to
 However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki)! 
 There's more to explore, for example...
 
-- Bulk Entity Adding
+- Bulk Entity Creation
+- Batch Operations
 - High-performance Queries
 - Archetypes
 - Chunks
@@ -174,6 +175,8 @@ There's more to explore, for example...
 - Enumerators
 - CommandBuffers
 - Pure ECS
+- Events
+- Monogame, Unity, Godot Integration guides
 - More API 
 
 # Extensions
