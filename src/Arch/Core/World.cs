@@ -929,26 +929,6 @@ public partial class World
     }
 
     /// <summary>
-    ///     Ensures the existence of an component on an <see cref="Entity"/>.
-    /// </summary>
-    /// <typeparam name="T">The component type.</typeparam>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The component value used if its being added.</param>
-    /// <returns>A reference to the component.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T AddOrGet<T>(Entity entity, Func<T> cmp)
-    {
-        ref var component = ref TryGetRef<T>(entity, out var exists);
-        if (exists)
-        {
-            return ref component;
-        }
-
-        Add(entity, cmp());
-        return ref Get<T>(entity);
-    }
-
-    /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
