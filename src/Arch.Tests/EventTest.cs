@@ -1,5 +1,6 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
@@ -50,7 +51,7 @@ public class EventTest
         using var world = World.Create();
         world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentOne _) => _asserter.CompOneAdded.Add(entity));
         world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
-        
+
         // Create entity to check if created and add event were fired
         var entity = world.Create<EventTestComponentOne>();
     

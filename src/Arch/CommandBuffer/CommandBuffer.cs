@@ -315,7 +315,7 @@ public class CommandBuffer : IDisposable
             var entity = Resolve(wrappedEntity.Entity);
             Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            World.AddRange(entity, _addTypes);
+            World.AddRange_Internal(entity, _addTypes);
             _addTypes.Clear();
         }
 
@@ -349,11 +349,17 @@ public class CommandBuffer : IDisposable
                 var chunkArray = chunk.GetArray(sparseArray.Type);
                 Array.Copy(sparseArray.Components, sparseArray.Entities[id], chunkArray, chunkIndex, 1);
 
+#if EVENTS
                 // Entity also exists in add and the set component was added recently
-                if (Adds.Used.Length <= i && Adds.Components[Adds.Used[i]].Contains(id))
+                if (Adds.Used.Length > i && Adds.Components[Adds.Used[i]].Contains(id))
                 {
                     World.OnComponentAdded(entity, sparseArray.Type);
                 }
+                else
+                {
+                    World.OnComponentSet(entity, sparseArray.Type);
+                }
+#endif
             }
         }
 
