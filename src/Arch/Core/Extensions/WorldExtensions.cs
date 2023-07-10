@@ -126,7 +126,7 @@ public static class WorldExtensions
         }
     }
 
-        /// <summary>
+    /// <summary>
     ///     Adds a <see cref="IList{T}"/> of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>

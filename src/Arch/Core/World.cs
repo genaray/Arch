@@ -943,7 +943,6 @@ public partial class World
         newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out slot);
-        OnComponentAdded<T>(entity);
     }
 
     /// <summary>

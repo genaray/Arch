@@ -348,6 +348,12 @@ public class CommandBuffer : IDisposable
 
                 var chunkArray = chunk.GetArray(sparseArray.Type);
                 Array.Copy(sparseArray.Components, sparseArray.Entities[id], chunkArray, chunkIndex, 1);
+
+                // Entity also exists in add and the set component was added recently
+                if (Adds.Used.Length <= i && Adds.Components[Adds.Used[i]].Contains(id))
+                {
+                    World.OnComponentAdded(entity, sparseArray.Type);
+                }
             }
         }
 
