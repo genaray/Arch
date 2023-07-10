@@ -145,7 +145,7 @@ public static class WorldExtensions
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void AddRange_Internal(this World world, Entity entity, IList<ComponentType> components)
+    public static void AddRange(this World world, Entity entity, IList<ComponentType> components)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
 
@@ -168,18 +168,7 @@ public static class WorldExtensions
         }
 
         world.Move(entity, oldArchetype, newArchetype, out _);
-    }
-    
-    /// <summary>
-    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
-    [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void AddRange(this World world, Entity entity, IList<ComponentType> components)
-    {
-        AddRange_Internal(world, entity, components);
+        
 #if EVENTS
         for (var i = 0; i < components.Count; i++)
         {
