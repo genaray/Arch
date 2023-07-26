@@ -13,7 +13,7 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
     <PackageId>Arch</PackageId>
-    <Title>Arch ${Configuration}</Title>
+    <Title>Arch</Title>
     <Version>1.2.5.3-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
