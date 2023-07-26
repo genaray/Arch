@@ -47,11 +47,14 @@ jobs:
           6.0.x
           7.0.x
 
+    - name: Restore
+      run: dotnet restore
+
     - name: Build
-      run: ./bin/Build.sh
+      run: dotnet build --configuration Release --no-restore
 
     - name: Test
-      run: ./bin/Test.sh
+      run: dotnet test --logger trx --results-directory "TestResults"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v3
