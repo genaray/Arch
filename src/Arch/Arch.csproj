@@ -38,7 +38,7 @@ Worlds are now recycled correctly.</PackageReleaseNotes>
 
     <NoWarn>1701;1702;1591</NoWarn>
 
-    <Configurations>Debug;Release;</Configurations>
+    <Configurations>Debug;Debug-PureECS;Debug-Events;Release;Release-PureECS;Release-Events;</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -63,6 +63,10 @@ Worlds are now recycled correctly.</PackageReleaseNotes>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release-PureECS'">
     <DefineConstants>TRACE;PURE_ECS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using Arch.Core.Extensions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Arch.Benchmarks;
