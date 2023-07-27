@@ -48,10 +48,10 @@ jobs:
           7.0.x
 
     - name: Build
-      run: ./bin/Build.sh
+      run: ./scripts/Build.sh
 
     - name: Test
-      run: ./bin/Test.sh
+      run: ./scripts/Test.sh
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v3
