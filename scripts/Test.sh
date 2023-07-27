@@ -1,8 +1,22 @@
 #!/bin/bash
 
-dotnet test --configuration Debug --logger trx --results-directory "TestResults" || exit 1
-dotnet test --configuration Debug-PureECS --logger trx --results-directory "TestResults" || exit 1
-dotnet test --configuration Debug-Events --logger trx --results-directory "TestResults" || exit 1
-dotnet test --configuration Release --logger trx --results-directory "TestResults" || exit 1
-dotnet test --configuration Release-PureECS --logger trx --results-directory "TestResults" || exit 1
-dotnet test --configuration Release-Events --logger trx --results-directory "TestResults" || exit 1
+STATUS=0
+
+main() {
+    test Debug
+    test Debug-Events
+    test Debug-PureECS
+    test Release
+    test Release-Events
+    test Release-PureECS
+    exit $STATUS
+}
+
+test() {
+    dotnet test --configuration "$1" --logger trx --results-directory "TestResults"
+    if [[ "$?" != 0 ]]; then
+        STATUS=1
+    fi
+}
+
+main "$@"
