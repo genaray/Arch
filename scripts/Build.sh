@@ -78,7 +78,7 @@ main() {
         buildall
     fi
 
-    if [[ ! -z "$PUBLISHING " ]]; then
+    if [[ ! -z "$PUBLISHING" ]]; then
         publish
     fi
 }
