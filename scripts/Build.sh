@@ -136,17 +136,32 @@ build() {
     if [[ -z "$config" ]]; then
         error "Config not specified."
     fi
-    local package=Arch
-    local preset="$config"
     local variant="$2"
+
+    # Determine preset to build, and suffix to append to the package name. For
+    # release packages we don't include 'Release' in the suffix, but for 'Debug'
+    # packages we do include 'Debug'.
+    local preset="$config"
+    local suffix=
+    if [[ "$config" == Debug ]]; then
+        suffix=Debug
+    fi
     if [[ ! -z "$variant" ]]; then
         preset="$config-$variant"
-        package="Arch-$preset"
-        hackcsproj "$preset"
+        if [[ ! -z "$suffix" ]]; then
+            suffix="$suffix-"
+        fi
+        suffix="$suffix$variant"
+    fi
+
+    # Now hack the cs proj to append the suffix to the package name if
+    # necessary, then do the build.
+    if [[ ! -z "$suffix" ]]; then
+        hackcsproj "$suffix"
     fi
     doit dotnet build -c "$preset"
     doit dotnet pack -c "$preset" src/Arch/Arch.csproj
-    if [[ ! -z "$variant" ]]; then
+    if [[ ! -z "$suffix" ]]; then
         unhackcsproj
     fi
 }
