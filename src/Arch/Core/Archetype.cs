@@ -160,6 +160,15 @@ public sealed partial class Archetype
     ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     /// </summary>
     public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    
+    /// <summary>
+    ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory. 
+    /// </summary>
+    internal int[] LookupArray
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _componentIdToArrayIndex;
+    }
 
     /// <summary>
     ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.

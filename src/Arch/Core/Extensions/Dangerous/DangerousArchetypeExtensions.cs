@@ -15,7 +15,7 @@ public static class DangerousArchetypeExtensions
     /// <param name="archetype">The <see cref="Archetype"/>.</param>
     /// <param name="types">The <see cref="ComponentType"/>s.</param>
     /// <returns></returns>
-    public static Archetype CreateArchetype(this Archetype archetype, ComponentType[] types)
+    public static Archetype CreateArchetype(ComponentType[] types)
     {
         return new Archetype(types);
     }
@@ -39,5 +39,15 @@ public static class DangerousArchetypeExtensions
     {
         archetype.Chunks = chunks.ToArray();
         archetype.Capacity = chunks.Count;
+    }
+
+    /// <summary>
+    ///     Returns the internal lookup array of a <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <returns>Its lookup array.</returns>
+    public static int[] GetLookupArray(this Archetype archetype)
+    {
+        return archetype.LookupArray;
     }
 }

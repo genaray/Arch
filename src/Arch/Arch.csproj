@@ -9,21 +9,16 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Nullable>enable</Nullable>
     <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.6</Version>
+    <Version>1.2.6.1-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
-    <PackageReleaseNotes>Added Entity-Events.
-Added Archetype-Edges for faster single Add-Component operations.
-Better Component-Registration and methods, now also works for most structs.
-Increased performance for lookups and bulk operations due to better shift handling.
-Added dangerous utility methods for acessing some internals, this will be used in the serialisation package. 
-Worlds are now recycled correctly and more efficient due to plain array usage.
-CommandBuffer now invokes Events correctly.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added more dangerous utility methods. </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
@@ -34,7 +29,6 @@ CommandBuffer now invokes Events correctly.</PackageReleaseNotes>
     <LangVersion>11</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Apache2.0</Copyright>
-    <PackageLicenseUrl>https://github.com/genaray/Arch/blob/master/LICENSE.MD</PackageLicenseUrl>
 
     <NoWarn>1701;1702;1591</NoWarn>
 
