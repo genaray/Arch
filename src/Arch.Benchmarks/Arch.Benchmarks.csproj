@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;Release-PureECS;Release-Events;Debug-PureECS;Debug-Events;</Configurations>
     <!--<TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
   </PropertyGroup>
 
@@ -31,8 +32,28 @@
     <Using Include="BenchmarkDotNet.Validators" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>PURE_ECS</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug-PureECS'">
+    <DefineConstants>TRACE;PURE_ECS;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug-Events'">
+    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release-Events'">
+    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release-PureECS'">
+    <DefineConstants>TRACE;PURE_ECS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
