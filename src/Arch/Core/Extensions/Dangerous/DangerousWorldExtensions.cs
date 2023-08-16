@@ -18,10 +18,31 @@ public static class DangerousWorldExtensions
         foreach (var archetype in archetypes)
         {
             world.Size += archetype.Entities;
-            world.Capacity += archetype.EntitiesPerChunk * archetype.ChunkSize;
+            world.Capacity += archetype.EntitiesPerChunk * archetype.Size;
         }
     }
+
+    /// <summary>
+    ///     Ensures the capacity of the <see cref="World.EntityInfo"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="capacity">The new capacity.</param>
+    public static void EnsureCapacity(this World world, int capacity)
+    {
+        world.EntityInfo.EnsureCapacity(capacity);
+    }
     
+    /// <summary>
+    ///     Sets the <see cref="EntityInfo.Archetype"/> for an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    public static void SetArchetype(this World world, Entity entity, Archetype archetype)
+    {
+        world.EntityInfo.Archetypes[entity.Id] = archetype;
+    }
+
     /// <summary>
     ///     Returns the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/> for reading or modifiyng it.
     /// </summary>
@@ -31,7 +52,7 @@ public static class DangerousWorldExtensions
     {
         return (int[][])world.EntityInfo.Versions;
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/>.
     /// </summary>
@@ -78,7 +99,7 @@ public static class DangerousWorldExtensions
     /// </summary>
     /// <param name="world">The <see cref="World"/> instance.</param>
     /// <param name="slots">The new slots array.</param>
-    public static void SetSlots(this World world, Archetype[][] slots)
+    public static void SetArchetypes(this World world, Archetype[][] slots)
     {
         world.EntityInfo.Archetypes = (JaggedArray<Archetype>)slots;
     }
