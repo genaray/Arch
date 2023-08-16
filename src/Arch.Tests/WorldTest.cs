@@ -1,6 +1,7 @@
 using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
@@ -40,6 +41,19 @@ public partial class WorldTest
         World.Destroy(_world);
     }
 
+    /// <summary>
+    ///     Checks if the <see cref="World"/> is being recycled correctly.
+    /// </summary>
+    [Test]
+    public void WorldRecycle()
+    {
+        var firstWorld = World.Create();
+        World.Destroy(firstWorld);
+
+        var secondWorld = World.Create();
+        That(secondWorld.Id, Is.EqualTo(firstWorld.Id));
+    }
+    
     /// <summary>
     ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
     /// </summary>

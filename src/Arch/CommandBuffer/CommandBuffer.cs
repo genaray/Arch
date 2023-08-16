@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
 
@@ -150,6 +151,21 @@ public class CommandBuffer : IDisposable
         Size++;
     }
 
+    /// TODO : Probably just run this if the wrapped entity is negative? To save some overhead? 
+    /// <summary>
+    ///     Resolves an <see cref="Entity"/> originally either from a <see cref="StructuralSparseArray"/> or <see cref="SparseArray"/> to its real <see cref="Entity"/>.
+    ///     This is required since we can also create new entities via this buffer and buffer operations for it. So sometimes there negative entities stored in the arrays and those must then be resolved to its newly created real entity. 
+    ///     <remarks>Probably hard to understand, blame genaray for this.</remarks>
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/> with a negative or positive id to resolve.</param>
+    /// <returns>Its real <see cref="Entity"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Entity Resolve(Entity entity)
+    {
+        var entityIndex = BufferedEntityInfo[entity.Id].Index;
+        return Entities[entityIndex];
+    }
+
     /// <summary>
     ///     Records a Create operation for an <see cref="Entity"/> based on its component structure.
     ///     Will be created during <see cref="Playback"/>.
@@ -259,6 +275,38 @@ public class CommandBuffer : IDisposable
     }
 
     /// <summary>
+    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void AddRange(World world, Entity entity, IList<ComponentType> components)
+    {
+        var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
+
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
+
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+
+        for (var index = 0; index < components.Count; index++)
+        {
+            var type = components[index];
+            spanBitSet.SetBit(type.Id);
+        }
+
+        if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        {
+            newArchetype = world.GetOrCreate(oldArchetype.Types.Add(components));
+        }
+
+        world.Move(entity, oldArchetype, newArchetype, out _);
+    }
+    
+    /// <summary>
     ///     Plays back all recorded commands, modifying the world.
     /// </summary>
     /// <remarks>
@@ -280,8 +328,8 @@ public class CommandBuffer : IDisposable
             var wrappedEntity = Adds.Entities[index];
             for (var i = 0; i < Adds.UsedSize; i++)
             {
-                ref var usedIndex = ref Adds.Used[i];
-                ref var sparseSet = ref Adds.Components[usedIndex];
+                var usedIndex = Adds.Used[i];
+                var sparseSet = Adds.Components[usedIndex];
 
                 if (!sparseSet.Contains(wrappedEntity.Index))
                 {
@@ -295,10 +343,12 @@ public class CommandBuffer : IDisposable
             {
                 continue;
             }
+            
+            // Resolves the entity to get the real one (e.g. for newly created negative entities and stuff). 
+            var entity = Resolve(wrappedEntity.Entity);
+            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
-            var entity = Entities[entityIndex];
-            World.AddRange(entity, (IList<ComponentType>)_addTypes);
+            AddRange(World, entity, _addTypes);
             _addTypes.Clear();
         }
 
@@ -307,9 +357,10 @@ public class CommandBuffer : IDisposable
         {
             // Get wrapped entity
             var wrappedEntity = Sets.Entities[index];
-            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
-            var entity = Entities[entityIndex];
-            ref readonly var id = ref wrappedEntity.Index;
+            var entity = Resolve(wrappedEntity.Entity);
+            var id = wrappedEntity.Index;
+            
+            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
 
             // Get entity chunk
             var entityInfo = World.EntityInfo[entity.Id];
@@ -331,7 +382,18 @@ public class CommandBuffer : IDisposable
                 var componentArray = sparseArray.Components;
                 ref var chunkArray = ref chunk.GetComponentArray(sparseArray.Type);
                 ComponentArray.Copy(ref componentArray, id, ref chunkArray, chunkIndex, 1);
-            }
+#if EVENTS
+                // Entity also exists in add and the set component was added recently
+                if (Adds.Used.Length > i && Adds.Components[Adds.Used[i]].Contains(id))
+                {
+                    World.OnComponentAdded(entity, sparseArray.Type);
+                }
+                else
+                {
+                    World.OnComponentSet(entity, sparseArray.Type);
+                }
+#endif
+             }
         }
 
         // Play back removals.
@@ -354,11 +416,11 @@ public class CommandBuffer : IDisposable
             {
                 continue;
             }
+            
+            var entity = Resolve(wrappedEntity.Entity);
+            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to remove components from the dead {wrappedEntity.Entity}");
 
-            var entityIndex = BufferedEntityInfo[wrappedEntity.Entity.Id].Index;
-            var entity = Entities[entityIndex];
             World.RemoveRange(entity, _removeTypes);
-
             _removeTypes.Clear();
         }
 
@@ -389,7 +451,7 @@ public class CommandBuffer : IDisposable
     {
         Entities?.Dispose();
         BufferedEntityInfo?.Dispose();
-        Creates?.Dispose();
+        Creates?.Clear();
         Sets?.Clear();
         Adds?.Clear();
         Removes?.Clear();

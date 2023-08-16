@@ -125,12 +125,6 @@ public sealed partial class Archetype : IDisposable
     internal const int BaseSize = 16000; // 16KB Chunk size
 
     /// <summary>
-    ///     The max <see cref="ComponentType.Id"/> that <see cref="AddEdgesArray"/>
-    ///     will be used for before using <see cref="AddEdgesDict"/>.
-    /// </summary>
-    internal const int EdgesArrayMaxSize = 256;
-
-    /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
     ///     Is being stored here since all <see cref="Chunks"/> share the same instance to reduce allocations.
     /// </summary>
@@ -159,13 +153,22 @@ public sealed partial class Archetype : IDisposable
         Size = 1;
         Capacity = 1;
 
-        AddEdges = new ArrayDictionary<Archetype>(EdgesArrayMaxSize);
+        _addEdges = new ArrayDictionary<Archetype>(EdgesArrayMaxSize);
     }
 
     /// <summary>
     ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     /// </summary>
     public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    
+    /// <summary>
+    ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory. 
+    /// </summary>
+    internal int[] LookupArray
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _componentIdToArrayIndex;
+    }
 
     /// <summary>
     ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.
@@ -193,18 +196,18 @@ public sealed partial class Archetype : IDisposable
     ///     How many <see cref="Chunk"/>' have been deposited within the <see cref="Chunks"/> array.
     ///     The total capacity.
     /// </summary>
-    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     The number of occupied/used <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
     /// </summary>
-    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     An array which stores the <see cref="Chunk"/>'s.
     ///     May contain null references since its being pooled, therefore use the <see cref="Size"/> and <see cref="Capacity"/> for acessing it.
     /// </summary>
-    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+    public Chunk[] Chunks { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] internal set; }
 
     /// <summary>
     ///     Points to the last <see cref="Chunk"/> that is not yet full.
@@ -232,16 +235,6 @@ public sealed partial class Archetype : IDisposable
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => (Size * EntitiesPerChunk) - (EntitiesPerChunk - GetChunk(Size - 1).Size);
     }
-
-    /// <summary>
-    ///     Caches other <see cref="Archetype"/>s indexed by the
-    ///     <see cref="ComponentType.Id"/> that needs to be added in order to reach them.
-    ///     Those with a <see cref="ComponentType.Id"/> equal to or lower than
-    ///     <see cref="EdgesArrayMaxSize"/> are accessed through an array lookup,
-    ///     otherwise a dictionary is used.
-    /// </summary>
-    /// <remarks>The index used is <see cref="ComponentType.Id"/> minus one.</remarks>
-    internal ArrayDictionary<Archetype> AddEdges;
 
     /// <summary>
     ///     Adds an <see cref="Arch.Core.Entity"/> to the <see cref="Archetype"/> and offloads it to a <see cref="Chunk"/>.

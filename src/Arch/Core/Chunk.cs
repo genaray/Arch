@@ -402,7 +402,7 @@ public unsafe partial struct Chunk
     public bool Has<T>()
     {
         var id = Component<T>.ComponentType.Id;
-        return id < ComponentIdToArrayIndex.Count && ComponentIdToArrayIndex[id] != 1;
+        return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
     }
 
     /// <summary>
@@ -544,6 +544,21 @@ public partial struct Chunk
         Debug.Assert(id != -1 && id < ComponentIdToArrayIndex.Length, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
         return ComponentIdToArrayIndex[id];
     }
+
+    /// <summary>
+    ///     Returns the component array for a given component in an unsafe manner.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <returns>The array.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public T[] GetArray<T>()
+    {
+        var index = Index<T>();
+        ref var array = ref Components.DangerousGetReferenceAt(index);
+        return Unsafe.As<T[]>(array);
+    }
+
 
     /// <summary>
     ///     Returns the component array <see cref="Span{T}"/> for a given component in an unsafe manner.

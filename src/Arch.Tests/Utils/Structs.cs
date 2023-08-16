@@ -17,3 +17,4 @@ public struct Managed
 }
 
 public struct Ai { }
+

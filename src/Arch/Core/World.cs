@@ -1,11 +1,8 @@
 using System.Diagnostics.Contracts;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
-using CommunityToolkit.HighPerformance;
 using JobScheduler;
-using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;
 using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
@@ -98,7 +95,17 @@ public partial class World : IDisposable
     ///     A list of all existing <see cref="Worlds"/>.
     ///     Should not be modified by the user.
     /// </summary>
-    public static List<World> Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = new(1);
+    public static World[] Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
+    
+    /// <summary>
+    ///     Stores recycled <see cref="World"/> ids.
+    /// </summary>
+    internal static PooledQueue<int> RecycledWorldIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
+
+    /// <summary>
+    ///     Tracks how many <see cref="Worlds"/> exists. 
+    /// </summary>
+    internal static int WorldSize = 0;
 
     /// <summary>
     ///     The unique <see cref="World"/> id.
@@ -108,12 +115,12 @@ public partial class World : IDisposable
     /// <summary>
     ///     The amount of <see cref="Entity"/>'s stored by this instance.
     /// </summary>
-    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
     ///     The available capacity for <see cref="Entity"/>'s by this instance.
     /// </summary>
-    public int Capacity {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
+    public int Capacity {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
     ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
@@ -141,11 +148,27 @@ public partial class World : IDisposable
     /// <returns>The created <see cref="World"/> instance.</returns>
     public static World Create()
     {
-        var worldSize = Worlds.Count;
-        var world = new World(worldSize);
-        Worlds.Add(world);
+#if PURE_ECS
+        return new World(-1);
+#else
+        var recycle = RecycledWorldIds.TryDequeue(out var id);
+        var recycledId = recycle ? id : WorldSize;
+        
+        var world = new World(recycledId);
+        
+        // If you need to ensure a higher capacity, you can manually check and increase it
+        if (recycledId >= Worlds.Length)
+        {
+            var newCapacity = Worlds.Length * 2;
+            var worlds = Worlds;
+            Array.Resize(ref worlds, newCapacity);
+            Worlds = worlds;
+        }
 
+        Worlds[recycledId] = world;
+        WorldSize++;
         return world;
+#endif
     }
 
     /// <summary>
@@ -154,7 +177,12 @@ public partial class World : IDisposable
     /// <param name="world">The <see cref="World"/>.</param>
     public static void Destroy(World world)
     {
-        Worlds.Remove(world);
+        
+#if !PURE_ECS
+        Worlds[world.Id] = null;
+        RecycledWorldIds.Enqueue(world.Id);
+        WorldSize--;  
+#endif
 
         world.Capacity = 0;
         world.Size = 0;
@@ -277,6 +305,8 @@ public partial class World : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy(Entity entity)
     {
+        OnEntityDestroyed(entity);
+
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
@@ -288,8 +318,6 @@ public partial class World : IDisposable
         // Recycle id && Remove mapping
         RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
         Size--;
-
-        OnEntityDestroyed(entity);
     }
 
     /// <summary>
@@ -490,21 +518,6 @@ public partial class World : IDisposable
 
 public partial class World
 {
-    private readonly struct ArchetypeCreationData
-    {
-        internal readonly World World;
-        internal readonly ComponentType[] Types;
-        internal readonly ComponentType Type;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal ArchetypeCreationData(World world, ComponentType[] types, ComponentType type)
-        {
-            World = world;
-            Types = types;
-            Type = type;
-        }
-    };
-
     /// <summary>
     ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
     /// </summary>
@@ -589,12 +602,6 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         return archetype;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Archetype GetOrCreate(ArchetypeCreationData data)
-    {
-        return data.World.GetOrCreate(data.Types.Add(data.Type));
     }
 }
 
@@ -692,7 +699,7 @@ public partial class World
                 {
                     ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
                     OnEntityDestroyed(entity);
-                    
+
                     var version = EntityInfo.GetVersion(entity.Id);
                     var recycledEntity = new RecycledEntity(entity.Id, version);
 
@@ -774,7 +781,7 @@ public partial class World
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
-            
+
             OnComponentAdded<T>(newArchetype);
         }
     }
@@ -812,13 +819,13 @@ public partial class World
             }
 
             OnComponentRemoved<T>(archetype);
-            
+
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.LastSlot;
             var newArchetypeLastSlot = newArchetype.LastSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
-            
+
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
         }
@@ -954,12 +961,9 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
-        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
-
-        newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+        newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out slot);
-        OnComponentAdded<T>(entity);
     }
 
     /// <summary>
@@ -972,6 +976,7 @@ public partial class World
     public void Add<T>(Entity entity)
     {
         Add<T>(entity, out _, out _);
+        OnComponentAdded<T>(entity);
     }
 
     /// <summary>
@@ -1176,9 +1181,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = (ComponentType) cmp.GetType();
-        var data = new ArchetypeCreationData(this, oldArchetype.Types, type);
-
-        var newArchetype = oldArchetype.AddEdges.GetOrAdd(type.Id - 1, static (data) => GetOrCreate(data), in data);
+        var newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
@@ -1220,7 +1223,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
         }
 
-        // Move and fire events 
+        // Move and fire events
         Move(entity, oldArchetype, newArchetype, out var slot);
         foreach (var cmp in components)
         {
@@ -1254,7 +1257,7 @@ public partial class World
             newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
         }
 
-        OnComponentRemoved(entity, type.Type);
+        OnComponentRemoved(entity, type);
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
@@ -1290,7 +1293,7 @@ public partial class World
         // Fire events and move
         foreach (var type in types)
         {
-            OnComponentRemoved(entity, type.Type);
+            OnComponentRemoved(entity, type);
         }
         Move(entity, oldArchetype, newArchetype, out _);
     }
