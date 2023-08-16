@@ -17,7 +17,13 @@ public static class DangerousChunkExtensions
     /// <returns></returns>
     public static Chunk CreateChunk(int capacity, int[] lookupArray, ComponentType[] types)
     {
-        return new Chunk(capacity, lookupArray, types);
+        var unsafeLookupArray = new UnsafeArray<int>(lookupArray.Length);
+        for (var index = 0; index < lookupArray.Length; index++)
+        {
+            unsafeLookupArray[index] = lookupArray[index];
+        }
+        
+        return new Chunk(capacity, unsafeLookupArray, types);
     }
 
     /// <summary>

@@ -167,7 +167,16 @@ public sealed partial class Archetype : IDisposable
     internal int[] LookupArray
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _componentIdToArrayIndex;
+        get
+        {
+            int[] managedArray = new int[_componentIdToArrayIndex.Length];
+            for (int i = 0; i < _componentIdToArrayIndex.Length; i++)
+            {
+                managedArray[i] = _componentIdToArrayIndex[i]; 
+            }
+
+            return managedArray;
+        }
     }
 
     /// <summary>

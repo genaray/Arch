@@ -41,9 +41,10 @@ public readonly record struct ComponentType
     /// </summary>
     /// <param name="id">Its unique id.</param>
     /// <param name="type">Its type.</param>
+    /// <param name="isManaged">If the type is managed.</param>
     /// <param name="byteSize">Its size in bytes.</param>
     /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
-    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
+    public ComponentType(int id, Type type, bool isManaged, int byteSize, bool zeroSized)
     {
         Id = id;
         Type = type;
@@ -126,7 +127,7 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        meta = new ComponentType(Size + 1, type, typeSize, type.GetFields().Length == 0);
+        meta = ToComponentType(type);
         _types.Add(type, meta);
 
         Size++;
@@ -144,7 +145,29 @@ public static class ComponentRegistry
     {
         return Add(type.Type, type.ByteSize);
     }
+    
+    /// <summary>
+    ///     Adds a new component and registers it.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType Add<T>()
+    {
+        return Add(typeof(T), SizeOf<T>());
+    }
 
+    /// <summary>
+    ///     Adds a new component and registers it.
+    /// </summary>
+    /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <returns>Its <see cref="ComponentType"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ComponentType Add(Type type)
+    {
+        return Add(type, SizeOf(type));
+    }
+    
     /// <summary>
     ///     Converts a <see cref="Type"/> into a fitting <see cref="ComponentType"/>.
     /// </summary>
@@ -180,17 +203,6 @@ public static class ComponentRegistry
         }
 
         return new ComponentType(Size, type, managed, size, type.GetFields().Length == 0);
-    }
-
-    /// <summary>
-    ///     Adds a new component and registers it.
-    /// </summary>
-    /// <param name="type">Its <see cref="Type"/>.</param>
-    /// <returns>Its <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ComponentType Add(Type type)
-    {
-        return Add(type, SizeOf(type));
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
@@ -272,7 +284,7 @@ public static class ComponentRegistry
             id = ++Size;
         }
 
-        _types.Add(newType, new ComponentType(id, newType, newTypeSize, newType.GetFields().Length == 0));
+        _types.Add(newType, new ComponentType(id, newType, oldComponentType.IsManaged, newTypeSize,newType.GetFields().Length == 0));
     }
 
     /// <summary>
