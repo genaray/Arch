@@ -23,7 +23,6 @@ public partial class WorldTest
     public void Setup()
     {
         _world = World.Create();
-
         for (var index = 0; index < 10000; index++)
         {
             _world.Create(_entityGroup);
@@ -53,7 +52,7 @@ public partial class WorldTest
         var secondWorld = World.Create();
         That(secondWorld.Id, Is.EqualTo(firstWorld.Id));
     }
-    
+
     /// <summary>
     ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
     /// </summary>
