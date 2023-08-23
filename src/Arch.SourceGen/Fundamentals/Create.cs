@@ -33,7 +33,7 @@ public static class CreateExtensions
 
                 // Recycle id or increase
                 var recycle = RecycledIds.TryDequeue(out var recycledId);
-                var recycled = recycle ? recycledId : new RecycledEntity(Size,0);
+                var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
 
                 // Create new entity and put it to the back of the array
                 var entity = new Entity(recycled.Id, Id);

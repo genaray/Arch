@@ -96,14 +96,14 @@ public partial class World : IDisposable
     ///     Should not be modified by the user.
     /// </summary>
     public static World[] Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
-    
+
     /// <summary>
     ///     Stores recycled <see cref="World"/> ids.
     /// </summary>
     internal static PooledQueue<int> RecycledWorldIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
 
     /// <summary>
-    ///     Tracks how many <see cref="Worlds"/> exists. 
+    ///     Tracks how many <see cref="Worlds"/> exists.
     /// </summary>
     internal static int WorldSize = 0;
 
@@ -153,9 +153,9 @@ public partial class World : IDisposable
 #else
         var recycle = RecycledWorldIds.TryDequeue(out var id);
         var recycledId = recycle ? id : WorldSize;
-        
+
         var world = new World(recycledId);
-        
+
         // If you need to ensure a higher capacity, you can manually check and increase it
         if (recycledId >= Worlds.Length)
         {
@@ -177,11 +177,11 @@ public partial class World : IDisposable
     /// <param name="world">The <see cref="World"/>.</param>
     public static void Destroy(World world)
     {
-        
+
 #if !PURE_ECS
         Worlds[world.Id] = null;
         RecycledWorldIds.Enqueue(world.Id);
-        WorldSize--;  
+        WorldSize--;
 #endif
 
         world.Capacity = 0;
@@ -241,7 +241,7 @@ public partial class World : IDisposable
     {
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var recycled = recycle ? recycledId : new RecycledEntity(Size, 0);
+        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
 
         // Create new entity and put it to the back of the array
         var entity = new Entity(recycled.Id, Id);

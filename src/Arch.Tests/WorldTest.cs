@@ -23,6 +23,11 @@ public partial class WorldTest
     public void Setup()
     {
         _world = World.Create();
+/*
+        Entity entity = default;
+        EntityReference entityReference = default;
+        _world.Create();*/
+
         for (var index = 0; index < 10000; index++)
         {
             _world.Create(_entityGroup);
@@ -119,7 +124,7 @@ public partial class WorldTest
         var newEntity = localWorld.Create(_entityGroup);
 
         That(recycledEntity.Id, Is.EqualTo(entity.Id));           // Id was recycled
-        That(localWorld.Version(recycledEntity), Is.EqualTo(1));  // Version was increased
+        That(localWorld.Version(recycledEntity), Is.EqualTo(2));  // Version was increased
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
     }
 
