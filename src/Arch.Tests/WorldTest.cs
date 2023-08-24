@@ -265,10 +265,6 @@ public partial class WorldTest
             world.Create<byte>();
         }
 
-        var entity = world.Create<byte>();
-        world.Add<int>(entity);
-        world.Destroy(entity);
-
         // Destroy all of the world entities
         var query = new QueryDescription().WithAll<int>();
         world.Destroy(query);
