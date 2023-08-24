@@ -18,7 +18,7 @@ public partial class World
         var edgeIndex = type.Id - 1;
 
 #if NET5_0_OR_GREATER
-        ref var newArchetype = ref oldArchetype.CreateOrGetAddEdge(edgeIndex, out var exists);
+        ref var newArchetype = ref oldArchetype.TryGetAddEdge(edgeIndex, out var exists);
         if (!exists)
         {
             newArchetype = GetOrCreate(oldArchetype.Types.Add(type));

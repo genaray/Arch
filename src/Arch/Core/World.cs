@@ -328,11 +328,29 @@ public partial class World : IDisposable
     {
         Capacity = 0;
 
-        // Trim entity info and chunks
+        // Trim entity info and archetypes
         EntityInfo.TrimExcess();
-        foreach (ref var archetype in this)
+        for (var index = Archetypes.Count-1; index >= 0; index--)
         {
+            var archetype = Archetypes[index];
             archetype.TrimExcess();
+
+            // Remove empty archetypes to clean up memory, skip if so
+            if (archetype.Entities == 0)
+            {
+                var hash = Component.GetHashCode(archetype.Types);
+                Archetypes.RemoveAt(index);
+                GroupToArchetype.Remove(hash);
+
+                // Remove archetype from other archetypes edges.
+                foreach (var otherArchetype in this)
+                {
+                    otherArchetype.RemoveAddEdge(archetype);
+                }
+
+                continue;
+            }
+
             Capacity += archetype.Size * archetype.EntitiesPerChunk; // Since always one chunk always exists.
         }
     }

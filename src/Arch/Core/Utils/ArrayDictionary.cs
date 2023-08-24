@@ -2,6 +2,12 @@
 
 namespace Arch.Core.Utils;
 
+/// <summary>
+///     The <see cref="ArrayDictionary{TValue}"/> class
+///     represents an hybrid collection that uses arrays and dictionarys.
+///     Arrays are used for indexes below <see cref="_maxArraySize"/> and for higher indexes
+/// </summary>
+/// <typeparam name="TValue"></typeparam>
 internal class ArrayDictionary<TValue>
 {
     /// <summary>
@@ -10,7 +16,7 @@ internal class ArrayDictionary<TValue>
     ///     When the index used to access one is equal to or bigger than
     ///     <see cref="_maxArraySize"/>, <see cref="_dictionary"/> is used instead.
     /// </summary>
-    private TValue[] _array;
+    internal TValue[] _array;
 
     /// <summary>
     ///     Stores <see cref="TValue"/>s with an index equal to or bigger than
@@ -18,7 +24,7 @@ internal class ArrayDictionary<TValue>
     ///     When the index used to access one is smaller than <see cref="_maxArraySize"/>,
     ///     <see cref="_dictionary"/> is used instead.
     /// </summary>
-    private readonly Dictionary<int, TValue> _dictionary;
+    internal readonly Dictionary<int, TValue> _dictionary;
 
     /// <summary>
     ///     The maximum size that <see cref="_array"/> will grow to.
@@ -33,75 +39,90 @@ internal class ArrayDictionary<TValue>
         _maxArraySize = maxArraySize;
     }
 
-#if NET5_0_OR_GREATER
     /// <summary>
-    ///     Gets a reference to an element in this collection by its index.
+    ///     Adds an element in this collection by its index.
     ///     If the index is smaller than <see cref="_maxArraySize"/>
     ///     <see cref="_array"/> is used, otherwise <see cref="_dictionary"/> is used.
     /// </summary>
     /// <param name="index">The index of the value to get.</param>
-    /// <param name="exists">Whether or not the value existed in this collection.</param>
-    /// <returns>A ref to the value, with a default value if it did not exist.</returns>
+    /// <param name="item">The item being added.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal ref TValue AddOrGet(int index, [UnscopedRef] out bool exists)
+    internal void Add(int index, TValue item)
     {
         Debug.Assert(index >= 0);
 
         if (index < _maxArraySize)
         {
-            ref var value = ref ArrayExtensions.GetOrResize(ref _array, index, _maxArraySize);
-            exists = !Equals(value, default(TValue));
-            return ref value;
-        }
-
-        return ref CollectionsMarshal.GetValueRefOrAddDefault(_dictionary, index, out exists)!;
-    }
-#else
-    /// <summary>
-    ///     Gets an element in this collection by its index.
-    ///     If the index is smaller than <see cref="_maxArraySize"/>
-    ///     <see cref="_array"/> is used, otherwise <see cref="_dictionary"/> is used.
-    /// </summary>
-    /// <param name="index">The index of the value to get.</param>
-    /// <param name="exists">Whether or not the value existed in this collection.</param>
-    /// <returns>The value, with a default value if it did not exist.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal TValue AddOrGet(int index, out bool exists)
-    {
-        Debug.Assert(index >= 0);
-
-        if (index >= _maxArraySize)
-        {
-            ref var value = ref ArrayExtensions.GetOrResize(ref _array, index, _maxArraySize);
-            exists = !Equals(value, default(TValue));
-            return value;
+            Array.Resize(ref _array, _maxArraySize);
+            _array[index] = item;
         }
         else
         {
-            exists = _dictionary.TryGetValue(index, out var value);
-            return value;
+            _dictionary[index] = item;
         }
+    }
+
+    /// <summary>
+    ///     Removes an item at the given index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    internal void Remove(int index)
+    {
+        if (index < _maxArraySize)
+        {
+            Array.Resize(ref _array, _maxArraySize);
+            _array[index] = default!;
+        }
+        else
+        {
+            _dictionary.Remove(index);
+        }
+    }
+
+#if !NET5_0_OR_GREATER
+
+    /// <summary>
+    ///     Trys to return an item at the given index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="item">The item.</param>
+    /// <returns>True if it exists, false if it does not.</returns>
+    internal bool TryGet(int index, out TValue item)
+    {
+        Debug.Assert(index >= 0);
+
+        if (index < _maxArraySize)
+        {
+            Array.Resize(ref _array, _maxArraySize);
+            item = _array[index];
+            var exists = !Equals(item, default(TValue));
+            return exists;
+        }
+
+        return _dictionary.TryGetValue(index, out item);
+    }
+
+#else
+
+    /// <summary>
+    ///     Trys to return an item at the given index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="exists">If the item exists..</param>
+    /// <returns>A reference to the existing item.</returns>
+    internal ref TValue TryGet(int index, [UnscopedRef] out bool exists)
+    {
+        Debug.Assert(index >= 0);
+
+        if (index < _maxArraySize)
+        {
+            Array.Resize(ref _array, _maxArraySize);
+            ref var item = ref _array[index];
+            exists = !Equals(item, default(TValue));
+            return ref item;
+        }
+
+        return ref  CollectionsMarshal.GetValueRefOrAddDefault(_dictionary, index, out exists)!;
     }
 #endif
-
-    /// <summary>
-    ///     Sets an element in this collection by <see cref="index"/>.
-    /// </summary>
-    /// <param name="index">The index of the <see cref="value"/> to set.</param>
-    /// <param name="value">The value to set at <see cref="index"/></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void Set(int index, in TValue value)
-    {
-        Debug.Assert(index >= 0);
-
-        if (index >= _maxArraySize)
-        {
-            ref var arrayValue = ref ArrayExtensions.GetOrResize(ref _array, index, _maxArraySize);
-            arrayValue = value;
-        }
-        else
-        {
-            _dictionary[index] = value;
-        }
-    }
 }

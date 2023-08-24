@@ -23,10 +23,6 @@ public partial class WorldTest
     public void Setup()
     {
         _world = World.Create();
-/*
-        Entity entity = default;
-        EntityReference entityReference = default;
-        _world.Create();*/
 
         for (var index = 0; index < 10000; index++)
         {
@@ -232,7 +228,7 @@ public partial class WorldTest
             world.Create<HeavyComponent>();
         }
 
-        // Destroy half of the world entities
+        // Destroy all but one
         var counter = 0;
         var query = new QueryDescription().WithAll<HeavyComponent>();
         world.Query(in query, (in Entity entity) =>
@@ -253,6 +249,38 @@ public partial class WorldTest
         That(archetype.Size, Is.EqualTo(1));
         That(archetype.Capacity, Is.EqualTo(1));
     }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> trims its archetypes correctly and removes them when empty.
+    /// </summary>
+    [Test]
+    public void TrimExcessEmptyArchetypes()
+    {
+        // Fill world
+        var amount = 10000;
+        using var world = World.Create();
+        for (int index = 0; index < amount; index++)
+        {
+            world.Create<int>();
+            world.Create<byte>();
+        }
+
+        var entity = world.Create<byte>();
+        world.Add<int>(entity);
+        world.Destroy(entity);
+
+        // Destroy all of the world entities
+        var query = new QueryDescription().WithAll<int>();
+        world.Destroy(query);
+
+        // Trim
+        world.TrimExcess();
+
+        var archetype = world.Archetypes[0];
+        That(world.Archetypes.Count, Is.EqualTo(1));
+        That(world.Capacity, Is.EqualTo(archetype.Entities));
+    }
+
 
     /// <summary>
     ///     Checks if the <see cref="World"/> clears itself correctly.
