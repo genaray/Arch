@@ -274,7 +274,7 @@ public partial class WorldTest
 
         var archetype = world.Archetypes[0];
         That(world.Archetypes.Count, Is.EqualTo(1));
-        That(world.Capacity, Is.EqualTo(archetype.Entities));
+        That(world.Capacity, Is.EqualTo(archetype.Size * archetype.EntitiesPerChunk));
     }
 
 
