@@ -70,7 +70,7 @@ internal class ArrayDictionary<TValue>
     {
         Debug.Assert(index >= 0);
 
-        if (index < _maxArraySize)
+        if (index >= _maxArraySize)
         {
             ref var value = ref ArrayExtensions.GetOrResize(ref _array, index, _maxArraySize);
             exists = !Equals(value, default(TValue));
@@ -94,7 +94,7 @@ internal class ArrayDictionary<TValue>
     {
         Debug.Assert(index >= 0);
 
-        if (index < _maxArraySize)
+        if (index >= _maxArraySize)
         {
             ref var arrayValue = ref ArrayExtensions.GetOrResize(ref _array, index, _maxArraySize);
             arrayValue = value;
