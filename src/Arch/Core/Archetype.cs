@@ -160,9 +160,9 @@ public sealed partial class Archetype
     ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     /// </summary>
     public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
-    
+
     /// <summary>
-    ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory. 
+    ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory.
     /// </summary>
     internal int[] LookupArray
     {
@@ -233,7 +233,10 @@ public sealed partial class Archetype
     public int Entities
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => (Size * EntitiesPerChunk) - (EntitiesPerChunk - GetChunk(Size - 1).Size);
+        get;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private set;
     }
 
     /// <summary>
@@ -256,6 +259,7 @@ public sealed partial class Archetype
         {
             slot.Index = lastChunk.Add(entity);
             slot.ChunkIndex = Size - 1;
+            Entities++;
 
             return false;
         }
@@ -263,6 +267,7 @@ public sealed partial class Archetype
         // Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
         slot.Index = newChunk.Add(entity);
+        Entities++;
         slot.ChunkIndex = Size;
 
         // Resize chunks & map entity
@@ -286,6 +291,7 @@ public sealed partial class Archetype
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
         ref var chunk = ref Chunks[slot.ChunkIndex];
         movedEntityId = chunk.Transfer(slot.Index, ref LastChunk);
+        Entities--;
 
         // Return to prevent that Size decreases when chunk IS not Empty and to prevent Size becoming 0 or -1.
         if (LastChunk.Size != 0 || Size <= 1)
@@ -426,6 +432,7 @@ public sealed partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
+        Entities = 0;
         Size = 1;
         foreach (ref var chunk in this)
         {
@@ -662,6 +669,10 @@ public sealed partial class Archetype
 
             sourceChunkIndex++;
         }
+
+        // Increase entities by destination since those were copied, set source to zero since its now empty.
+        destination.Entities += source.Entities;
+        source.Entities = 0;
     }
 
     /// <summary>

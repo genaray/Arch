@@ -14,6 +14,11 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 {
 
     /// <summary>
+    ///     A null reference, basically an empty <see cref="QueryDescription"/> that queries for all <see cref="Entity"/>s.
+    /// </summary>
+    public static readonly QueryDescription Null = new();
+
+    /// <summary>
     ///     An array of all components that an <see cref="Entity"/> should have mandatory.
     /// </summary>
     public ComponentType[] All = Array.Empty<ComponentType>();

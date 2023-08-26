@@ -277,7 +277,6 @@ public partial class WorldTest
         That(world.Capacity, Is.EqualTo(archetype.Size * archetype.EntitiesPerChunk));
     }
 
-
     /// <summary>
     ///     Checks if the <see cref="World"/> clears itself correctly.
     /// </summary>
