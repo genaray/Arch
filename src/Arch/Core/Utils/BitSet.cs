@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Numerics;
 using System.Text;
 
 namespace Arch.Core.Utils;
@@ -133,12 +134,13 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool All(BitSet other)
     {
-        var otherBits = other._bits;
+        var bits = _bits.AsSpan();
+        var otherBits = other._bits.AsSpan();
         var count = Math.Min(_bits.Length, otherBits.Length);
 
         for (var i = 0; i < count; i++)
         {
-            var bit = _bits[i];
+            var bit = bits[i];
             if ((bit & otherBits[i]) != bit)
             {
                 return false;
@@ -146,10 +148,10 @@ public class BitSet
         }
 
         // Handle extra bits on our side that might just be all zero.
-        var bitCount = _bits.Length;
-        for (var i = count; i < bitCount; i++)
+        var bitsLength = bits.Length;
+        for (var i = count; i < bitsLength; i++)
         {
-            if (_bits[i] != 0)
+            if (bits[i] != 0)
             {
                 return false;
             }
@@ -166,12 +168,13 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
-        var otherBits = other._bits;
+        var bits = _bits.AsSpan();
+        var otherBits = other._bits.AsSpan();
         var count = Math.Min(_bits.Length, otherBits.Length);
 
         for (var i = 0; i < count; i++)
         {
-            var bit = _bits[i];
+            var bit = bits[i];
             if ((bit & otherBits[i]) != 0)
             {
                 return true;
@@ -182,7 +185,7 @@ public class BitSet
         var bitCount = _bits.Length;
         for (var i = count; i < bitCount; i++)
         {
-            if (_bits[i] != 0)
+            if (bits[i] != 0)
             {
                 return false;
             }
@@ -199,12 +202,13 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
-        var otherBits = other._bits;
+        var bits = _bits.AsSpan();
+        var otherBits = other._bits.AsSpan();
         var count = Math.Min(_bits.Length, otherBits.Length);
 
         for (var i = 0; i < count; i++)
         {
-            var bit = _bits[i];
+            var bit = bits[i];
             if ((bit & otherBits[i]) != 0)
             {
                 return false;
@@ -222,13 +226,13 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Exclusive(BitSet other)
     {
-
-        var otherBits = other._bits;
+        var bits = _bits.AsSpan();
+        var otherBits = other._bits.AsSpan();
         var count = Math.Min(_bits.Length, otherBits.Length);
 
         for (var i = 0; i < count; i++)
         {
-            var bit = _bits[i];
+            var bit = bits[i];
             if ((bit ^ otherBits[i]) != 0)
             {
                 return false;
@@ -239,7 +243,7 @@ public class BitSet
         var bitCount = _bits.Length;
         for (var i = count; i < bitCount; i++)
         {
-            if (_bits[i] != 0)
+            if (bits[i] != 0)
             {
                 return false;
             }
