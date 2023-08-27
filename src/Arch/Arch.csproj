@@ -14,13 +14,15 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.6.6-alpha</Version>
+    <Version>1.2.6.7-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>Added more dangerous utility methods. 
 Entity now implements IComparable&lt;Entity&gt;.
-DangerousWorldExtension can now return the Slot for an entity, used for dangerous acess and serialisation. </PackageReleaseNotes>
+DangerousWorldExtension can now return the Slot for an entity, used for dangerous acess and serialisation. 
+Checking a default entity or reference for IsAlive now returns false. 
+Archetypes with zero entities are now skipped during iteration. </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
