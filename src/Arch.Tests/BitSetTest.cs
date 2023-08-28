@@ -1,4 +1,5 @@
-﻿using Arch.Core.Utils;
+﻿using System.Numerics;
+using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;

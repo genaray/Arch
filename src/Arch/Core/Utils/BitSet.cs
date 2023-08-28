@@ -1,5 +1,3 @@
-using System.Drawing;
-using System.Numerics;
 using System.Text;
 
 namespace Arch.Core.Utils;
@@ -27,6 +25,9 @@ public class BitSet
         return (int)Math.Ceiling((float)id / (float)31);
     }
 
+    /// <summary>
+    ///     The bits from the bitset.
+    /// </summary>
     private uint[] _bits;
 
     /// <summary>
@@ -125,6 +126,7 @@ public class BitSet
     {
         Array.Clear(_bits, 0, _bits.Length);
     }
+
 
     /// <summary>
     ///     Checks if all bits from this instance match those of the other instance.
@@ -319,13 +321,16 @@ public class BitSet
 ///     represents a non resizable collection of bits.
 ///     Used to set, check and clear bits on a allocated <see cref="BitSet"/> or on the stack.
 /// </summary>
-public ref struct SpanBitSet
+public readonly ref struct SpanBitSet
 {
     private const int BitSize = (sizeof(uint) * 8) - 1; // 31
     // NOTE: Is a byte not 8 bits?
     private const int ByteSize = 5; // log_2(BitSize + 1)
 
-    private Span<uint> _bits;
+    /// <summary>
+    ///     The bits from the bitset.
+    /// </summary>
+    private readonly Span<uint> _bits;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BitSet" /> class.
