@@ -61,6 +61,7 @@ public class BitSetTest
         var bitSet1 = new BitSet();
         bitSet1.SetBit(5);
         bitSet1.SetBit(6);
+
         var bitSet2 = new BitSet();
         bitSet2.SetBit(5);
         bitSet2.SetBit(6);
