@@ -25,6 +25,7 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int RequiredLength(int id)
     {
+        return (int)Math.Ceiling((float)id / BitSize);
 #if NET7_0
         return (id >> 5) + int.Sign(id & BitSize);
 #else
@@ -306,13 +307,16 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<uint> AsSpan()
     {
-        return _bits.AsSpan();
+        var max = (_highestBit / sizeof(uint) / Padding) + 1;
+        return _bits.AsSpan(0, max);
     }
 
     /// <summary>
     ///     Copies the bits into a <see cref="Span{T}"/> and returns a slice containing the copied <see cref="_bits"/>.
     /// </summary>
-    /// <returns>The hash.</returns>
+    /// <param name="span">The <see cref="Span{T}"/> to copy into.</param>
+    /// <param name="zero">If true, it will zero the unused space from the <see cref="span"/>.</param>
+    /// <returns>The <see cref="Span{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<uint> AsSpan(Span<uint> span, bool zero = true)
     {
@@ -329,7 +333,7 @@ public class BitSet
             span[index] = 0;
         }
 
-        return span[.._bits.Length];
+        return span[..length];
     }
 
     /// <summary>
