@@ -215,26 +215,56 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
-        var bits = _bits.AsSpan();
-        var otherBits = other._bits.AsSpan();
-        var count = Math.Min(_bits.Length, otherBits.Length);
+        var max = (_highestBit/sizeof(uint)/Padding)+1;
+        var min = Math.Min(Math.Min(Length, other.Length), max);
 
-        for (var i = 0; i < count; i++)
+        if (!Vector.IsHardwareAccelerated || min < Padding)
         {
-            var bit = bits[i];
-            if ((bit & otherBits[i]) != 0)
+            var bits = _bits.AsSpan();
+            var otherBits = other._bits.AsSpan();
+
+            // Bitwise and, return true since any is met
+            for (var i = 0; i < min; i++)
             {
-                return true;
+                var bit = bits[i];
+                if ((bit & otherBits[i]) != 0)
+                {
+                    return true;
+                }
+            }
+
+            // Handle extra bits on our side that might just be all zero.
+            for (var i = min; i < max; i++)
+            {
+                if (bits[i] != 0)
+                {
+                    return false;
+                }
             }
         }
-
-        // Handle extra bits on our side that might just be all zero.
-        var bitCount = _bits.Length;
-        for (var i = count; i < bitCount; i++)
+        else
         {
-            if (bits[i] != 0)
+            // Vectorized bitwise and, return true since any is met
+            for (var i = 0; i < min; i += Padding)
             {
-                return false;
+                var vector = new Vector<uint>(_bits, i);
+                var otherVector = new Vector<uint>(other._bits, i);
+
+                var resultVector = Vector.BitwiseAnd(vector, otherVector);
+                if (!Vector.EqualsAll(resultVector, Vector<uint>.Zero))
+                {
+                    return true;
+                }
+            }
+
+            // Handle extra bits on our side that might just be all zero.
+            for (var i = min; i < max; i += Padding)
+            {
+                var vector = new Vector<uint>(_bits, i);
+                if (!Vector.EqualsAll(vector, Vector<uint>.Zero)) // Vectors are not zero bits[0] != 0 basically
+                {
+                    return false;
+                }
             }
         }
 

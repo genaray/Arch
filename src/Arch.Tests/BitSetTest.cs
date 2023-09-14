@@ -4,13 +4,13 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+
 /// <summary>
 ///     Checks <see cref="BitSet"/> and HashCode related methods.
 /// </summary>
 [TestFixture]
 public class BitSetTest
 {
-
     /// <summary>
     ///     Checks if <see cref="ComponentType"/>-Arrays with same elements but in different order result in the same hash.
     /// </summary>
@@ -54,53 +54,61 @@ public class BitSetTest
 
     /// <summary>
     ///     Checks <see cref="BitSet"/> all.
+    /// <param name="values">The values being set.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    public void BitsetAll()
+    [TestCase(new []{5,6,7}, 1)]    // Sets bit 5,6,7
+    [TestCase(new []{5,6,7}, 100)]  // Sets bit 500,600,700
+    public void BitsetAll(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
-        bitSet1.SetBit(5);
-        bitSet1.SetBit(6);
+        bitSet1.SetBit(values[0] * multiplier);
+        bitSet1.SetBit(values[1] * multiplier);
 
         var bitSet2 = new BitSet();
-        bitSet2.SetBit(5);
-        bitSet2.SetBit(6);
+        bitSet2.SetBit(values[0] * multiplier);
+        bitSet2.SetBit(values[1] * multiplier);
 
         // ALl fit
         var allResult = bitSet2.All(bitSet1);
         That(allResult, Is.EqualTo(true));
 
-        bitSet2.SetBit(7);
+        bitSet2.SetBit(values[2] * multiplier);
         allResult = bitSet2.All(bitSet1);
         That(allResult, Is.EqualTo(false));
     }
 
     /// <summary>
     ///     Checks <see cref="BitSet"/> any.
+    /// <param name="values">The values being set or cleared.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    public void BitsetAny()
+    [TestCase(new []{5,6,35,36,37}, 1)]
+    [TestCase(new []{5,6,35,36,37}, 100)]
+    public void BitsetAny(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
-        bitSet1.SetBit(5);
-        bitSet1.SetBit(6);
-        bitSet1.SetBit(35);
-        bitSet1.SetBit(36);
+        bitSet1.SetBit(values[0] * multiplier);
+        bitSet1.SetBit(values[1] * multiplier);
+        bitSet1.SetBit(values[2] * multiplier);
+        bitSet1.SetBit(values[3] * multiplier);
         var bitSet2 = new BitSet();
-        bitSet2.SetBit(5);
-        bitSet2.SetBit(6);
+        bitSet2.SetBit(values[0] * multiplier);
+        bitSet2.SetBit(values[1] * multiplier);
 
         // Any fit
         var allResult = bitSet2.Any(bitSet1);
         That(allResult, Is.EqualTo(true));
 
-        bitSet2.ClearBit(5);
+        bitSet2.ClearBit(values[0] * multiplier);
         allResult = bitSet2.Any(bitSet1);
         That(allResult, Is.EqualTo(true));
 
         // No fit, since there no unions
         bitSet2.ClearAll();
-        bitSet2.SetBit(37);
+        bitSet2.SetBit(values[4] * multiplier);
         allResult = bitSet2.Any(bitSet1);
         That(allResult, Is.EqualTo(false));
     }

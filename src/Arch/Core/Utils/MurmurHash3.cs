@@ -5,7 +5,7 @@ namespace Arch.Core.Utils;
 ///     The <see cref="MurmurHash3"/> class
 ///     represents a utility to calculate a MurMurHash3 used to map querys and descriptions to archetypes.
 /// </summary>
-public class MurmurHash3
+public static class MurmurHash3
 {
     /// <summary>
     ///     Calculates the hash as a 32 bit integer and returns it.
@@ -51,16 +51,16 @@ public class MurmurHash3
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint RotateLeft(uint x, byte r)
+    private static uint RotateLeft(uint x, byte r)
     {
-        return x << (int) r | x >> 32 - (int) r;
+        return (x << (int) r) | (x >> (32 - (int) r));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static uint FMix(uint h)
+    private static uint FMix(uint h)
     {
         h = (uint) (((int) h ^ (int) (h >> 16)) * -2048144789);
         h = (uint) (((int) h ^ (int) (h >> 13)) * -1028477387);
-        return h ^ h >> 16;
+        return h ^ (h >> 16);
     }
 }
