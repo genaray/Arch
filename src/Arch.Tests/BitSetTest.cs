@@ -153,15 +153,57 @@ public class BitSetTest
     }
 
     /// <summary>
-    ///     Checks whether different sized <see cref="BitSet"/>'s work correctly.
+    ///     Checks <see cref="BitSet"/> exclusive.
+    /// <param name="values">The values being set or cleared.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    public void AllWithDifferentLengthBitSet()
+    [TestCase(new []{5,6,25}, 1)]
+    [TestCase(new []{5,6,25}, 100)]
+    public void BitsetExclusive(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
-        bitSet1.SetBit(5);
+        bitSet1.SetBit(values[0] * multiplier);
+        bitSet1.SetBit(values[1] * multiplier);
         var bitSet2 = new BitSet();
-        bitSet2.SetBit(33);
+        bitSet2.SetBit(values[0] * multiplier);
+        bitSet2.SetBit(values[1] * multiplier);
+
+        // Both are totally equal
+        var exclusive = bitSet2.Exclusive(bitSet1);
+        That(exclusive, Is.EqualTo(true));
+
+        // Bitset2 is not equal anymore
+        bitSet2.SetBit(values[2] * multiplier);
+        exclusive = bitSet2.Exclusive(bitSet1);
+        That(exclusive, Is.EqualTo(false));
+
+        // Bitset2 is back to default, but bitset1 is now different -> both differ, should be false
+        bitSet2.ClearBit(values[2] * multiplier);
+        bitSet1.SetBit(values[2] * multiplier);
+        exclusive = bitSet2.Exclusive(bitSet1);
+        That(exclusive, Is.EqualTo(false));
+
+        // Bitset2 is now the same as bitset 1 -> should be true
+        bitSet2.SetBit(values[2] * multiplier);
+        exclusive = bitSet2.Exclusive(bitSet1);
+        That(exclusive, Is.EqualTo(true));
+    }
+
+    /// <summary>
+    ///     Checks whether different sized <see cref="BitSet"/>'s work correctly.
+    /// <param name="values">The values being set or cleared.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
+    /// </summary>
+    [Test]
+    [TestCase(new []{5,33}, 1)]
+    [TestCase(new []{5,33}, 100)]
+    public void AllWithDifferentLengthBitSet(int[] values, int multiplier)
+    {
+        var bitSet1 = new BitSet();
+        bitSet1.SetBit(values[0] * multiplier);
+        var bitSet2 = new BitSet();
+        bitSet2.SetBit(values[1] * multiplier);
 
         var allResult = bitSet2.All(bitSet1);
         var anyResult = bitSet2.Any(bitSet1);
