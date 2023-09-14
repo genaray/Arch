@@ -279,6 +279,43 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
+        var max = (_highestBit/sizeof(uint)/Padding)+1;
+        var min = Math.Min(Math.Min(Length, other.Length), max);
+
+        if (!Vector.IsHardwareAccelerated || min < Padding)
+        {
+            var bits = _bits.AsSpan();
+            var otherBits = other._bits.AsSpan();
+
+            // Bitwise and, return true since any is met
+            for (var i = 0; i < min; i++)
+            {
+                var bit = bits[i];
+                if ((bit & otherBits[i]) != 0)
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            // Vectorized bitwise and, return true since any is met
+            for (var i = 0; i < min; i += Padding)
+            {
+                var vector = new Vector<uint>(_bits, i);
+                var otherVector = new Vector<uint>(other._bits, i);
+
+                var resultVector = Vector.BitwiseAnd(vector, otherVector);
+                if (!Vector.EqualsAll(resultVector, Vector<uint>.Zero))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+
+        /*
         var bits = _bits.AsSpan();
         var otherBits = other._bits.AsSpan();
         var count = Math.Min(_bits.Length, otherBits.Length);
@@ -292,7 +329,7 @@ public class BitSet
             }
         }
 
-        return true;
+        return true;*/
     }
 
     /// <summary>

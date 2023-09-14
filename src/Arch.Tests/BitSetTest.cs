@@ -115,23 +115,27 @@ public class BitSetTest
 
     /// <summary>
     ///     Checks <see cref="BitSet"/> none.
+    /// <param name="values">The values being set or cleared.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    public void BitsetNone()
+    [TestCase(new []{5,6,25,38,4}, 1)]
+    [TestCase(new []{5,6,25,38,4}, 100)]
+    public void BitsetNone(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
-        bitSet1.SetBit(5);
-        bitSet1.SetBit(6);
+        bitSet1.SetBit(values[0] * multiplier);
+        bitSet1.SetBit(values[1] * multiplier);
         var bitSet2 = new BitSet();
-        bitSet2.SetBit(25);
-        bitSet2.SetBit(38);
+        bitSet2.SetBit(values[2] * multiplier);
+        bitSet2.SetBit(values[3] * multiplier);
 
         // None of bitset2 is in bitset1
         var allResult = bitSet2.None(bitSet1);
         That(allResult, Is.EqualTo(true));
 
         // One of bitset2 is in bitset1
-        bitSet2.SetBit(5);
+        bitSet2.SetBit(values[0] * multiplier);
         allResult = bitSet2.None(bitSet1);
         That(allResult, Is.EqualTo(false));
 
@@ -139,10 +143,10 @@ public class BitSetTest
         bitSet1.ClearAll();
         bitSet2.ClearAll();
 
-        bitSet1.SetBit(5);
-        bitSet1.SetBit(4);
-        bitSet2.SetBit(5);
-        bitSet2.SetBit(4);
+        bitSet1.SetBit(values[0] * multiplier);
+        bitSet1.SetBit(values[4] * multiplier);
+        bitSet2.SetBit(values[0] * multiplier);
+        bitSet2.SetBit(values[4] * multiplier);
 
         allResult = bitSet2.None(bitSet1);
         That(allResult, Is.EqualTo(false));
