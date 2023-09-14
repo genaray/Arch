@@ -314,22 +314,6 @@ public class BitSet
         }
 
         return true;
-
-        /*
-        var bits = _bits.AsSpan();
-        var otherBits = other._bits.AsSpan();
-        var count = Math.Min(_bits.Length, otherBits.Length);
-
-        for (var i = 0; i < count; i++)
-        {
-            var bit = bits[i];
-            if ((bit & otherBits[i]) != 0)
-            {
-                return false;
-            }
-        }
-
-        return true;*/
     }
 
     /// <summary>
