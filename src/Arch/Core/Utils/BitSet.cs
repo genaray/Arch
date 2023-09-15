@@ -12,10 +12,9 @@ namespace Arch.Core.Utils;
 /// </summary>
 public class BitSet
 {
-
-    internal const int BitSize = (sizeof(uint) * 8) - 1; // 31
-    internal const int IndexSize = 5;                    // log_2(BitSize + 1)
-    internal static int Padding = Vector<uint>.Count;    // How many uints pre-allocate and are being added at extension.
+    private const int BitSize = (sizeof(uint) * 8) - 1;           // 31
+    private const int IndexSize = 5;                              // log_2(BitSize + 1)
+    private static readonly int _padding = Vector<uint>.Count;    // The padding used for vectorisation, the amount of uints required for being vectorized basically
 
     /// <summary>
     ///     Determines the required length of an <see cref="BitSet"/> to hold the passed id or bit.
@@ -43,12 +42,18 @@ public class BitSet
     /// </summary>
     private int _highestBit;
 
+    /// TODO: Update on ClearBit, probably remove <see cref="_highestBit"/> in favor?
+    /// <summary>
+    ///     The maximum <see cref="_bits"/>-index current in use.
+    /// </summary>
+    private int _max;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="BitSet" /> class.
     /// </summary>
     public BitSet()
     {
-        _bits = new uint[Padding];
+        _bits = new uint[_padding];
     }
 
     /// <summary>
@@ -96,11 +101,12 @@ public class BitSet
         var b = index >> IndexSize;
         if (b >= _bits.Length)
         {
-            Array.Resize(ref _bits,  (b + Padding) / Padding * Padding);  // Round up to a multiply of Padding
+            Array.Resize(ref _bits,  (b + _padding) / _padding * _padding);  // Round up to a multiply of Padding
         }
 
         // Track highest set bit
         _highestBit = Math.Max(_highestBit, index);
+        _max = (_highestBit/sizeof(uint)/_padding)+1;
         _bits[b] |= 1u << (index & BitSize);
     }
 
@@ -151,10 +157,8 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool All(BitSet other)
     {
-        var max = (_highestBit/sizeof(uint)/Padding)+1;
-        var min = Math.Min(Math.Min(Length, other.Length), max);
-
-        if (!Vector.IsHardwareAccelerated || min < Padding)
+        var min = Math.Min(Math.Min(Length, other.Length), _max);
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -170,7 +174,7 @@ public class BitSet
             }
 
             // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < max; i++)
+            for (var i = min; i < _max; i++)
             {
                 if (bits[i] != 0)
                 {
@@ -181,7 +185,7 @@ public class BitSet
         else
         {
             // Vectorized bitwise and
-            for (var i = 0; i < min; i += Padding)
+            for (var i = 0; i < min; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 var otherVector = new Vector<uint>(other._bits, i);
@@ -194,7 +198,7 @@ public class BitSet
             }
 
             // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < max; i += Padding)
+            for (var i = min; i < _max; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 if (!Vector.EqualsAll(vector, Vector<uint>.Zero)) // Vectors are not zero bits[0] != 0 basically
@@ -215,10 +219,8 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Any(BitSet other)
     {
-        var max = (_highestBit/sizeof(uint)/Padding)+1;
-        var min = Math.Min(Math.Min(Length, other.Length), max);
-
-        if (!Vector.IsHardwareAccelerated || min < Padding)
+        var min = Math.Min(Math.Min(Length, other.Length), _max);
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -234,7 +236,7 @@ public class BitSet
             }
 
             // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < max; i++)
+            for (var i = min; i < _max; i++)
             {
                 if (bits[i] != 0)
                 {
@@ -245,7 +247,7 @@ public class BitSet
         else
         {
             // Vectorized bitwise and, return true since any is met
-            for (var i = 0; i < min; i += Padding)
+            for (var i = 0; i < min; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 var otherVector = new Vector<uint>(other._bits, i);
@@ -258,7 +260,7 @@ public class BitSet
             }
 
             // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < max; i += Padding)
+            for (var i = min; i < _max; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 if (!Vector.EqualsAll(vector, Vector<uint>.Zero)) // Vectors are not zero bits[0] != 0 basically
@@ -279,10 +281,8 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool None(BitSet other)
     {
-        var max = (_highestBit/sizeof(uint)/Padding)+1;
-        var min = Math.Min(Math.Min(Length, other.Length), max);
-
-        if (!Vector.IsHardwareAccelerated || min < Padding)
+        var min = Math.Min(Math.Min(Length, other.Length), _max);
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -300,7 +300,7 @@ public class BitSet
         else
         {
             // Vectorized bitwise and, return true since any is met
-            for (var i = 0; i < min; i += Padding)
+            for (var i = 0; i < min; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 var otherVector = new Vector<uint>(other._bits, i);
@@ -324,10 +324,9 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Exclusive(BitSet other)
     {
-        var max = (_highestBit/sizeof(uint)/Padding)+1;
-        var min = Math.Min(Math.Min(Length, other.Length), max);
+        var min = Math.Min(Math.Min(Length, other.Length), _max);
 
-        if (!Vector.IsHardwareAccelerated || min < Padding)
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -343,7 +342,7 @@ public class BitSet
             }
 
             // handle extra bits on our side that might just be all zero
-            for (var i = min; i < max; i++)
+            for (var i = min; i < _max; i++)
             {
                 if (bits[i] != 0)
                 {
@@ -354,7 +353,7 @@ public class BitSet
         else
         {
             // Vectorized bitwise xor, return true since any is met
-            for (var i = 0; i < min; i += Padding)
+            for (var i = 0; i < min; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 var otherVector = new Vector<uint>(other._bits, i);
@@ -367,7 +366,7 @@ public class BitSet
             }
 
             // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < max; i += Padding)
+            for (var i = min; i < _max; i += _padding)
             {
                 var vector = new Vector<uint>(_bits, i);
                 if (!Vector.EqualsAll(vector, Vector<uint>.Zero)) // Vectors are not zero bits[0] != 0 basically
@@ -387,7 +386,7 @@ public class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<uint> AsSpan()
     {
-        var max = (_highestBit / sizeof(uint) / Padding) + 1;
+        var max = (_highestBit / sizeof(uint) / _padding) + 1;
         return _bits.AsSpan(0, max);
     }
 
