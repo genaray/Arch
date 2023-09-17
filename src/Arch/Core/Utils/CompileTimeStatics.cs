@@ -102,7 +102,7 @@ public static class ComponentRegistry
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
-    public static int Size { get; private set; }
+    public static int Size { get; internal set; }
 
     /// <summary>
     ///     Adds a new <see cref="ComponentType"/> manually and registers it.
@@ -136,7 +136,15 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(ComponentType type)
     {
-        return Add(type.Type, type.ByteSize);
+
+        // Register and assign component id
+        _types.Add(type, type);
+
+        Size++;
+        return type;
+
+        /*
+        return Add(type.Type, type.ByteSize);*/
     }
 
     /// <summary>
