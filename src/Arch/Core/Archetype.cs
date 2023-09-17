@@ -236,7 +236,7 @@ public sealed partial class Archetype
         get;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private set;
+        internal set;
     }
 
     /// <summary>
