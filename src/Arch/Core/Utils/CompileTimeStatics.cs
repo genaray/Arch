@@ -339,6 +339,43 @@ public static class ComponentRegistry
 }
 
 /// <summary>
+///     Tracks all registered arrays in the project. Allows to create arrays of a specific type without reflection at runtime, if they are registered.
+/// </summary>
+public static class ArrayRegistry
+{
+    private static readonly Dictionary<Type, Func<int, Array>> _createFactories = new(128);
+
+    /// <summary>
+    ///     Adds a new array type and registers it.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    public static void Add<T>()
+    {
+        _createFactories.Add(typeof(T), ArrayFactory<T>.Create);
+    }
+
+    /// <summary>
+    ///     Gets an array of the specified type and capacity. Will use the registered factory if it exists, otherwise it will create a new array using reflection.
+    /// </summary>
+    /// <param name="type">The type of the array.</param>
+    /// <param name="capacity">The capacity of the array.</param>
+    /// <returns>The created array.</returns>
+    public static Array GetArray(Type type, int capacity)
+    {
+        return _createFactories.TryGetValue(type, out var func) ? func(capacity) : Array.CreateInstance(type, capacity);
+    }
+
+    /// <summary>
+    ///     An array factory that creates arrays of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    private static class ArrayFactory<T>
+    {
+        public static readonly Func<int, Array> Create = capacity => capacity == 0 ? Array.Empty<T>() : new T[capacity];
+    }
+}
+
+/// <summary>
 ///     The <see cref="Component{T}"/> class, provides compile time static information about a component.
 /// </summary>
 /// <typeparam name="T">Its generic type.</typeparam>
