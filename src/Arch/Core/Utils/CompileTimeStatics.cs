@@ -343,7 +343,7 @@ public static class ComponentRegistry
 /// </summary>
 public static class ArrayRegistry
 {
-    private static readonly Dictionary<Type, Func<int, Array>> _createFactories = new(128);
+    private static readonly JaggedArray<Func<int, Array>> _createFactories = new(128);
 
     /// <summary>
     ///     Adds a new array type and registers it.
@@ -351,7 +351,7 @@ public static class ArrayRegistry
     /// <typeparam name="T">The type of the array.</typeparam>
     public static void Add<T>()
     {
-        _createFactories.Add(typeof(T), ArrayFactory<T>.Create);
+        _createFactories.Add(((ComponentType) typeof(T)).Id, ArrayFactory<T>.Create);
     }
 
     /// <summary>
@@ -362,7 +362,18 @@ public static class ArrayRegistry
     /// <returns>The created array.</returns>
     public static Array GetArray(Type type, int capacity)
     {
-        return _createFactories.TryGetValue(type, out var func) ? func(capacity) : Array.CreateInstance(type, capacity);
+        return GetArray((ComponentType) type, capacity);
+    }
+
+    /// <summary>
+    ///     Gets an array of the specified type and capacity. Will use the registered factory if it exists, otherwise it will create a new array using reflection.
+    /// </summary>
+    /// <param name="type">The type of the array.</param>
+    /// <param name="capacity">The capacity of the array.</param>
+    /// <returns>The created array.</returns>
+    public static Array GetArray(ComponentType type, int capacity)
+    {
+        return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
     }
 
     /// <summary>
