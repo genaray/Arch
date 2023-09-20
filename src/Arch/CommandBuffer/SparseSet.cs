@@ -46,7 +46,7 @@ internal class SparseArray
         Size = 0;
         Entities = new int[Capacity];
         Array.Fill(Entities, -1);
-        Components = Array.CreateInstance(type, Capacity);
+        Components = ArrayRegistry.GetArray(type, Capacity);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ internal class SparseArray
                 Array.Fill(Entities, -1, Capacity, newLength-Capacity);
 
                 // Resize component array
-                var array = Array.CreateInstance(Type, newLength);
+                var array = ArrayRegistry.GetArray(Type, newLength);
                 Components.CopyTo(array, 0);
                 Components = array;
                 Capacity = newLength;
