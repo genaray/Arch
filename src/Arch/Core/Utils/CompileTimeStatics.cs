@@ -351,7 +351,7 @@ public static class ArrayRegistry
     /// <typeparam name="T">The type of the array.</typeparam>
     public static void Add<T>()
     {
-        _createFactories.Add(((ComponentType) typeof(T)).Id, ArrayFactory<T>.Create);
+        _createFactories.Add(Component<T>.ComponentType.Id, ArrayFactory<T>.Create);
     }
 
     /// <summary>
