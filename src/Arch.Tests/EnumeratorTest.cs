@@ -7,7 +7,7 @@ namespace Arch.Tests;
 
 /// <summary>
 ///     The <see cref="EnumeratorTest"/>
-///     checks if the enumerators inside the common classes work correctly. 
+///     checks if the enumerators inside the common classes work correctly.
 /// </summary>
 [TestFixture]
 public class EnumeratorTest
@@ -37,7 +37,7 @@ public class EnumeratorTest
     }
 
     /// <summary>
-    ///     Checks if the <see cref="World"/> <see cref="World.Archetypes"/> are enumerated correctly. 
+    ///     Checks if the <see cref="World"/> <see cref="World.Archetypes"/> are enumerated correctly.
     /// </summary>
     [Test]
     public void WorldArchetypeEnumeration()
@@ -56,7 +56,7 @@ public class EnumeratorTest
     }
 
     /// <summary>
-    ///     Checks if the <see cref="Archetype"/> <see cref="Archetype.Chunks"/> are enumerated correctly. 
+    ///     Checks if the <see cref="Archetype"/> <see cref="Archetype.Chunks"/> are enumerated correctly.
     /// </summary>
     [Test]
     public void ArchetypeChunkEnumeration()
@@ -72,7 +72,7 @@ public class EnumeratorTest
     }
 
     /// <summary>
-    ///     Checks if the <see cref="Query"/> archetypes are enumerated correctly. 
+    ///     Checks if the <see cref="Query"/> archetypes are enumerated correctly.
     /// </summary>
     [Test]
     public void QueryArchetypeEnumeration()
@@ -88,7 +88,29 @@ public class EnumeratorTest
     }
 
     /// <summary>
-    ///     Checks if the <see cref="Query"/> chunks are enumerated correctly. 
+    ///     Checks if the <see cref="Query"/> archetypes are enumerated correctly when theres one empty archetype.
+    ///     In the past it did not which caused weird query behaviour in certain situations where there was one empty archetype with one empty chunk.
+    /// </summary>
+    [Test]
+    public void QueryArchetypeEmptyEnumeration()
+    {
+        // Create world, entity and move it.
+        using var world = World.Create();
+        var entity = world.Create();
+        world.Add<int>(entity);
+
+        var counter = 0;
+        var query = world.Query(QueryDescription.Null);
+        foreach (var archetype in query.GetArchetypeIterator())
+        {
+            counter++;
+        }
+
+        That(counter, Is.EqualTo(1));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="Query"/> chunks are enumerated correctly.
     /// </summary>
     [Test]
     public void QueryChunkEnumeration()

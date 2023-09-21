@@ -31,7 +31,7 @@ public static class DangerousWorldExtensions
     {
         world.EntityInfo.EnsureCapacity(capacity);
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="EntityInfo.Archetype"/> for an <see cref="Entity"/>.
     /// </summary>
@@ -62,7 +62,7 @@ public static class DangerousWorldExtensions
     {
         world.EntityInfo.Versions = (JaggedArray<int>)versions;
     }
-    
+
     /// <summary>
     ///     Returns the <see cref="EntityInfoStorage.Slots"/> of a <see cref="World"/> for reading or modifiyng it.
     /// </summary>
@@ -73,7 +73,7 @@ public static class DangerousWorldExtensions
         var array = (Slot[][])world.EntityInfo.Slots;
         return Unsafe.As<(int,int)[][]>(array);
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="EntityInfoStorage.Slots"/> of a <see cref="World"/>.
     /// </summary>
@@ -83,7 +83,19 @@ public static class DangerousWorldExtensions
     {
         world.EntityInfo.Slots = (JaggedArray<Slot>) Unsafe.As<Slot[][]>(slots);
     }
-    
+
+    /// <summary>
+    ///     Returns the <see cref="Slot"/> of an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>The <see cref="Slot"/> as a <see cref="ValueTuple{T,TT}"/>.</returns>
+    public static (int, int) GetSlot(this World world, Entity entity)
+    {
+        ref var slot = ref world.EntityInfo.GetSlot(entity.Id);
+        return (slot.Index, slot.ChunkIndex);
+    }
+
     /// <summary>
     ///     Returns the <see cref="EntityInfoStorage.Archetypes"/> of a <see cref="World"/> for reading or modifiyng it.
     /// </summary>
@@ -93,7 +105,7 @@ public static class DangerousWorldExtensions
     {
         return (Archetype[][])world.EntityInfo.Archetypes;
     }
-    
+
     /// <summary>
     ///     Sets the <see cref="EntityInfoStorage.Archetypes"/> of a <see cref="World"/>.
     /// </summary>

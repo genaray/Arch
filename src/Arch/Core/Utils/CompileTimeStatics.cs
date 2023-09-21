@@ -109,7 +109,7 @@ public static class ComponentRegistry
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
-    public static int Size { get; private set; }
+    public static int Size { get; internal set; }
 
     /// <summary>
     ///     Adds a new <see cref="ComponentType"/> manually and registers it.
@@ -143,7 +143,15 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(ComponentType type)
     {
-        return Add(type.Type, type.ByteSize);
+
+        // Register and assign component id
+        _types.Add(type, type);
+
+        Size++;
+        return type;
+
+        /*
+        return Add(type.Type, type.ByteSize);*/
     }
     
     /// <summary>
@@ -371,6 +379,43 @@ public static class ComponentRegistry
         }
 
         return IntPtr.Size;
+    }
+}
+
+/// <summary>
+///     Tracks all registered arrays in the project. Allows to create arrays of a specific type without reflection at runtime, if they are registered.
+/// </summary>
+public static class ArrayRegistry
+{
+    private static readonly JaggedArray<Func<int, Array>> _createFactories = new(128);
+
+    /// <summary>
+    ///     Adds a new array type and registers it.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    public static void Add<T>()
+    {
+        _createFactories.Add(Component<T>.ComponentType.Id, ArrayFactory<T>.Create);
+    }
+
+    /// <summary>
+    ///     Gets an array of the specified type and capacity. Will use the registered factory if it exists, otherwise it will create a new array using reflection.
+    /// </summary>
+    /// <param name="type">The type of the array.</param>
+    /// <param name="capacity">The capacity of the array.</param>
+    /// <returns>The created array.</returns>
+    public static Array GetArray(ComponentType type, int capacity)
+    {
+        return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
+    }
+
+    /// <summary>
+    ///     An array factory that creates arrays of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the array.</typeparam>
+    private static class ArrayFactory<T>
+    {
+        public static readonly Func<int, Array> Create = capacity => capacity == 0 ? Array.Empty<T>() : new T[capacity];
     }
 }
 

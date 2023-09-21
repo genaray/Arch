@@ -10,9 +10,8 @@ public static class DangerousArchetypeExtensions
 {
 
     /// <summary>
-    ///     Creates a new <see cref="Archetype"/> and returns it. 
+    ///     Creates a new <see cref="Archetype"/> and returns it.
     /// </summary>
-    /// <param name="archetype">The <see cref="Archetype"/>.</param>
     /// <param name="types">The <see cref="ComponentType"/>s.</param>
     /// <returns></returns>
     public static Archetype CreateArchetype(ComponentType[] types)
@@ -31,7 +30,7 @@ public static class DangerousArchetypeExtensions
     }
 
     /// <summary>
-    ///     Sets the <see cref="Archetype.Chunks"/> and its capacity. 
+    ///     Sets the <see cref="Archetype.Chunks"/> and its capacity.
     /// </summary>
     /// <param name="archetype">The <see cref="Archetype"/> instance.</param>
     /// <param name="chunks">The list of <see cref="Chunk"/>s.</param>
@@ -39,6 +38,16 @@ public static class DangerousArchetypeExtensions
     {
         archetype.Chunks = chunks.ToArray();
         archetype.Capacity = chunks.Count;
+    }
+
+    /// <summary>
+    ///     Sets the <see cref="Archetype.Entities"/>.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <param name="entities">The size.</param>
+    public static void SetEntities(this Archetype archetype, int entities)
+    {
+        archetype.Entities = entities;
     }
 
     /// <summary>

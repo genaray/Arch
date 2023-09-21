@@ -119,16 +119,17 @@ public static class StructuralChangesExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount);
+        var inParameters = new StringBuilder().InsertGenericInParams(amount);
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Add<{{generics}}>(this Entity entity, {{parameters}})
-            {
-                var world = World.Worlds[entity.WorldId];
-                world.Add<{{generics}}>(entity);
-            }
-            """;
+              [MethodImpl(MethodImplOptions.AggressiveInlining)]
+              public static void Add<{{generics}}>(this Entity entity, {{parameters}})
+              {
+                  var world = World.Worlds[entity.WorldId];
+                  world.Add<{{generics}}>(entity, {{inParameters}});
+              }
+              """;
 
         return sb.AppendLine(template);
     }

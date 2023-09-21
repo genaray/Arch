@@ -63,7 +63,7 @@ internal ref struct EntitySlot
     ///     A reference to its <see cref="Slot"/>.
     /// </summary>
     public Slot Slot;
-    
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfo"/> struct.
     /// </summary>
@@ -254,11 +254,11 @@ internal class EntityInfoStorage
             for(var index = 0; index <= upper; index++)
             {
                 ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
-                
+
                 // Update entity info
                 Move(entity.Id, newArchetype, newArchetypeSlot);
                 newArchetypeSlot++;
-                
+
                 if (newArchetypeSlot.Index >= newArchetype.EntitiesPerChunk)
                 {
                     newArchetypeSlot.Index = 0;
@@ -368,10 +368,10 @@ internal class JaggedArray<T>
     /// <param name="capacity">The initial capacity.</param>
     internal JaggedArray(int capacity, T filler = default)
     {
-        EnsureCapacity(capacity);
         this.filler = filler;
+        EnsureCapacity(capacity);
     }
-    
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="JaggedArray{T}"/> class.
     /// </summary>
@@ -480,7 +480,7 @@ internal class JaggedArray<T>
         for (int i = currentSize; i < desiredSize; i++)
         {
             var array = new T[_chunkSize];
-            _items[i] = new T[_chunkSize];
+            _items[i] = array;
             Array.Fill(array, filler);
         }
 
@@ -576,7 +576,7 @@ internal class JaggedArray<T>
     {
         return jaggedArray._items;
     }
-    
+
     /// <summary>
     ///     A explicit operator converting a T[][] array to its <see cref="JaggedArray{T}"/>.
     /// </summary>

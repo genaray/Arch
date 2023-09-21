@@ -123,6 +123,18 @@ internal class SparseArray : IDisposable
         return index < Entities.Length && Entities[index] != -1;
     }
 
+    // NOTE: If `SparseArray` were generic, this wouldn't have to exist, perhaps?
+    /// <summary>
+    ///     Return an array of the given type.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <returns>The array instance if it exists.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private T[] GetArray<T>()
+    {
+        return Unsafe.As<T[]>(Components);
+    }
+
     // NOTE: If `SparseArray` were generic, this could perhaps be an indexer (T this[int index]).
     /// <summary>
     ///     Sets a component at the index.
