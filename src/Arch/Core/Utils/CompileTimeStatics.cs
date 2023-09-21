@@ -360,17 +360,6 @@ public static class ArrayRegistry
     /// <param name="type">The type of the array.</param>
     /// <param name="capacity">The capacity of the array.</param>
     /// <returns>The created array.</returns>
-    public static Array GetArray(Type type, int capacity)
-    {
-        return GetArray((ComponentType) type, capacity);
-    }
-
-    /// <summary>
-    ///     Gets an array of the specified type and capacity. Will use the registered factory if it exists, otherwise it will create a new array using reflection.
-    /// </summary>
-    /// <param name="type">The type of the array.</param>
-    /// <param name="capacity">The capacity of the array.</param>
-    /// <returns>The created array.</returns>
     public static Array GetArray(ComponentType type, int capacity)
     {
         return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
