@@ -153,7 +153,7 @@ public static class ComponentRegistry
         /*
         return Add(type.Type, type.ByteSize);*/
     }
-    
+
     /// <summary>
     ///     Adds a new component and registers it.
     /// </summary>
@@ -175,7 +175,7 @@ public static class ComponentRegistry
     {
         return Add(type, SizeOf(type));
     }
-    
+
     /// <summary>
     ///     Converts a <see cref="Type"/> into a fitting <see cref="ComponentType"/>.
     /// </summary>
@@ -387,7 +387,7 @@ public static class ComponentRegistry
 /// </summary>
 public static class ArrayRegistry
 {
-    private static readonly JaggedArray<Func<int, Array>> _createFactories = new(128);
+    private static readonly JaggedArray<Func<int, ComponentArray>> _createFactories = new(128);
 
     /// <summary>
     ///     Adds a new array type and registers it.
@@ -404,9 +404,9 @@ public static class ArrayRegistry
     /// <param name="type">The type of the array.</param>
     /// <param name="capacity">The capacity of the array.</param>
     /// <returns>The created array.</returns>
-    public static Array GetArray(ComponentType type, int capacity)
+    public static ComponentArray GetArray(ComponentType type, int capacity)
     {
-        return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
+        return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : ComponentArray.CreateInstance(type.Type, capacity);
     }
 
     /// <summary>
@@ -415,7 +415,7 @@ public static class ArrayRegistry
     /// <typeparam name="T">The type of the array.</typeparam>
     private static class ArrayFactory<T>
     {
-        public static readonly Func<int, Array> Create = capacity => capacity == 0 ? Array.Empty<T>() : new T[capacity];
+        public static readonly Func<int, ComponentArray> Create = capacity => capacity == 0 ? ComponentArray.Empty<T>() : ComponentArray.CreateInstance<T>(capacity);
     }
 }
 

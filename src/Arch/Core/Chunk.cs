@@ -3,106 +3,24 @@ using Arch.Core.Events;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
+using Arch.LowLevel;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
-public readonly unsafe struct UnsafeArray<T> : IDisposable where T : unmanaged
+/// <summary>
+///     The <see cref="EmptyComponentArray{T}"/> class
+///     is a compile time static empty <see cref="ComponentArray"/> for the generic type.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public static class EmptyComponentArray<T>
 {
-
-    internal readonly T* _ptr;
-
-    public UnsafeArray(int count)
-    {
-#if NET6_0_OR_GREATER
-        _ptr = (T*)NativeMemory.Alloc((nuint)(sizeof(T) * count));
-#else
-        _ptr = (T*)Marshal.AllocHGlobal(sizeof(T) * count);
-#endif
-        Count = count;
-    }
-
-    public readonly int Count
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get;
-    }
-
-    public readonly int Length
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Count;
-    }
-
-    public ref T this[int i]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref _ptr[i];
-    }
-
-    public void Dispose()
-    {
-#if NET6_0_OR_GREATER
-        NativeMemory.Free(_ptr);
-#else
-        Marshal.FreeHGlobal((IntPtr)_ptr);
-#endif
-    }
-
-    /// <summary>
-    ///     Converts an <see cref="UnsafeArray{T}"/> into a void pointer.
-    /// </summary>
-    /// <param name="instance">The <see cref="UnsafeArray{T}"/> instance.</param>
-    /// <returns>A void pointer.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator void*(UnsafeArray<T> instance)
-    {
-        return (void*)instance._ptr;
-    }
-}
-
-public unsafe struct UnsafeArray
-{
-    /// <summary>
-    ///  Copies the a part of the <see cref="UnsafeArray{T}"/> to the another <see cref="UnsafeArray{T}"/>.
-    /// </summary>
-    /// <param name="source">The source <see cref="UnsafeArray{T}"/>.</param>
-    /// <param name="index">The start index in the source <see cref="UnsafeArray{T}"/>.</param>
-    /// <param name="destination">The destination <see cref="UnsafeArray{T}"/>.</param>
-    /// <param name="destinationIndex">The start index in the destination <see cref="UnsafeArray{T}"/>.</param>
-    /// <param name="length">The length indicating the amount of items being copied.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    internal static void Copy<T>(ref UnsafeArray<T> source, int index, ref UnsafeArray<T> destination, int destinationIndex, int length) where T : unmanaged
-    {
-        var size = sizeof(T);
-        var bytes = size * length;
-        var sourcePtr = (void*)(source._ptr + (size*index));
-        var destinationPtr = (void*)(destination._ptr + (size*destinationIndex));
-        Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
-    }
-
-
-    /// <summary>
-    ///     Fills an <see cref="UnsafeArray{T}"/> with a given value.
-    /// </summary>
-    /// <param name="source">The <see cref="UnsafeArray{T}"/> instance.</param>
-    /// <param name="value">The value.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    internal static void Fill<T>(ref UnsafeArray<T> source, in T value = default) where T : unmanaged
-    {
-        for (int index = 0; index < source.Count; index++)
-        {
-            source[index] = value;
-        }
-    }
-
+    internal static readonly ComponentArray Value = ComponentArray.CreateInstance<T>(0);
 }
 
 /// <summary>
 ///     The <see cref="ComponentArray"/> struct
-///     represents an hybrid array that either wraps an <see cref="Array"/> or an <see cref="NativeArray"/>.
+///     represents an hybrid array that either wraps an <see cref="_array"/> or an <see cref="_nativeArray"/>.
 ///     It mirrors the most important array operations to acess the underlaying array regardless of its implementation.
 /// </summary>
 public readonly unsafe struct ComponentArray : IDisposable
@@ -111,12 +29,12 @@ public readonly unsafe struct ComponentArray : IDisposable
     /// <summary>
     ///     An <see cref="IntPtr"/> pointing to native memory that represents the array.
     /// </summary>
-    private readonly IntPtr NativeArray;
+    private readonly IntPtr _nativeArray;
 
     /// <summary>
-    ///     An gc managed <see cref="Array"/> that represents the array.
+    ///     An gc managed <see cref="_array"/> that represents the array.
     /// </summary>
-    private readonly Array Array;
+    private readonly Array _array;
 
 
     /// <summary>
@@ -129,22 +47,22 @@ public readonly unsafe struct ComponentArray : IDisposable
     internal ComponentArray(IntPtr nativeArray, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
-        NativeArray = nativeArray;
+        _nativeArray = nativeArray;
         IsManaged = false;
         Capacity = capacity;
     }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentArray"/> struct.
-    ///     Accepts a <see cref="Array"/> and creates an managed <see cref="ComponentArray"/> instance.
+    ///     Accepts a <see cref="_array"/> and creates an managed <see cref="ComponentArray"/> instance.
     /// </summary>
-    /// <param name="array">The <see cref="Array"/>.</param>
+    /// <param name="array">The <see cref="_array"/>.</param>
     /// <param name="componentType">The <see cref="ComponentType"/> stored.</param>
     /// <param name="capacity">The capacity.</param>
     internal ComponentArray(Array array, ComponentType componentType, int capacity)
     {
         ComponentType = componentType;
-        Array = array;
+        _array = array;
         IsManaged = true;
         Capacity = capacity;
     }
@@ -155,7 +73,7 @@ public readonly unsafe struct ComponentArray : IDisposable
     public readonly ComponentType ComponentType { get; }
 
     /// <summary>
-    ///     True if the underlaying array is a managed <see cref="Array"/> and no native memory <see cref="NativeArray"/>.
+    ///     True if the underlaying array is a managed <see cref="_array"/> and no native memory <see cref="_nativeArray"/>.
     /// </summary>
     public readonly bool IsManaged { get; }
 
@@ -174,12 +92,12 @@ public readonly unsafe struct ComponentArray : IDisposable
     {
         if (!IsManaged)
         {
-            var ptr = NativeArray + (ComponentType.ByteSize * index);
+            var ptr = _nativeArray + (ComponentType.ByteSize * index);
             Marshal.StructureToPtr(value, ptr, false);
         }
         else
         {
-            Array.SetValue(value, index);
+            _array.SetValue(value, index);
         }
     }
 
@@ -191,13 +109,13 @@ public readonly unsafe struct ComponentArray : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public object Get(in int index)
     {
-        if (Array == null)
+        if (_array == null)
         {
-            var ptr = NativeArray + (ComponentType.ByteSize * index);
+            var ptr = _nativeArray + (ComponentType.ByteSize * index);
             return Marshal.PtrToStructure(ptr, ComponentType.Type);
         }
 
-        return Array.GetValue(index);
+        return _array.GetValue(index);
     }
 
     /// <summary>
@@ -211,7 +129,7 @@ public readonly unsafe struct ComponentArray : IDisposable
             return;
         }
 
-        Marshal.FreeHGlobal(NativeArray);
+        Marshal.FreeHGlobal(_nativeArray);
     }
 
     /// <summary>
@@ -225,11 +143,11 @@ public readonly unsafe struct ComponentArray : IDisposable
         // Handle object components.
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            var arrayRef = Unsafe.As<T[]>(Array);
+            var arrayRef = Unsafe.As<T[]>(_array);
             return new Span<T>(arrayRef);
         }
 
-        return new Span<T>((void*)NativeArray, Capacity);
+        return new Span<T>((void*)_nativeArray, Capacity);
     }
 
     /// <summary>
@@ -237,19 +155,51 @@ public readonly unsafe struct ComponentArray : IDisposable
     ///     Determines if the passed <see cref="ComponentType"/> is managed and therefore will either allocate a native <see cref="ComponentArray"/> or a gc one.
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/> that the <see cref="ComponentArray"/> should store.</param>
-    /// <param name="Capacity">The capacity.</param>
+    /// <param name="capacity">The capacity.</param>
     /// <returns>A new <see cref="ComponentArray"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ComponentArray CreateInstance(ComponentType type, int Capacity)
+    internal static ComponentArray CreateInstance(ComponentType type, int capacity)
     {
         if (!type.IsManaged)
         {
-            var ptr = Marshal.AllocHGlobal(type.ByteSize * Capacity);
-            return new ComponentArray(ptr, type, Capacity);
+            var ptr = Marshal.AllocHGlobal(type.ByteSize * capacity);
+            return new ComponentArray(ptr, type, capacity);
         }
 
-        var array = Array.CreateInstance(type, Capacity);
-        return new ComponentArray(array, type, Capacity);
+        var array = Array.CreateInstance(type, capacity);
+        return new ComponentArray(array, type, capacity);
+    }
+
+    /// <summary>
+    ///     Returns an empty <see cref="ComponentArray"/> for the given type.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>The empty <see cref="ComponentArray"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ComponentArray Empty<T>()
+    {
+        return EmptyComponentArray<T>.Value;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of the <see cref="ComponentArray"/> struct.
+    ///     Determines if the passed <see cref="ComponentType"/> is managed and therefore will either allocate a native <see cref="ComponentArray"/> or a gc one.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/> that the <see cref="ComponentArray"/> should store.</param>
+    /// <param name="capacity">The capacity.</param>
+    /// <returns>A new <see cref="ComponentArray"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ComponentArray CreateInstance<T>(int capacity)
+    {
+        var type = Component<T>.ComponentType;
+        if (!type.IsManaged)
+        {
+            var ptr = Marshal.AllocHGlobal(type.ByteSize * capacity);
+            return new ComponentArray(ptr, type, capacity);
+        }
+
+        var array = new T[capacity];
+        return new ComponentArray(array, type, capacity);
     }
 
     /// <summary>
@@ -274,13 +224,13 @@ public readonly unsafe struct ComponentArray : IDisposable
         if (!source.IsManaged)
         {
             var bytes = source.ComponentType.ByteSize * length;
-            var sourcePtr = (void*)(source.NativeArray + (source.ComponentType.ByteSize*index));
-            var destinationPtr = (void*)(destination.NativeArray + (source.ComponentType.ByteSize*destinationIndex));
+            var sourcePtr = (void*)(source._nativeArray + (source.ComponentType.ByteSize*index));
+            var destinationPtr = (void*)(destination._nativeArray + (source.ComponentType.ByteSize*destinationIndex));
             Buffer.MemoryCopy(sourcePtr, destinationPtr, bytes, bytes);
         }
         else
         {
-            Array.Copy(source.Array, index, destination.Array, destinationIndex, length);
+            Array.Copy(source._array, index, destination._array, destinationIndex, length);
         }
     }
 
@@ -290,7 +240,7 @@ public readonly unsafe struct ComponentArray : IDisposable
     /// <param name="instance">The <see cref="ComponentArray"/> instance.</param>
     /// <returns>A void pointer.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator void*(ComponentArray instance) => (void*)instance.NativeArray;
+    public static implicit operator void*(ComponentArray instance) => (void*)instance._nativeArray;
 }
 
 /// <summary>
@@ -322,7 +272,7 @@ public unsafe partial struct Chunk
         Size = 0;
         Capacity = capacity;
 
-        Entities = (Entity*)Marshal.AllocHGlobal(sizeof(Entity) * Capacity);
+        Entities = new UnsafeArray<Entity>(Capacity);
         Components = new ComponentArray[types.Length];
 
         // Allocate arrays for types.
@@ -330,7 +280,7 @@ public unsafe partial struct Chunk
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
-            Components[index] = ComponentArray.CreateInstance(type, Capacity);
+            Components[index] = ArrayRegistry.GetArray(type, Capacity);
         }
     }
 
@@ -339,7 +289,7 @@ public unsafe partial struct Chunk
     ///     The <see cref="Arch.Core.Entity"/>'s that are stored in this chunk.
     ///     Can be accessed during the iteration.
     /// </summary>
-    public readonly Entity* Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public readonly UnsafeArray<Entity> Entities { [Pure] [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The component arrays in which the components of the <see cref="Arch.Core.Entity"/>'s are stored.
@@ -510,6 +460,7 @@ public unsafe partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
+        Entities.Dispose();
         for (var index = 0; index < Components.Length; index++)
         {
             ref var components = ref Components[index];
@@ -685,25 +636,11 @@ public partial struct Chunk
     {
         // Arrays
         var entities = source.Entities;
-        var sourceComponents = source.Components;
+        var destinationEntities = destination.Entities;
 
         // Copy entities array
-        Array.Copy(entities, index, destination.Entities, destinationIndex, length);
-
-        // Copy component arrays
-        for (var i = 0; i < sourceComponents.Length; i++)
-        {
-            var sourceArray = sourceComponents[i];
-            var sourceType = (ComponentType) sourceArray.GetType().GetElementType()!;
-
-            if (!destination.Has(sourceType))
-            {
-                continue;
-            }
-
-            var destinationArray = destination.GetArray(sourceType);
-            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
-        }
+        UnsafeArray.Copy(ref entities, index, ref destinationEntities, destinationIndex, length);
+        CopyComponents(ref source, index, ref destination, destinationIndex, length);
     }
 
     /// <summary>
@@ -724,17 +661,14 @@ public partial struct Chunk
         // Copy component arrays
         for (var i = 0; i < sourceComponents.Length; i++)
         {
-            var sourceArray = sourceComponents[i];
-            var sourceType = sourceArray.GetType().GetElementType();
-            var compType = (ComponentType) sourceType!;
-
-            if (!destination.Has(compType))
+            ref var sourceArray = ref sourceComponents[i];
+            if (!destination.Has(sourceArray.ComponentType))
             {
                 continue;
             }
 
-            var destinationArray = destination.GetArray(compType);
-            Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
+            var destinationArray = destination.GetComponentArray(sourceArray.ComponentType);
+            ComponentArray.Copy(ref sourceArray, index, ref destinationArray, destinationIndex, length);
         }
     }
 
@@ -756,46 +690,13 @@ public partial struct Chunk
         Entities[index] = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
-            var sourceArray = chunk.Components[i];
-            var desArray = Components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
+            ref var sourceArray = ref chunk.Components[i];
+            ref var desArray = ref Components[i];
+            ComponentArray.Copy(ref sourceArray, lastIndex, ref desArray, index, 1);
         }
 
         chunk.Size--;
         return lastEntity.Id;
     }
 
-    /*
-    /// <summary>
-    ///     Transfers an <see cref="Arch.Core.Entity"/> at the index of this chunk to another chunk.
-    /// </summary>
-    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/> we want to copy.</param>
-    /// <param name="chunk">The <see cref="Chunk"/> we want to transfer it to.</param>
-    /// <returns></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    internal int CoolerTransfer(int index, ref Chunk chunk)
-    {
-        var chunkSize = chunk.Size;
-        var chunkComponents = chunk.Components;
-        var chunkEntities = chunk.Entities;
-        var components = Components;
-        var entities = Entities;
-
-        // Get last entity
-        var lastIndex = chunkSize - 1;
-        var lastEntity = chunkEntities[lastIndex];
-
-        // Replace index entity with the last entity from the other chunk
-        entities[index] = lastEntity;
-        for (var i = 0; i < components.Length; i++)
-        {
-            var sourceArray = chunkComponents[i];
-            var desArray = components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
-        }
-
-        //chunk.Size = chunkSize - 1;
-        return lastEntity.Id;
-    }*/
 }

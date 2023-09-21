@@ -1,4 +1,5 @@
 using Arch.Core.Utils;
+using Arch.LowLevel;
 
 namespace Arch.Core.Extensions.Dangerous;
 
@@ -22,7 +23,7 @@ public static class DangerousChunkExtensions
         {
             unsafeLookupArray[index] = lookupArray[index];
         }
-        
+
         return new Chunk(capacity, unsafeLookupArray, types);
     }
 

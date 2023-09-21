@@ -2,6 +2,7 @@ using System.Buffers;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
+using Arch.LowLevel;
 
 namespace Arch.Core;
 
@@ -172,7 +173,7 @@ public sealed partial class Archetype : IDisposable
             int[] managedArray = new int[_componentIdToArrayIndex.Length];
             for (int i = 0; i < _componentIdToArrayIndex.Length; i++)
             {
-                managedArray[i] = _componentIdToArrayIndex[i]; 
+                managedArray[i] = _componentIdToArrayIndex[i];
             }
 
             return managedArray;

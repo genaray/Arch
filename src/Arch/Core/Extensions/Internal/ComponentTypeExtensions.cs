@@ -1,4 +1,5 @@
 using Arch.Core.Utils;
+using Arch.LowLevel;
 
 namespace Arch.Core.Extensions.Internal;
 
