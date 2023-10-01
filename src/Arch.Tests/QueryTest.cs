@@ -159,7 +159,7 @@ public partial class QueryTest
         }
 
         var queryCount = 0;
-        _world.Query(in _withoutAiQuery, (in Entity entity, ref Transform t) => queryCount++);
+        _world.Query(in _withoutAiQuery, (Entity entity, ref Transform t) => queryCount++);
 
         var otherQueryCount = 0;
         _world.Query(in _allQuery, (ref Rotation rot) => otherQueryCount++);
@@ -183,7 +183,7 @@ public partial class QueryTest
         }
 
         var queryCount = 0;
-        _world.ParallelQuery(in _withoutAiQuery, (in Entity entity, ref Transform t) => Interlocked.Increment(ref queryCount));
+        _world.ParallelQuery(in _withoutAiQuery, (Entity entity, ref Transform t) => Interlocked.Increment(ref queryCount));
 
         var otherQueryCount = 0;
         _world.ParallelQuery(in _allQuery, (ref Rotation rot) => Interlocked.Increment(ref otherQueryCount));
