@@ -49,7 +49,7 @@ public interface IForEach
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Update(in Entity entity);
+    public void Update(Entity entity);
 }
 
 /// <summary>
@@ -57,7 +57,7 @@ public interface IForEach
 ///     provides a callback to execute logic on an <see cref="Entity"/>.
 /// </summary>
 /// <param name="entity">The <see cref="Entity"/>.</param>
-public delegate void ForEach(in Entity entity);
+public delegate void ForEach(Entity entity);
 
 // Static world, create and destroy
 
@@ -434,7 +434,7 @@ public partial class World : IDisposable
             ref var entityFirstElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 list[start+index] = entity;
                 index++;
             }
@@ -638,7 +638,7 @@ public partial class World
             ref var entityLastElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityLastElement, entityIndex);
+                var entity = Unsafe.Add(ref entityLastElement, entityIndex);
                 forEntity(entity);
             }
         }
@@ -661,8 +661,8 @@ public partial class World
             ref var entityFirstElement = ref chunk.Entity(0);
             foreach (var entityIndex in chunk)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                t.Update(in entity);
+                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
+                t.Update(entity);
             }
         }
     }
@@ -683,8 +683,8 @@ public partial class World
             ref var entityFirstElement = ref chunk.Entity(0);
             foreach(var entityIndex in chunk)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
-                iForEach.Update(in entity);
+                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
+                iForEach.Update(entity);
             }
         }
     }
@@ -714,7 +714,7 @@ public partial class World
                 ref var entityFirstElement = ref chunk.Entity(0);
                 foreach (var index in chunk)
                 {
-                    ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+                    var entity = Unsafe.Add(ref entityFirstElement, index);
                     OnEntityDestroyed(entity);
 
                     var version = EntityInfo.GetVersion(entity.Id);

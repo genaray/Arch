@@ -253,7 +253,7 @@ internal class EntityInfoStorage
             //for (var index = upper; index >= 0; --index)
             for(var index = 0; index <= upper; index++)
             {
-                ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, index);
+                var entity = Unsafe.Add(ref entityFirstElement, index);
 
                 // Update entity info
                 Move(entity.Id, newArchetype, newArchetypeSlot);

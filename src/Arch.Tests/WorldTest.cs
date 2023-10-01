@@ -231,7 +231,7 @@ public partial class WorldTest
         // Destroy all but one
         var counter = 0;
         var query = new QueryDescription().WithAll<HeavyComponent>();
-        world.Query(in query, (in Entity entity) =>
+        world.Query(in query, (Entity entity) =>
         {
             if (counter < amount - 1)
             {

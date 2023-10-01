@@ -274,7 +274,7 @@ public partial class World
             ref var firstEntity = ref chunk.Entity(0);
             foreach (var index in chunk)
             {
-                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                var entity = Unsafe.Add(ref firstEntity, index);
                 OnComponentAdded<T>(entity);
             }
         }
@@ -296,7 +296,7 @@ public partial class World
             ref var firstEntity = ref chunk.Entity(0);
             foreach (var index in chunk)
             {
-                ref var entity = ref Unsafe.Add(ref firstEntity, index);
+                 var entity = Unsafe.Add(ref firstEntity, index);
                 OnComponentRemoved<T>(entity);
             }
         }

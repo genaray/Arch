@@ -33,7 +33,7 @@ public class QueryBenchmark
     [Benchmark]
     public void WorldEntityQuery()
     {
-        _world.Query(in _queryDescription, static (in Entity entity) =>
+        _world.Query(in _queryDescription, static (Entity entity) =>
         {
             var refs = _world.Get<Transform, Velocity>(entity);
 
@@ -46,7 +46,7 @@ public class QueryBenchmark
     [Benchmark]
     public void EntityExtensionQuery()
     {
-        _world.Query(in _queryDescription, (in Entity entity) =>
+        _world.Query(in _queryDescription, (Entity entity) =>
         {
             var refs = entity.Get<Transform, Velocity>();
             refs.t0.X += refs.t1.X;
