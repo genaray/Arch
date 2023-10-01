@@ -49,13 +49,12 @@ public class QueryBenchmark
         _world.Query(in _queryDescription, (in Entity entity) =>
         {
             var refs = entity.Get<Transform, Velocity>();
-
             refs.t0.X += refs.t1.X;
             refs.t0.Y += refs.t1.Y;
         });
     }
 #endif
-/*
+
     [Benchmark]
     public void Query()
     {
@@ -126,5 +125,5 @@ public class QueryBenchmark
             t.X += v.X;
             t.Y += v.Y;
         }
-    }*/
+    }
 }
