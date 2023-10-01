@@ -1,12 +1,13 @@
 <Project>
   <Target Name="Unity"
           DependsOnTargets="Publish"
-          Condition="'$(RootNamespace.Contains(Tests))' != 'true' And '$(OutputType.Contains(Exe))' != 'true'">
+          Condition="'$(UnityPublish.Contains(true))'">
     <PropertyGroup>
       <TargetFramework>netstandard2.1</TargetFramework>
       <TargetFrameworks>netstandard2.1</TargetFrameworks>
       <Configuration>Release</Configuration>
       <UseAppHost>false</UseAppHost>
+      <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     </PropertyGroup>
   </Target>
 </Project>
