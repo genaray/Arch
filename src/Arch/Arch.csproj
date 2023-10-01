@@ -3,6 +3,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <TargetFrameworks>net7.0; net6.0; netstandard2.1</TargetFrameworks>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -39,6 +40,8 @@ BitSets are now vectorized, resulting in faster checks when large amounts of com
     <NoWarn>1701;1702;1591</NoWarn>
 
     <Configurations>Debug;Debug-PureECS;Debug-Events;Release;Release-PureECS;Release-Events;</Configurations>
+
+    <UnityPublish>true</UnityPublish>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
