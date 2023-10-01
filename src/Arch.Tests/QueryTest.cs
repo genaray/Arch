@@ -206,7 +206,7 @@ public partial class QueryTest
     {
         public int Counter;
 
-        public void Update(in Entity entity, ref Transform t0)
+        public void Update(Entity entity, ref Transform t0)
         {
             Counter++;
         }

@@ -70,10 +70,10 @@ public static class StringBuilderChunkJobExtensions
 
                     foreach(var entityIndex in chunk)
                     {
-                        ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                        var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                         {{getComponents}}
 
-                        ForEach(in entity, {{insertParams}});
+                        ForEach(entity, {{insertParams}});
                     }
                 }
             }
@@ -151,9 +151,9 @@ public static class StringBuilderChunkJobExtensions
 
                     for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
                     {
-                        ref readonly var entity = ref Unsafe.Add(ref entityFirstElement, entityIndex);
+                        var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                         {{getComponents}}
-                        ForEach.Update(in entity, {{insertParams}});
+                        ForEach.Update(entity, {{insertParams}});
                     }
                 }
             }
