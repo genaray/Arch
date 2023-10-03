@@ -95,9 +95,10 @@ BitSets are now vectorized, resulting in faster checks when large amounts of com
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Arch.LowLevel" Version="1.0.5" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.2" />
   </ItemGroup>
 

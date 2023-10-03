@@ -1,4 +1,5 @@
 using Arch.Core.Extensions.Internal;
+using Arch.LowLevel.Jagged;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
