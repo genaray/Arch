@@ -1,3 +1,4 @@
+using Arch.Core.Extensions.Internal;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Arch.Core.Utils;
@@ -17,33 +18,29 @@ public readonly record struct ComponentType
     public readonly int Id;
 
     /// <summary>
-    ///     Its type.
-    /// </summary>
-    public readonly Type Type;
-
-    /// <summary>
     ///     Its size in bytes.
     /// </summary>
     public readonly int ByteSize;
 
     /// <summary>
-    ///     If its zero sized.
-    /// </summary>
-    public readonly bool ZeroSized;
-
-    /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentType"/> struct.
     /// </summary>
     /// <param name="id">Its unique id.</param>
-    /// <param name="type">Its type.</param>
     /// <param name="byteSize">Its size in bytes.</param>
-    /// <param name="zeroSized">True if its zero sized ( empty struct).</param>
-    public ComponentType(int id, Type type, int byteSize, bool zeroSized)
+    public ComponentType(int id, int byteSize)
     {
         Id = id;
-        Type = type;
         ByteSize = byteSize;
-        ZeroSized = zeroSized;
+    }
+
+    /// <summary>
+    ///     Its <see cref="Type"/>, resolves the given <see cref="Id"/>.
+    ///     <remarks>The local <see cref="Id"/> is being resolved and acesses the <see cref="ComponentRegistry.Types"/> to return the <see cref="Type"/> for this <see cref="ComponentType"/>.</remarks>
+    /// </summary>
+    public Type Type
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ComponentRegistry.Types[Id];
     }
 
     /// <summary>
@@ -78,31 +75,34 @@ public static class ComponentRegistry
     /// <summary>
     ///     All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
     /// </summary>
-    private static readonly Dictionary<Type, ComponentType> _types = new(128);
-
-    /// <summary>
-    ///     All registered components mapped to their <see cref="Type"/> as a <see cref="Dictionary{TKey,TValue}"/>.
-    /// </summary>
-    public static Dictionary<Type, ComponentType> Types
+    public static Dictionary<Type, ComponentType> TypeToComponentType
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _types;
-    }
+        get;
+    } = new(64);
 
     /// <summary>
-    ///     TODO: Store array somewhere and update it to reduce allocations.
-    ///     All registered components as an <see cref="ComponentType"/> array.
+    ///     All registered components.
     /// </summary>
-    public static ComponentType[] TypesArray
+    public static Type[] Types
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _types.Values.ToArray();
-    }
+        get;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private set;
+    } = new Type[64];
 
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
     /// </summary>
-    public static int Size { get; internal set; }
+    public static int Size
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private set;
+    }
 
     /// <summary>
     ///     Adds a new <see cref="ComponentType"/> manually and registers it.
@@ -120,8 +120,10 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        meta = new ComponentType(Size + 1, type, typeSize, type.GetFields().Length == 0);
-        _types.Add(type, meta);
+        var id = Size + 1;
+        meta = new ComponentType(id, typeSize);
+        TypeToComponentType.Add(type, meta);
+        Types.Add(id, type);
 
         Size++;
         return meta;
@@ -136,15 +138,12 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ComponentType Add(ComponentType type)
     {
-
         // Register and assign component id
-        _types.Add(type, type);
+        TypeToComponentType.Add(type, type);
+        Types.Add(type.Id, type.Type);
 
         Size++;
         return type;
-
-        /*
-        return Add(type.Type, type.ByteSize);*/
     }
 
     /// <summary>
@@ -190,7 +189,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Has(Type type)
     {
-        return _types.ContainsKey(type);
+        return TypeToComponentType.ContainsKey(type);
     }
 
     /// <summary>
@@ -201,7 +200,9 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<T>()
     {
-        return _types.Remove(typeof(T));
+        var componentType = Component<T>.ComponentType;
+        Types[componentType.Id] = null;
+        return TypeToComponentType.Remove(componentType.Type);
     }
 
     /// <summary>
@@ -212,7 +213,9 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type)
     {
-        return _types.Remove(type);
+        ComponentType componentType = type;
+        Types[componentType.Id] = null;
+        return TypeToComponentType.Remove(type);
     }
 
     /// <summary>
@@ -224,7 +227,9 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type, out ComponentType compType)
     {
-        return _types.Remove(type, out compType);
+        var removed = TypeToComponentType.Remove(type, out compType);
+        Types[compType.Id] = null;
+        return removed;
     }
 
     /// <summary>
@@ -238,17 +243,10 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Replace(Type oldType, Type newType, int newTypeSize)
     {
-        var id = 0;
-        if (Remove(oldType, out var oldComponentType))
-        {
-            id = oldComponentType.Id;
-        }
-        else
-        {
-            id = ++Size;
-        }
+        var id = Remove(oldType, out var oldComponentType) ? oldComponentType.Id : ++Size;
 
-        _types.Add(newType, new ComponentType(id, newType, newTypeSize, newType.GetFields().Length == 0));
+        TypeToComponentType.Add(newType, new ComponentType(id, newTypeSize));
+        Types.Add(id, newType);
     }
 
     /// <summary>
@@ -298,7 +296,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TryGet(Type type, out ComponentType componentType)
     {
-        return _types.TryGetValue(type, out componentType);
+        return TypeToComponentType.TryGetValue(type, out componentType);
     }
 
     /// <summary>
@@ -309,12 +307,7 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int SizeOf<T>()
     {
-        if (typeof(T).IsValueType)
-        {
-            return Unsafe.SizeOf<T>();
-        }
-
-        return IntPtr.Size;
+        return typeof(T).IsValueType ? Unsafe.SizeOf<T>() : IntPtr.Size;
     }
 
     /// TODO: Check if this still AOT compatible?

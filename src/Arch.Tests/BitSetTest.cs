@@ -34,10 +34,10 @@ public class BitSetTest
     {
         var array = new ComponentType[]
         {
-            new (1, null, 0, false),
-            new (36, null, 0, false),
-            new (65, null, 0, false),
-            new (5, null, 0, false),
+            new (1, 0),
+            new (36, 0),
+            new (65, 0),
+            new (5, 0),
         };
 
         var bitSet = new BitSet();
