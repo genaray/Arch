@@ -356,7 +356,7 @@ public static class ArrayRegistry
     /// <returns>The created array.</returns>
     public static Array GetArray(ComponentType type, int capacity)
     {
-        return _createFactories.TryGetValue(type.Id, out var func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
+        return _createFactories.TryGetValue(type.Id, out Func<int,Array> func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
     }
 
     /// <summary>

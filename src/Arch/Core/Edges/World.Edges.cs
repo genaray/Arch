@@ -15,21 +15,19 @@ public partial class World
     /// <returns>The cached or newly created <see cref="Archetype"/> with that additional component.</returns>
     private Archetype GetOrCreateArchetypeByEdge(in ComponentType type, Archetype oldArchetype)
     {
+        Archetype archetype;
         var edgeIndex = type.Id - 1;
 
-#if NET5_0_OR_GREATER
-        ref var newArchetype = ref oldArchetype.TryGetAddEdge(edgeIndex, out var exists);
-        if (!exists)
+        if (!oldArchetype.HasAddEdgde(edgeIndex))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
+            archetype = GetOrCreate(oldArchetype.Types.Add(type));
+            oldArchetype.AddAddEdgde(edgeIndex, archetype);
         }
-#else
-        if (!oldArchetype.TryGetAddEdge(edgeIndex, out var newArchetype))
+        else
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.CreateAddEdge(edgeIndex, newArchetype);
+            archetype = oldArchetype.GetAddEdge(edgeIndex);
         }
-#endif
-        return newArchetype;
+
+        return archetype;
     }
 }

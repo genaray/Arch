@@ -146,7 +146,7 @@ static JaggedArray()
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Has(int id)
     {
-        return Versions.TryGetValue(id, out _);
+        return Versions.TryGetValue(id, out int _);
     }
 
     /// <summary>
