@@ -155,6 +155,7 @@ public sealed partial class Archetype
         Capacity = 1;
 
         _addEdges = new SparseJaggedArray<Archetype>(BucketSize);
+        _removeEdges = new SparseJaggedArray<Archetype>(BucketSize);
     }
 
     /// <summary>

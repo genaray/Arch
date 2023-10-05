@@ -612,7 +612,7 @@ public partial class World
         // Remove archetype from other archetypes edges.
         foreach (var otherArchetype in this)
         {
-            otherArchetype.RemoveAddEdge(archetype);
+            otherArchetype.RemoveEdge(archetype);
         }
 
         archetype.Clear();
@@ -966,7 +966,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
@@ -984,7 +984,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
@@ -997,7 +997,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
@@ -1021,20 +1021,8 @@ public partial class World
     public void Remove<T>(Entity entity)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.ClearBit(Component<T>.ComponentType.Id);
-
-        // Search for fitting archetype or create a new one
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
-        {
-            newArchetype = GetOrCreate(oldArchetype.Types.Remove(typeof(T)));
-        }
+        var type = Component<T>.ComponentType;
+        var newArchetype = GetOrCreateArchetypeByRemoveEdge(in type, oldArchetype);
 
         OnComponentRemoved<T>(entity);
         Move(entity, oldArchetype, newArchetype, out _);
