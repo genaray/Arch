@@ -13,7 +13,8 @@ public partial class World
     /// <param name="type">The new <see cref="ComponentType"/> that additionally forms a new <see cref="Archetype"/> with the old components of the old archetype.</param>
     /// <param name="oldArchetype">The old <see cref="Archetype"/>.</param>
     /// <returns>The cached or newly created <see cref="Archetype"/> with that additional component.</returns>
-    private Archetype GetOrCreateArchetypeByEdge(in ComponentType type, Archetype oldArchetype)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Archetype GetOrCreateArchetypeByAddEdge(in ComponentType type, Archetype oldArchetype)
     {
         Archetype archetype;
         var edgeIndex = type.Id - 1;

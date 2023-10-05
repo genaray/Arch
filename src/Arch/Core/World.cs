@@ -978,7 +978,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
-        newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
+        newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out slot);
     }
@@ -1198,7 +1198,7 @@ public partial class World
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = (ComponentType) cmp.GetType();
-        var newArchetype = GetOrCreateArchetypeByEdge(in type, oldArchetype);
+        var newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
