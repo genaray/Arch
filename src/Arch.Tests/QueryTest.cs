@@ -77,6 +77,19 @@ public partial class QueryTest
     }
 
     [Test]
+    public void EmptyQuery()
+    {
+        var query = new QueryDescription { None = new ComponentType[] { typeof(int) } };
+
+        _world = World.Create();
+        _world.Create();
+
+        var count = 0;
+        _world.Query(query, (Entity entity) => count++);
+        That(count, Is.EqualTo(1));
+    }
+
+    [Test]
     public void ExclusiveQuery()
     {
         var exclusiveGroup = new ComponentType[] { typeof(Transform), typeof(Rotation) };

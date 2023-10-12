@@ -53,6 +53,26 @@ public class BitSetTest
     }
 
     /// <summary>
+    ///     Checks <see cref="BitSet"/> set all.
+    /// </summary>
+    [Test]
+    public void BitsetSetAll()
+    {
+        var bitSet = new BitSet();
+        bitSet.SetAll();
+
+        var count = 0;
+        foreach (var byt in bitSet)
+        {
+            count += 32; // 32 Bits in each uint
+        }
+        count--;  // Minus one because we start at 0
+
+        // ALl fit
+        That(bitSet.HighestBit, Is.EqualTo(count));
+    }
+
+    /// <summary>
     ///     Checks <see cref="BitSet"/> all.
     /// <param name="values">The values being set.</param>
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>

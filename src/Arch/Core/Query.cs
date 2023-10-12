@@ -208,13 +208,6 @@ public readonly partial struct Query : IEquatable<Query>
             _isExclusive = true;
         }
 
-        // Otherwise an Any value of 0 always returns false somehow.
-        if (description.Any.Length == 0)
-        {   // TODO : Better solution?
-            _any.SetBit(ComponentRegistry.Size); // This increases the array to account ALL components
-            _any.SetAll();                       // Set all to any since all are wanted
-        }
-
         _queryDescription = description;
     }
 

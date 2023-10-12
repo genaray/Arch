@@ -65,6 +65,24 @@ public class BitSet
     }
 
     /// <summary>
+    ///     The highest uint index in use inside the <see cref="_bits"/>-array.
+    /// </summary>
+    public int HighestIndex
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _max;
+    }
+
+    /// <summary>
+    ///     The highest bit set.
+    /// </summary>
+    public int HighestBit
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _highestBit;
+    }
+
+    /// <summary>
     ///     Returns the length of the bitset, how many ints it consists of.
     /// </summary>
     public int Length
@@ -137,6 +155,9 @@ public class BitSet
         {
             _bits[i] = 0xffffffff;
         }
+
+        _highestBit = (_bits.Length * (BitSize + 1)) - 1;
+        _max = (_highestBit/sizeof(uint)/_padding)+1;
     }
 
     /// <summary>
@@ -229,7 +250,7 @@ public class BitSet
             for (var i = 0; i < min; i++)
             {
                 var bit = bits[i];
-                if ((bit & otherBits[i]) != 0)
+                if ((bit & otherBits[i]) > 0)
                 {
                     return true;
                 }
@@ -238,7 +259,7 @@ public class BitSet
             // Handle extra bits on our side that might just be all zero.
             for (var i = min; i < _max; i++)
             {
-                if (bits[i] != 0)
+                if (bits[i] > 0)
                 {
                     return false;
                 }
@@ -270,7 +291,7 @@ public class BitSet
             }
         }
 
-        return false;
+        return _highestBit <= 0;
     }
 
     /// <summary>
@@ -413,6 +434,16 @@ public class BitSet
         }
 
         return span[..length];
+    }
+
+    /// <summary>
+    ///     Creates a new <see cref="Enumerator{T}"/> that enumerates over this instance.
+    /// </summary>
+    /// <returns>A new <see cref="Enumerator{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Enumerator<uint> GetEnumerator()
+    {
+        return new Enumerator<uint>(AsSpan());
     }
 
     /// <summary>
@@ -572,6 +603,16 @@ public readonly ref struct SpanBitSet
         }
 
         return span[.._bits.Length];
+    }
+
+    /// <summary>
+    ///     Creates a new <see cref="Enumerator{T}"/> that enumerates over this instance.
+    /// </summary>
+    /// <returns>A new <see cref="Enumerator{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Enumerator<uint> GetEnumerator()
+    {
+        return new Enumerator<uint>(AsSpan());
     }
 
     /// <summary>
