@@ -15,7 +15,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222), get started today and join the [Discord](https://discord.gg/htc8tX3NxZ)!
 ```console
-dotnet add PROJECT package Arch --version 1.2.6.8-alpha
+dotnet add PROJECT package Arch --version 1.2.7
 ```
 
 # Code Sample
@@ -143,7 +143,7 @@ var query = new QueryDescription().
             WithNone<AI>();                    // Should have none of those
 
 // Execute the query
-world.Query(in query, (in Entity entity) => { /* Do something */ });
+world.Query(in query, (Entity entity) => { /* Do something */ });
 
 // Execute the query and modify components in the same step, up to 10 generic components at the same time. 
 world.Query(in query, (ref Position pos, ref Velocity vel) => {
