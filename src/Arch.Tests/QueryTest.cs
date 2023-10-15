@@ -85,7 +85,7 @@ public partial class QueryTest
         _world.Create();
 
         var count = 0;
-        _world.Query(query, (Entity entity) => count++);
+        _world.Query(query, _ => count++);
         That(count, Is.EqualTo(1));
     }
 
