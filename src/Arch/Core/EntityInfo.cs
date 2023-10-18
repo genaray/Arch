@@ -99,19 +99,6 @@ internal class EntityInfoStorage
     /// </summary>
     internal JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
-    /*
-/// <summary>
-///     Initializes the static values of <see cref="JaggedArray{T}"/>.
-/// </summary>
-static JaggedArray()
-{
-    var cpuL1CacheSize = 16_000; // In bytes
-    var idealSize = cpuL1CacheSize / Unsafe.SizeOf<T>();
-
-    _chunkSize = MathExtensions.RoundToPowerOfTwo(idealSize);
-    _chunkSizeMinusOne = _chunkSize - 1;
-}*/
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
     /// </summary>

@@ -127,33 +127,43 @@ public partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void RemoveEdge(Archetype archetype)
     {
-        // Scan array for the archetype and remove it where it exists.
-        for (var index = 0; index < _addEdges.Capacity; index++)
+        for (var index = 0; index < _addEdges.Buckets; index++)
         {
-            if (!_addEdges.ContainsKey(index))
+            // Skip empty buckets
+            ref var bucket = ref _addEdges.GetBucket(index);
+            if (bucket.IsEmpty)
             {
                 continue;
             }
 
-            var edge = _addEdges[index];
-            if (edge == archetype)
+            // Search bucket for edge and remove it if found
+            for (var itemIndex = 0; itemIndex < bucket.Capacity; itemIndex++)
             {
-                RemoveAddEdge(index);
+                var edge = bucket[itemIndex];
+                if (edge == archetype)
+                {
+                    RemoveAddEdge(index);
+                }
             }
         }
 
-        // Scan array for the archetype and remove it where it exists.
-        for (var index = 0; index < _removeEdges.Capacity; index++)
+        for (var index = 0; index < _removeEdges.Buckets; index++)
         {
-            if (!_removeEdges.ContainsKey(index))
+            // Skip empty buckets
+            ref var bucket = ref _removeEdges.GetBucket(index);
+            if (bucket.IsEmpty)
             {
                 continue;
             }
 
-            var edge = _removeEdges[index];
-            if (edge == archetype)
+            // Search bucket for edge and remove it if found
+            for (var itemIndex = 0; itemIndex < bucket.Capacity; itemIndex++)
             {
-                RemoveRemoveEdge(index);
+                var edge = bucket[itemIndex];
+                if (edge == archetype)
+                {
+                    RemoveRemoveEdge(index);
+                }
             }
         }
     }
