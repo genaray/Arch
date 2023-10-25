@@ -10,7 +10,7 @@ namespace Arch.Core;
 
 /// <summary>
 ///     The <see cref="RecycledEntity"/> struct
-///     stores information about an recycled <see cref="Entity"/>, its id and its version.
+///     stores information about a recycled <see cref="Entity"/>: its ID and its version.
 /// </summary>
 [SkipLocalsInit]
 internal record struct RecycledEntity
@@ -21,14 +21,14 @@ internal record struct RecycledEntity
     public int Id;
 
     /// <summary>
-    ///     Its new version.
+    ///     The new version.
     /// </summary>
     public int Version;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RecycledEntity"/> struct.
     /// </summary>
-    /// <param name="id">Its id..</param>
+    /// <param name="id">Its ID.</param>
     /// <param name="version">Its version.</param>
     public RecycledEntity(int id, int version)
     {
@@ -40,8 +40,10 @@ internal record struct RecycledEntity
 /// <summary>
 ///     The <see cref="IForEach"/> interface
 ///     provides a method to execute logic on an <see cref="Entity"/>.
-///     Commonly used for queries to provide an clean interface.
 /// </summary>
+/// <remarks>
+///     Commonly used with queries to provide a clean API.
+/// </remarks>
 public interface IForEach
 {
     /// <summary>
@@ -70,12 +72,12 @@ public partial class World
     public static World[] Worlds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
 
     /// <summary>
-    ///     Stores recycled <see cref="World"/> ids.
+    ///     Stores recycled <see cref="World"/> IDs.
     /// </summary>
     private static PooledQueue<int> RecycledWorldIds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
 
     /// <summary>
-    ///     Tracks how many <see cref="Worlds"/> exists.
+    ///     Tracks how many <see cref="World"/>s exists.
     /// </summary>
     public static int WorldSize { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
 
@@ -114,10 +116,9 @@ public partial class World
     /// <summary>
     ///     Destroys an existing <see cref="World"/>.
     /// </summary>
-    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="world">The <see cref="World"/> to destroy.</param>
     public static void Destroy(World world)
     {
-
 #if !PURE_ECS
         lock (Worlds)
         {
@@ -153,14 +154,20 @@ public partial class World
 
 /// <summary>
 ///     The <see cref="World"/> class
-///     stores <see cref="Entity"/>'s in <see cref="Archetype"/>'s and <see cref="Chunk"/>'s, manages them and provides methods to query for specific <see cref="Entity"/>'s.
+///     stores <see cref="Entity"/>s in <see cref="Archetype"/>s and <see cref="Chunk"/>s, manages them, and provides methods to query for specific <see cref="Entity"/>s.
 /// </summary>
+/// <remarks>
+///     The <see cref="World"/> class is only thread-safe under specific circumstances. Read-only operations like querying entities can be done simultaneously by multiple threads.
+///     However, any method which mentions "structural changes" must not run alongside any other methods. Any operation that adds or removes an <see cref="Entity"/>, or changes
+///     its <see cref="Archetype"/> counts as a structural change. Structural change methods are also marked with <see cref="StructuralChangeAttribute"/>, to enable source-generators
+///     to edit their behavior based on the thread-safety of the method.
+/// </remarks>
 public partial class World : IDisposable
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="World"/> class
+    ///     Initializes a new instance of the <see cref="World"/> class.
     /// </summary>
-    /// <param name="id">Its unique id.</param>
+    /// <param name="id">Its unique ID.</param>
     private World(int id)
     {
         Id = id;
@@ -182,50 +189,50 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     The unique <see cref="World"/> id.
+    ///     The unique <see cref="World"/> ID.
     /// </summary>
     public int Id { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
-    ///     The amount of <see cref="Entity"/>'s stored by this instance.
+    ///     The amount of <see cref="Entity"/>s currently stored by this <see cref="World"/>.
     /// </summary>
     public int Size { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
-    ///     The available capacity for <see cref="Entity"/>'s by this instance.
+    ///     The available <see cref="Entity"/> capacity of this <see cref="World"/>.
     /// </summary>
     public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
-    ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
+    ///     All <see cref="Archetype"/>s that exist in this <see cref="World"/>.
     /// </summary>
     public PooledList<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
-    ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
+    ///     Maps an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookup.
     /// </summary>
     internal EntityInfoStorage EntityInfo { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
-    ///     Stores recycled <see cref="Entity"/> ids and their last version.
+    ///     Stores recycled <see cref="Entity"/> IDs and their last version.
     /// </summary>
     internal PooledQueue<RecycledEntity> RecycledIds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
-    ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Arch.Core.Query"/> to avoid allocs.
+    ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Core.Query"/>, to avoid allocs.
     /// </summary>
     internal PooledDictionary<QueryDescription, Query> QueryCache { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     private ReaderWriterLockSlim _queryCacheLock = new();
 
     /// <summary>
-    ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
+    ///     Reserves space for a certain number of <see cref="Entity"/>s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
     /// </remarks>
     /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
-    /// <param name="amount">The amount.</param>
+    /// <param name="amount">The amount of <see cref="Entity"/>s to reserve space for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     public void Reserve(Span<ComponentType> types, int amount)
@@ -298,7 +305,7 @@ public partial class World : IDisposable
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="source">Its <see cref="Archetype"/>.</param>
     /// <param name="destination">The new <see cref="Archetype"/>.</param>
-    /// <param name="destinationSlot">The new <see cref="Slot"/> where moved <see cref="Entity"/> landed in.</param>
+    /// <param name="destinationSlot">The new <see cref="Slot"/> in which the moved <see cref="Entity"/> will land.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Move(Entity entity, Archetype source, Archetype destination, out Slot destinationSlot)
     {
@@ -383,7 +390,7 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Clears or resets this <see cref="World"/> instance, will drop used <see cref="Archetypes"/> and therefore release some memory sooner or later.
+    ///     Clears or resets this <see cref="World"/> instance. Will drop used <see cref="Archetypes"/> and therefore release some memory to the garbage collector.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
@@ -413,11 +420,11 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Creates a <see cref="Arch.Core.Query"/> using a <see cref="QueryDescription"/>
-    ///     which can be used to iterate over the matching <see cref="Entity"/>'s, <see cref="Archetype"/>'s and <see cref="Chunk"/>'s.
+    ///     Creates a <see cref="Core.Query"/> using a <see cref="QueryDescription"/>
+    ///     which can be used to iterate over the matching <see cref="Entity"/>s, <see cref="Archetype"/>s and <see cref="Chunk"/>s.
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
-    /// <returns></returns>
+    /// <returns>The generated <see cref="Core.Query"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Query Query(in QueryDescription queryDescription)
@@ -462,9 +469,9 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Counts all <see cref="Entity"/>'s that match a <see cref="QueryDescription"/> and returns the number.
+    ///     Counts all <see cref="Entity"/>s that match a <see cref="QueryDescription"/> and returns the number.
     /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the components or <see cref="Entity"/>s for which to search.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public int CountEntities(in QueryDescription queryDescription)
@@ -481,10 +488,10 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="Span{T}"/>.
+    ///     Searches all matching <see cref="Entity"/>s and puts them into the given <see cref="Span{T}"/>.
     /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
-    /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>'s.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the components or <see cref="Entity"/>s for which to search.</param>
+    /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>s.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
@@ -504,10 +511,10 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Search all matching <see cref="Archetype"/>'s and put them into the given <see cref="IList{T}"/>.
+    ///     Searches all matching <see cref="Archetype"/>s and puts them into the given <see cref="IList{T}"/>.
     /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
-    /// <param name="archetypes">The <see cref="Span{T}"/> receiving <see cref="Archetype"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the components for which to search.</param>
+    /// <param name="archetypes">The <see cref="Span{T}"/> receiving <see cref="Archetype"/>s containing <see cref="Entity"/>s with the matching components.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetArchetypes(in QueryDescription queryDescription, Span<Archetype> archetypes, int start = 0)
@@ -522,10 +529,10 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Search all matching <see cref="Chunk"/>'s and put them into the given <see cref="IList{T}"/>.
+    ///     Searches all matching <see cref="Chunk"/>s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
-    /// <param name="chunks">The <see cref="Span{T}"/> receiving <see cref="Chunk"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
+    /// <param name="chunks">The <see cref="Span{T}"/> receiving <see cref="Chunk"/>s containing <see cref="Entity"/>s with the matching components.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetChunks(in QueryDescription queryDescription, Span<Chunk> chunks, int start = 0)
@@ -540,7 +547,7 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Creates and returns a new <see cref="Enumerator{T}"/> instance to iterate over all <see cref="Archetypes"/>.
+    ///     Creates and returns a new <see cref="Enumerator{T}"/> instance to iterate over all <see cref="Archetype"/>s.
     /// </summary>
     /// <returns>A new <see cref="Enumerator{T}"/> instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -551,7 +558,7 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Disposes this <see cref="World"/> instance and destroys it from the <see cref="Worlds"/>.
+    ///     Disposes this <see cref="World"/> instance and removes it from the static <see cref="Worlds"/> list.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
@@ -567,9 +574,9 @@ public partial class World : IDisposable
     }
 
     /// <summary>
-    ///     Converts this <see cref="World"/> to a human readable string.
+    ///     Converts this <see cref="World"/> to a human-readable <c>string</c>.
     /// </summary>
-    /// <returns>A string.</returns>
+    /// <returns>A <c>string</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public override string ToString()
@@ -586,14 +593,14 @@ public partial class World : IDisposable
 public partial class World
 {
     /// <summary>
-    ///     Maps an <see cref="Group"/> hash to its <see cref="Archetype"/>.
+    ///     Maps a <see cref="Group"/> hash to its <see cref="Archetype"/>.
     /// </summary>
     internal PooledDictionary<int, Archetype> GroupToArchetype { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
-    ///     Returned an <see cref="Archetype"/> based on its components. If it does not exist, it will be created.
+    ///     Returns an <see cref="Archetype"/> based on its components. If it does not exist, it will be created.
     /// </summary>
-    /// <param name="types">Its <see cref="ComponentType"/>'s.</param>
+    /// <param name="types">Its <see cref="ComponentType"/>s.</param>
     /// <returns>An existing or new <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal Archetype GetOrCreate(Span<ComponentType> types)
@@ -618,11 +625,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to find an <see cref="Archetype"/> by the hash of its components.
+    ///     Tries to find an <see cref="Archetype"/> by the hash of its components.
     /// </summary>
-    /// <param name="hash">Its hash..</param>
+    /// <param name="hash">Its hash.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwhise false.</returns>
+    /// <returns>True if found, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     internal bool TryGetArchetype(int hash, [MaybeNullWhen(false)] out Archetype archetype)
@@ -631,11 +638,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to find an <see cref="Archetype"/> by a <see cref="BitSet"/>.
+    ///     Tries to find an <see cref="Archetype"/> by a <see cref="BitSet"/>.
     /// </summary>
     /// <param name="bitset">A <see cref="BitSet"/> indicating the <see cref="Archetype"/> structure.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwhise false.</returns>
+    /// <returns>True if found, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool TryGetArchetype(BitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
@@ -644,11 +651,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to find an <see cref="Archetype"/> by a <see cref="SpanBitSet"/>.
+    ///     Tries to find an <see cref="Archetype"/> by a <see cref="SpanBitSet"/>.
     /// </summary>
     /// <param name="bitset">A <see cref="SpanBitSet"/> indicating the <see cref="Archetype"/> structure.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwhise false.</returns>
+    /// <returns>True if found, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool TryGetArchetype(SpanBitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
@@ -657,11 +664,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to find an <see cref="Archetype"/> by the hash of its components.
+    ///     Tries to find an <see cref="Archetype"/> by the hash of its components.
     /// </summary>
-    /// <param name="types">Its <see cref="ComponentType"/>'s.</param>
+    /// <param name="types">Its <see cref="ComponentType"/>s.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwhise false.</returns>
+    /// <returns>True if found, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool TryGetArchetype(Span<ComponentType> types, [MaybeNullWhen(false)] out Archetype archetype)
@@ -700,9 +707,9 @@ public partial class World
 public partial class World
 {
     /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/>.
+    ///     Searches all matching <see cref="Entity"/>s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/>.
     /// </summary>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s are searched for.</param>
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
@@ -720,11 +727,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
+    ///     Searches all matching <see cref="Entity"/>s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
     ///     Inlines the call and is therefore faster than normal queries.
     /// </summary>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the <see cref="Entity"/>s for which to search.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
@@ -743,11 +750,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
+    ///     Searches all matching <see cref="Entity"/>s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
     ///     Inlines the call and is therefore faster than normal queries.
     /// </summary>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the <see cref="Entity"/>s for which to search.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
@@ -779,7 +786,7 @@ public partial class World
     /// <remarks>
     ///     Causes a structural change.
     /// </remarks>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s will be destroyed.</param>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     public void Destroy(in QueryDescription queryDescription)
@@ -812,7 +819,7 @@ public partial class World
 
     /// <summary>
     ///     An efficient method to set one component for all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
-    ///     No <see cref="Entity"/> lookups which makes it as fast as a inlin query.
+    ///     No <see cref="Entity"/> lookups which makes it as fast as a inline query.
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     /// <param name="value">The value of the component to set.</param>
@@ -965,7 +972,7 @@ public partial class World
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool Has<T>(Entity entity)
@@ -975,11 +982,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Returns a reference to the component of an <see cref="Entity"/>.
+    ///     Returns a reference to the <typeparamref name="T"/> component of an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>A reference to the component.</returns>
+    /// <returns>A reference to the <typeparamref name="T"/> component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public ref T Get<T>(Entity entity)
@@ -990,13 +997,13 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Tries to return a reference to the component of an <see cref="Entity"/>.
     ///     Will copy the component if its a struct.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The found component.</param>
-    /// <returns>True if it exists, otherwhise false.</returns>
+    /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool TryGet<T>(Entity entity, out T component)
@@ -1016,11 +1023,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Tries to return a reference to the component of an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="exists">True if it exists, oterhwhise false.</param>
+    /// <param name="exists">True if it exists, otherwise false.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -1068,8 +1075,8 @@ public partial class World
     ///     Causes a structural change.
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
-    /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
+    /// <param name="newArchetype">The <see cref="Entity"/>'s new <see cref="Archetype"/>.</param>
+    /// <param name="slot">The new <see cref="Slot"/> in which the moved <see cref="Entity"/> will land.</param>
     /// <typeparam name="T">The component type.</typeparam>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1108,14 +1115,14 @@ public partial class World
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
-    /// <param name="cmp">The component instance.</param>
+    /// <param name="component">The component instance.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
-    public void Add<T>(Entity entity, in T cmp)
+    public void Add<T>(Entity entity, in T component)
     {
         Add<T>(entity, out var newArchetype, out var slot);
-        newArchetype.Set(ref slot, cmp);
+        newArchetype.Set(ref slot, component);
         OnComponentAdded<T>(entity);
     }
 
@@ -1153,20 +1160,20 @@ public partial class World
     ///     Sets or replaces a component for an <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The component.</param>
+    /// <param name="component">The component.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(Entity entity, object cmp)
+    public void Set(Entity entity, object component)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-        OnComponentSet(entity, cmp);
+        entitySlot.Archetype.Set(ref entitySlot.Slot, component);
+        OnComponentSet(entity, component);
     }
 
     /// <summary>
     ///     Sets or replaces a <see cref="Span{T}"/> of components for an <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">The components <see cref="Span{T}"/>.</param>
+    /// <param name="components">The <see cref="Span{T}"/> of components.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetRange(Entity entity, Span<object> components)
     {
@@ -1183,7 +1190,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool Has(Entity entity, ComponentType type)
@@ -1197,7 +1204,7 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool HasRange(Entity entity, Span<ComponentType> types)
@@ -1250,11 +1257,11 @@ public partial class World
     }
 
     /// <summary>
-    ///     Returns an array of components of an <see cref="Entity"/>.
+    ///     Outputs the components of an <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
-    /// <param name="components">A <see cref="Span{T}"/> where the components are put it.</param>
+    /// <param name="components">A <see cref="Span{T}"/> in which the components are put.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetRange(Entity entity, Span<ComponentType> types, Span<object> components)
     {
@@ -1267,13 +1274,13 @@ public partial class World
     }
 
     /// <summary>
-    ///     Trys to return a reference to the component of an <see cref="Entity"/>.
+    ///     Tries to return a reference to the component of an <see cref="Entity"/>.
     ///     Will copy the component if its a struct.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <param name="component">The found component.</param>
-    /// <returns>True if it exists, otherwhise false.</returns>
+    /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object component)
@@ -1290,7 +1297,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
@@ -1318,7 +1325,7 @@ public partial class World
     ///     Causes a structural change.
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">The component <see cref="Span{T}"/>.</param>
+    /// <param name="components">The <see cref="Span{T}"/> of components.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
@@ -1360,7 +1367,7 @@ public partial class World
     }
 
     /// <summary>
-    ///     Removes one single of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    ///     Removes a <see cref="ComponentType"/> from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
@@ -1392,13 +1399,13 @@ public partial class World
     }
 
     /// <summary>
-    ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
+    ///     Removes a list of <see cref="ComponentType"/>s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="types">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
+    /// <param name="types">A <see cref="Span{T}"/> of <see cref="ComponentType"/>s, that are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
@@ -1445,7 +1452,7 @@ public partial class World
     ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>True if it exists and is alive, otherwhise false.</returns>
+    /// <returns>True if it exists and is alive, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public bool IsAlive(Entity entity)
@@ -1505,10 +1512,10 @@ public partial class World
     }
 
     /// <summary>
-    ///     Returns all <see cref="ComponentType"/>'s of an <see cref="Entity"/>.
+    ///     Returns all <see cref="ComponentType"/>s of an <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its <see cref="ComponentType"/>'s array.</returns>
+    /// <returns>Its array of <see cref="ComponentType"/>s.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public ComponentType[] GetComponentTypes(Entity entity)
