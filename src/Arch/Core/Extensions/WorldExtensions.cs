@@ -1,5 +1,3 @@
-using System.Buffers;
-using Arch.Core;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 
@@ -9,12 +7,17 @@ namespace Arch.Core.Extensions;
 ///     The <see cref="WorldExtensions"/> class
 ///     adds several usefull utility methods to the <see cref="World"/>.
 /// </summary>
+[WorldExtensions]
 public static class WorldExtensions
 {
 
     /// <summary>
     ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
     /// <param name="amount">The amount.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,6 +29,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components or <see cref="Entity"/>'s are searched for.</param>
     /// <param name="list">The <see cref="IList{T}"/> receiving the found <see cref="Entity"/>'s.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,7 +39,7 @@ public static class WorldExtensions
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
-            foreach(var entityIndex in chunk)
+            foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 list.Add(entity);
@@ -46,6 +50,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Search all matching <see cref="Archetype"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <param name="archetypes">The <see cref="IList{T}"/> receiving <see cref="Archetype"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -61,6 +66,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Search all matching <see cref="Chunk"/>'s and put them into the given <see cref="IList{T}"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <param name="chunks">The <see cref="IList{T}"/> receiving <see cref="Chunk"/>'s containing <see cref="Entity"/>'s with the matching components.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,6 +82,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Sets or replaces a <see cref="IList{T}"/> of components for an <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The components <see cref="IList{T}"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,6 +94,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Checks if an <see cref="Entity"/> has a certain component.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwhise false.</returns>
@@ -99,6 +107,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Returns an array of components of an <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
@@ -111,6 +120,7 @@ public static class WorldExtensions
     /// <summary>
     ///     Returns an array of components of an <see cref="Entity"/>.
     /// </summary>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> where the components are put it.</param>
@@ -129,6 +139,10 @@ public static class WorldExtensions
     /// <summary>
     ///     Adds a <see cref="IList{T}"/> of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The component <see cref="IList{T}"/>.</param>
     [SkipLocalsInit]
@@ -141,10 +155,15 @@ public static class WorldExtensions
     /// <summary>
     ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public static void AddRange(this World world, Entity entity, IList<ComponentType> components)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
@@ -177,9 +196,13 @@ public static class WorldExtensions
 #endif
     }
 
-        /// <summary>
+    /// <summary>
     ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
@@ -192,10 +215,15 @@ public static class WorldExtensions
     /// <summary>
     ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public static void RemoveRange(this World world, Entity entity, IList<ComponentType> types)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
