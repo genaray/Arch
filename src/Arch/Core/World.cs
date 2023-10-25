@@ -1,9 +1,9 @@
 using System.Diagnostics.Contracts;
+using System.Threading;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
 using JobScheduler;
-using ArchArrayExtensions = Arch.Core.Extensions.Internal.ArrayExtensions;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -60,20 +60,19 @@ public interface IForEach
 public delegate void ForEach(Entity entity);
 
 // Static world, create and destroy
-
+#region Static Create and Destroy
 public partial class World
 {
-
     /// <summary>
     ///     A list of all existing <see cref="Worlds"/>.
     ///     Should not be modified by the user.
     /// </summary>
-    public static World[] Worlds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
+    public static World[] Worlds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; } = new World[4];
 
     /// <summary>
     ///     Stores recycled <see cref="World"/> ids.
     /// </summary>
-    private static PooledQueue<int> RecycledWorldIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
+    private static PooledQueue<int> RecycledWorldIds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; } = new(8);
 
     /// <summary>
     ///     Tracks how many <see cref="Worlds"/> exists.
@@ -89,23 +88,26 @@ public partial class World
 #if PURE_ECS
         return new World(-1);
 #else
-        var recycle = RecycledWorldIds.TryDequeue(out var id);
-        var recycledId = recycle ? id : WorldSize;
-
-        var world = new World(recycledId);
-
-        // If you need to ensure a higher capacity, you can manually check and increase it
-        if (recycledId >= Worlds.Length)
+        lock (Worlds)
         {
-            var newCapacity = Worlds.Length * 2;
-            var worlds = Worlds;
-            Array.Resize(ref worlds, newCapacity);
-            Worlds = worlds;
-        }
+            var recycle = RecycledWorldIds.TryDequeue(out var id);
+            var recycledId = recycle ? id : WorldSize;
 
-        Worlds[recycledId] = world;
-        WorldSize++;
-        return world;
+            var world = new World(recycledId);
+
+            // If you need to ensure a higher capacity, you can manually check and increase it
+            if (recycledId >= Worlds.Length)
+            {
+                var newCapacity = Worlds.Length * 2;
+                var worlds = Worlds;
+                Array.Resize(ref worlds, newCapacity);
+                Worlds = worlds;
+            }
+
+            Worlds[recycledId] = world;
+            WorldSize++;
+            return world;
+        }
 #endif
     }
 
@@ -117,9 +119,12 @@ public partial class World
     {
 
 #if !PURE_ECS
-        Worlds[world.Id] = null;
-        RecycledWorldIds.Enqueue(world.Id);
-        WorldSize--;
+        lock (Worlds)
+        {
+            Worlds[world.Id] = null!;
+            RecycledWorldIds.Enqueue(world.Id);
+            WorldSize--;
+        }
 #endif
 
         world.Capacity = 0;
@@ -141,13 +146,17 @@ public partial class World
     }
 }
 
+#endregion
+
+// Constructors, properties, disposal
+#region World Management
+
 /// <summary>
 ///     The <see cref="World"/> class
 ///     stores <see cref="Entity"/>'s in <see cref="Archetype"/>'s and <see cref="Chunk"/>'s, manages them and provides methods to query for specific <see cref="Entity"/>'s.
 /// </summary>
 public partial class World : IDisposable
 {
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="World"/> class
     /// </summary>
@@ -175,7 +184,7 @@ public partial class World : IDisposable
     /// <summary>
     ///     The unique <see cref="World"/> id.
     /// </summary>
-    public int Id {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public int Id { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The amount of <see cref="Entity"/>'s stored by this instance.
@@ -185,12 +194,12 @@ public partial class World : IDisposable
     /// <summary>
     ///     The available capacity for <see cref="Entity"/>'s by this instance.
     /// </summary>
-    public int Capacity {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
+    public int Capacity { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; internal set; }
 
     /// <summary>
     ///     All <see cref="Archetype"/>'s that exist in this <see cref="World"/>.
     /// </summary>
-    public PooledList<Archetype> Archetypes {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public PooledList<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     Mapt an <see cref="Entity"/> to its <see cref="EntityInfo"/> for quick lookups.
@@ -200,19 +209,25 @@ public partial class World : IDisposable
     /// <summary>
     ///     Stores recycled <see cref="Entity"/> ids and their last version.
     /// </summary>
-    internal PooledQueue<RecycledEntity> RecycledIds {  [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
+    internal PooledQueue<RecycledEntity> RecycledIds { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Arch.Core.Query"/> to avoid allocs.
     /// </summary>
     internal PooledDictionary<QueryDescription, Query> QueryCache { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
+    private ReaderWriterLockSlim _queryCacheLock = new();
+
     /// <summary>
     ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
     /// <param name="amount">The amount.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Reserve(Span<ComponentType> types, int amount)
     {
         var archetype = GetOrCreate(types);
@@ -227,9 +242,13 @@ public partial class World : IDisposable
     ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
     ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public Entity Create(params ComponentType[] types)
     {
         return Create(types.AsSpan());
@@ -239,9 +258,13 @@ public partial class World : IDisposable
     ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
     ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="types">Its component structure/<see cref="Archetype"/>.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public Entity Create(Span<ComponentType> types)
     {
         // Recycle id or increase
@@ -285,7 +308,7 @@ public partial class World : IDisposable
         // Copy entity to other archetype
         ref var slot = ref EntityInfo.GetSlot(entity.Id);
         var created = destination.Add(entity, out destinationSlot);
-        Archetype.CopyComponents(source, ref slot, destination,ref destinationSlot);
+        Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
         source.Remove(ref slot, out var movedEntity);
 
         // Update moved entity from the remove
@@ -304,8 +327,12 @@ public partial class World : IDisposable
     ///     Destroys an <see cref="Entity"/>.
     ///     Might resize its target <see cref="Archetype"/> and release memory.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Destroy(Entity entity)
     {
         OnEntityDestroyed(entity);
@@ -319,7 +346,7 @@ public partial class World : IDisposable
         EntityInfo.Remove(entity.Id);
 
         // Recycle id && Remove mapping
-        RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version+1)));
+        RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version + 1)));
         Size--;
     }
 
@@ -328,14 +355,18 @@ public partial class World : IDisposable
     ///     Should not be called every single update or frame.
     ///     One single <see cref="Chunk"/> from each <see cref="Archetype"/> is spared.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void TrimExcess()
     {
         Capacity = 0;
 
         // Trim entity info and archetypes
         EntityInfo.TrimExcess();
-        for (var index = Archetypes.Count-1; index >= 0; index--)
+        for (var index = Archetypes.Count - 1; index >= 0; index--)
         {
             // Remove empty archetypes.
             var archetype = Archetypes[index];
@@ -354,7 +385,11 @@ public partial class World : IDisposable
     /// <summary>
     ///     Clears or resets this <see cref="World"/> instance, will drop used <see cref="Archetypes"/> and therefore release some memory sooner or later.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Clear()
     {
         Capacity = 0;
@@ -384,16 +419,44 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
     public Query Query(in QueryDescription queryDescription)
     {
-        // Looping over all archetypes, their chunks and their entities.
-        if (QueryCache.TryGetValue(queryDescription, out var query))
-        {
-            return query;
-        }
+        Query query;
 
-        query = new Query(Archetypes, queryDescription);
-        QueryCache[queryDescription] = query;
+        // We must lock, because this is a helper method used my many possibly-parallel (non-structural-change) methods,
+        // and PooledDictionary is not threadsafe for simultaneous readers/writers.
+        // EnterUpgradeableReadLock is the conservative implementation, assuming there will be non-trivial contention.
+        // If many threads begin a query at the same time, that might be true.
+        // Otherwise, a regular lock would be faster, since it has less overhead.
+        // Either way, the lock is very cheap to acquire, and may be near-identical under benchmarking.
+        _queryCacheLock.EnterUpgradeableReadLock();
+        try
+        {
+            // Looping over all archetypes, their chunks and their entities.
+            if (QueryCache.TryGetValue(queryDescription, out query))
+            {
+                return query;
+            }
+
+            query = new Query(Archetypes, queryDescription);
+
+            // With QueryCache, this should only run the first times the queries are running (i.e. in a
+            // game, subsequent frames will not get here).
+            _queryCacheLock.EnterWriteLock();
+            try
+            {
+                QueryCache[queryDescription] = query;
+            }
+            finally
+            {
+                _queryCacheLock.ExitWriteLock();
+            }
+        }
+        finally
+        {
+            _queryCacheLock.ExitUpgradeableReadLock();
+        }
 
         return query;
     }
@@ -417,7 +480,6 @@ public partial class World : IDisposable
         return counter;
     }
 
-
     /// <summary>
     ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="Span{T}"/>.
     /// </summary>
@@ -432,10 +494,10 @@ public partial class World : IDisposable
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
-            foreach(var entityIndex in chunk)
+            foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-                list[start+index] = entity;
+                list[start + index] = entity;
                 index++;
             }
         }
@@ -454,7 +516,7 @@ public partial class World : IDisposable
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            archetypes[start+index] = archetype;
+            archetypes[start + index] = archetype;
             index++;
         }
     }
@@ -472,7 +534,7 @@ public partial class World : IDisposable
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            chunks[start+index] = chunk;
+            chunks[start + index] = chunk;
             index++;
         }
     }
@@ -491,10 +553,17 @@ public partial class World : IDisposable
     /// <summary>
     ///     Disposes this <see cref="World"/> instance and destroys it from the <see cref="Worlds"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Dispose()
     {
         Destroy(this);
+        // In case the user (or us) decides to override and provide a finalizer, prevents them from having
+        // to re-implement Dispose() to avoid calling it twice.
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -505,11 +574,14 @@ public partial class World : IDisposable
     [Pure]
     public override string ToString()
     {
-        return $"World {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
+        return $"{GetType().Name} {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
     }
 }
 
+#endregion
+
 // Archetype management of the world
+#region Archetypes
 
 public partial class World
 {
@@ -620,7 +692,10 @@ public partial class World
     }
 }
 
-// Querys
+#endregion
+
+// Queries
+#region Queries
 
 public partial class World
 {
@@ -636,7 +711,7 @@ public partial class World
         foreach (ref var chunk in query)
         {
             ref var entityLastElement = ref chunk.Entity(0);
-            foreach(var entityIndex in chunk)
+            foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityLastElement, entityIndex);
                 forEntity(entity);
@@ -681,7 +756,7 @@ public partial class World
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
-            foreach(var entityIndex in chunk)
+            foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 iForEach.Update(entity);
@@ -690,19 +765,23 @@ public partial class World
     }
 }
 
+#endregion
 
 // Batch query operations
+#region Batch Query Operations
 
 public partial class World
 {
-
-
     /// <summary>
     ///     An efficient method to destroy all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s will be destroyed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Destroy(in QueryDescription queryDescription)
     {
         var query = Query(in queryDescription);
@@ -736,6 +815,7 @@ public partial class World
     ///     No <see cref="Entity"/> lookups which makes it as fast as a inlin query.
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
+    /// <param name="value">The value of the component to set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(in QueryDescription queryDescription, in T value = default)
     {
@@ -759,8 +839,13 @@ public partial class World
     ///     An efficient method to add one component to all <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
+    /// <param name="component">The value of the component to add.</param>
     [SkipLocalsInit]
+    [StructuralChange]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in QueryDescription queryDescription, in T component = default)
     {
@@ -771,7 +856,7 @@ public partial class World
         foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype with T shouldnt be skipped to prevent undefined behaviour.
-            if(archetype.Entities == 0 || archetype.Has<T>())
+            if (archetype.Entities == 0 || archetype.Has<T>())
             {
                 continue;
             }
@@ -807,8 +892,12 @@ public partial class World
     ///     An efficient method to remove one component from <see cref="Entity"/>s matching a <see cref="QueryDescription"/>.
     ///     No <see cref="Entity"/>s are recopied which is much faster.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
+    [StructuralChange]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in QueryDescription queryDescription)
     {
@@ -819,7 +908,7 @@ public partial class World
         foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype without T shouldnt be skipped to prevent undefined behaviour.
-            if(archetype.Entities <= 0 || !archetype.Has<T>())
+            if (archetype.Entities <= 0 || !archetype.Has<T>())
             {
                 continue;
             }
@@ -849,7 +938,10 @@ public partial class World
     }
 }
 
+#endregion
+
 // Set, get and has
+#region Accessors
 
 public partial class World
 {
@@ -858,14 +950,14 @@ public partial class World
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The instance, optional.</param>
+    /// <param name="component">The instance, optional.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(Entity entity, in T cmp = default)
+    public void Set<T>(Entity entity, in T component = default)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
-        archetype.Set(ref slot, in cmp);
-        OnComponentSet(entity, cmp);
+        archetype.Set(ref slot, in component);
+        OnComponentSet(entity, component);
     }
 
     /// <summary>
@@ -948,32 +1040,40 @@ public partial class World
     /// <summary>
     ///     Ensures the existence of an component on an <see cref="Entity"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The component value used if its being added.</param>
+    /// <param name="component">The component value used if its being added.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T AddOrGet<T>(Entity entity, T cmp = default)
+    [StructuralChange]
+    public ref T AddOrGet<T>(Entity entity, T component = default)
     {
-        ref var component = ref TryGetRef<T>(entity, out var exists);
+        ref var cmp = ref TryGetRef<T>(entity, out var exists);
         if (exists)
         {
-            return ref component;
+            return ref cmp;
         }
 
-        Add(entity, cmp);
+        Add(entity, component);
         return ref Get<T>(entity);
     }
 
     /// <summary>
     ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="newArchetype">The entity's new <see cref="Archetype"/>.</param>
     /// <param name="slot">The new <see cref="Slot"/> where the moved <see cref="Entity"/> landed in.</param>
     /// <typeparam name="T">The component type.</typeparam>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
@@ -986,10 +1086,14 @@ public partial class World
     /// <summary>
     ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Add<T>(Entity entity)
     {
         Add<T>(entity, out _, out _);
@@ -999,11 +1103,15 @@ public partial class World
     /// <summary>
     ///     Adds a new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="cmp">The component instance.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Add<T>(Entity entity, in T cmp)
     {
         Add<T>(entity, out var newArchetype, out var slot);
@@ -1014,10 +1122,14 @@ public partial class World
     /// <summary>
     ///     Removes an component from an <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Remove<T>(Entity entity)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
@@ -1029,7 +1141,10 @@ public partial class World
     }
 }
 
+#endregion
+
 // Set & Get & Has non generic
+#region Non-Generic Accessors
 
 public partial class World
 {
@@ -1095,6 +1210,7 @@ public partial class World
                 return false;
             }
         }
+
         return true;
     }
 
@@ -1133,7 +1249,6 @@ public partial class World
         return array;
     }
 
-    // ReSharper disable once PureAttributeOnVoidMethod
     /// <summary>
     ///     Returns an array of components of an <see cref="Entity"/>.
     /// </summary>
@@ -1141,7 +1256,6 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> where the components are put it.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
     public void GetRange(Entity entity, Span<ComponentType> types, Span<object> components)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1178,14 +1292,18 @@ public partial class World
     /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="cmp">The component.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Add(Entity entity, in object cmp)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
-        var type = (ComponentType) cmp.GetType();
+        var type = (ComponentType)cmp.GetType();
         var newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
 
         Move(entity, oldArchetype, newArchetype, out var slot);
@@ -1196,10 +1314,14 @@ public partial class World
     /// <summary>
     ///     Adds a <see cref="IList{T}"/> of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The component <see cref="Span{T}"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void AddRange(Entity entity, Span<object> components)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
@@ -1237,14 +1359,17 @@ public partial class World
         }
     }
 
-
     /// <summary>
     ///     Removes one single of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The <see cref="ComponentType"/> to remove from the the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void Remove(Entity entity, ComponentType type)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
@@ -1269,10 +1394,14 @@ public partial class World
     /// <summary>
     ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
     public void RemoveRange(Entity entity, Span<ComponentType> types)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
@@ -1300,11 +1429,15 @@ public partial class World
         {
             OnComponentRemoved(entity, type);
         }
+
         Move(entity, oldArchetype, newArchetype, out _);
     }
 }
 
+#endregion
+
 // Utility methods
+#region Utility
 
 public partial class World
 {
@@ -1415,3 +1548,4 @@ public partial class World
     }
 }
 
+#endregion

@@ -24,6 +24,9 @@ public partial class World
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
     ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
+    /// <remarks>
+    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,6 +44,9 @@ public partial class World
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
     ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
+    /// <remarks>
+    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -54,6 +60,9 @@ public partial class World
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
     ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
+    /// <remarks>
+    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
@@ -66,6 +75,9 @@ public partial class World
     /// <summary>
     ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
     /// </summary>
+    /// <remarks>
+    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
     /// <param name="innerJob">The struct instance of the generic type being invoked.</param>

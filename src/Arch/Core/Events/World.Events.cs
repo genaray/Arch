@@ -7,6 +7,12 @@ namespace Arch.Core;
 
 public partial class World
 {
+    // A note on multithreading:
+    // This area is the trickiest part of World in terms of thread-safety.
+    // It is currently thread-safe, but it relies on an important fact: No list of handlers can ever shrink or be disposed.
+    // i.e. no handlers can ever be unsubscribed.
+    // So don't try to write any unsubscribe methods without refactoring the thread-safety!
+
     /// <summary>
     ///     The initial capacity for the <see cref="_compEvents"/> array.
     /// </summary>
@@ -34,7 +40,10 @@ public partial class World
     public void SubscribeEntityCreated(EntityCreatedHandler handler)
     {
 #if EVENTS
-        _entityCreatedHandlers.Add(handler);
+        lock (_entityCreatedHandlers)
+        {
+            _entityCreatedHandlers.Add(handler);
+        }
 #endif
     }
 
@@ -45,12 +54,15 @@ public partial class World
     public void SubscribeEntityDestroyed(EntityDestroyedHandler handler)
     {
 #if EVENTS
-        _entityDestroyedHandlers.Add(handler);
+        lock (_entityDestroyedHandlers)
+        {
+            _entityDestroyedHandlers.Add(handler);
+        }
 #endif
     }
 
     /// <summary>
-    ///     Adds a delegate to be called when a component of type <see cref="T"/> is added to an entity.
+    ///     Adds a delegate to be called when a component of type <typeparamref name="T"/> is added to an entity.
     ///     <see cref="Add"/>
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
@@ -59,17 +71,24 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentAddedGenericHandlers.Add(handler);
-        events.ComponentAddedHandlers.Add((in Entity entity) =>
+        lock (events.ComponentAddedGenericHandlers)
         {
-            ref var compGeneric = ref entity.Get<T>();
-            handler(entity, ref compGeneric);
-        });
+            events.ComponentAddedGenericHandlers.Add(handler);
+        }
+
+        lock (events.ComponentAddedHandlers)
+        {
+            events.ComponentAddedHandlers.Add((in Entity entity) =>
+            {
+                ref var compGeneric = ref entity.Get<T>();
+                handler(entity, ref compGeneric);
+            });
+        }
 #endif
     }
 
     /// <summary>
-    ///     Adds a delegate to be called when a component of type <see cref="T"/> is set on an entity.
+    ///     Adds a delegate to be called when a component of type <typeparamref name="T"/> is set on an entity.
     ///     <see cref="Set"/>
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
@@ -78,17 +97,24 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentSetGenericHandlers.Add(handler);
-        events.ComponentSetHandlers.Add((in Entity entity) =>
+        lock (events.ComponentSetGenericHandlers)
         {
-            ref var compGeneric = ref entity.Get<T>();
-            handler(entity, ref compGeneric);
-        });
+            events.ComponentSetGenericHandlers.Add(handler);
+        }
+
+        lock (events.ComponentSetHandlers)
+        {
+            events.ComponentSetHandlers.Add((in Entity entity) =>
+            {
+                ref var compGeneric = ref entity.Get<T>();
+                handler(entity, ref compGeneric);
+            });
+        }
 #endif
     }
 
     /// <summary>
-    ///     Adds a delegate to be called when a component of type <see cref="T"/> is removed from an entity.
+    ///     Adds a delegate to be called when a component of type <typeparamref name="T"/> is removed from an entity.
     ///     <see cref="Remove"/>
     /// </summary>
     /// <param name="handler">The delegate to call.</param>
@@ -97,12 +123,19 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        events.ComponentRemovedGenericHandlers.Add(handler);
-        events.ComponentRemovedHandlers.Add((in Entity entity) =>
+        lock (events.ComponentRemovedGenericHandlers)
         {
-            ref var compGeneric = ref entity.Get<T>();
-            handler(entity, ref compGeneric);
-        });
+            events.ComponentRemovedGenericHandlers.Add(handler);
+        }
+
+        lock (events.ComponentRemovedHandlers)
+        {
+            events.ComponentRemovedHandlers.Add((in Entity entity) =>
+            {
+                ref var compGeneric = ref entity.Get<T>();
+                handler(entity, ref compGeneric);
+            });
+        }
 #endif
     }
 
@@ -114,9 +147,22 @@ public partial class World
     public void OnEntityCreated(Entity entity)
     {
 #if EVENTS
-        for (var i = 0; i < _entityCreatedHandlers.Count; i++)
+        int count;
+        lock (_entityCreatedHandlers)
         {
-            _entityCreatedHandlers[i](in entity);
+            count = _entityCreatedHandlers.Count;
+        }
+        // The thread-safety here relies on the fact that handlers can NEVER be unsubscribed.
+        // We still have to lock to access the handler, because what if someone is adding in the middle of our access?
+        for (var i = 0; i < count; i++)
+        {
+            EntityCreatedHandler handler;
+            lock (_entityCreatedHandlers)
+            {
+                handler = _entityCreatedHandlers[i];
+            }
+
+            handler.Invoke(in entity);
         }
 #endif
     }
@@ -129,9 +175,21 @@ public partial class World
     public void OnEntityDestroyed(Entity entity)
     {
 #if EVENTS
+        int count;
+        lock (_entityDestroyedHandlers)
+        {
+            count = _entityDestroyedHandlers.Count;
+        }
+
         for (var i = 0; i < _entityDestroyedHandlers.Count; i++)
         {
-            _entityDestroyedHandlers[i](in entity);
+            EntityDestroyedHandler handler;
+            lock (_entityDestroyedHandlers)
+            {
+                handler = _entityDestroyedHandlers[i];
+            }
+
+            handler.Invoke(in entity);
         }
 #endif
     }
@@ -147,9 +205,22 @@ public partial class World
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
         ref var added = ref entity.Get<T>();
-        for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
+
+        int count;
+        lock (events.ComponentAddedGenericHandlers)
         {
-            events.ComponentAddedGenericHandlers[i](in entity, ref added);
+            count = events.ComponentAddedGenericHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentAddedHandler<T> handler;
+            lock (events.ComponentAddedGenericHandlers)
+            {
+                handler = events.ComponentAddedGenericHandlers[i];
+            }
+
+            handler(in entity, ref added);
         }
 #endif
     }
@@ -165,13 +236,25 @@ public partial class World
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
         ref var set = ref entity.Get<T>();
-        for (var i = 0; i < events.ComponentSetGenericHandlers.Count; i++)
+
+        int count;
+        lock (events.ComponentSetGenericHandlers)
         {
-            events.ComponentSetGenericHandlers[i](in entity, ref set);
+            count = events.ComponentSetGenericHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentSetHandler<T> handler;
+            lock (events.ComponentSetGenericHandlers)
+            {
+                handler = events.ComponentSetGenericHandlers[i];
+            }
+
+            handler(in entity, ref set);
         }
 #endif
     }
-
 
     /// <summary>
     ///     Calls all generic handlers subscribed to component removal.
@@ -184,13 +267,25 @@ public partial class World
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
         ref var removed = ref entity.Get<T>();
-        for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
+
+        int count;
+        lock (events.ComponentRemovedGenericHandlers)
         {
-            events.ComponentRemovedGenericHandlers[i](entity, ref removed);
+            count = events.ComponentRemovedGenericHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentRemovedHandler<T> handler;
+            lock (events.ComponentRemovedGenericHandlers)
+            {
+                handler = events.ComponentRemovedGenericHandlers[i];
+            }
+
+            handler(in entity, ref removed);
         }
 #endif
     }
-
 
     /// <summary>
     ///     Calls all handlers subscribed to component addition of this type.
@@ -207,9 +302,21 @@ public partial class World
             return;
         }
 
-        for (var i = 0; i < events.ComponentAddedHandlers.Count; i++)
+        int count;
+        lock (events.ComponentAddedHandlers)
         {
-            events.ComponentAddedHandlers[i](in entity);
+            count = events.ComponentAddedHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentAddedHandler handler;
+            lock (events.ComponentAddedHandlers)
+            {
+                handler = events.ComponentAddedHandlers[i];
+            }
+
+            handler(in entity);
         }
 #endif
     }
@@ -229,9 +336,21 @@ public partial class World
             return;
         }
 
-        for (var i = 0; i < events.ComponentSetHandlers.Count; i++)
+        int count;
+        lock (events.ComponentSetHandlers)
         {
-            events.ComponentSetHandlers[i](in entity);
+            count = events.ComponentSetHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentSetHandler handler;
+            lock (events.ComponentSetHandlers)
+            {
+                handler = events.ComponentSetHandlers[i];
+            }
+
+            handler(in entity);
         }
 #endif
     }
@@ -251,10 +370,21 @@ public partial class World
             return;
         }
 
-
-        for (var i = 0; i < events.ComponentRemovedHandlers.Count; i++)
+        int count;
+        lock (events.ComponentRemovedHandlers)
         {
-            events.ComponentRemovedHandlers[i](entity);
+            count = events.ComponentRemovedHandlers.Count;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            ComponentRemovedHandler handler;
+            lock (events.ComponentRemovedHandlers)
+            {
+                handler = events.ComponentRemovedHandlers[i];
+            }
+
+            handler(in entity);
         }
 #endif
     }
@@ -269,7 +399,7 @@ public partial class World
     {
 #if EVENTS
         // Set the added component, start from the last slot and move down
-        foreach(ref var chunk in archetype)
+        foreach (ref var chunk in archetype)
         {
             ref var firstEntity = ref chunk.Entity(0);
             foreach (var index in chunk)
@@ -291,12 +421,12 @@ public partial class World
     {
 #if EVENTS
         // Set the added component, start from the last slot and move down
-        foreach(ref var chunk in archetype)
+        foreach (ref var chunk in archetype)
         {
             ref var firstEntity = ref chunk.Entity(0);
             foreach (var index in chunk)
             {
-                 var entity = Unsafe.Add(ref firstEntity, index);
+                var entity = Unsafe.Add(ref firstEntity, index);
                 OnComponentRemoved<T>(entity);
             }
         }
@@ -312,16 +442,24 @@ public partial class World
     private ref readonly Events<T> GetEvents<T>()
     {
         var index = EventType<T>.Id;
-        if (index >= _compEvents.Length)
+        lock (_compEvents)
         {
-            Array.Resize(ref _compEvents, (index * 2) + 1);
+            if (index >= _compEvents.Length)
+            {
+                Array.Resize(ref _compEvents, (index * 2) + 1);
+            }
+            // This must be in lock so we get a current(ish) reference
+            ref var events = ref _compEvents[index];
+            // This must be in lock along with Resize in case we resize in a different thread before assigning a new Events
+            // to the old array.
+            // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+            events ??= new Events<T>();
+
+            // Thread safety: Here, even though it's a reference, if the array was/will be resized, our Events will still be valid.
+            // So any callers can use it in peace, knowing that it won't get GC'd out of existence, until they're done.
+            // Of note, once created, an Events<T> can never change index or go invalid, just get copied to new arrays.
+            return ref Unsafe.As<Events.Events, Events<T>>(ref events);
         }
-
-        ref var events = ref _compEvents[index];
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        events ??= new Events<T>();
-
-        return ref Unsafe.As<Events.Events, Events<T>>(ref events);
     }
 
     /// TODO : Remove creating by activator. Instead we should probably keep two lists. One for object based calls, one for generics.
@@ -329,26 +467,29 @@ public partial class World
     ///     Gets all event handlers for a certain component type.
     /// </summary>
     /// <param name="compType">The type of component to get handlers for.</param>
-    /// <returns>All handlers for the given component type.</returns>
+    /// <returns>All handlers for the given component type, or null if there are none.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Events.Events? GetEvents(ComponentType compType)
     {
-        // Try to get the event from the registry, otherwhise return a null ref since theres none
+        // Try to get the event from the registry, otherwhise return a null ref since there's none
+        // This is thread-safe due to ConcurrentDictionary.
         if (!EventTypeRegistry.EventIds.TryGetValue(compType, out var index))
         {
             return null;
         }
 
-        if (index >= _compEvents.Length)
+        lock (_compEvents)
         {
-            Array.Resize(ref _compEvents, (index * 2) + 1);
+            if (index >= _compEvents.Length)
+            {
+                Array.Resize(ref _compEvents, (index * 2) + 1);
+            }
+
+            ref var events = ref _compEvents[index];
+            // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+            // Better hope it is not null
+            events ??= (Events.Events?)Activator.CreateInstance(typeof(Events<>).MakeGenericType(compType))!;
+            return events;
         }
-
-        ref var events = ref _compEvents[index];
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        // Better hope it is not null
-        events ??= (Events.Events?) Activator.CreateInstance(typeof(Events<>).MakeGenericType(compType))!;
-
-        return events;
     }
 }
