@@ -46,6 +46,7 @@ public static class AddWithQueryDescription
             $$"""
             [SkipLocalsInit]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StructuralChange]
             public void Add<{{generics}}>(in QueryDescription queryDescription, {{parameters}})
             {
                 // BitSet to stack/span bitset, size big enough to contain ALL registered components.
