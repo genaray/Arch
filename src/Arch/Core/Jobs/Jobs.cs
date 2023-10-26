@@ -11,16 +11,16 @@ namespace Arch.Core;
 public class DefaultObjectPolicy<T> : IPooledObjectPolicy<T> where T : class, new()
 {
     /// <summary>
-    ///     Creates an instance of the generic type <see cref="T"/>.
+    ///     Creates an instance of the generic type <typeparamref name="T"/>.
     /// </summary>
-    /// <returns>A new instance of <see cref="T"/>.</returns>
+    /// <returns>A new instance of <typeparamref name="T"/>.</returns>
     public T Create()
     {
         return new();
     }
 
     /// <summary>
-    ///     Returns an instance of <see cref="T"/>;
+    ///     Returns an instance of <typeparamref name="T"/>.
     /// </summary>
     /// <param name="obj">The instance.</param>
     /// <returns>True if it was returned sucessfully.</returns>
@@ -85,7 +85,7 @@ public struct ForEachJob : IChunkJob
     /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Execute(int index, ref Chunk chunk)
+    public readonly void Execute(int index, ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);
         foreach(var entityIndex in chunk)
@@ -162,9 +162,9 @@ public class ChunkIterationJob<T> : IJob where T : IChunkJob
     public Chunk[] Chunks { get; set; }
 
     /// <summary>
-    /// An instance of the generic type <see cref="T"/>, being invoked upon each chunk.
+    /// An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
     /// </summary>
-    public T Instance { get; set; }
+    public T? Instance { get; set; }
 
     /// <summary>
     /// From the start how many chunks are processed.
@@ -186,7 +186,7 @@ public class ChunkIterationJob<T> : IJob where T : IChunkJob
         for (var chunkIndex = 0; chunkIndex < Size; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            Instance.Execute(Start + chunkIndex, ref currentChunk);
+            Instance?.Execute(Start + chunkIndex, ref currentChunk);
         }
     }
 }

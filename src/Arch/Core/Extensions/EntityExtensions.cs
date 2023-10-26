@@ -284,7 +284,7 @@ public static partial class EntityExtensions
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static object Get(this in Entity entity, ComponentType type)
+    public static object? Get(this in Entity entity, ComponentType type)
     {
         var world = World.Worlds[entity.WorldId];
         return world.Get(entity, type);
@@ -298,7 +298,7 @@ public static partial class EntityExtensions
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static object[] GetRange(this in Entity entity, params ComponentType[] types)
+    public static object?[] GetRange(this in Entity entity, params ComponentType[] types)
     {
         var world = World.Worlds[entity.WorldId];
         return world.GetRange(entity, types);

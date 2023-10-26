@@ -328,7 +328,7 @@ public partial struct Chunk
     /// <returns>A component casted to an <see cref="object"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public object Get(int index, ComponentType type)
+    public object? Get(int index, ComponentType type)
     {
         var array = GetArray(type);
         return array.GetValue(index);

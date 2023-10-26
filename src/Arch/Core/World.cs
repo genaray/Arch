@@ -1229,7 +1229,7 @@ public partial class World
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public object Get(Entity entity, ComponentType type)
+    public object? Get(Entity entity, ComponentType type)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         return entitySlot.Archetype.Get(ref entitySlot.Slot, type);
@@ -1243,10 +1243,10 @@ public partial class World
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public object[] GetRange(Entity entity, Span<ComponentType> types)
+    public object?[] GetRange(Entity entity, Span<ComponentType> types)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        var array = new object[types.Length];
+        var array = new object?[types.Length];
         for (var index = 0; index < types.Length; index++)
         {
             var type = types[index];
@@ -1263,7 +1263,7 @@ public partial class World
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> in which the components are put.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetRange(Entity entity, Span<ComponentType> types, Span<object> components)
+    public void GetRange(Entity entity, Span<ComponentType> types, Span<object?> components)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
         for (var index = 0; index < types.Length; index++)
