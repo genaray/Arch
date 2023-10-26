@@ -5,7 +5,7 @@ namespace Arch.Core.Extensions;
 
 /// <summary>
 ///     The <see cref="WorldExtensions"/> class
-///     adds several usefull utility methods to the <see cref="World"/>.
+///     adds several useful utility methods to the <see cref="World"/>.
 /// </summary>
 [WorldExtensions]
 public static class WorldExtensions
