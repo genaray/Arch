@@ -1,4 +1,3 @@
-using Arch.Core.Extensions.Internal;
 using Arch.LowLevel.Jagged;
 using Microsoft.Extensions.ObjectPool;
 
@@ -72,27 +71,24 @@ public readonly record struct ComponentType
 /// </summary>
 public static class ComponentRegistry
 {
+    private static readonly Dictionary<int, Type> _types = new(64);
+    private static readonly Dictionary<Type, ComponentType> _typesToComponentType = new(64);
 
     /// <summary>
     ///     All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
     /// </summary>
-    public static Dictionary<Type, ComponentType> TypeToComponentType
+    public static IReadOnlyDictionary<Type, ComponentType> TypeToComponentType
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get;
-    } = new(64);
+        get => _typesToComponentType;
+    }
 
     /// <summary>
     ///     All registered components.
     /// </summary>
-    public static Type[] Types
+    public static IReadOnlyDictionary<int, Type> Types
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private set;
-    } = new Type[64];
+        get => _types;
+    }
 
     /// <summary>
     ///     Gets or sets the total number of registered components in the project.
@@ -123,8 +119,8 @@ public static class ComponentRegistry
         // Register and assign component id
         var id = Size + 1;
         meta = new ComponentType(id, typeSize);
-        TypeToComponentType.Add(type, meta);
-        Types.Add(id, type);
+        _typesToComponentType.Add(type, meta);
+        _types.Add(id, type);
 
         Size++;
         return meta;
@@ -140,8 +136,8 @@ public static class ComponentRegistry
     public static ComponentType Add(ComponentType type)
     {
         // Register and assign component id
-        TypeToComponentType.Add(type, type);
-        Types.Add(type.Id, type.Type);
+        _typesToComponentType.Add(type, type);
+        _types.Add(type.Id, type.Type);
 
         Size++;
         return type;
@@ -202,8 +198,8 @@ public static class ComponentRegistry
     public static bool Remove<T>()
     {
         var componentType = Component<T>.ComponentType;
-        Types[componentType.Id] = null;
-        return TypeToComponentType.Remove(componentType.Type);
+        _types.Remove(componentType.Id);
+        return _typesToComponentType.Remove(componentType.Type);
     }
 
     /// <summary>
@@ -215,8 +211,8 @@ public static class ComponentRegistry
     public static bool Remove(Type type)
     {
         ComponentType componentType = type;
-        Types[componentType.Id] = null;
-        return TypeToComponentType.Remove(type);
+        _types.Remove(componentType.Id);
+        return _typesToComponentType.Remove(type);
     }
 
     /// <summary>
@@ -228,8 +224,8 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type, out ComponentType compType)
     {
-        var removed = TypeToComponentType.Remove(type, out compType);
-        Types[compType.Id] = null;
+        var removed = _typesToComponentType.Remove(type, out compType);
+        _types.Remove(compType.Id);
         return removed;
     }
 
@@ -246,8 +242,8 @@ public static class ComponentRegistry
     {
         var id = Remove(oldType, out var oldComponentType) ? oldComponentType.Id : ++Size;
 
-        TypeToComponentType.Add(newType, new ComponentType(id, newTypeSize));
-        Types.Add(id, newType);
+        _typesToComponentType.Add(newType, new ComponentType(id, newTypeSize));
+        _types[id] = newType;
     }
 
     /// <summary>
