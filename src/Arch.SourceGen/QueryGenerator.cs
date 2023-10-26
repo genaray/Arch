@@ -18,6 +18,7 @@ public class QueryGenerator : IIncrementalGenerator
 
             var compileTimeStatics = new StringBuilder();
             compileTimeStatics.AppendLine("using System;");
+            compileTimeStatics.AppendLine("using System.Threading;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
             compileTimeStatics.AppendGroups(25);
 

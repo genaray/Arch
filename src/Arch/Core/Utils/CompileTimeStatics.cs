@@ -70,9 +70,13 @@ public readonly record struct ComponentType
 ///     The <see cref="ComponentRegistry"/> class, tracks all used components in the project.
 ///     Those are represented by <see cref="ComponentType"/>'s.
 /// </summary>
+/// <remarks>
+///     Simultaneous readers are supported, but simultaneous readers and writers are not.
+///     Ensure that modification happens on an isolated thread.
+///     In <see cref="World"/> this is implemented via marked structural-change methods.
+/// </remarks>
 public static class ComponentRegistry
 {
-
     /// <summary>
     ///     All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
     /// </summary>
@@ -406,6 +410,9 @@ public static class Component
     /// <summary>
     ///     Searches a <see cref="ComponentType"/> by its <see cref="Type"/>. If it does not exist, it will be added.
     /// </summary>
+    /// <remarks>
+    ///     Not thread-safe; ensure no other threads are accessing or modifying the <see cref="ComponentRegistry"/>.
+    /// </remarks>
     /// <param name="type">The <see cref="Type"/>.</param>
     /// <returns>The <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
