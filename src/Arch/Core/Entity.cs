@@ -5,7 +5,6 @@ using Arch.Core.Utils;
 
 namespace Arch.Core;
 
-
 #if PURE_ECS
 
 /// <summary>
@@ -142,7 +141,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// <summary>
     ///     A null <see cref="Entity"/> used for comparison.
     /// </summary>
-    public static Entity Null = new(-1, 0);
+    public readonly static Entity Null = new(-1, 0);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Entity"/> struct with default values.
@@ -186,7 +185,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         return obj is Entity other && Equals(other);
     }
-
 
     /// <summary>
     ///     Compares this <see cref="Entity"/> instace to another one for sorting and ordering.
@@ -328,7 +326,6 @@ public readonly struct EntityReference
         return this == reference;
     }
 #endif
-
 
     /// <summary>
     ///     Checks the <see cref="EntityReference"/> for equality with another one.

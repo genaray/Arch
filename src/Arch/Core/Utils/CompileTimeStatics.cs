@@ -512,7 +512,9 @@ public static class JobMeta<T> where T : class, new()
 // TODO: Based on the hash of each `Group` we can easily Map a `Group<T, T, T, ...>` to another `Group`.
 //       E.g.: `Group<int, byte>` to `Group<byte, int>`, as they return the same hash.
 /// <summary>
-///     The <see cref="Group"/> class counts the Ids of registered groups in an compiletime static way.
+///     The <see cref="Group"/> class counts the IDs of registered <see cref="ComponentType"/> groups in an compile-time static way,
+///     and stores an underlying array for dynamic access. In this way, its related classes (<see cref="Group{T0}"/>, <see cref="Group{T0, T1}"/>...)
+///     can be used to statically track sets of components from generic calls with zero overhead.
 /// </summary>
 public static class Group
 {
