@@ -824,7 +824,7 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     /// <param name="value">The value of the component to set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(in QueryDescription queryDescription, in T value = default)
+    public void Set<T>(in QueryDescription queryDescription, in T? value = default)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
@@ -854,7 +854,7 @@ public partial class World
     [SkipLocalsInit]
     [StructuralChange]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add<T>(in QueryDescription queryDescription, in T component = default)
+    public void Add<T>(in QueryDescription queryDescription, in T? component = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -959,12 +959,12 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The instance, optional.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T>(Entity entity, in T component = default)
+    public void Set<T>(Entity entity, in T? component = default)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         archetype.Set(ref slot, in component);
-        OnComponentSet(entity, component);
+        OnComponentSet<T>(entity);
     }
 
     /// <summary>
@@ -1006,7 +1006,7 @@ public partial class World
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public bool TryGet<T>(Entity entity, out T component)
+    public bool TryGet<T>(Entity entity, out T? component)
     {
         component = default;
 
@@ -1056,9 +1056,9 @@ public partial class World
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
-    public ref T AddOrGet<T>(Entity entity, T component = default)
+    public ref T AddOrGet<T>(Entity entity, T? component = default)
     {
-        ref var cmp = ref TryGetRef<T>(entity, out var exists);
+        ref T cmp = ref TryGetRef<T>(entity, out var exists);
         if (exists)
         {
             return ref cmp;
@@ -1283,7 +1283,7 @@ public partial class World
     /// <returns>True if it exists, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public bool TryGet(Entity entity, ComponentType type, out object component)
+    public bool TryGet(Entity entity, ComponentType type, out object? component)
     {
         component = default;
         if (!Has(entity, type))
@@ -1532,7 +1532,7 @@ public partial class World
     /// <returns>A newly allocated array containing the entities components.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public object[] GetAllComponents(Entity entity)
+    public object?[] GetAllComponents(Entity entity)
     {
         // Get archetype and chunk.
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -1542,7 +1542,7 @@ public partial class World
 
         // Loop over components, collect and returns them.
         var entityIndex = entitySlot.Slot.Index;
-        var cmps = new object[components.Length];
+        var cmps = new object?[components.Length];
 
         for (var index = 0; index < components.Length; index++)
         {
