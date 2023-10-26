@@ -1,4 +1,3 @@
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using CommunityToolkit.HighPerformance;
 
@@ -106,7 +105,7 @@ public ref struct QueryArchetypeEnumerator
     private readonly Query _query;
     private Enumerator<Archetype> _archetypes;
 
-        /// <summary>
+    /// <summary>
     ///     Initializes a new instance of the <see cref="QueryArchetypeEnumerator"/> struct.
     /// </summary>
     /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Archetype"/>'s fit.</param>
@@ -311,22 +310,23 @@ public readonly ref struct QueryChunkIterator
 }
 
 /// <summary>
-///     The <see cref="QueryChunkEnumerator"/> struct
-///     represents an enumerator with which one can iterate over all non empty <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
+///     The <see cref="ChunkRangeEnumerator"/> struct
+///     represents an enumerator which can enumerate all the <see cref="Chunk"/>'s in an Archetype
 /// </summary>
 [SkipLocalsInit]
 public ref struct ChunkRangeEnumerator
 {
-    private Archetype _archetype;
+    private readonly Archetype _archetype;
 
     private int _chunkIndex;
-    private int _toChunkIndex;
+    private readonly int _toChunkIndex;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryChunkEnumerator"/> struct.
     /// </summary>
-    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
-    /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
+    /// <param name="from">The index of the chunk to begin enumerating from</param>
+    /// <param name="archetype">The <see cref="Archetype"/> to retrieve <see cref="Chunk"/>'s from.</param>
+    /// <param name="to">The index of the last chunk to return</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ChunkRangeEnumerator(Archetype archetype, int from, int to)
@@ -373,8 +373,8 @@ public ref struct ChunkRangeEnumerator
 }
 
 /// <summary>
-///     The <see cref="QueryChunkIterator"/> struct
-///     represents an iterator wich wraps the <see cref="QueryChunkEnumerator"/> for using it in foreach loops.
+///     The <see cref="ChunkRangeIterator"/> struct
+///     represents an iterator wich wraps the <see cref="ChunkRangeEnumerator"/> for using it in foreach loops.
 /// </summary>
 [SkipLocalsInit]
 public readonly ref struct ChunkRangeIterator
@@ -383,24 +383,15 @@ public readonly ref struct ChunkRangeIterator
     private readonly int _from;
     private readonly int _to;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="QueryChunkIterator"/> struct
-    /// </summary>
-    /// <param name="query">The <see cref="Query"/> each <see cref="QueryChunkEnumerator"/> will use.</param>
-    /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryChunkEnumerator"/> will use.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ChunkRangeIterator(Archetype archetype, int from, int to)
     {
         _archetype = archetype;
-        this._from = from;
-        this._to = to;
+        _from = from;
+        _to = to;
     }
 
-    /// <summary>
-    ///     Creates a new instance of <see cref="QueryChunkEnumerator"/> with the given <see cref="_query"/> and <see cref="_archetypes"/>.
-    /// </summary>
-    /// <returns>The new <see cref="QueryChunkEnumerator"/> instance.</returns>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ChunkRangeEnumerator GetEnumerator()
@@ -411,7 +402,7 @@ public readonly ref struct ChunkRangeIterator
 
 /// <summary>
 ///     The <see cref="EntityEnumerator"/> struct
-///     represents an enumerator with which one can iterate over all <see cref="Entity"/>'s in a given <see cref="Chunk"/>.
+///     represents an enumerator which one can iterate over all <see cref="Entity"/>'s in a given <see cref="Chunk"/>.
 ///     Each <see cref="Entity"/> is represented by its index inside the <see cref="Chunk"/>.
 /// </summary>
 [SkipLocalsInit]
@@ -491,7 +482,7 @@ public readonly ref struct EntityIterator
 
 /// <summary>
 ///     The <see cref="RangeEnumerator"/> struct
-///     is sed to iterate over sections of a range to split them into pieces.
+///     is used to iterate over sections of a range to split them into pieces.
 ///     Mostly used to partition arrays.
 /// </summary>
 public ref struct RangeEnumerator
