@@ -18,6 +18,7 @@ public class QueryGenerator : IIncrementalGenerator
 
             var compileTimeStatics = new StringBuilder();
             compileTimeStatics.AppendLine("using System;");
+            compileTimeStatics.AppendLine("using System.Threading;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
             compileTimeStatics.AppendGroups(25);
 
@@ -66,8 +67,8 @@ public class QueryGenerator : IIncrementalGenerator
             accessors.AppendLine("using System.Buffers;");
             accessors.AppendLine(
                 $$"""
-                namespace Arch.Core{
-
+                namespace Arch.Core
+                {
                     public partial struct Chunk
                     {
                         {{new StringBuilder().AppendChunkIndexes(25)}}
@@ -123,8 +124,8 @@ public class QueryGenerator : IIncrementalGenerator
 
                 }
 
-                namespace Arch.Core.Extensions{
-
+                namespace Arch.Core.Extensions
+                {
                     public static partial class EntityExtensions
                     {
                     #if !PURE_ECS
@@ -155,7 +156,7 @@ public class QueryGenerator : IIncrementalGenerator
             initializationContext.AddSource("Jobs.g.cs",
                 CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
-            initializationContext.AddSource("Acessors.g.cs",
+            initializationContext.AddSource("Accessors.g.cs",
                 CSharpSyntaxTree.ParseText(accessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
         });
     }

@@ -60,12 +60,11 @@ public static partial class EntityExtensions
     /// <returns>A newly allocated array containing the entities components.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static object[] GetAllComponents(this in Entity entity)
+    public static object?[] GetAllComponents(this in Entity entity)
     {
         var world = World.Worlds[entity.WorldId];
         return world.GetAllComponents(entity);
     }
-
 
     /// <summary>
     ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
@@ -112,9 +111,9 @@ public static partial class EntityExtensions
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The instance, optional.</param>
+    /// <param name="component">The instance, optional.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Set<T>(this in Entity entity, in T component = default)
+    public static void Set<T>(this in Entity entity, in T? component = default)
     {
         var world = World.Worlds[entity.WorldId];
         world.Set(entity, in component);
@@ -158,7 +157,7 @@ public static partial class EntityExtensions
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static bool TryGet<T>(this in Entity entity, out T component)
+    public static bool TryGet<T>(this in Entity entity, out T? component)
     {
         var world = World.Worlds[entity.WorldId];
         return world.TryGet(entity, out component);
@@ -184,26 +183,26 @@ public static partial class EntityExtensions
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The component value used if its being added.</param>
+    /// <param name="component">The component value used if its being added.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T AddOrGet<T>(this in Entity entity, T cmp = default)
+    public static ref T AddOrGet<T>(this in Entity entity, T? component = default)
     {
         var world = World.Worlds[entity.WorldId];
-        return ref world.AddOrGet(entity, cmp);
+        return ref world.AddOrGet(entity, component);
     }
 
     /// <summary>
     ///     Adds an new component to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="cmp">The component instance, optional.</param>
+    /// <param name="component">The component instance, optional.</param>
     /// <typeparam name="T">The component type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add<T>(this in Entity entity, in T cmp = default)
+    public static void Add<T>(this in Entity entity, in T? component = default)
     {
         var world = World.Worlds[entity.WorldId];
-        world.Add(entity, cmp);
+        world.Add(entity, component);
     }
 
     /// <summary>
@@ -219,7 +218,6 @@ public static partial class EntityExtensions
     }
 #endif
 }
-
 
 public static partial class EntityExtensions
 {
@@ -286,7 +284,7 @@ public static partial class EntityExtensions
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static object Get(this in Entity entity, ComponentType type)
+    public static object? Get(this in Entity entity, ComponentType type)
     {
         var world = World.Worlds[entity.WorldId];
         return world.Get(entity, type);
@@ -300,7 +298,7 @@ public static partial class EntityExtensions
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static object[] GetRange(this in Entity entity, params ComponentType[] types)
+    public static object?[] GetRange(this in Entity entity, params ComponentType[] types)
     {
         var world = World.Worlds[entity.WorldId];
         return world.GetRange(entity, types);
@@ -332,7 +330,7 @@ public static partial class EntityExtensions
     /// <returns>True if it exists, otherwhise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static bool TryGet(this in Entity entity, ComponentType type, out object component)
+    public static bool TryGet(this in Entity entity, ComponentType type, out object? component)
     {
         var world = World.Worlds[entity.WorldId];
         return world.TryGet(entity, type, out component);
@@ -376,7 +374,6 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.AddRange(entity, components);
     }
-
 
     /// <summary>
     ///     Removes a list of <see cref="ComponentType"/>'s from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
