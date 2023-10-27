@@ -19,42 +19,14 @@ public static class StringBuilderParallelQueryExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void ParallelQuery<{{generics}}>(in QueryDescription description, ForEach<{{generics}}> forEach)
+            public JobHandle ParallelQuery<{{generics}}>(in QueryDescription queryDescription, ForEach<{{generics}}> forEntity, in JobHandle? dependency = null, int batchSize = 16)
             {
-                var innerJob = new ForEachJob<{{generics}}>();
-                innerJob.ForEach = forEach;
-
-                var pool = JobMeta<ChunkIterationJob<ForEachJob<{{generics}}>>>.Pool;
-                var query = Query(in description);
-                foreach (var archetype in query.GetArchetypeIterator()) {
-
-                    var archetypeSize = archetype.Size;
-                    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-                    foreach (var range in part)
-                    {
-                        var job = pool.Get();
-                        job.Start = range.Start;
-                        job.Size = range.Length;
-                        job.Chunks = archetype.Chunks;
-                        job.Instance = innerJob;
-                        JobsCache.Add(job);
-                    }
-
-                    IJob.Schedule(JobsCache, JobHandles);
-                    JobScheduler.JobScheduler.Instance.Flush();
-                    JobHandle.Complete(JobHandles);
-                    JobHandle.Return(JobHandles);
-
-                    // Return jobs to pool
-                    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
-                    {
-                        var job = Unsafe.As<ChunkIterationJob<ForEachJob<{{generics}}>>>(JobsCache[jobIndex]);
-                        pool.Return(job);
-                    }
-
-                    JobHandles.Clear();
-                    JobsCache.Clear();
-                }
+                var foreachJob = new ForEachJob<{{generics}}>
+                {
+                    ForEach = forEntity
+                };
+                    
+                return InlineParallelChunkQuery(in queryDescription, foreachJob, in dependency, batchSize);
             }
             """;
 
@@ -79,42 +51,14 @@ public static class StringBuilderParallelQueryExtensions
         var template =
             $$"""
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void ParallelQuery<{{generics}}>(in QueryDescription description, ForEachWithEntity<{{generics}}> forEach)
+            public JobHandle ParallelQuery<{{generics}}>(in QueryDescription queryDescription, ForEachWithEntity<{{generics}}> forEntity, in JobHandle? dependency = null, int batchSize = 16)
             {
-                var innerJob = new ForEachWithEntityJob<{{generics}}>();
-                innerJob.ForEach = forEach;
-
-                var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>.Pool;
-                var query = Query(in description);
-                foreach (var archetype in query.GetArchetypeIterator())
+                var foreachJob = new ForEachWithEntityJob<{{generics}}>
                 {
-                    var archetypeSize = archetype.Size;
-                    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-                    foreach (var range in part)
-                    {
-                        var job = pool.Get();
-                        job.Start = range.Start;
-                        job.Size = range.Length;
-                        job.Chunks = archetype.Chunks;
-                        job.Instance = innerJob;
-                        JobsCache.Add(job);
-                    }
-
-                    IJob.Schedule(JobsCache, JobHandles);
-                    JobScheduler.JobScheduler.Instance.Flush();
-                    JobHandle.Complete(JobHandles);
-                    JobHandle.Return(JobHandles);
-
-                    // Return jobs to pool
-                    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
-                    {
-                        var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>(JobsCache[jobIndex]);
-                        pool.Return(job);
-                    }
-
-                    JobHandles.Clear();
-                    JobsCache.Clear();
-                }
+                    ForEach = forEntity
+                };
+                    
+                return InlineParallelChunkQuery(in queryDescription, foreachJob, in dependency, batchSize);
             }
             """;
 

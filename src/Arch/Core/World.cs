@@ -3,7 +3,6 @@ using System.Threading;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
-using JobScheduler;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -132,7 +131,6 @@ public partial class World
         world.Size = 0;
 
         // Dispose
-        world.JobHandles.Dispose();
         world.GroupToArchetype.Dispose();
         world.RecycledIds.Dispose();
         world.QueryCache.Dispose();
@@ -182,10 +180,6 @@ public partial class World : IDisposable
 
         // Query.
         QueryCache = new PooledDictionary<QueryDescription, Query>(8);
-
-        // Multithreading/Jobs.
-        JobHandles = new PooledList<JobHandle>(Environment.ProcessorCount);
-        JobsCache = new List<IJob>(Environment.ProcessorCount);
     }
 
     /// <summary>
@@ -404,7 +398,6 @@ public partial class World : IDisposable
 
         // Clear
         RecycledIds.Clear();
-        JobHandles.Clear();
         GroupToArchetype.Clear();
         EntityInfo.Clear();
         RecycledIds.Clear();

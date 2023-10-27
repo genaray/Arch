@@ -19,17 +19,19 @@ public static class StringBuilderChunkJobExtensions
 
         var template =
             $$"""
+            /// <summary>
+            ///     The <see cref="ForEachJob"/> struct
+            ///     is an <see cref="IChunkJob"/>, executing <see cref="Core.ForEach"/> on each entity.
+            /// </summary>
             public struct ForEachJob<{{generics}}> : IChunkJob
             {
                 public ForEach<{{generics}}> ForEach;
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void Execute(int index, ref Chunk chunk)
+                public readonly void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
                     {{getFirstElement}}
-
-                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                    foreach (var entityIndex in chunk)
                     {
                         {{getComponents}}
                         ForEach({{insertParams}});
@@ -63,12 +65,12 @@ public static class StringBuilderChunkJobExtensions
                 public ForEachWithEntity<{{generics}}> ForEach;
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void Execute(int index, ref Chunk chunk)
+                public void Execute(ref Chunk chunk)
                 {
                     ref var entityFirstElement = ref chunk.Entity(0);
                     {{getFirstElement}}
 
-                    foreach(var entityIndex in chunk)
+                    foreach (var entityIndex in chunk)
                     {
                         var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                         {{getComponents}}
@@ -99,17 +101,16 @@ public static class StringBuilderChunkJobExtensions
 
         var template =
             $$"""
-            public struct IForEachJob<T,{{generics}}> : IChunkJob where T : struct, IForEach<{{generics}}>
+            public struct IForEachJob<T, {{generics}}> : IChunkJob where T : struct, IForEach<{{generics}}>
             {
                 public T ForEach;
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void Execute(int index, ref Chunk chunk)
+                public void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
                     {{getFirstElement}}
-
-                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+                        
+                    foreach (var entityIndex in chunk)
                     {
                         {{getComponents}}
                         ForEach.Update({{insertParams}});
@@ -143,13 +144,12 @@ public static class StringBuilderChunkJobExtensions
                 public T ForEach;
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public void Execute(int index, ref Chunk chunk)
+                public void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
                     ref var entityFirstElement = ref chunk.Entity(0);
                     {{getFirstElement}}
-
-                    for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+            
+                    foreach (var entityIndex in chunk)
                     {
                         var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                         {{getComponents}}

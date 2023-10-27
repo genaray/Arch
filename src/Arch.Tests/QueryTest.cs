@@ -19,7 +19,9 @@ public partial class QueryTest
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler.JobScheduler("Test");
+        _jobScheduler = new JobScheduler.JobScheduler(new() {
+            ThreadPrefixName = nameof(QueryTest)
+        });
     }
 
     [OneTimeTearDown]
@@ -185,6 +187,7 @@ public partial class QueryTest
     public void GeneratedParallelQueryTest()
     {
         _world = World.Create();
+        _world.AttachScheduler(_jobScheduler);
         for (var index = 0; index < 1000; index++)
         {
             _world.Create(_entityGroup);
@@ -196,10 +199,14 @@ public partial class QueryTest
         }
 
         var queryCount = 0;
-        _world.ParallelQuery(in _withoutAiQuery, (Entity entity, ref Transform t) => Interlocked.Increment(ref queryCount));
+        var handle1 = _world.ParallelQuery(in _withoutAiQuery, (Entity entity, ref Transform t) => Interlocked.Increment(ref queryCount));
+        _jobScheduler.Flush();
+        handle1.Complete();
 
         var otherQueryCount = 0;
-        _world.ParallelQuery(in _allQuery, (ref Rotation rot) => Interlocked.Increment(ref otherQueryCount));
+        var handle2 = _world.ParallelQuery(in _allQuery, (ref Rotation rot) => Interlocked.Increment(ref otherQueryCount));
+        _jobScheduler.Flush();
+        handle2.Complete();
 
         That(queryCount, Is.EqualTo(1000));
         That(otherQueryCount, Is.EqualTo(1000));
@@ -244,6 +251,7 @@ public partial class QueryTest
 
         var rotCounter = new RotCounter { Counter = 0 };
         _world.InlineQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
+        _jobScheduler.Flush();
 
         That(entityCounter.Counter, Is.EqualTo(100));
         That(rotCounter.Counter, Is.EqualTo(100));
@@ -253,6 +261,7 @@ public partial class QueryTest
     public void GeneratedHpParallelQueryTest()
     {
         _world = World.Create();
+        _world.AttachScheduler(_jobScheduler);
         for (var index = 0; index < 1000; index++)
         {
             _world.Create(_entityGroup);
@@ -264,12 +273,16 @@ public partial class QueryTest
         }
 
         var entityCounter = new EntityCounter { Counter = 0 };
-        _world.InlineEntityQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
+        var handle1 = _world.InlineParallelEntityQuery<EntityCounter, Transform>(in _withoutAiQuery, ref entityCounter);
+        _jobScheduler.Flush();
+        handle1.Complete();
 
         True(true);
 
         var rotCounter = new RotCounter { Counter = 0 };
-        _world.InlineQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
+        var handle2 = _world.InlineParallelQuery<RotCounter, Rotation>(in _allQuery, ref rotCounter);
+        _jobScheduler.Flush();
+        handle2.Complete();
 
         True(true);
     }

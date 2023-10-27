@@ -1,5 +1,4 @@
 using Arch.Core;
-using Arch.Core.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -62,7 +61,8 @@ public class Game : Microsoft.Xna.Framework.Game
 
         // Create world & systems
         _world = World.Create();
-        _jobScheduler = new("SampleWorkerThreads");
+        _jobScheduler = new(new() { ThreadPrefixName = "SampleWorkerThreads" });
+        _world.AttachScheduler(_jobScheduler);
         _movementSystem = new MovementSystem(_world, GraphicsDevice.Viewport.Bounds);
         _colorSystem = new ColorSystem(_world);
         _drawSystem = new DrawSystem(_world, _spriteBatch);

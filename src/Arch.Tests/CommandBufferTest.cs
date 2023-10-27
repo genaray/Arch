@@ -107,22 +107,3 @@ public partial class CommandBufferTest
         World.Destroy(world);
     }
 }
-
-[TestFixture]
-public partial class CommandBufferTest
-{
-
-    private JobScheduler.JobScheduler _jobScheduler;
-
-    [OneTimeSetUp]
-    public void Setup()
-    {
-        _jobScheduler = new JobScheduler.JobScheduler("CommandBuffer");
-    }
-
-    [OneTimeTearDown]
-    public void Teardown()
-    {
-        _jobScheduler.Dispose();
-    }
-}

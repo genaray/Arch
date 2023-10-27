@@ -1,6 +1,4 @@
-using Arch.Core.Utils;
-using Collections.Pooled;
-using IJob = JobScheduler.IJob;
+using JobScheduler;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -9,120 +7,147 @@ namespace Arch.Core;
 
 public partial class World
 {
+    /// <summary>
+    /// Thrown when the <see cref="World"/> has not been assigned a <see cref="JobScheduler.JobScheduler"/>.
+    /// </summary>
+    public class JobSchedulerNotAssignedException : Exception
+    {
+        internal JobSchedulerNotAssignedException()
+            : base($"{nameof(World.Scheduler)} is not assigned! Call {nameof(World.AttachScheduler)} to assign a scheduler first.") { }
+    }
 
     /// <summary>
-    ///     A list of <see cref="JobScheduler.JobHandle"/> which are pooled to avoid allocs.
+    /// Thrown when a scheduling method has been called on a different thread.
     /// </summary>
-    private PooledList<JobScheduler.JobHandle> JobHandles { get; }
+    public class NotOnMainThreadException : Exception
+    {
+        internal NotOnMainThreadException()
+            : base($"A scheduling method cannot be called on a different thread than {nameof(World.Scheduler)} was created on. " +
+                  $"Either create the {nameof(JobScheduler.JobScheduler)} on a different thread, or only schedule queries on the main thread.") { }
+    }
 
     /// <summary>
-    ///     A cache used for the parallel queries to prevent list allocations.
+    /// The <see cref="JobScheduler.JobScheduler"/> attached to this <see cref="World"/>, or null if none has been attached.
     /// </summary>
-    internal List<IJob> JobsCache { get; set; }
+    public JobScheduler.JobScheduler? Scheduler { get; private set; }
+
+    /// <summary>
+    /// Attach a <see cref="JobScheduler.JobScheduler"/> to this <see cref="World"/>. Only one scheduler can be attached, and it cannot
+    /// be changed once set.
+    /// </summary>
+    /// <param name="scheduler">The scheduler to assign.</param>
+    public void AttachScheduler(JobScheduler.JobScheduler scheduler)
+    {
+        if (Scheduler is not null)
+        {
+            throw new InvalidOperationException(
+                $"The {nameof(Scheduler)} is already assigned! Once assigned, a {nameof(World.Scheduler)} cannot be changed.");
+        }
+
+        Scheduler = scheduler;
+    }
 
     /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
-    /// <remarks>
-    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
-    /// </remarks>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='queryDescription']"/></param>
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
+    /// <param name="dependency"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='dependency']"/></param>
+    /// <param name="batchSize"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='batchSize']"/></param>
+    /// <inheritdoc cref="InlineParallelChunkQuery"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ParallelQuery(in QueryDescription queryDescription, ForEach forEntity)
+    public JobHandle ParallelQuery(in QueryDescription queryDescription, ForEach forEntity, in JobHandle? dependency = null, int batchSize = 16)
     {
         var foreachJob = new ForEachJob
         {
             ForEach = forEntity
         };
 
-        InlineParallelChunkQuery(in queryDescription, foreachJob);
+        return InlineParallelChunkQuery(in queryDescription, foreachJob, in dependency, batchSize);
     }
 
     /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
-    /// <remarks>
-    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
-    /// </remarks>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <inheritdoc cref="InlineParallelChunkQuery"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
+    public JobHandle InlineParallelQuery<T>(in QueryDescription queryDescription, in JobHandle? dependency = null, int batchSize = 16) where T : struct, IForEach
     {
         var iForEachJob = new IForEachJob<T>();
-        InlineParallelChunkQuery(in queryDescription, iForEachJob);
+        return InlineParallelChunkQuery(in queryDescription, iForEachJob, in dependency, batchSize);
     }
 
     /// <summary>
-    ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
-    ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
+    ///     Searches all matching <see cref="Entity"/>s by a <see cref="QueryDescription"/> and calls the passed <see cref="IForEach"/> struct.
     /// </summary>
-    /// <remarks>
-    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
-    /// </remarks>
-    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
-    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>'s are searched for.</param>
+    /// <param name="queryDescription"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='queryDescription']"/></param>
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
+    /// <param name="dependency"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='dependency']"/></param>
+    /// <param name="batchSize"><inheritdoc cref="InlineParallelChunkQuery{T}" path="/param[@name='batchSize']"/></param>
+    /// <inheritdoc cref="InlineParallelChunkQuery"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelQuery<T>(in QueryDescription queryDescription, in IForEachJob<T> iForEach) where T : struct, IForEach
+    public JobHandle InlineParallelQuery<T>(in QueryDescription queryDescription, ref T iForEach, in JobHandle? dependency = null, int batchSize = 16)
+        where T : struct, IForEach
     {
-        InlineParallelChunkQuery(in queryDescription, in iForEach);
+        var innerJob = new IForEachJob<T>()
+        {
+            ForEach = iForEach
+        };
+        return InlineParallelChunkQuery(in queryDescription, in innerJob, in dependency, batchSize);
     }
 
     /// <summary>
-    ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
+    ///     Finds all matching <see cref="Chunk"/>s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them in parallel.
     /// </summary>
     /// <remarks>
-    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    ///     <para>
+    ///         A job is scheduled and will only begin once the scheduler is flushed. Unlike normal scheduled queries, this query is parallelized, meaning it
+    ///         runs across all available cores at once. However, parallelization incurs additional overhead. Always benchmark to decide whether to use a parallel
+    ///         scheduled query or a normal scheduled query when running multithreaded queries.
+    ///     </para>
+    ///     <para>
+    ///         Additionally, as with all scheduled queries, this query is only valid when called from the main thread.
+    ///         It will throw <see cref="NotOnMainThreadException"/> otherwise.
+    ///     </para>
     /// </remarks>
+    /// <returns>The <see cref="JobHandle"/> associated with the scheduled jobs.</returns>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
     /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
-    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
+    /// <param name="dependency">A <see cref="JobHandle"/> that must complete beforehand.</param>
+    /// <param name="batchSize">The number of chunks to process per batch. See <seealso cref="IJobParallelFor.BatchSize"/> for more information.</param>
+    /// <exception cref="JobSchedulerNotAssignedException">If <see cref="AttachScheduler"/> has not been called.</exception>
+    /// <exception cref="NotOnMainThreadException">If the method is called on a thread other than the scheduler's thread.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
+    public JobHandle InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob, in JobHandle? dependency = null, int batchSize = 16)
+        where T : struct, IChunkJob
     {
         // Job scheduler needs to be initialized.
-        if (JobScheduler.JobScheduler.Instance is null)
+        if (Scheduler is null)
         {
-            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
+            throw new JobSchedulerNotAssignedException();
         }
 
-        // Cast pool in an unsafe fast way and run the query.
-        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
+        if (!Scheduler.IsMainThread)
+        {
+            throw new NotOnMainThreadException();
+        }
+
         var query = Query(in queryDescription);
+        var job = ChunkIterationJob<T>.GetPooled();
+        job.Instance = innerJob;
+        int size = 0;
         foreach (var archetype in query.GetArchetypeIterator())
         {
             var archetypeSize = archetype.Size;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
             foreach (var range in part)
             {
-                var job = pool.Get();
-                job.Start = range.Start;
-                job.Size = range.Length;
-                job.Chunks = archetype.Chunks;
-                job.Instance = innerJob;
-                JobsCache.Add(job);
+                job.AddChunks(archetype.Chunks, range.Start, range.Length);
+                size += range.Length;
             }
-
-            // Schedule, flush, wait, return.
-            IJob.Schedule(JobsCache, JobHandles);
-            JobScheduler.JobScheduler.Instance.Flush();
-            JobScheduler.JobHandle.Complete(JobHandles);
-            JobScheduler.JobHandle.Return(JobHandles);
-
-            // Return jobs to pool.
-            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
-            {
-                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[jobIndex]);
-                pool.Return(job);
-            }
-
-            JobHandles.Clear();
-            JobsCache.Clear();
         }
+
+        return Scheduler.Schedule(job, size, dependency);
     }
 }
