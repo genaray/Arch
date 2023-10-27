@@ -177,7 +177,7 @@ public class CommandBuffer : IDisposable
     {
         lock (this)
         {
-            var entity = new Entity(-Math.Abs(Size + 1), World.Id);
+            var entity = new Entity(-(Size + 1), World.Id);
             Register(entity, out _);
 
             var command = new CreateCommand(Size - 1, types);
