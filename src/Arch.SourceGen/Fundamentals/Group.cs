@@ -23,15 +23,24 @@ public static class GroupExtensions
 
         var template =
             $$"""
+            /// <inheritdoc cref="Group"/>
             public static class Group<{{generics}}>
             {
                 internal static readonly int Id;
-                internal static readonly ComponentType[] Types;
-                internal static readonly int Hash;
+            
+                /// <summary>
+                ///     The global array of <see cref="ComponentType"/> for this given type group. Must not be modified in any way.
+                /// </summary>
+                public static readonly ComponentType[] Types;
+
+                /// <summary>
+                ///     The hash code for this given type group.
+                /// </summary>
+                public static readonly int Hash;
             
                 static Group()
                 {
-                    Id = Group.Id++;
+                    Id = Interlocked.Increment(ref Group.Id);
                     Types = new ComponentType[] { {{types}} };
                     Hash = Component.GetHashCode(Types);
                 }

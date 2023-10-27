@@ -2,13 +2,13 @@ using Arch.LowLevel.Jagged;
 
 namespace Arch.Core.Extensions.Dangerous;
 
+// NOTE: I am omitting WorldExtensionsAttribute here, as these should be accessed through the original world instead of a wrapper world anyways.
 /// <summary>
 ///     The <see cref="DangerousWorldExtensions"/> class
 ///     contains several <see cref="World"/> related extension methods which give acess to underlaying data structures that should only be modified when you exactly know what you are doing.
 /// </summary>
 public static class DangerousWorldExtensions
 {
-
     /// <summary>
     ///     Sets the <see cref="World.Archetypes"/>.
     /// </summary>
@@ -44,7 +44,6 @@ public static class DangerousWorldExtensions
     {
         world.EntityInfo.Archetypes[entity.Id] = archetype;
     }
-
 
     /// <summary>
     ///     Returns the <see cref="EntityInfoStorage.Versions"/> of a <see cref="World"/> for reading or modifiyng it.
