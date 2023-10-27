@@ -6,7 +6,6 @@ namespace Arch.Core.Extensions.Internal;
 /// </summary>
 internal static class ArrayExtensions
 {
-
     /// <summary>
     ///     Adds an item to an array at a given index. Resizes the array if necessary.
     /// </summary>
@@ -15,17 +14,24 @@ internal static class ArrayExtensions
     /// <param name="item">The item.</param>
     /// <typeparam name="T">The type.</typeparam>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void Add<T>(this T[] target, int index, T item)
+    internal static T[] Add<T>(this T[] target, int index, T item)
     {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
         if (target.Length <= index)
         {
-            var doublingCount = (int)Math.Ceiling(Math.Log(index / (double)target.Length, 2));
+            var doublingCount = Math.Max(1, (int)Math.Ceiling(Math.Log(index / (double)target.Length, 2)));
             var result = target.Length * (int)Math.Pow(2, doublingCount);
 
             Array.Resize(ref target, result);
         }
 
         target[index] = item;
+
+        return target;
     }
 
     /// <summary>
@@ -114,44 +120,11 @@ internal static class ArrayExtensions
     }
 
     /// <summary>
-    ///     Gets the element at an index in the array, or resizes it to fit an element
-    ///     at that index.
-    /// </summary>
-    /// <param name="array">The array to get the element from.</param>
-    /// <param name="index">The index of the element.</param>
-    /// <param name="exists">
-    ///     Whether or not the index was within the bounds of the array.
-    ///     When false, the array has been resized.
-    /// </param>
-    /// <param name="maxSize">The max size to grow the array to.</param>
-    /// <typeparam name="T">The element type of the array.</typeparam>
-    /// <returns>The element at that index. May be null.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ref T GetOrResize<T>(ref T[] array, int index, int? maxSize = null)
-    {
-        if (index < array.Length)
-        {
-            return ref array[index];
-        }
-
-        if (maxSize == null)
-        {
-            Array.Resize(ref array, (index * 2) + 1);
-        }
-        else
-        {
-            Array.Resize(ref array, Math.Min((index * 2) + 1, maxSize.Value));
-        }
-
-        return ref array[index];
-    }
-
-    /// <summary>
     ///     Removes a list of items from an array by value equality.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
-    /// <param name="target">The target array.</param>
-    /// <param name="items">The <see cref="IList"/> of items which will be removed.</param>
+    /// <param name="array">The target array.</param>
+    /// <param name="toRemove">The <see cref="IList"/> of items which will be removed.</param>
     /// <returns>The new array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T[] Remove<T>(this T[] array, IList<T> toRemove)
