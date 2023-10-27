@@ -177,7 +177,7 @@ public class CommandBuffer : IDisposable
     {
         lock (this)
         {
-            var entity = new Entity(-Math.Abs(Size - 1), World.Id);
+            var entity = new Entity(-Math.Abs(Size + 1), World.Id);
             Register(entity, out _);
 
             var command = new CreateCommand(Size - 1, types);
@@ -433,15 +433,15 @@ public class CommandBuffer : IDisposable
 
         // Reset values.
         Size = 0;
-        Entities?.Clear();
-        BufferedEntityInfo?.Clear();
-        Creates?.Clear();
-        Sets?.Clear();
-        Adds?.Clear();
-        Removes?.Clear();
-        Destroys?.Clear();
-        _addTypes?.Clear();
-        _removeTypes?.Clear();
+        Entities.Clear();
+        BufferedEntityInfo.Clear();
+        Creates.Clear();
+        Sets.Clear();
+        Adds.Clear();
+        Removes.Clear();
+        Destroys.Clear();
+        _addTypes.Clear();
+        _removeTypes.Clear();
     }
 
     /// <summary>
@@ -449,15 +449,15 @@ public class CommandBuffer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Entities?.Dispose();
-        BufferedEntityInfo?.Dispose();
-        Creates?.Clear();
-        Sets?.Clear();
-        Adds?.Clear();
-        Removes?.Clear();
-        Destroys?.Dispose();
-        _addTypes?.Dispose();
-        _removeTypes?.Dispose();
+        Entities.Dispose();
+        BufferedEntityInfo.Dispose();
+        Creates.Clear();
+        Sets.Clear();
+        Adds.Clear();
+        Removes.Clear();
+        Destroys.Dispose();
+        _addTypes.Dispose();
+        _removeTypes.Dispose();
         GC.SuppressFinalize(this);
     }
 }
