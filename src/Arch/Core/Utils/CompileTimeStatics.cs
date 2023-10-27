@@ -1,3 +1,4 @@
+using Arch.Core.Extensions.Internal;
 using Arch.LowLevel.Jagged;
 using Microsoft.Extensions.ObjectPool;
 
@@ -71,22 +72,24 @@ public readonly record struct ComponentType
 /// </summary>
 public static class ComponentRegistry
 {
-    private static readonly Dictionary<int, Type> _types = new(64);
-    private static readonly Dictionary<Type, ComponentType> _typesToComponentType = new(64);
+    private static readonly Dictionary<Type, ComponentType> _typeToComponentType = new(64);
+    private static Type?[] _types = new Type[64];
 
     /// <summary>
     ///     All registered components, maps their <see cref="Type"/> to their <see cref="ComponentType"/>.
     /// </summary>
     public static IReadOnlyDictionary<Type, ComponentType> TypeToComponentType
     {
-        get => _typesToComponentType;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _typeToComponentType;
     }
 
     /// <summary>
     ///     All registered components.
     /// </summary>
-    public static IReadOnlyDictionary<int, Type> Types
+    public static ReadOnlySpan<Type?> Types
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _types;
     }
 
@@ -119,8 +122,8 @@ public static class ComponentRegistry
         // Register and assign component id
         var id = Size + 1;
         meta = new ComponentType(id, typeSize);
-        _typesToComponentType.Add(type, meta);
-        _types.Add(id, type);
+        _typeToComponentType.Add(type, meta);
+        _types = _types.Add(id, type);
 
         Size++;
         return meta;
@@ -136,8 +139,8 @@ public static class ComponentRegistry
     public static ComponentType Add(ComponentType type)
     {
         // Register and assign component id
-        _typesToComponentType.Add(type, type);
-        _types.Add(type.Id, type.Type);
+        _typeToComponentType.Add(type, type);
+        _types = _types.Add(type.Id, type.Type);
 
         Size++;
         return type;
@@ -198,8 +201,8 @@ public static class ComponentRegistry
     public static bool Remove<T>()
     {
         var componentType = Component<T>.ComponentType;
-        _types.Remove(componentType.Id);
-        return _typesToComponentType.Remove(componentType.Type);
+        _types[componentType.Id] = null;
+        return _typeToComponentType.Remove(componentType.Type);
     }
 
     /// <summary>
@@ -211,8 +214,8 @@ public static class ComponentRegistry
     public static bool Remove(Type type)
     {
         ComponentType componentType = type;
-        _types.Remove(componentType.Id);
-        return _typesToComponentType.Remove(type);
+        _types[componentType.Id] = null;
+        return _typeToComponentType.Remove(type);
     }
 
     /// <summary>
@@ -224,8 +227,8 @@ public static class ComponentRegistry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove(Type type, out ComponentType compType)
     {
-        var removed = _typesToComponentType.Remove(type, out compType);
-        _types.Remove(compType.Id);
+        var removed = _typeToComponentType.Remove(type, out compType);
+        _types[compType.Id] = null;
         return removed;
     }
 
@@ -242,8 +245,8 @@ public static class ComponentRegistry
     {
         var id = Remove(oldType, out var oldComponentType) ? oldComponentType.Id : ++Size;
 
-        _typesToComponentType.Add(newType, new ComponentType(id, newTypeSize));
-        _types[id] = newType;
+        _typeToComponentType.Add(newType, new ComponentType(id, newTypeSize));
+        _types = _types.Add(id, newType);
     }
 
     /// <summary>
@@ -318,7 +321,7 @@ public static class ComponentRegistry
     {
         if (type.IsValueType)
         {
-            return (int) typeof(Unsafe)
+            return (int)typeof(Unsafe)
                 .GetMethod(nameof(Unsafe.SizeOf))!
                 .MakeGenericMethod(type)
                 .Invoke(null, null)!;
@@ -352,7 +355,7 @@ public static class ArrayRegistry
     /// <returns>The created array.</returns>
     public static Array GetArray(ComponentType type, int capacity)
     {
-        return _createFactories.TryGetValue(type.Id, out Func<int,Array> func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
+        return _createFactories.TryGetValue(type.Id, out Func<int, Array> func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
     }
 
     /// <summary>

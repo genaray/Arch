@@ -7,6 +7,34 @@ namespace Arch.Core.Extensions.Internal;
 internal static class ArrayExtensions
 {
     /// <summary>
+    ///     Adds an item to an array at a given index. Resizes the array if necessary.
+    /// </summary>
+    /// <param name="target">The target array.</param>
+    /// <param name="index">The index.</param>
+    /// <param name="item">The item.</param>
+    /// <typeparam name="T">The type.</typeparam>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static T[] Add<T>(this T[] target, int index, T item)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        if (target.Length <= index)
+        {
+            var doublingCount = Math.Max(1, (int)Math.Ceiling(Math.Log(index / (double)target.Length, 2)));
+            var result = target.Length * (int)Math.Pow(2, doublingCount);
+
+            Array.Resize(ref target, result);
+        }
+
+        target[index] = item;
+
+        return target;
+    }
+
+    /// <summary>
     ///     Adds a list of items to an array.
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
