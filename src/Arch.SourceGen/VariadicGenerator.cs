@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Arch.SourceGen;
 
@@ -113,15 +114,18 @@ public class VariadicGenerator : IIncrementalGenerator
             }
         }
 
+        if (info.EnclosingType != string.Empty)
+        {
+            combined.Insert(0, info.EnclosingType + "{");
+            combined.AppendLine("}");
+        }
+
         return $$"""
             {{info.Usings}}
 
             namespace {{info.Namespace}};
 
-            {{info.EnclosingType}}
-            {
-                {{combined}}
-            }
+            {{combined}}
             """;
     }
 
@@ -131,7 +135,7 @@ public class VariadicGenerator : IIncrementalGenerator
         public enum Operation
         {
             None,
-            // [Variadic: CopyLines(variableName)]
+            // [Variadic: CopyLines(variableName, variableName2)]
             CopyLines,
             // [Variadic: CopyArgs(variableName)]
             CopyArgs
@@ -139,7 +143,7 @@ public class VariadicGenerator : IIncrementalGenerator
 
         public Operation Op { get; set; } = Operation.None;
         public string Line { get; set; } = string.Empty;
-        public string Variable { get; set; } = string.Empty;
+        public string[] Variables { get; set; } = Array.Empty<string>();
 
         public readonly string Transform(int start, int variations, string type)
         {
@@ -214,7 +218,11 @@ public class VariadicGenerator : IIncrementalGenerator
                     StringBuilder next = new();
                     next.AppendLine(Line);
                     var variadic = VaryType(type, i);
-                    next.Replace(Variable + "__" + type, Variable + "__" + variadic);
+                    foreach (var variable in Variables)
+                    {
+                        next.Replace(variable + "__" + type, variable + "__" + variadic);
+                    }
+
                     next.Replace(type, variadic);
                     transformed.AppendLine(next.ToString());
                 }
@@ -224,17 +232,33 @@ public class VariadicGenerator : IIncrementalGenerator
 
             if (Op == Operation.CopyArgs)
             {
+                if (Variables.Length != 1)
+                {
+                    throw new InvalidOperationException($"{nameof(Operation.CopyArgs)} only supports 1 variable.");
+                }
+
                 StringBuilder transformed = new();
                 transformed.AppendLine(Line);
                 StringBuilder newVariables = new();
-                newVariables.Append(Variable + "__" + type);
+
+                // match ref, in, out
+                var modifiersMatch = Regex.Match(Line, $@"[(,]\s*(?<Modifiers>\w+?)?\s*{Variables[0]}__{type}");
+                if (!modifiersMatch.Success)
+                {
+                    throw new InvalidOperationException($"Can't find variable {Variables[0]}__{type} in a parameter list.");
+                }
+
+                var modifiers = modifiersMatch.Groups["Modifiers"].Value;
+
+                newVariables.Append($"{modifiers} {Variables[0]}__{type}");
                 for (int i = start; i < variations; i++)
                 {
                     var variadic = VaryType(type, i);
-                    newVariables.Append(", " + Variable + "__" + variadic);
+                    newVariables.Append($", {modifiers} {Variables[0]}__{variadic}");
                 }
 
-                transformed.Replace(Variable + "__" + type, newVariables.ToString());
+                transformed.Remove(modifiersMatch.Index + 1, modifiersMatch.Length - 1);
+                transformed.Insert(modifiersMatch.Index + 1, newVariables.ToString());
                 return transformed.ToString();
             }
 
@@ -262,7 +286,7 @@ public class VariadicGenerator : IIncrementalGenerator
         var lines = SplitLines(info.Code);
 
         LineInfo.Operation nextOperation = LineInfo.Operation.None;
-        string nextVariable = string.Empty;
+        List<string> nextVariables = new();
         foreach (var line in lines)
         {
             if (line.StartsWith("[Variadic("))
@@ -273,7 +297,7 @@ public class VariadicGenerator : IIncrementalGenerator
 
             if (line.StartsWith("//"))
             {
-                var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)\((?<Variable>\w+)\)\]");
+                var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)\((?:(?<Variable>\w+),?\s*)+\)\]");
                 if (!match.Success)
                 {
                     continue;
@@ -285,7 +309,11 @@ public class VariadicGenerator : IIncrementalGenerator
                     "CopyArgs" => LineInfo.Operation.CopyArgs,
                     _ => throw new NotImplementedException()
                 };
-                nextVariable = match.Groups["Variable"].Value;
+
+                foreach (Capture capture in match.Groups["Variable"].Captures)
+                {
+                    nextVariables.Add(capture.Value);
+                }
 
                 continue;
             }
@@ -293,10 +321,10 @@ public class VariadicGenerator : IIncrementalGenerator
             var lineInfo = new LineInfo()
             {
                 Line = line,
-                Variable = nextVariable,
+                Variables = nextVariables.ToArray(),
                 Op = nextOperation
             };
-            nextVariable = string.Empty;
+            nextVariables.Clear();
             nextOperation = LineInfo.Operation.None;
             yield return lineInfo;
         }

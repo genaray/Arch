@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.Contracts;
 
-namespace Arch.Core.Variadics;
+namespace Arch.Core;
 public static partial class EntityExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

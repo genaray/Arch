@@ -48,10 +48,12 @@ public class QueryGenerator : IIncrementalGenerator
             jobs.AppendLine("using System.Runtime.CompilerServices;");
             jobs.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
             jobs.AppendLine("namespace Arch.Core;");
+            jobs.AppendLine("/*");
             jobs.AppendForEachJobs(25);
             jobs.AppendEntityForEachJobs(25);
             jobs.AppendIForEachJobs(25);
             jobs.AppendIForEachWithEntityJobs(25);
+            jobs.AppendLine("*/");
 
             var accessors = new StringBuilder();
             accessors.AppendLine("using System;");

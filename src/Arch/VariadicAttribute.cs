@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace Arch.Core;
+﻿namespace Arch.Core;
 
 /// <summary>
 /// Tags a method or type as being variadic; i.e. generating many generic parameters.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Delegate)]
 internal class VariadicAttribute : Attribute
 {
     /// <summary>
@@ -23,5 +21,5 @@ internal class VariadicAttribute : Attribute
     ///     The end template to generate. For example, if there should be up to <c>T0, ... T24</c> variadics, <paramref name="count"/> would be 25.
     /// </param>
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Instance params not necessary for sourcegen.")]
-    public VariadicAttribute(string name, int start = 2, int count = 25) { }
+    public VariadicAttribute(string name, int start = 1, int count = 25) { }
 }
