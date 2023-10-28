@@ -40,22 +40,6 @@ public ref struct Enumerator<T>
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="Enumerator{T}"/> struct.
-    /// </summary>
-    /// <param name="span">The <see cref="Span{T}"/> with items to iterate over.</param>
-    /// <param name="length">Its length or size.</param>
-    public Enumerator(Span<T> span, int length)
-    {
-#if NET7_0_OR_GREATER
-        _ptr = ref MemoryMarshal.GetReference(span);
-#else
-        _ptr = new Ref<T>(ref span.DangerousGetReference());
-#endif
-        _length = length;
-        _index = _length;
-    }
-
-    /// <summary>
     ///     Moves to the next item.
     /// </summary>
     /// <returns>True if there still items, otherwhise false.</returns>
