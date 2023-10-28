@@ -16,6 +16,7 @@ public class VariadicGenerator : IIncrementalGenerator
         public string Namespace { get; set; } = string.Empty;
         public string Usings { get; set; } = string.Empty;
         public int Count { get; set; } = 0;
+        public int Start { get; internal set; }
     }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -26,10 +27,8 @@ public class VariadicGenerator : IIncrementalGenerator
         //}
 
         var infos = context.SyntaxProvider.ForAttributeWithMetadataName("Arch.Core.VariadicAttribute",
-            (node, token) =>
-            {
-                return true;
-            },
+            // TODO: slow, make better filter
+            (node, token) => true,
             (ctx, token) =>
             {
                 VariadicInfo info = new();
@@ -56,6 +55,7 @@ public class VariadicGenerator : IIncrementalGenerator
                     ns = ns != string.Empty ? containingNamespace.Name + "." + ns : containingNamespace.Name;
                     containingNamespace = containingNamespace.ContainingNamespace;
                 }
+
                 info.Namespace = ns;
                 info.Name = ctx.TargetSymbol.Name;
                 info.Code = ctx.TargetNode.ToString();
@@ -64,14 +64,13 @@ public class VariadicGenerator : IIncrementalGenerator
                     info.Usings += use.ToString() + "\n";
                 }
 
-                // default count is 26
-                info.Count = 26;
                 foreach (var attr in ctx.TargetSymbol.GetAttributes())
                 {
                     if (attr.AttributeClass?.Name == "VariadicAttribute")
                     {
                         info.Type = attr.ConstructorArguments[0].Value as string ?? throw new InvalidOperationException();
-                        info.Count = Convert.ToInt32(attr.ConstructorArguments[1].Value);
+                        info.Start = Convert.ToInt32(attr.ConstructorArguments[1].Value);
+                        info.Count = Convert.ToInt32(attr.ConstructorArguments[2].Value);
                         break;
                     }
                 }
@@ -106,11 +105,11 @@ public class VariadicGenerator : IIncrementalGenerator
         var tokens = Tokenize(info).ToList();
         StringBuilder combined = new();
 
-        for (var i = 1; i < info.Count; i++)
+        for (var i = info.Start; i < info.Count; i++)
         {
             foreach (var token in tokens)
             {
-                combined.AppendLine(token.Transform(i, info.Type));
+                combined.AppendLine(token.Transform(info.Start, i + 1, info.Type));
             }
         }
 
@@ -134,15 +133,15 @@ public class VariadicGenerator : IIncrementalGenerator
             None,
             // [Variadic: CopyLines(variableName)]
             CopyLines,
-            // [Variadic: CopyParams(variableName)]
-            CopyParams
+            // [Variadic: CopyArgs(variableName)]
+            CopyArgs
         }
 
         public Operation Op { get; set; } = Operation.None;
         public string Line { get; set; } = string.Empty;
         public string Variable { get; set; } = string.Empty;
 
-        public readonly string Transform(int variations, string type)
+        public readonly string Transform(int start, int variations, string type)
         {
             if (Op == Operation.None)
             {
@@ -166,7 +165,7 @@ public class VariadicGenerator : IIncrementalGenerator
 
                 StringBuilder variadics = new();
 
-                for (int i = 0; i < variations; i++)
+                for (int i = start - 1; i < variations; i++)
                 {
                     variadics.Append(VaryType(type, i));
                     if (i != variations - 1)
@@ -177,16 +176,40 @@ public class VariadicGenerator : IIncrementalGenerator
 
                 variadics.Append(">");
 
-                // apply generics: expand T0> to T0, T1...>
+                // apply generics: expand T0> -> T0, T1...>
                 transformed.Replace(type + ">", variadics.ToString());
+
+                // expand params in header (i.e. T0 component__T0 -> T0 component__T0, T1 component__t1...
+                var exp = $@"[(,\s]{type}\s+(?<ParamName>\w+)__{type}";
+                var paramMatch = Regex.Match(transformed.ToString(), exp);
+                if (paramMatch.Success)
+                {
+                    var name = paramMatch.Groups["ParamName"].Value;
+
+                    StringBuilder newParams = new();
+                    for (int i = start - 1; i < variations; i++)
+                    {
+                        var varied = VaryType(type, i);
+                        newParams.Append($"{varied} {name}__{varied}");
+                        if (i !=  variations - 1)
+                        {
+                            newParams.Append(", ");
+                        }
+                    }
+
+                    transformed.Remove(paramMatch.Index + 1, paramMatch.Length - 1);
+                    transformed.Insert(paramMatch.Index + 1, newParams);
+                }
+
                 return transformed.ToString();
             }
+
             if (Op == Operation.CopyLines)
             {
                 StringBuilder transformed = new();
                 transformed.AppendLine(Line);
 
-                for (int i = 1; i < variations; i++)
+                for (int i = start; i < variations; i++)
                 {
                     StringBuilder next = new();
                     next.AppendLine(Line);
@@ -195,18 +218,20 @@ public class VariadicGenerator : IIncrementalGenerator
                     next.Replace(type, variadic);
                     transformed.AppendLine(next.ToString());
                 }
+
                 return transformed.ToString();
             }
-            if (Op == Operation.CopyParams)
+
+            if (Op == Operation.CopyArgs)
             {
                 StringBuilder transformed = new();
                 transformed.AppendLine(Line);
                 StringBuilder newVariables = new();
                 newVariables.Append(Variable + "__" + type);
-                for (int i = 1; i < variations; i++)
+                for (int i = start; i < variations; i++)
                 {
                     var variadic = VaryType(type, i);
-                    newVariables.Append(", " + Variable + "__ " + variadic);
+                    newVariables.Append(", " + Variable + "__" + variadic);
                 }
 
                 transformed.Replace(Variable + "__" + type, newVariables.ToString());
@@ -219,18 +244,19 @@ public class VariadicGenerator : IIncrementalGenerator
 
     private static string VaryType(string typeName, int i)
     {
-        var match = Regex.Match(typeName, @"(?<PrunedName>\w+)0");
+        var match = Regex.Match(typeName, @"(?<PrunedName>\w+)[0-9]+");
         if (!match.Success)
         {
-            throw new InvalidOperationException("Variadic type must be of TypeName0");
+            throw new InvalidOperationException("Variadic type must be of TypeName{N}");
         }
+
         return $"{match.Groups["PrunedName"]}{i}";
     }
 
     private IEnumerable<LineInfo> Tokenize(VariadicInfo info)
     {
         // NOTE: does not support multiline operations, for example this would break:
-        //  // [Variadic: CopyParams(a)]
+        //  // [Variadic: CopyArgs(a)]
         //  MyMethod(
         //      a_T0);
         var lines = SplitLines(info.Code);
@@ -239,6 +265,12 @@ public class VariadicGenerator : IIncrementalGenerator
         string nextVariable = string.Empty;
         foreach (var line in lines)
         {
+            if (line.StartsWith("[Variadic("))
+            {
+                // don't include variadic attrs
+                continue;
+            }
+
             if (line.StartsWith("//"))
             {
                 var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)\((?<Variable>\w+)\)\]");
@@ -250,7 +282,7 @@ public class VariadicGenerator : IIncrementalGenerator
                 nextOperation = match.Groups["Operation"].Value switch
                 {
                     "CopyLines" => LineInfo.Operation.CopyLines,
-                    "CopyParams" => LineInfo.Operation.CopyParams,
+                    "CopyArgs" => LineInfo.Operation.CopyArgs,
                     _ => throw new NotImplementedException()
                 };
                 nextVariable = match.Groups["Variable"].Value;

@@ -126,6 +126,7 @@ public class QueryGenerator : IIncrementalGenerator
 
                 namespace Arch.Core.Extensions
                 {
+                /*
                     public static partial class EntityExtensions
                     {
                     #if !PURE_ECS
@@ -136,6 +137,7 @@ public class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendEntityRemoves(25)}}
                     #endif
                     }
+                    */
 
                 }
                 """
