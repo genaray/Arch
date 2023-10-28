@@ -118,7 +118,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if data inside the chunk is being set correctly.
+    ///     Checks if chunk has a component.
     /// </summary>
     [Test]
     public void ChunkHas()
