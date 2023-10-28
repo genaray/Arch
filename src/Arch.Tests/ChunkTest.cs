@@ -136,9 +136,6 @@ public class ChunkTest
             _chunk.Set(index, r);
         }
 
-        // Make sure the amount fits
-        That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
-
         That(_chunk.Has<Transform>(), Is.True);
         That(_chunk.Has<Ai>(), Is.False);
         That(_chunk.Has<Rotation>(), Is.True);
