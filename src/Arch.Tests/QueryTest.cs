@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Utils;
+using Schedulers;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
@@ -7,7 +8,7 @@ namespace Arch.Tests;
 [TestFixture]
 public partial class QueryTest
 {
-    private JobScheduler.JobScheduler _jobScheduler;
+    private JobScheduler _jobScheduler;
     private World? _world;
 
     private static readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
@@ -19,7 +20,7 @@ public partial class QueryTest
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler.JobScheduler(new() {
+        _jobScheduler = new(new() {
             ThreadPrefixName = nameof(QueryTest)
         });
     }

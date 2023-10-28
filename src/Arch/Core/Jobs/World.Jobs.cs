@@ -1,4 +1,4 @@
-using JobScheduler;
+using Schedulers;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -8,7 +8,7 @@ namespace Arch.Core;
 public partial class World
 {
     /// <summary>
-    /// Thrown when the <see cref="World"/> has not been assigned a <see cref="JobScheduler.JobScheduler"/>.
+    /// Thrown when the <see cref="World"/> has not been assigned a <see cref="JobScheduler"/>.
     /// </summary>
     public class JobSchedulerNotAssignedException : Exception
     {
@@ -23,20 +23,20 @@ public partial class World
     {
         internal NotOnMainThreadException()
             : base($"A scheduling method cannot be called on a different thread than {nameof(World.Scheduler)} was created on. " +
-                  $"Either create the {nameof(JobScheduler.JobScheduler)} on a different thread, or only schedule queries on the main thread.") { }
+                  $"Either create the {nameof(JobScheduler)} on a different thread, or only schedule queries on the main thread.") { }
     }
 
     /// <summary>
-    /// The <see cref="JobScheduler.JobScheduler"/> attached to this <see cref="World"/>, or null if none has been attached.
+    /// The <see cref="JobScheduler"/> attached to this <see cref="World"/>, or null if none has been attached.
     /// </summary>
-    public JobScheduler.JobScheduler? Scheduler { get; private set; }
+    public JobScheduler? Scheduler { get; private set; }
 
     /// <summary>
-    /// Attach a <see cref="JobScheduler.JobScheduler"/> to this <see cref="World"/>. Only one scheduler can be attached, and it cannot
+    /// Attach a <see cref="JobScheduler"/> to this <see cref="World"/>. Only one scheduler can be attached, and it cannot
     /// be changed once set.
     /// </summary>
     /// <param name="scheduler">The scheduler to assign.</param>
-    public void AttachScheduler(JobScheduler.JobScheduler scheduler)
+    public void AttachScheduler(JobScheduler scheduler)
     {
         if (Scheduler is not null)
         {

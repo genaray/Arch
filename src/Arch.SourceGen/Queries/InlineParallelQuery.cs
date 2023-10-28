@@ -28,6 +28,17 @@ public static class StringBuilderHpParallelQueryExtensions
                 };
                 return InlineParallelChunkQuery(in queryDescription, in innerJob, in dependency, batchSize);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public JobHandle InlineParallelQuery<T, {{generics}}>(in QueryDescription queryDescription, in JobHandle? dependency = null, int batchSize = 16)
+                where T : struct, IForEach<{{generics}}>
+            {
+                var innerJob = new IForEachJob<T, {{generics}}>()
+                {
+                    ForEach = new()
+                };
+                return InlineParallelChunkQuery(in queryDescription, in innerJob, in dependency, batchSize);
+            }
             """;
 
         builder.AppendLine(template);
@@ -57,6 +68,18 @@ public static class StringBuilderHpParallelQueryExtensions
                 var innerJob = new IForEachWithEntityJob<T, {{generics}}>()
                 {
                     ForEach = forEach
+                };
+                return InlineParallelChunkQuery(in queryDescription, in innerJob, in dependency, batchSize);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public JobHandle InlineParallelEntityQuery<T, {{generics}}>(in QueryDescription queryDescription,
+                in JobHandle? dependency = null, int batchSize = 16)
+                where T : struct, IForEachWithEntity<{{generics}}>
+            {
+                var innerJob = new IForEachWithEntityJob<T, {{generics}}>()
+                {
+                    ForEach = new()
                 };
                 return InlineParallelChunkQuery(in queryDescription, in innerJob, in dependency, batchSize);
             }

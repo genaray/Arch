@@ -2,6 +2,7 @@ using Arch.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Schedulers;
 
 namespace Arch.Samples;
 
@@ -12,7 +13,7 @@ public class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading.
     private World _world;
-    private JobScheduler.JobScheduler _jobScheduler;
+    private JobScheduler _jobScheduler;
 
     // Our systems processing entities.
     private MovementSystem _movementSystem;

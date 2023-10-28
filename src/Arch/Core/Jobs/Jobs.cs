@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using CommunityToolkit.HighPerformance;
-using JobScheduler;
+using Schedulers;
 
 namespace Arch.Core;
 
