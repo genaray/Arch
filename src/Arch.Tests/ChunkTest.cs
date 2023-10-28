@@ -116,4 +116,31 @@ public class ChunkTest
         That(_chunk.Entities[0].Id, Is.EqualTo(2)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
         That(_chunk.Entities[1].Id, Is.EqualTo(1)); // Needs to be 1, because it will be the last one getting removed and being moved to that position
     }
+
+    /// <summary>
+    ///     Checks if data inside the chunk is being set correctly.
+    /// </summary>
+    [Test]
+    public void ChunkHas()
+    {
+        _chunk = new Chunk(1000, _types);
+
+        for (var index = 0; index < _chunk.Capacity; index++)
+        {
+            var entity = new Entity(index, 0);
+            _chunk.Add(entity);
+
+            var t = new Transform();
+            var r = new Rotation();
+            _chunk.Set(index, t);
+            _chunk.Set(index, r);
+        }
+
+        // Make sure the amount fits
+        That(_chunk.Size, Is.EqualTo(_chunk.Capacity));
+
+        That(_chunk.Has<Transform>(), Is.True);
+        That(_chunk.Has<Ai>(), Is.False);
+        That(_chunk.Has<Rotation>(), Is.True);
+    }
 }
