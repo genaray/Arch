@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.Contracts;
 
 namespace Arch.Core;
+#if !PURE_ECS
 public static partial class EntityExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,3 +48,4 @@ public static partial class EntityExtensions
         world.Remove<T0, T1>(entity);
     }
 }
+#endif
