@@ -31,7 +31,7 @@ public static class HasExtensions
         var ifs = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            ifs.AppendLine($"if (ComponentIdToArrayIndex[t{index}ComponentId] != 1) return false;");
+            ifs.AppendLine($"if (ComponentIdToArrayIndex[t{index}ComponentId] == -1) return false;");
         }
 
         var template =

@@ -455,17 +455,12 @@ public static class Component
           return GetHashCode(stack);
     }
 
-    /// <summary>
-    ///     Calculates the hash code of a bitset span, which is unique for the elements contained in the array.
-    ///     The order of the elements does not change the hashcode, so it depends on the elements themselves.
-    /// </summary>
-    /// <param name="obj">The <see cref="BitSet"/>.</param>
-    /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<uint> span)
     {
-        var bytes = MemoryMarshal.AsBytes(span);
-        return (int)MurmurHash3.Hash32(bytes, 0);
+        var hashCode = new HashCode();
+        hashCode.AddSpan(span);
+        return hashCode.ToHashCode();
     }
 }
 

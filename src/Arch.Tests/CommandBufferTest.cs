@@ -74,6 +74,116 @@ public partial class CommandBufferTest
     }
 
     [Test]
+    public void CommandBufferCreateMultipleEntities()
+    {
+        var world = World.Create();
+
+        var entities = new List<Entity>();
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
+            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
+            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
+            commandBuffer.Playback();
+        }
+
+        That(world.Size, Is.EqualTo(entities.Count));
+
+        World.Destroy(world);
+    }
+
+    [Test]
+    public void CommandBufferCreateAndDestroy()
+    {
+        var world = World.Create();
+
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            commandBuffer.Create(new ComponentType[] { typeof(Transform) });
+            commandBuffer.Create(new ComponentType[] { typeof(Transform) });
+            var e = commandBuffer.Create(new ComponentType[] { typeof(Transform) });
+            commandBuffer.Destroy(e);
+            commandBuffer.Playback();
+        }
+
+        That(world.Size, Is.EqualTo(2));
+
+        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
+        var entities = new Entity[world.CountEntities(query)];
+        world.GetEntities(query, entities);
+
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            commandBuffer.Destroy(entities[0]);
+            commandBuffer.Playback();
+        }
+
+        That(world.Size, Is.EqualTo(1));
+
+        World.Destroy(world);
+    }
+
+    [Test]
+    public void CommandBufferModify()
+    {
+        var world = World.Create();
+
+        // Create an entity
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            commandBuffer.Create(new ComponentType[] { typeof(int) });
+            commandBuffer.Playback();
+        }
+
+        That(world.Size, Is.EqualTo(1));
+
+        // Retrieve the entity we just created
+        var query = new QueryDescription { All = new ComponentType[] { typeof(int) } };
+        var entities = new Entity[world.CountEntities(query)];
+        world.GetEntities(query, entities);
+
+        // Check that it doesn't yet have anything
+        Multiple(() =>
+        {
+            That(world.TryGet<Transform>(entities[0], out _), Is.False);
+            That(world.TryGet<Rotation>(entities[0], out _), Is.False);
+        });
+
+        // Add to it
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            commandBuffer.Add<Transform>(entities[0]);
+            commandBuffer.Add<Rotation>(entities[0]);
+            commandBuffer.Playback();
+        }
+
+        // Check modification added things
+        Multiple(() =>
+        {
+            That(world.TryGet<Transform>(entities[0], out _), Is.True);
+            That(world.TryGet<Rotation>(entities[0], out _), Is.True);
+        });
+
+        // Remove from it
+        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        {
+            commandBuffer.Remove<Rotation>(entities[0]);
+            commandBuffer.Playback();
+        }
+
+        // Check modification removed rotation
+        Multiple(() =>
+        {
+            That(world.TryGet<Transform>(entities[0], out _), Is.True);
+            That(world.TryGet<Rotation>(entities[0], out _), Is.False);
+        });
+        
+
+
+        World.Destroy(world);
+    }
+
+    [Test]
     public void CommandBufferCombined()
     {
         var world = World.Create();

@@ -404,7 +404,7 @@ public sealed partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enumerator<Chunk> GetEnumerator()
     {
-        return new Enumerator<Chunk>(Chunks.AsSpan(), Size);
+        return new Enumerator<Chunk>(Chunks.AsSpan(0, Size));
     }
 
     /// <summary>

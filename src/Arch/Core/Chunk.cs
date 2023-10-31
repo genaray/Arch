@@ -116,7 +116,7 @@ public partial struct Chunk
     public bool Has<T>()
     {
         var id = Component<T>.ComponentType.Id;
-        return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != 1;
+        return id < ComponentIdToArrayIndex.Length && ComponentIdToArrayIndex[id] != -1;
     }
 
     /// <summary>
