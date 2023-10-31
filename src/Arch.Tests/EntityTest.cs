@@ -155,10 +155,10 @@ public partial class EntityTest
         _entity.Set(new Transform { X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
         var refs = _entity.Get<Transform, Rotation>();
 
-        AreEqual(10, refs.t0.X);
-        AreEqual(10, refs.t0.Y);
-        AreEqual(10, refs.t1.X);
-        AreEqual(10, refs.t1.Y);
+        AreEqual(10, refs.Component__T0.X);
+        AreEqual(10, refs.Component__T0.Y);
+        AreEqual(10, refs.Component__T1.X);
+        AreEqual(10, refs.Component__T1.Y);
     }
 
     /// <summary>

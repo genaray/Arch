@@ -3,7 +3,7 @@
 /// <summary>
 /// Tags a method or type as being variadic; i.e. generating many generic parameters.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Delegate)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Delegate | AttributeTargets.Interface)]
 internal class VariadicAttribute : Attribute
 {
     /// <summary>

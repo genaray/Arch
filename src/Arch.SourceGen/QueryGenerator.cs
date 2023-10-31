@@ -15,33 +15,41 @@ public class QueryGenerator : IIncrementalGenerator
 
         context.RegisterPostInitializationOutput(initializationContext =>
         {
-
+            // DONE
             var compileTimeStatics = new StringBuilder();
             compileTimeStatics.AppendLine("using System;");
             compileTimeStatics.AppendLine("using System.Threading;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
+            compileTimeStatics.AppendLine("/*");
             compileTimeStatics.AppendGroups(25);
+            compileTimeStatics.AppendLine("*/");
 
             var delegates = new StringBuilder();
             delegates.AppendLine("using System;");
             delegates.AppendLine("namespace Arch.Core;");
+            delegates.AppendLine("/*");
             delegates.AppendForEachDelegates(25);
             delegates.AppendForEachEntityDelegates(25);
+            delegates.AppendLine("*/");
 
             var interfaces = new StringBuilder();
             interfaces.AppendLine("using System;");
             interfaces.AppendLine("using System.Runtime.CompilerServices;");
             interfaces.AppendLine("namespace Arch.Core;");
+            interfaces.AppendLine("/*");
             interfaces.AppendInterfaces(25);
             interfaces.AppendEntityInterfaces(25);
+            interfaces.AppendLine("*/");
 
             var references = new StringBuilder();
             references.AppendLine("using System;");
             references.AppendLine("using System.Runtime.CompilerServices;");
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("namespace Arch.Core;");
+            references.AppendLine("/*");
             references.AppendComponents(25);
             references.AppendEntityComponents(25);
+            references.AppendLine("*/");
 
             var jobs = new StringBuilder();
             jobs.AppendLine("using System;");
@@ -73,6 +81,7 @@ public class QueryGenerator : IIncrementalGenerator
                 {
                     public partial struct Chunk
                     {
+                    /*
                         {{new StringBuilder().AppendChunkIndexes(25)}}
                         {{new StringBuilder().AppendChunkHases(25)}}
                         {{new StringBuilder().AppendChunkIndexGets(25)}}
@@ -82,19 +91,24 @@ public class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendChunkGetArrays(25)}}
                         {{new StringBuilder().AppendChunkGetSpans(25)}}
                         {{new StringBuilder().AppendChunkGetFirsts(25)}}
+                        */
                     }
 
                     public partial class Archetype
                     {
+                    /*
                         {{new StringBuilder().AppendArchetypeHases(25)}}
                         {{new StringBuilder().AppendArchetypeGets(25)}}
                         {{new StringBuilder().AppendArchetypeSets(25)}}
                         {{new StringBuilder().AppendArchetypeSetRanges(25)}}
+                    */
                     }
 
                     public partial class World
                     {
+                    /*
                         {{new StringBuilder().AppendCreates(25)}}
+                    */
                         {{new StringBuilder().AppendWorldHases(25)}}
                         {{new StringBuilder().AppendWorldGets(25)}}
                         {{new StringBuilder().AppendWorldSets(25)}}

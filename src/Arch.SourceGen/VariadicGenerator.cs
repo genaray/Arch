@@ -22,11 +22,8 @@ public class VariadicGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        //if (!Debugger.IsAttached)
-        //{
-        //    //Debugger.Launch();
-        //}
 
+        //Debugger.Launch();
         var infos = context.SyntaxProvider.ForAttributeWithMetadataName("Arch.Core.VariadicAttribute",
             // TODO: slow, make better filter
             (node, token) => true,
@@ -135,10 +132,15 @@ public class VariadicGenerator : IIncrementalGenerator
         public enum Operation
         {
             None,
-            // [Variadic: CopyLines(variableName, variableName2)]
+            // [Variadic: CopyLines]
             CopyLines,
             // [Variadic: CopyArgs(variableName)]
-            CopyArgs
+            CopyArgs,
+            // [Variadic: CopyParams(enclosingTypeName)]
+            // necessary for params like Span<T0> span__T0...
+            // or nullables, or defaults.
+            // But the default behavior Operation.None works for most methods.
+            CopyParams
         }
 
         public Operation Op { get; set; } = Operation.None;
@@ -180,21 +182,24 @@ public class VariadicGenerator : IIncrementalGenerator
 
                 variadics.Append(">");
 
-                // apply generics: expand T0> -> T0, T1...>
+                // Apply generics: expand T0> -> T0, T1...>
                 transformed.Replace(type + ">", variadics.ToString());
 
-                // expand params in header (i.e. T0 component__T0 -> T0 component__T0, T1 component__t1...
-                var exp = $@"[(,\s]{type}\s+(?<ParamName>\w+)__{type}";
+                // Expand params in header (i.e. T0 component__T0 -> T0 component__T0, T1 component__t1...
+                // This is the 90% case. Occasionally there needs to be special handling for a method header.
+                // Those cases are handled by Operation.CopyParams
+                var exp = $@"[(,]\s*(?<Modifiers>(?:in|out|ref|ref\s+readonly)\s+)?{type}\s+(?<ParamName>\w+)__{type}";
                 var paramMatch = Regex.Match(transformed.ToString(), exp);
                 if (paramMatch.Success)
                 {
                     var name = paramMatch.Groups["ParamName"].Value;
+                    var modifiers = paramMatch.Groups["Modifiers"].Value;
 
                     StringBuilder newParams = new();
                     for (int i = start - 1; i < variations; i++)
                     {
                         var varied = VaryType(type, i);
-                        newParams.Append($"{varied} {name}__{varied}");
+                        newParams.Append($"{modifiers} {varied} {name}__{varied}");
                         if (i !=  variations - 1)
                         {
                             newParams.Append(", ");
@@ -210,6 +215,11 @@ public class VariadicGenerator : IIncrementalGenerator
 
             if (Op == Operation.CopyLines)
             {
+                if (Variables.Length != 0)
+                {
+                    throw new InvalidOperationException($"{nameof(Operation.CopyLines)} does not support variables.");
+                }
+
                 StringBuilder transformed = new();
                 transformed.AppendLine(Line);
 
@@ -218,11 +228,6 @@ public class VariadicGenerator : IIncrementalGenerator
                     StringBuilder next = new();
                     next.AppendLine(Line);
                     var variadic = VaryType(type, i);
-                    foreach (var variable in Variables)
-                    {
-                        next.Replace(variable + "__" + type, variable + "__" + variadic);
-                    }
-
                     next.Replace(type, variadic);
                     transformed.AppendLine(next.ToString());
                 }
@@ -242,7 +247,7 @@ public class VariadicGenerator : IIncrementalGenerator
                 StringBuilder newVariables = new();
 
                 // match ref, in, out
-                var modifiersMatch = Regex.Match(Line, $@"[(,]\s*(?<Modifiers>\w+?)?\s*{Variables[0]}__{type}");
+                var modifiersMatch = Regex.Match(Line, $@"[(,]\s*(?<Modifiers>(ref|out ref|out var|out {type}\??|in|ref {type}\??))?\s*{Variables[0]}__{type}");
                 if (!modifiersMatch.Success)
                 {
                     throw new InvalidOperationException($"Can't find variable {Variables[0]}__{type} in a parameter list.");
@@ -259,6 +264,88 @@ public class VariadicGenerator : IIncrementalGenerator
 
                 transformed.Remove(modifiersMatch.Index + 1, modifiersMatch.Length - 1);
                 transformed.Insert(modifiersMatch.Index + 1, newVariables.ToString());
+
+                // expand any remaining generics
+                // note that this'll break if the user uses Span<T> instead of var or something.
+                StringBuilder variadics = new();
+                for (int i = start - 1; i < variations; i++)
+                {
+                    variadics.Append(VaryType(type, i));
+                    if (i != variations - 1)
+                    {
+                        variadics.Append(", ");
+                    }
+                }
+
+                variadics.Append(">");
+
+                // Apply generics: expand T0> -> T0, T1...>
+                transformed.Replace(type + ">", variadics.ToString());
+
+
+                return transformed.ToString();
+            }
+
+            if (Op == Operation.CopyParams)
+            {
+                if (Variables.Length != 1)
+                {
+                    throw new InvalidOperationException($"{nameof(Operation.CopyParams)} only supports 1 type variable.");
+                }
+
+                // This is a special algorithm denotion for method headers.
+                // This grabs the first param that matches the passed in type (in Variables[0]), like "Span<T0>? paramName__T0 = default"
+                // it extracts paramName, the initializer if it exists, any ref/out/in modifiers, and repeats it according to the type params.
+                var headerMatch = Regex.Match(Line, $@"[(,]\s*(?<Modifiers>(ref|out|ref readonly|in)\s+)?{Regex.Escape(Variables[0])}\s+(?<ParamName>\w+)__{type}\s*(?<Assignment>=\s*default)?");
+
+                if (!headerMatch.Success)
+                {
+                    throw new InvalidOperationException($"Malformed method header for {nameof(Operation.CopyParams)}.");
+                }
+
+                bool hasDefault = headerMatch.Groups["Assignment"].Success;
+                string modifiers = headerMatch.Groups["Modifiers"].Success ? headerMatch.Groups["Modifiers"].Value : string.Empty;
+                string param = headerMatch.Groups["ParamName"].Value;
+
+                List<string> additionalParams = new();
+                for (int i = start; i < variations; i++)
+                {
+                    var variadic = VaryType(type, i);
+                    // One issue with this approach... if we had a wrapper type of SomethingT1<T1> (which is bad name but whatever) then this would break.
+                    // but so far we don't have anything like that.
+                    var fullType = Variables[0].Replace(type, variadic);
+                    additionalParams.Add($"{modifiers} {fullType} {param}__{variadic} {(hasDefault ? "= default" : "")}");
+                }
+
+                StringBuilder transformed = new();
+                transformed.Append(Line);
+
+                StringBuilder @params = new();
+                // +1 to exclude the opening parenthesis or comma
+                @params.Append(Line.Substring(headerMatch.Index + 1, headerMatch.Length - 1));
+                foreach (var additionalParam in additionalParams)
+                {
+                    @params.Append(", " + additionalParam);
+                }
+
+                // For the rest of the line, we do a trick: we want to apply the regular op on the rest of the header, so we remove all args and re-add them after.
+                // We do this so we don't have to process constraints separately.
+                transformed.Remove(headerMatch.Index + 1, headerMatch.Length - 1);
+                var fakeLine = new LineInfo()
+                {
+                    Line = transformed.ToString(),
+                    Op = Operation.None
+                };
+                transformed.Clear();
+                var fakeLineTf = fakeLine.Transform(start, variations, type);
+                transformed.Append(fakeLineTf);
+
+                // find where we left off; we either left a hanging comma or an ()
+                var match = Regex.Match(transformed.ToString(), @"(,\s*\)|\(\s*\))");
+                Debug.Assert(match.Success);
+                // stick our params back in there
+                transformed.Insert(match.Index + 1, @params);
+
                 return transformed.ToString();
             }
 
@@ -297,7 +384,7 @@ public class VariadicGenerator : IIncrementalGenerator
 
             if (line.StartsWith("//"))
             {
-                var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)\((?:(?<Variable>\w+),?\s*)+\)\]");
+                var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)(?:\((?:(?<Variable>[?\w\[\]<>]+),?\s*)+\)\])?");
                 if (!match.Success)
                 {
                     continue;
@@ -307,12 +394,16 @@ public class VariadicGenerator : IIncrementalGenerator
                 {
                     "CopyLines" => LineInfo.Operation.CopyLines,
                     "CopyArgs" => LineInfo.Operation.CopyArgs,
+                    "CopyParams" => LineInfo.Operation.CopyParams,
                     _ => throw new NotImplementedException()
                 };
 
-                foreach (Capture capture in match.Groups["Variable"].Captures)
+                if (match.Groups["Variable"].Success)
                 {
-                    nextVariables.Add(capture.Value);
+                    foreach (Capture capture in match.Groups["Variable"].Captures)
+                    {
+                        nextVariables.Add(capture.Value);
+                    }
                 }
 
                 continue;

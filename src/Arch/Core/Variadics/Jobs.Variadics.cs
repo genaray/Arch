@@ -9,12 +9,12 @@ public struct ForEachJob<T0> : IChunkJob
     public readonly void Execute(int index, ref Chunk chunk)
     {
         var chunkSize = chunk.Size;
-        // [Variadic: CopyLines(firstElement)]
+        // [Variadic: CopyLines]
         ref var firstElement__T0 = ref chunk.GetFirst<T0>();
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
-            // [Variadic: CopyLines(component, firstElement)]
+            // [Variadic: CopyLines]
             ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
             // [Variadic: CopyArgs(component)]
             ForEach(ref component__T0);
@@ -32,13 +32,13 @@ public struct ForEachWithEntityJob<T0> : IChunkJob
     {
         ref var entityFirstElement = ref chunk.Entity(0);
         var chunkSize = chunk.Size;
-        // [Variadic: CopyLines(firstElement)]
+        // [Variadic: CopyLines]
         ref var firstElement__T0 = ref chunk.GetFirst<T0>();
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
             var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-            // [Variadic: CopyLines(component, firstElement)]
+            // [Variadic: CopyLines]
             ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
             // [Variadic: CopyArgs(component)]
             ForEach(entity, ref component__T0);
@@ -55,12 +55,12 @@ public struct IForEachJob<T, T0> : IChunkJob where T : struct, IForEach<T0>
     public void Execute(int index, ref Chunk chunk)
     {
         var chunkSize = chunk.Size;
-        // [Variadic: CopyLines(firstElement)]
+        // [Variadic: CopyLines]
         ref var firstElement__T0 = ref chunk.GetFirst<T0>();
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
-            // [Variadic: CopyLines(component, firstElement)]
+            // [Variadic: CopyLines]
             ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
             // [Variadic: CopyArgs(component)]
             ForEach.Update(ref component__T0);
@@ -78,13 +78,13 @@ public struct IForEachWithEntityJob<T, T0> : IChunkJob where T : struct, IForEac
     {
         var chunkSize = chunk.Size;
         ref var entityFirstElement = ref chunk.Entity(0);
-        // [Variadic: CopyLines(firstElement)]
+        // [Variadic: CopyLines]
         ref var firstElement__T0 = ref chunk.GetFirst<T0>();
 
         for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
         {
             var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-            // [Variadic: CopyLines(component, firstElement)]
+            // [Variadic: CopyLines]
             ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
             // [Variadic: CopyArgs(component)]
             ForEach.Update(entity, ref component__T0);
