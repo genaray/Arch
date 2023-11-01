@@ -66,7 +66,7 @@ public class VariadicGenerator : IIncrementalGenerator
 
                 info.Namespace = ns;
                 info.Name = ctx.TargetSymbol.Name;
-                info.Code = ctx.TargetNode.ToString();
+                info.Code = ctx.TargetNode.GetLeadingTrivia().ToString() + ctx.TargetNode.ToString();
                 foreach (var use in (ctx.TargetNode.SyntaxTree.GetRoot() as CompilationUnitSyntax)!.Usings)
                 {
                     info.Usings += use.ToString() + "\n";
@@ -198,7 +198,14 @@ public class VariadicGenerator : IIncrementalGenerator
                 continue;
             }
 
-            if (line.StartsWith("//"))
+            bool isDocumentation = false;
+            // never process documentation
+            if (line.StartsWith("///"))
+            {
+                isDocumentation = true;
+            }
+
+            else if (line.StartsWith("//"))
             {
                 // match algorithm, like "// [Variadic: AlgorithmName(param1, param2...)]"
                 var match = Regex.Match(line, @"\[Variadic:\s*(?<Operation>\w+)(?:\((?:(?<Variable>[?\w\[\]<>]+),?\s*)+\)\])?");
@@ -223,11 +230,14 @@ public class VariadicGenerator : IIncrementalGenerator
             var lineInfo = new LineInfo()
             {
                 Line = line,
-                Algorithm = nextAlgorithm,
-                Parameters = nextParameters.ToArray()
+                Algorithm = !isDocumentation ? nextAlgorithm : "Ignore",
+                Parameters = !isDocumentation ? nextParameters.ToArray() : Array.Empty<string>()
             };
-            nextParameters.Clear();
-            nextAlgorithm = string.Empty;
+            if (!isDocumentation)
+            {
+                nextAlgorithm = string.Empty;
+                nextParameters.Clear();
+            }
             yield return lineInfo;
         }
     }
