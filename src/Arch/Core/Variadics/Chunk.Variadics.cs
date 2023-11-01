@@ -18,7 +18,7 @@ public partial struct Chunk
         index__T1 = Unsafe.Add(ref componentIdToArrayFirstElement, Component<T1>.ComponentType.Id);
     }
 
-    /// <inheritdoc path="Chunk.Has{T}"/>
+    /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -41,7 +41,7 @@ public partial struct Chunk
         return true;
     }
 
-    /// <inheritdoc path="Chunk.Get{T}"/>
+    /// <inheritdoc cref="Get{T}(int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -57,7 +57,7 @@ public partial struct Chunk
         return new Components<T0, T1>(ref component__T0, ref component__T1);
     }
 
-    /// <inheritdoc path="Chunk.GetRow{T}"/>
+    /// <inheritdoc cref="GetRow{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -75,7 +75,7 @@ public partial struct Chunk
         return new EntityComponents<T0, T1>(ref entity, ref component__T0, ref component__T1);
     }
 
-    /// <inheritdoc path="Chunk.Set{T}"/>
+    /// <inheritdoc cref="Set{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T0, T1>(int index, in T0 component__T0, in T1 component__T1)
@@ -88,7 +88,7 @@ public partial struct Chunk
         array__T1[index] = component__T1;
     }
 
-    /// <inheritdoc path="Chunk.GetArray{T}"/>
+    /// <inheritdoc cref="GetArray{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -104,6 +104,7 @@ public partial struct Chunk
         array__T1 = Unsafe.As<T1[]>(Unsafe.Add(ref arrays, index__T1));
     }
 
+    /// <inheritdoc cref="GetSpan{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
@@ -118,6 +119,7 @@ public partial struct Chunk
         span__T1 = new Span<T1>(array__T1);
     }
 
+    /// <inheritdoc cref="GetFirst{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]

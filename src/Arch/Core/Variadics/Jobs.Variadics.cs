@@ -1,10 +1,13 @@
 ﻿namespace Arch.Core;
 
+/// <inheritdoc cref="ForEachJob"/>
 [Variadic(nameof(T0), 1, 25)]
 public struct ForEachJob<T0> : IChunkJob
 {
+    /// <inheritdoc cref="ForEachJob.ForEach"/>
     public ForEach<T0> ForEach;
 
+    /// <inheritdoc cref="ForEachJob.Execute"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Execute(int index, ref Chunk chunk)
     {
@@ -22,11 +25,14 @@ public struct ForEachJob<T0> : IChunkJob
     }
 }
 
+/// <inheritdoc cref="ForEachJob"/>
 [Variadic(nameof(T0), 1, 25)]
 public struct ForEachWithEntityJob<T0> : IChunkJob
 {
+    /// <inheritdoc cref="ForEachJob.ForEach"/>
     public ForEachWithEntity<T0> ForEach;
 
+    /// <inheritdoc cref="ForEachJob.Execute"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Execute(int index, ref Chunk chunk)
     {
@@ -46,11 +52,14 @@ public struct ForEachWithEntityJob<T0> : IChunkJob
     }
 }
 
+/// <inheritdoc cref="IForEachJob{T}"/>
 [Variadic(nameof(T0), 1, 25)]
 public struct IForEachJob<T, T0> : IChunkJob where T : struct, IForEach<T0>
 {
+    /// <inheritdoc cref="IForEachJob{T}.ForEach"/>
     public T ForEach;
 
+    /// <inheritdoc cref="IForEachJob{T}.Execute"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Execute(int index, ref Chunk chunk)
     {
@@ -71,8 +80,10 @@ public struct IForEachJob<T, T0> : IChunkJob where T : struct, IForEach<T0>
 [Variadic(nameof(T0), 1, 25)]
 public struct IForEachWithEntityJob<T, T0> : IChunkJob where T : struct, IForEachWithEntity<T0>
 {
+    /// <inheritdoc cref="IForEachJob{T}.ForEach"/>
     public T ForEach;
 
+    /// <inheritdoc cref="IForEachJob{T}.Execute"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Execute(int index, ref Chunk chunk)
     {

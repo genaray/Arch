@@ -3,6 +3,7 @@
 namespace Arch.Core;
 public partial class Archetype
 {
+    /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     public bool Has<T0, T1>()
@@ -16,6 +17,7 @@ public partial class Archetype
             true;
     }
 
+    /// <inheritdoc cref="Get{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     internal unsafe Components<T0, T1> Get<T0, T1>(scoped ref Slot slot)
@@ -24,6 +26,7 @@ public partial class Archetype
         return chunk.Get<T0, T1>(slot.Index);
     }
 
+    /// <inheritdoc cref="Set{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     internal void Set<T0, T1>(ref Slot slot, in T0 component__T0, in T1 component__T1)
@@ -33,6 +36,7 @@ public partial class Archetype
         chunk.Set<T0, T1>(slot.Index, in component__T0, in component__T1);
     }
 
+    /// <inheritdoc cref="SetRange{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     // [Variadic: CopyParams(T1)]

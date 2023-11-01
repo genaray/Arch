@@ -6,6 +6,7 @@ using JobScheduler;
 namespace Arch.Core;
 public partial class World
 {
+    /// <inheritdoc cref="Create(Span{ComponentType})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     [Variadic(nameof(T0), 1, 25)]
@@ -46,6 +47,7 @@ public partial class World
         return entity;
     }
 
+    /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -55,6 +57,7 @@ public partial class World
         return archetype.Has<T0, T1>();
     }
 
+    /// <inheritdoc cref="Get{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -65,6 +68,7 @@ public partial class World
         return archetype.Get<T0, T1>(ref slot);
     }
 
+    /// <inheritdoc cref="Set{T}(Entity)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -79,6 +83,7 @@ public partial class World
         OnComponentSet<T1>(entity);
     }
 
+    /// <inheritdoc cref="Add{T}(Entity)"/>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
@@ -117,6 +122,7 @@ public partial class World
         OnComponentAdded<T1>(entity);
     }
 
+    /// <inheritdoc cref="Remove{T}(Entity)"/>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
@@ -150,6 +156,7 @@ public partial class World
         Move(entity, oldArchetype, newArchetype, out _);
     }
 
+    /// <inheritdoc cref="Query(in QueryDescription, ForEach)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void Query<T0>(in QueryDescription description, ForEach<T0> forEach)
@@ -170,6 +177,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="Query(in QueryDescription, ForEach)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void Query<T0>(in QueryDescription description, ForEachWithEntity<T0> forEach)
@@ -192,6 +200,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="ParallelQuery(in QueryDescription, ForEach)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void ParallelQuery<T0>(in QueryDescription description, ForEach<T0> forEach)
@@ -233,6 +242,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="ParallelQuery(in QueryDescription, ForEach)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void ParallelQuery<T0>(in QueryDescription description, ForEachWithEntity<T0> forEach)
@@ -273,6 +283,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="InlineQuery{T}(in QueryDescription, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0>
@@ -293,6 +304,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="InlineQuery{T}(in QueryDescription)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineQuery<T, T0>(in QueryDescription description) where T : struct, IForEach<T0>
@@ -316,6 +328,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="InlineQuery{T}(in QueryDescription, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineEntityQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<T0>
@@ -339,6 +352,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="InlineQuery{T}(in QueryDescription)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineEntityQuery<T, T0>(in QueryDescription description) where T : struct, IForEachWithEntity<T0>
@@ -363,6 +377,8 @@ public partial class World
             }
         }
     }
+
+    /// <inheritdoc cref="InlineParallelQuery{T}(in QueryDescription, in IForEachJob{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineParallelQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0>
@@ -403,6 +419,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="InlineParallelQuery{T}(in QueryDescription, in IForEachJob{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T0), 1, 25)]
     public void InlineParallelEntityQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<T0>
@@ -444,6 +461,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="Set{T}(in QueryDescription, in T?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     // [Variadic: CopyParams(T1)]
@@ -474,6 +492,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="Add{T}(in QueryDescription, in T?)"/>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
@@ -527,6 +546,7 @@ public partial class World
         }
     }
 
+    /// <inheritdoc cref="Remove{T}(in QueryDescription)"/>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]

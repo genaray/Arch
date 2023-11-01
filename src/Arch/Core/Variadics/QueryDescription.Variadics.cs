@@ -1,6 +1,7 @@
 ﻿namespace Arch.Core;
 public partial struct QueryDescription
 {
+    /// <inheritdoc cref="WithAll{T}"/>
     [UnscopedRef]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
@@ -10,6 +11,7 @@ public partial struct QueryDescription
         return ref this;
     }
 
+    /// <inheritdoc cref="WithAny{T}"/>
     [UnscopedRef]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
@@ -19,6 +21,7 @@ public partial struct QueryDescription
         return ref this;
     }
 
+    /// <inheritdoc cref="WithNone{T}"/>
     [UnscopedRef]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
@@ -28,6 +31,7 @@ public partial struct QueryDescription
         return ref this;
     }
 
+    /// <inheritdoc cref="WithExclusive{T}"/>
     [UnscopedRef]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]

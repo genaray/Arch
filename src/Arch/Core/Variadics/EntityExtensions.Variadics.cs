@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics.Contracts;
 
-namespace Arch.Core;
+namespace Arch.Core.Extensions;
 #if !PURE_ECS
 public static partial class EntityExtensions
 {
+    /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2)]
@@ -13,6 +14,7 @@ public static partial class EntityExtensions
         return world.Has<T0, T1>(entity);
     }
 
+    /// <inheritdoc cref="Set{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2)]
     public static void Set<T0, T1>(this Entity entity, T0 component__T0, T1 component__T1)
@@ -22,6 +24,7 @@ public static partial class EntityExtensions
         world.Set(entity, component__T0, component__T1);
     }
 
+    /// <inheritdoc cref="Get{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2)]
@@ -31,6 +34,7 @@ public static partial class EntityExtensions
         return world.Get<T0, T1>(entity);
     }
 
+    /// <inheritdoc cref="Add{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2)]
     public static void Add<T0, T1>(this Entity entity, in T0 component__T0, in T1 component__T1)
@@ -39,6 +43,8 @@ public static partial class EntityExtensions
         // [Variadic: CopyArgs(component)]
         world.Add(entity, component__T0, component__T1);
     }
+
+    /// <inheritdoc cref="Remove{T}"/>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2)]
