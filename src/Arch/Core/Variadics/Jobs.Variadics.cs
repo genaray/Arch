@@ -37,11 +37,10 @@ public struct ForEachWithEntityJob<T0> : IChunkJob
     public readonly void Execute(int index, ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);
-        var chunkSize = chunk.Size;
         // [Variadic: CopyLines]
         ref var firstElement__T0 = ref chunk.GetFirst<T0>();
 
-        for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
+        foreach (var entityIndex in chunk)
         {
             var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
             // [Variadic: CopyLines]

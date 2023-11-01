@@ -540,8 +540,9 @@ public partial class World
             var lastSlot = newArchetype.LastSlot;
             // [Variadic: CopyArgs(component)]
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component__T0, in component__T1);
-            // [Variadic: CopyLines]
             OnComponentAdded<T0>(archetype);
+            // [Variadic: CopyLines]
+            OnComponentAdded<T1>(archetype);
             archetype.Clear();
         }
     }
@@ -570,7 +571,7 @@ public partial class World
             var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
             spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
             // [Variadic: CopyLines]
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
+            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
 
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
