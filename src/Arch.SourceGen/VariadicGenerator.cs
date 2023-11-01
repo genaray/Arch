@@ -22,7 +22,6 @@ public class VariadicGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-
         //Debugger.Launch();
         var infos = context.SyntaxProvider.ForAttributeWithMetadataName("Arch.Core.VariadicAttribute",
             // TODO: slow, make better filter
@@ -83,17 +82,26 @@ public class VariadicGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(infos, (ctx, infos) =>
         {
+            Dictionary<string, int> filenames = new();
             foreach (var info in infos)
             {
                 var text = CSharpSyntaxTree.ParseText(MakeVariadic(info)).GetRoot().NormalizeWhitespace().ToFullString();
-                if (info.EnclosingType != string.Empty)
+                var filename = info.EnclosingType != string.Empty ? $"{info.EnclosingTypeName}.{info.Name}.Variadic" : $"{info.Name}.Variadic";
+                // if we accidentally created a duplicate filename, we need to append an integer.
+                int filenameIndex;
+                if (!filenames.ContainsKey(filename))
                 {
-                    ctx.AddSource($"{info.EnclosingTypeName}.{info.Name}.Variadic.g.cs", text);
+                    filenames[filename] = 0;
+                    filenameIndex = 0;
                 }
                 else
                 {
-                    ctx.AddSource($"{info.Name}.Variadic.g.cs", text);
+                    filenames[filename]++;
+                    filenameIndex = filenames[filename];
                 }
+
+                string index = filenameIndex != 0 ? $".{filenameIndex}" : string.Empty;
+                ctx.AddSource($"{filename}{index}.g.cs", text);
             }
         });
     }

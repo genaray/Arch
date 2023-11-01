@@ -1,7 +1,7 @@
 ﻿namespace Arch.Core;
 
 /// <inheritdoc cref="IForEach"/>
-[Variadic(nameof(T0), 1, 26)] // TODO change this to 25???
+[Variadic(nameof(T0), 1, 25)]
 public interface IForEach<T0>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -9,7 +9,7 @@ public interface IForEach<T0>
 }
 
 /// <inheritdoc cref="IForEach"/>
-[Variadic(nameof(T0), 1, 26)]
+[Variadic(nameof(T0), 1, 25)]
 public interface IForEachWithEntity<T0>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -108,7 +108,6 @@ public class QueryGenerator : IIncrementalGenerator
                     {
                     /*
                         {{new StringBuilder().AppendCreates(25)}}
-                    */
                         {{new StringBuilder().AppendWorldHases(25)}}
                         {{new StringBuilder().AppendWorldGets(25)}}
                         {{new StringBuilder().AppendWorldSets(25)}}
@@ -128,14 +127,17 @@ public class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendSetWithQueryDescriptions(25)}}
                         {{new StringBuilder().AppendAddWithQueryDescriptions(25)}}
                         {{new StringBuilder().AppendRemoveWithQueryDescriptions(25)}}
+                    */
                     }
 
                     public partial struct QueryDescription
                     {
+                    /*
                         {{new StringBuilder().AppendQueryDescriptionWithAlls(25)}}
                         {{new StringBuilder().AppendQueryDescriptionWithAnys(25)}}
                         {{new StringBuilder().AppendQueryDescriptionWithNones(25)}}
                         {{new StringBuilder().AppendQueryDescriptionWithExclusives(25)}}
+                    */
                     }
 
                 }
