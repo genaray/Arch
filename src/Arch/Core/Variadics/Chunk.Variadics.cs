@@ -78,20 +78,22 @@ public partial struct Chunk
     /// <inheritdoc cref="Set{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set<T0, T1>(int index, in T0 component__T0, in T1 component__T1)
+    // [Variadic: CopyParams(T1?)]
+    public void Set<T0, T1>(int index, in T0? component__T0, in T1? component__T1)
     {
         // [Variadic: CopyArgs(array)]
         GetArray<T0, T1>(out var array__T0, out var array__T1);
 
-        array__T0[index] = component__T0;
+        array__T0[index] = component__T0!;
         // [Variadic: CopyLines]
-        array__T1[index] = component__T1;
+        array__T1[index] = component__T1!;
     }
 
     /// <inheritdoc cref="GetArray{T}"/>
     [Variadic(nameof(T1), 2, 25)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
+    [SuppressMessage("Style", "IDE0251:Make member 'readonly'", Justification = "Not actually readonly due to unsafe get")]
     // [Variadic: CopyParams(T1[])]
     public void GetArray<T0, T1>(out T0[] array__T0, out T1[] array__T1)
     {

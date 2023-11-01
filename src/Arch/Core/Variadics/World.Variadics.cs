@@ -10,8 +10,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     [Variadic(nameof(T0), 1, 25)]
-    // [Variadic: CopyParams(T0)]
-    public Entity Create<T0>(in T0 componentValue__T0 = default)
+    // [Variadic: CopyParams(T0?)]
+    public Entity Create<T0>(in T0? componentValue__T0 = default)
     {
         var types = Group<T0>.Types;
 
@@ -68,7 +68,7 @@ public partial class World
         return archetype.Get<T0, T1>(ref slot);
     }
 
-    /// <inheritdoc cref="Set{T}(Entity)"/>
+    /// <inheritdoc cref="Set{T}(Entity, in T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
@@ -88,8 +88,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     [Variadic(nameof(T1), 2, 25)]
-    // [Variadic: CopyParams(T1)]
-    public void Add<T0, T1>(Entity entity, in T0 component__T0 = default, in T1 component__T1 = default)
+    // [Variadic: CopyParams(T1?)]
+    public void Add<T0, T1>(Entity entity, in T0? component__T0 = default, in T1? component__T1 = default)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
@@ -205,8 +205,10 @@ public partial class World
     [Variadic(nameof(T0), 1, 25)]
     public void ParallelQuery<T0>(in QueryDescription description, ForEach<T0> forEach)
     {
-        var innerJob = new ForEachJob<T0>();
-        innerJob.ForEach = forEach;
+        var innerJob = new ForEachJob<T0>
+        {
+            ForEach = forEach
+        };
 
         var pool = JobMeta<ChunkIterationJob<ForEachJob<T0>>>.Pool;
         var query = Query(in description);
@@ -247,8 +249,10 @@ public partial class World
     [Variadic(nameof(T0), 1, 25)]
     public void ParallelQuery<T0>(in QueryDescription description, ForEachWithEntity<T0> forEach)
     {
-        var innerJob = new ForEachWithEntityJob<T0>();
-        innerJob.ForEach = forEach;
+        var innerJob = new ForEachWithEntityJob<T0>
+        {
+            ForEach = forEach
+        };
 
         var pool = JobMeta<ChunkIterationJob<ForEachWithEntityJob<T0>>>.Pool;
         var query = Query(in description);
@@ -383,8 +387,10 @@ public partial class World
     [Variadic(nameof(T0), 1, 25)]
     public void InlineParallelQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0>
     {
-        var innerJob = new IForEachJob<T, T0>();
-        innerJob.ForEach = iForEach;
+        var innerJob = new IForEachJob<T, T0>
+        {
+            ForEach = iForEach
+        };
 
         var pool = JobMeta<ChunkIterationJob<IForEachJob<T, T0>>>.Pool;
         var query = Query(in description);
@@ -424,8 +430,10 @@ public partial class World
     [Variadic(nameof(T0), 1, 25)]
     public void InlineParallelEntityQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<T0>
     {
-        var innerJob = new IForEachWithEntityJob<T, T0>();
-        innerJob.ForEach = iForEach;
+        var innerJob = new IForEachWithEntityJob<T, T0>
+        {
+            ForEach = iForEach
+        };
 
         var pool = JobMeta<ChunkIterationJob<IForEachWithEntityJob<T, T0>>>.Pool;
         var query = Query(in description);
@@ -461,11 +469,11 @@ public partial class World
         }
     }
 
-    /// <inheritdoc cref="Set{T}(in QueryDescription, in T?)"/>
+    /// <inheritdoc cref="Set{T}(in QueryDescription, in T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
-    // [Variadic: CopyParams(T1)]
-    public void Set<T0, T1>(in QueryDescription queryDescription, in T0 componentValue__T0 = default, in T1 componentValue__T1 = default)
+    // [Variadic: CopyParams(T1?)]
+    public void Set<T0, T1>(in QueryDescription queryDescription, in T0? componentValue__T0 = default, in T1? componentValue__T1 = default)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
@@ -492,13 +500,13 @@ public partial class World
         }
     }
 
-    /// <inheritdoc cref="Add{T}(in QueryDescription, in T?)"/>
+    /// <inheritdoc cref="Add{T}(in QueryDescription, in T)"/>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     [Variadic(nameof(T1), 2, 25)]
-    // [Variadic: CopyParams(T1)]
-    public void Add<T0, T1>(in QueryDescription queryDescription, in T0 component__T0 = default, in T1 component__T1 = default)
+    // [Variadic: CopyParams(T1?)]
+    public void Add<T0, T1>(in QueryDescription queryDescription, in T0? component__T0 = default, in T1? component__T1 = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];

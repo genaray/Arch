@@ -29,7 +29,8 @@ public partial class Archetype
     /// <inheritdoc cref="Set{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
-    internal void Set<T0, T1>(ref Slot slot, in T0 component__T0, in T1 component__T1)
+    // [Variadic: CopyParams(T1?)]
+    internal void Set<T0, T1>(ref Slot slot, in T0? component__T0, in T1? component__T1)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
         // [Variadic: CopyArgs(component)]
@@ -39,8 +40,8 @@ public partial class Archetype
     /// <inheritdoc cref="SetRange{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
-    // [Variadic: CopyParams(T1)]
-    internal void SetRange<T0, T1>(in Slot from, in Slot to, in T0 componentValue__T0 = default, in T1 componentValue__T1 = default)
+    // [Variadic: CopyParams(T1?)]
+    internal void SetRange<T0, T1>(in Slot from, in Slot to, in T0? componentValue__T0 = default, in T1? componentValue__T1 = default)
     {
         // Set the added component, start from the last slot and move down
         for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)

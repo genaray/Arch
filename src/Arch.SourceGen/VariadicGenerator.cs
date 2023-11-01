@@ -118,7 +118,7 @@ public class VariadicGenerator : IIncrementalGenerator
     }
 
     // stores the algorithms from reflection
-    private static Dictionary<string, LineAlgorithm> _algorithms = new();
+    private readonly static Dictionary<string, LineAlgorithm> _algorithms = new();
 
     // collect the algorithms available with reflection on the attribute
     static VariadicGenerator()
@@ -132,6 +132,7 @@ public class VariadicGenerator : IIncrementalGenerator
                 {
                     throw new InvalidOperationException($"Two {nameof(LineAlgorithm)}s cannot have the same name!");
                 }
+
                 _algorithms[algorithm.Name] = algorithm;
             }
         }
@@ -169,6 +170,7 @@ public class VariadicGenerator : IIncrementalGenerator
         }
 
         return $$"""
+            #nullable enable
             {{info.Usings}}
 
             namespace {{info.Namespace}};
@@ -238,6 +240,7 @@ public class VariadicGenerator : IIncrementalGenerator
                 nextAlgorithm = string.Empty;
                 nextParameters.Clear();
             }
+
             yield return lineInfo;
         }
     }
