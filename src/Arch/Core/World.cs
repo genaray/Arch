@@ -65,6 +65,7 @@ public delegate void ForEach(Entity entity);
 #region Static Create and Destroy
 public partial class World
 {
+
     /// <summary>
     ///     A list of all existing <see cref="Worlds"/>.
     ///     Should not be modified by the user.
@@ -429,41 +430,14 @@ public partial class World : IDisposable
     [Pure]
     public Query Query(in QueryDescription queryDescription)
     {
-        Query query;
-
-        // We must lock, because this is a helper method used my many possibly-parallel (non-structural-change) methods,
-        // and PooledDictionary is not threadsafe for simultaneous readers/writers.
-        // EnterUpgradeableReadLock is the conservative implementation, assuming there will be non-trivial contention.
-        // If many threads begin a query at the same time, that might be true.
-        // Otherwise, a regular lock would be faster, since it has less overhead.
-        // Either way, the lock is very cheap to acquire, and may be near-identical under benchmarking.
-        _queryCacheLock.EnterUpgradeableReadLock();
-        try
+        // Looping over all archetypes, their chunks and their entities.
+        if (QueryCache.TryGetValue(queryDescription, out var query))
         {
-            // Looping over all archetypes, their chunks and their entities.
-            if (QueryCache.TryGetValue(queryDescription, out query))
-            {
-                return query;
-            }
-
-            query = new Query(Archetypes, queryDescription);
-
-            // With QueryCache, this should only run the first times the queries are running (i.e. in a
-            // game, subsequent frames will not get here).
-            _queryCacheLock.EnterWriteLock();
-            try
-            {
-                QueryCache[queryDescription] = query;
-            }
-            finally
-            {
-                _queryCacheLock.ExitWriteLock();
-            }
+            return query;
         }
-        finally
-        {
-            _queryCacheLock.ExitUpgradeableReadLock();
-        }
+
+        query = new Query(Archetypes, queryDescription);
+        QueryCache[queryDescription] = query;
 
         return query;
     }
@@ -804,7 +778,7 @@ public partial class World
                     OnEntityDestroyed(entity);
 
                     var version = EntityInfo.GetVersion(entity.Id);
-                    var recycledEntity = new RecycledEntity(entity.Id, version);
+                    var recycledEntity = new RecycledEntity(entity.Id, unchecked(version + 1));
 
                     RecycledIds.Enqueue(recycledEntity);
                     EntityInfo.Remove(entity.Id);

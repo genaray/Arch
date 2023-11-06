@@ -52,7 +52,7 @@ internal struct EntityInfo
 ///     stores information about an <see cref="Entity"/> to quickly access its data and location.
 /// </summary>
 [SkipLocalsInit]
-internal ref struct EntitySlot
+internal struct EntitySlot
 {
 
     /// <summary>
@@ -70,7 +70,7 @@ internal ref struct EntitySlot
     /// </summary>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    public EntitySlot(ref Archetype archetype, ref Slot slot)
+    public EntitySlot(Archetype archetype, Slot slot)
     {
         Archetype = archetype;
         Slot = slot;
@@ -90,14 +90,10 @@ internal class EntityInfoStorage
     internal JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
-    ///     The <see cref="Entity"/> <see cref="Archetype"/>s in an jagged array.
+    ///     The <see cref="Entity"/> <see cref="Archetype"/> and <see cref="Slot"/>s in an jagged array.
+    /// <remarks>Because usually both are needed and thus an array access can be saved.</remarks>
     /// </summary>
-    internal JaggedArray<Archetype> Archetypes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
-
-    /// <summary>
-    ///     The <see cref="Entity"/> <see cref="Slot"/>s in an jagged array.
-    /// </summary>
-    internal JaggedArray<Slot> Slots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
+    internal JaggedArray<EntitySlot> EntitySlots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
@@ -105,9 +101,17 @@ internal class EntityInfoStorage
     internal EntityInfoStorage()
     {
         var cpuL1CacheSize = 16_000;
-        Versions = new JaggedArray<int>(cpuL1CacheSize / Unsafe.SizeOf<int>(), -1, 256);
-        Archetypes = new JaggedArray<Archetype>(cpuL1CacheSize / IntPtr.Size, 256);
-        Slots = new JaggedArray<Slot>(cpuL1CacheSize /  Unsafe.SizeOf<Slot>(), new Slot(-1,-1), 256);
+
+        Versions = new JaggedArray<int>(
+            cpuL1CacheSize / Unsafe.SizeOf<int>(),
+            -1,
+            256
+        );
+        EntitySlots = new JaggedArray<EntitySlot>(
+            cpuL1CacheSize / Unsafe.SizeOf<EntitySlot>(),
+            new EntitySlot(null, new Slot(-1,-1)),
+            256
+        );
     }
 
     /// <summary>
@@ -121,8 +125,7 @@ internal class EntityInfoStorage
     public void Add(int id, int version, Archetype archetype, Slot slot)
     {
         Versions.Add(id, version);
-        Archetypes.Add(id, archetype);
-        Slots.Add(id, slot);
+        EntitySlots.Add(id,new EntitySlot(archetype, slot));
     }
 
     /// <summary>
@@ -144,7 +147,7 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Archetype GetArchetype(int id)
     {
-        return Archetypes[id];
+        return EntitySlots[id].Archetype;
     }
 
     /// <summary>
@@ -155,7 +158,7 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Slot GetSlot(int id)
     {
-        return ref Slots[id];
+        return ref EntitySlots[id].Slot;
     }
 
     /// <summary>
@@ -189,7 +192,7 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntitySlot GetEntitySlot(int id)
     {
-        return new EntitySlot(ref Archetypes[id], ref Slots[id]);
+        return EntitySlots[id];
     }
 
     /// <summary>
@@ -199,9 +202,8 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(int id)
     {
-        Archetypes.Remove(id);
-        Slots.Remove(id);
         Versions.Remove(id);
+        EntitySlots.Remove(id);
     }
 
     /// <summary>
@@ -212,7 +214,7 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move(int id, Slot slot)
     {
-        Slots[id] = slot;
+        EntitySlots[id].Slot = slot;
     }
 
     /// <summary>
@@ -224,8 +226,7 @@ internal class EntityInfoStorage
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move(int id, Archetype archetype, Slot slot)
     {
-        Archetypes[id] = archetype;
-        Slots[id] = slot;
+        EntitySlots[id] = new EntitySlot(archetype,slot);
     }
 
     /// TODO : Find a cleaner way to break? One that does NOT require a branching?
@@ -278,8 +279,7 @@ internal class EntityInfoStorage
     public void EnsureCapacity(int capacity)
     {
         Versions.EnsureCapacity(capacity);
-        Archetypes.EnsureCapacity(capacity);
-        Slots.EnsureCapacity(capacity);
+        EntitySlots.EnsureCapacity(capacity);
     }
 
     /// <summary>
@@ -290,8 +290,7 @@ internal class EntityInfoStorage
     public void TrimExcess()
     {
         Versions.TrimExcess();
-        Archetypes.TrimExcess();
-        Slots.TrimExcess();
+        EntitySlots.TrimExcess();
     }
 
     /// <summary>
@@ -301,8 +300,7 @@ internal class EntityInfoStorage
     public void Clear()
     {
         Versions.Clear();
-        Archetypes.Clear();
-        Slots.Clear();
+        EntitySlots.Clear();
     }
 
     /// <summary>
@@ -312,7 +310,11 @@ internal class EntityInfoStorage
     internal EntityInfo this[int id]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => new(Archetypes[id], Slots[id], Versions[id]);
+        get
+        {
+            var entitySlot = EntitySlots[id];
+            return new EntityInfo(entitySlot.Archetype, entitySlot.Slot, Versions[id]);
+        }
     }
 }
 
