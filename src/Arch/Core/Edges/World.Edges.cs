@@ -19,10 +19,10 @@ public partial class World
         Archetype archetype;
         var edgeIndex = type.Id - 1;
 
-        if (!oldArchetype.HasAddEdgde(edgeIndex))
+        if (!oldArchetype.HasAddEdge(edgeIndex))
         {
             archetype = GetOrCreate(oldArchetype.Types.Add(type));
-            oldArchetype.AddAddEdgde(edgeIndex, archetype);
+            oldArchetype.AddAddEdge(edgeIndex, archetype);
         }
         else
         {
@@ -45,10 +45,10 @@ public partial class World
         Archetype archetype;
         var edgeIndex = type.Id - 1;
 
-        if (!oldArchetype.HasRemoveEdgde(edgeIndex))
+        if (!oldArchetype.HasRemoveEdge(edgeIndex))
         {
             archetype = GetOrCreate(oldArchetype.Types.Remove(type));
-            oldArchetype.AddRemoveEdgde(edgeIndex, archetype);
+            oldArchetype.AddRemoveEdge(edgeIndex, archetype);
         }
         else
         {
