@@ -151,7 +151,9 @@ public class VariadicGenerator : IIncrementalGenerator
 
             var record = ctx.TargetSymbol.ContainingType.IsRecord ? "record" : "";
 
-            info.EnclosingType = $"{accessibility} partial {record} {reference} {ctx.TargetSymbol.ContainingType.Name}";
+            var typeName = ctx.TargetSymbol.ContainingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+            info.EnclosingType = $"{accessibility} partial {record} {reference} {typeName}";
         }
 
         // Loop through the namespaces to get the full namespace path
