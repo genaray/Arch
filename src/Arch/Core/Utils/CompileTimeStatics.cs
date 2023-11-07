@@ -442,7 +442,7 @@ public static class Component
           }
 
           // Allocate the stack and set bits to replicate a bitset
-          var length = BitSet.RequiredLength(highestId);
+          var length = BitSet.RequiredLength(highestId + 1);
           Span<uint> stack = stackalloc uint[length];
           var spanBitSet = new SpanBitSet(stack);
 

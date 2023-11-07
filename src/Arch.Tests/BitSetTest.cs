@@ -4,7 +4,6 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
-
 /// <summary>
 ///     Checks <see cref="BitSet"/> and HashCode related methods.
 /// </summary>
@@ -17,7 +16,6 @@ public class BitSetTest
     [Test]
     public void ComponentHashOrder()
     {
-
         ComponentType[] array1 = { typeof(int), typeof(byte) };
         ComponentType[] array2 = { typeof(int), typeof(byte) };
         ComponentType[] array3 = { typeof(byte), typeof(int) };
@@ -32,13 +30,7 @@ public class BitSetTest
     [Test]
     public void HashSimilarity()
     {
-        var array = new ComponentType[]
-        {
-            new (1, 0),
-            new (36, 0),
-            new (65, 0),
-            new (5, 0),
-        };
+        var array = new ComponentType[] { new(1, 0), new(36, 0), new(65, 0), new(5, 0), };
 
         var bitSet = new BitSet();
         bitSet.SetBit(1);
@@ -66,7 +58,8 @@ public class BitSetTest
         {
             count += 32; // 32 Bits in each uint
         }
-        count--;  // Minus one because we start at 0
+
+        count--; // Minus one because we start at 0
 
         // ALl fit
         That(bitSet.HighestBit, Is.EqualTo(count));
@@ -78,8 +71,8 @@ public class BitSetTest
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    [TestCase(new []{5,6,7}, 1)]    // Sets bit 5,6,7
-    [TestCase(new []{5,6,7}, 100)]  // Sets bit 500,600,700
+    [TestCase(new[] { 5, 6, 7 }, 1)] // Sets bit 5,6,7
+    [TestCase(new[] { 5, 6, 7 }, 100)] // Sets bit 500,600,700
     public void BitsetAll(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
@@ -105,8 +98,8 @@ public class BitSetTest
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    [TestCase(new []{5,6,35,36,37}, 1)]
-    [TestCase(new []{5,6,35,36,37}, 100)]
+    [TestCase(new[] { 5, 6, 35, 36, 37 }, 1)]
+    [TestCase(new[] { 5, 6, 35, 36, 37 }, 100)]
     public void BitsetAny(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
@@ -139,8 +132,8 @@ public class BitSetTest
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    [TestCase(new []{5,6,25,38,4}, 1)]
-    [TestCase(new []{5,6,25,38,4}, 100)]
+    [TestCase(new[] { 5, 6, 25, 38, 4 }, 1)]
+    [TestCase(new[] { 5, 6, 25, 38, 4 }, 100)]
     public void BitsetNone(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
@@ -178,8 +171,8 @@ public class BitSetTest
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    [TestCase(new []{5,6,25}, 1)]
-    [TestCase(new []{5,6,25}, 100)]
+    [TestCase(new[] { 5, 6, 25 }, 1)]
+    [TestCase(new[] { 5, 6, 25 }, 100)]
     public void BitsetExclusive(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
@@ -216,8 +209,8 @@ public class BitSetTest
     /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
     /// </summary>
     [Test]
-    [TestCase(new []{5,33}, 1)]
-    [TestCase(new []{5,33}, 100)]
+    [TestCase(new[] { 5, 33 }, 1)]
+    [TestCase(new[] { 5, 33 }, 100)]
     public void AllWithDifferentLengthBitSet(int[] values, int multiplier)
     {
         var bitSet1 = new BitSet();
@@ -234,5 +227,25 @@ public class BitSetTest
         That(anyResult, Is.EqualTo(false));
         That(noneResult, Is.EqualTo(true));
         That(exclusive, Is.EqualTo(false));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="ComponentType"/> Id borders a bitset size correctly.
+    /// <param name="borderComponentId">The component Id bordering a bitset size</param>
+    /// </summary>
+    [Theory]
+    [TestCase(32)]
+    [TestCase(64)]
+    [TestCase(96)]
+    [TestCase(128)]
+    public void Component32Hash(int borderComponentId)
+    {
+        var componentTypeNotOnBorder = new ComponentType(borderComponentId - 10, 0);
+        var componentTypeOnBorder = new ComponentType(borderComponentId, 0);
+
+        ComponentType[] array1 = { componentTypeNotOnBorder, componentTypeOnBorder };
+        ComponentType[] array2 = { componentTypeNotOnBorder };
+
+        That(Component.GetHashCode(array1), Is.Not.EqualTo(Component.GetHashCode(array2)));
     }
 }
