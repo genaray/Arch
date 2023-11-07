@@ -32,7 +32,7 @@ public partial class Archetype
     /// <param name="index">The index.</param>
     /// <param name="archetype">The <see cref="Archetype"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void AddAddEdgde(int index, Archetype archetype)
+    internal void AddAddEdge(int index, Archetype archetype)
     {
         _addEdges.Add(index, archetype);
     }
@@ -43,7 +43,7 @@ public partial class Archetype
     /// <param name="index">The index.</param>
     /// <param name="archetype">The <see cref="Archetype"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void AddRemoveEdgde(int index, Archetype archetype)
+    internal void AddRemoveEdge(int index, Archetype archetype)
     {
         _removeEdges.Add(index, archetype);
     }
@@ -54,7 +54,7 @@ public partial class Archetype
     /// <param name="index">The index.</param>
     /// <returns>True or false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool HasAddEdgde(int index)
+    internal bool HasAddEdge(int index)
     {
         return _addEdges.ContainsKey(index);
     }
@@ -65,7 +65,7 @@ public partial class Archetype
     /// <param name="index">The index.</param>
     /// <returns>True or false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal bool HasRemoveEdgde(int index)
+    internal bool HasRemoveEdge(int index)
     {
         return _removeEdges.ContainsKey(index);
     }
