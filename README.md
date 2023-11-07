@@ -183,6 +183,8 @@ There's more to explore, for example...
 
 Arch has some extensions that add more features and tools. Among them for example : 
 - 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
+- 🔎 *_[Godot Entity Debugger](https://github.com/RoadTurtleGames/ArchGodotEntityDebugger)_* > An Arch Entity debugger for the Godot engine!
+- 🔎 *_[Stride Entity Debugger](https://github.com/Doprez/stride-arch-ecs)_* > An example of Arch in the Stride engine, with additional entity and system inspector!
 - ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
 
 # Performance

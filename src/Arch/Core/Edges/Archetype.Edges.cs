@@ -119,7 +119,6 @@ public partial class Archetype
         _removeEdges.Remove(index);
     }
 
-    /// TODO: API to return a bucket from a jagged array, empty ones can be skipped -> Super fast iteration
     /// <summary>
     ///     Removes an edge for a certain <see cref="Archetype"/>.
     /// </summary>
