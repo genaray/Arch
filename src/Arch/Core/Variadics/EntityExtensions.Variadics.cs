@@ -17,11 +17,11 @@ public static partial class EntityExtensions
     /// <inheritdoc cref="Set{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2)]
-    public static void Set<T0, T1>(this Entity entity, in T0 component__T0, in T1 component__T1)
+    public static void Set<T0, T1>(this Entity entity, in T0 component_T0, in T1 component_T1)
     {
         var world = World.Worlds[entity.WorldId];
         // [Variadic: CopyArgs(component)]
-        world.Set(entity, in component__T0, in component__T1);
+        world.Set(entity, in component_T0, in component_T1);
     }
 
     /// <inheritdoc cref="Get{T}"/>
@@ -37,11 +37,11 @@ public static partial class EntityExtensions
     /// <inheritdoc cref="Add{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2)]
-    public static void Add<T0, T1>(this Entity entity, in T0 component__T0, in T1 component__T1)
+    public static void Add<T0, T1>(this Entity entity, in T0 component_T0, in T1 component_T1)
     {
         var world = World.Worlds[entity.WorldId];
         // [Variadic: CopyArgs(component)]
-        world.Add(entity, in component__T0, in component__T1);
+        world.Add(entity, in component_T0, in component_T1);
     }
 
     /// <inheritdoc cref="Remove{T}"/>

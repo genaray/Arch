@@ -19,10 +19,10 @@ namespace Arch.SourceGen;
 ///         types are not currently processed correctly, i.e. <c>where T0 : ISomething&lt;T0&gt;</c>. If that behavior is needed, either edit this algorithm or introduce a new one.
 ///     </para>
 ///     <para>
-///         For method headers, it copies simple type parameters of the given variadic type, with the form <c>{paramName}__{type}</c>. For example, <c>in T0 component__T0</c>
-///         would expand to <c>in T0 component__T0, in T1 component__T1</c>. Note that this algorithm isn't smart enough to recognize wrapped parameters, such as
-///         <c>in Span&lt;T0&gt; component__T0</c>; it will expand it to an invalid <c>Span&lt;T0, T1, ...&gt;</c>. To use the former behavior, or if initializers like
-///         <c>component__T0 = default</c> is needed, or nullables are needed, specify <see cref="CopyParamsAlgorithm"/> instead with an explicit type to copy.
+///         For method headers, it copies simple type parameters of the given variadic type, with the form <c>{paramName}_{type}</c>. For example, <c>in T0 component_T0</c>
+///         would expand to <c>in T0 component_T0, in T1 component_T1</c>. Note that this algorithm isn't smart enough to recognize wrapped parameters, such as
+///         <c>in Span&lt;T0&gt; component_T0</c>; it will expand it to an invalid <c>Span&lt;T0, T1, ...&gt;</c>. To use the former behavior, or if initializers like
+///         <c>component_T0 = default</c> is needed, or nullables are needed, specify <see cref="CopyParamsAlgorithm"/> instead with an explicit type to copy.
 ///     </para>
 ///     <para>
 ///         Nothing else is changed.
@@ -76,12 +76,12 @@ internal class DefaultAlgorithm : LineAlgorithm
         // Applied everywhere, wherever generics appear!
         transformed.Replace(type + ">", variadics.ToString());
 
-        // Expand params in header (i.e. T0 component__T0 -> T0 component__T0, T1 component__T1...
+        // Expand params in header (i.e. T0 component_T0 -> T0 component_T0, T1 component_T1...
         // This is the 90% case. Occasionally there needs to be special handling for a method header.
         // Those cases are handled by CopyParamsAlgorithm
         // Modifiers is ref, in, out etc.
         // ParamName is the paramname we need to copy,
-        var exp = $@"[(,]\s*(?<Modifiers>(?:in|out|ref|ref\s+readonly)\s+)?{type}\s+(?<ParamName>\w+)__{type}";
+        var exp = $@"[(,]\s*(?<Modifiers>(?:in|out|ref|ref\s+readonly)\s+)?{type}\s+(?<ParamName>\w+)_{type}";
         var paramMatch = Regex.Match(transformed.ToString(), exp);
         if (paramMatch.Success)
         {
@@ -92,7 +92,7 @@ internal class DefaultAlgorithm : LineAlgorithm
             for (int i = start - 1; i < variations; i++)
             {
                 var varied = VaryType(type, i);
-                newParams.Append($"{modifiers} {varied} {name}__{varied}");
+                newParams.Append($"{modifiers} {varied} {name}_{varied}");
                 if (i != variations - 1)
                 {
                     newParams.Append(", ");

@@ -11,7 +11,7 @@ public partial class World
     [StructuralChange]
     [Variadic(nameof(T0), 1, 25)]
     // [Variadic: CopyParams(T0?)]
-    public Entity Create<T0>(in T0? componentValue__T0 = default)
+    public Entity Create<T0>(in T0? componentValue_T0 = default)
     {
         var types = Group<T0>.Types;
 
@@ -27,7 +27,7 @@ public partial class World
         var createdChunk = archetype.Add(entity, out var slot);
 
         // [Variadic: CopyArgs(componentValue)]
-        archetype.Set<T0>(ref slot, in componentValue__T0);
+        archetype.Set<T0>(ref slot, in componentValue_T0);
 
         // Resize map & Array to fit all potential new entities
         if (createdChunk)
@@ -72,12 +72,12 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [Variadic(nameof(T1), 2, 25)]
-    public void Set<T0, T1>(Entity entity, in T0 component__T0, in T1 component__T1)
+    public void Set<T0, T1>(Entity entity, in T0 component_T0, in T1 component_T1)
     {
         var slot = EntityInfo.GetSlot(entity.Id);
         var archetype = EntityInfo.GetArchetype(entity.Id);
         // [Variadic: CopyArgs(component)]
-        archetype.Set(ref slot, in component__T0, in component__T1);
+        archetype.Set(ref slot, in component_T0, in component_T1);
         OnComponentSet<T0>(entity);
         // [Variadic: CopyLines]
         OnComponentSet<T1>(entity);
@@ -89,7 +89,7 @@ public partial class World
     [StructuralChange]
     [Variadic(nameof(T1), 2, 25)]
     // [Variadic: CopyParams(T1?)]
-    public void Add<T0, T1>(Entity entity, in T0? component__T0 = default, in T1? component__T1 = default)
+    public void Add<T0, T1>(Entity entity, in T0? component_T0 = default, in T1? component_T1 = default)
     {
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
@@ -105,17 +105,17 @@ public partial class World
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            var type__T0 = typeof(T0);
+            var type_T0 = typeof(T0);
             // [Variadic: CopyLines]
-            var type__T1 = typeof(T1);
+            var type_T1 = typeof(T1);
             // [Variadic: CopyArgs(type)]
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(type__T0, type__T1));
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(type_T0, type_T1));
         }
 
         Move(entity, oldArchetype, newArchetype, out var newSlot);
 
         // [Variadic: CopyArgs(component)]
-        newArchetype.Set(ref newSlot, in component__T0, in component__T1);
+        newArchetype.Set(ref newSlot, in component_T0, in component_T1);
 
         OnComponentAdded<T0>(entity);
         // [Variadic: CopyLines]
@@ -143,11 +143,11 @@ public partial class World
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            var type__T0 = typeof(T0);
+            var type_T0 = typeof(T0);
             // [Variadic: CopyLines]
-            var type__T1 = typeof(T1);
+            var type_T1 = typeof(T1);
             // [Variadic: CopyArgs(type)]
-            newArchetype = GetOrCreate(oldArchetype.Types.Remove(type__T0, type__T1));
+            newArchetype = GetOrCreate(oldArchetype.Types.Remove(type_T0, type_T1));
         }
 
         OnComponentRemoved<T0>(entity);
@@ -165,14 +165,14 @@ public partial class World
         foreach (ref var chunk in query)
         {
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                forEach(ref component__T0);
+                forEach(ref component_T0);
             }
         }
     }
@@ -187,15 +187,15 @@ public partial class World
         {
             ref var entityFirstElement = ref chunk.Entity(0);
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                forEach(entity, ref component__T0);
+                forEach(entity, ref component_T0);
             }
         }
     }
@@ -296,14 +296,14 @@ public partial class World
         foreach (ref var chunk in query)
         {
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                iForEach.Update(ref component__T0);
+                iForEach.Update(ref component_T0);
             }
         }
     }
@@ -320,14 +320,14 @@ public partial class World
         {
             var chunkSize = chunk.Size;
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                t.Update(ref component__T0);
+                t.Update(ref component_T0);
             }
         }
     }
@@ -343,15 +343,15 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref chunk.Entity(0);
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                iForEach.Update(entity, ref component__T0);
+                iForEach.Update(entity, ref component_T0);
             }
         }
     }
@@ -369,15 +369,15 @@ public partial class World
             var chunkSize = chunk.Size;
             ref var entityFirstElement = ref chunk.Entity(0);
             // [Variadic: CopyLines]
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
 
             foreach (var entityIndex in chunk)
             {
                 var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
                 // [Variadic: CopyLines]
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyArgs(component)]
-                t.Update(entity, ref component__T0);
+                t.Update(entity, ref component_T0);
             }
         }
     }
@@ -473,23 +473,23 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Variadic(nameof(T1), 2, 25)]
     // [Variadic: CopyParams(T1?)]
-    public void Set<T0, T1>(in QueryDescription queryDescription, in T0? componentValue__T0 = default, in T1? componentValue__T1 = default)
+    public void Set<T0, T1>(in QueryDescription queryDescription, in T0? componentValue_T0 = default, in T1? componentValue_T1 = default)
     {
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
-            ref var firstElement__T0 = ref chunk.GetFirst<T0>();
+            ref var firstElement_T0 = ref chunk.GetFirst<T0>();
             // [Variadic: CopyLines]
-            ref var firstElement__T1 = ref chunk.GetFirst<T1>();
+            ref var firstElement_T1 = ref chunk.GetFirst<T1>();
 
             foreach (var entityIndex in chunk)
             {
-                ref var component__T0 = ref Unsafe.Add(ref firstElement__T0, entityIndex);
+                ref var component_T0 = ref Unsafe.Add(ref firstElement_T0, entityIndex);
                 // [Variadic: CopyLines]
-                ref var component__T1 = ref Unsafe.Add(ref firstElement__T1, entityIndex);
-                component__T0 = componentValue__T0;
+                ref var component_T1 = ref Unsafe.Add(ref firstElement_T1, entityIndex);
+                component_T0 = componentValue_T0;
                 // [Variadic: CopyLines]
-                component__T1 = componentValue__T1;
+                component_T1 = componentValue_T1;
 #if EVENTS
                 var entity = chunk.Entity(entityIndex);
                 OnComponentSet<T0>(entity);
@@ -506,7 +506,7 @@ public partial class World
     [StructuralChange]
     [Variadic(nameof(T1), 2, 25)]
     // [Variadic: CopyParams(T1?)]
-    public void Add<T0, T1>(in QueryDescription queryDescription, in T0? component__T0 = default, in T1? component__T1 = default)
+    public void Add<T0, T1>(in QueryDescription queryDescription, in T0? component_T0 = default, in T1? component_T1 = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -530,11 +530,11 @@ public partial class World
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
             {
-                var type__T0 = typeof(T0);
+                var type_T0 = typeof(T0);
                 // [Variadic: CopyLines]
-                var type__T1 = typeof(T1);
+                var type_T1 = typeof(T1);
                 // [Variadic: CopyArgs(type)]
-                newArchetype = GetOrCreate(archetype.Types.Add(type__T0, type__T1));
+                newArchetype = GetOrCreate(archetype.Types.Add(type_T0, type_T1));
             }
 
             // Get last slots before copy, for updating entityinfo later
@@ -547,7 +547,7 @@ public partial class World
             Archetype.Copy(archetype, newArchetype);
             var lastSlot = newArchetype.LastSlot;
             // [Variadic: CopyArgs(component)]
-            newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component__T0, in component__T1);
+            newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component_T0, in component_T1);
             OnComponentAdded<T0>(archetype);
             // [Variadic: CopyLines]
             OnComponentAdded<T1>(archetype);
@@ -584,11 +584,11 @@ public partial class World
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
             {
-                var type__T0 = typeof(T0);
+                var type_T0 = typeof(T0);
                 // [Variadic: CopyLines]
-                var type__T1 = typeof(T1);
+                var type_T1 = typeof(T1);
                 // [Variadic: CopyArgs(type)]
-                newArchetype = GetOrCreate(archetype.Types.Remove(type__T0, type__T1));
+                newArchetype = GetOrCreate(archetype.Types.Remove(type_T0, type_T1));
             }
 
             OnComponentRemoved<T0>(archetype);

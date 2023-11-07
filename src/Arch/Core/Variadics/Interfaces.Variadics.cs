@@ -5,7 +5,7 @@
 public interface IForEach<T0>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Update(ref T0 component__T0);
+    void Update(ref T0 component_T0);
 }
 
 /// <inheritdoc cref="IForEach"/>
@@ -13,5 +13,5 @@ public interface IForEach<T0>
 public interface IForEachWithEntity<T0>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Update(Entity entity, ref T0 component__T0);
+    void Update(Entity entity, ref T0 component_T0);
 }

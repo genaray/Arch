@@ -37,8 +37,8 @@ public class QueryBenchmark
         {
             var refs = _world.Get<Transform, Velocity>(entity);
 
-            refs.Component__T0.X += refs.Component__T1.X;
-            refs.Component__T0.Y += refs.Component__T1.Y;
+            refs.Component_T0.X += refs.Component_T1.X;
+            refs.Component_T0.Y += refs.Component_T1.Y;
         });
     }
 
@@ -49,8 +49,8 @@ public class QueryBenchmark
         _world.Query(in _queryDescription, (Entity entity) =>
         {
             var refs = entity.Get<Transform, Velocity>();
-            refs.Component__T0.X += refs.Component__T1.X;
-            refs.Component__T0.Y += refs.Component__T1.Y;
+            refs.Component_T0.X += refs.Component_T1.X;
+            refs.Component_T0.Y += refs.Component_T1.Y;
         });
     }
 #endif
@@ -84,8 +84,8 @@ public class QueryBenchmark
             var refs = chunk.GetFirst<Transform, Velocity>();
             foreach (var entity in chunk)
             {
-                ref var pos = ref Unsafe.Add(ref refs.Component__T0, entity);
-                ref var vel = ref Unsafe.Add(ref refs.Component__T1, entity);
+                ref var pos = ref Unsafe.Add(ref refs.Component_T0, entity);
+                ref var vel = ref Unsafe.Add(ref refs.Component_T1, entity);
 
                 pos.X += vel.X;
                 pos.Y += vel.Y;

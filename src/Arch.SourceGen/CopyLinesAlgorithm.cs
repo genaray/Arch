@@ -7,12 +7,12 @@
 ///     With type parameter T0:
 ///     <code>
 ///         /// [Variadic: CopyLines]
-///         somethingSomething__T0 = new T0(); // look! T0!
+///         somethingSomething_T0 = new T0(); // look! T0!
 ///     </code>
 ///     ... will expand to:
 ///     <code>
-///         somethingSomething__T0 = new T0(); // look! T0!
-///         somethingSomething__T1 = new T1(); // look! T1!
+///         somethingSomething_T0 = new T0(); // look! T0!
+///         somethingSomething_T1 = new T1(); // look! T1!
 ///         ...
 ///     </code>
 /// </example>

@@ -6,8 +6,8 @@ namespace Arch.SourceGen;
 ///     <para>
 ///         The <see cref="CopyParamsAlgorithm"/> is a special algorithm for more complicated method headers that can't be handled by the basic <see cref="DefaultAlgorithm"/>.
 ///         In particular, it handles cases of a type other than directly the variadic type, that needs to be transformed and copied. It also handles variable initializers.
-///         For example, it will expand <c>ref Span&lt;T0&gt;? component__T0 = default</c> to
-///         <c>ref Span&lt;T0&gt;? component__T0 = default, ref Span&lt;T1&gt;? component__T1 = default ...</c>.
+///         For example, it will expand <c>ref Span&lt;T0&gt;? component_T0 = default</c> to
+///         <c>ref Span&lt;T0&gt;? component_T0 = default, ref Span&lt;T1&gt;? component_T1 = default ...</c>.
 ///     </para>
 ///     <para>
 ///         Basically, use this algorithm if your method has any of these: Initializers (<c>= default</c>), nullables (<c>T0?</c>), or wrapped type arguments
@@ -26,9 +26,9 @@ internal class CopyParamsAlgorithm : LineAlgorithm
     public override string Transform(string line, string type, int start, int variations, string[] parameters)
     {
         // This is a special algorithm denotion for method headers.
-        // This grabs the first param that matches the passed in type (in Variables[0]), like "Span<T0>? paramName__T0 = default"
+        // This grabs the first param that matches the passed in type (in Variables[0]), like "Span<T0>? paramName_T0 = default"
         // it extracts paramName, the initializer if it exists, any ref/out/in modifiers, and repeats it according to the type params.
-        var headerMatch = Regex.Match(line, $@"[(,]\s*(?<Modifiers>(ref|out|ref readonly|in)\s+)?{Regex.Escape(parameters[0])}\s+(?<ParamName>\w+)__{type}\s*(?<Assignment>=\s*default)?");
+        var headerMatch = Regex.Match(line, $@"[(,]\s*(?<Modifiers>(ref|out|ref readonly|in)\s+)?{Regex.Escape(parameters[0])}\s+(?<ParamName>\w+)_{type}\s*(?<Assignment>=\s*default)?");
 
         if (!headerMatch.Success)
         {
@@ -46,7 +46,7 @@ internal class CopyParamsAlgorithm : LineAlgorithm
             // One issue with this approach... if we had a wrapper type of SomethingT1<T1> (which is bad name but whatever) then this would break.
             // but so far we don't have anything like that.
             var fullType = parameters[0].Replace(type, variadic);
-            additionalParams.Add($"{modifiers} {fullType} {param}__{variadic} {(hasDefault ? "= default" : "")}");
+            additionalParams.Add($"{modifiers} {fullType} {param}_{variadic} {(hasDefault ? "= default" : "")}");
         }
 
         StringBuilder transformed = new();
