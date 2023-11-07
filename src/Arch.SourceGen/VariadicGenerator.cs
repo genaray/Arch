@@ -141,7 +141,7 @@ public class VariadicGenerator : IIncrementalGenerator
     private string MakeVariadic(VariadicInfo info)
     {
         var lines = ProcessLines(info).ToList();
-        StringBuilder combined = new();
+        var combined = new StringBuilder();
 
         for (var i = info.Start; i < info.Count; i++)
         {

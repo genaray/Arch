@@ -24,9 +24,9 @@ internal class CopyArgsAlgorithm : LineAlgorithm
 
     public override string Transform(string line, string type, int start, int variations, string[] parameters)
     {
-        StringBuilder transformed = new();
+        var transformed = new StringBuilder();
         transformed.AppendLine(line);
-        StringBuilder newVariables = new();
+        var newVariables = new StringBuilder();
 
         // match ref, in, out
         var modifiersMatch = Regex.Match(line, $@"[(,]\s*(?<Modifiers>(ref|out ref|out var|out {type}\??|in|ref {type}\??))?\s*{parameters[0]}_{type}");
@@ -49,7 +49,7 @@ internal class CopyArgsAlgorithm : LineAlgorithm
 
         // expand any remaining generics
         // note that this'll break if the user uses Span<T> instead of var or something....
-        StringBuilder variadics = new();
+        var variadics = new StringBuilder();
         for (int i = start - 1; i < variations; i++)
         {
             variadics.Append(VaryType(type, i));

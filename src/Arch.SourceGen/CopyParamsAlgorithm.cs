@@ -49,10 +49,10 @@ internal class CopyParamsAlgorithm : LineAlgorithm
             additionalParams.Add($"{modifiers} {fullType} {param}_{variadic} {(hasDefault ? "= default" : "")}");
         }
 
-        StringBuilder transformed = new();
+        var transformed = new StringBuilder();
         transformed.Append(line);
 
-        StringBuilder @params = new();
+        var @params = new StringBuilder();
         // +1 to exclude the opening parenthesis or comma
         @params.Append(line.Substring(headerMatch.Index + 1, headerMatch.Length - 1));
         foreach (var additionalParam in additionalParams)

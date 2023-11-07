@@ -35,7 +35,7 @@ internal class DefaultAlgorithm : LineAlgorithm
     public override string Name { get => string.Empty; }
     public override string Transform(string line, string type, int start, int variations, string[] parameters)
     {
-        StringBuilder transformed = new();
+        var transformed = new StringBuilder();
 
         // copy type constraints for our selected variadic
         var constraints = Regex.Match(line, @$"where\s+{type}\s*:\s*(?<Constraints>.*?)(?:where|{{|$)");
@@ -60,7 +60,7 @@ internal class DefaultAlgorithm : LineAlgorithm
         }
 
         // build a string like "T0, T1, ...>"
-        StringBuilder variadics = new();
+        var variadics = new StringBuilder();
         for (int i = start - 1; i < variations; i++)
         {
             variadics.Append(VaryType(type, i));
@@ -88,7 +88,7 @@ internal class DefaultAlgorithm : LineAlgorithm
             var name = paramMatch.Groups["ParamName"].Value;
             var modifiers = paramMatch.Groups["Modifiers"].Value;
 
-            StringBuilder newParams = new();
+            var newParams = new StringBuilder();
             for (int i = start - 1; i < variations; i++)
             {
                 var varied = VaryType(type, i);

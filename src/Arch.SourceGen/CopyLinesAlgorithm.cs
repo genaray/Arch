@@ -24,12 +24,12 @@ internal class CopyLinesAlgorithm : LineAlgorithm
 
     public override string Transform(string line, string type, int start, int variations, string[] parameters)
     {
-        StringBuilder transformed = new();
+        var transformed = new StringBuilder();
         transformed.AppendLine(line);
 
         for (int i = start; i < variations; i++)
         {
-            StringBuilder next = new();
+            var next = new StringBuilder();
             next.AppendLine(line);
             var variadic = VaryType(type, i);
             next.Replace(type, variadic);
