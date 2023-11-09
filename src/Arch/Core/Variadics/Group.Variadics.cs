@@ -4,7 +4,7 @@ using Arch.Core.Utils;
 namespace Arch.Core;
 
 /// <inheritdoc cref="Group"/>
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public static class Group<T0>
 {
     internal static readonly int Id;

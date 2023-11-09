@@ -23,20 +23,8 @@ internal abstract class LineAlgorithm
     /// </summary>
     /// <param name="line">The input line.</param>
     /// <param name="type">The variadic type provided in the variadic attribute, e.g. <c>T0</c></param>
-    /// <param name="start">The first extra variadic to generate, e.g. `2` if one variadic is provided in the template method.</param>
-    /// <param name="variations">How many variadics to generate. This will be called with various numbers of variations to generate the full variadic spectrum.</param>
+    /// <param name="lastVariadic">The last variadic to generate. If 1, for example, would generate T0, T1.</param>
     /// <param name="parameters">The parameters provided to the variadic comment, if any.</param>
     /// <returns>The transformed string according to the algorithm.</returns>
-    public abstract string Transform(string line, string type, int start, int variations, string[] parameters);
-
-    protected static string VaryType(string typeName, int i)
-    {
-        var match = Regex.Match(typeName, @"(?<PrunedName>\w+)[0-9]+");
-        if (!match.Success)
-        {
-            throw new InvalidOperationException("Variadic type must be of TypeName{N}");
-        }
-
-        return $"{match.Groups["PrunedName"]}{i}";
-    }
+    public abstract string Transform(string line, string type, int lastVariadic, string[] parameters);
 }

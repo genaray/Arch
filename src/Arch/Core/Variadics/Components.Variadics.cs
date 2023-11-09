@@ -6,7 +6,7 @@ namespace Arch.Core;
 ///     Stores a reference group of up to 25 components.
 /// </summary>
 [SkipLocalsInit]
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public ref struct Components<T0>
 {
     /// <summary>
@@ -41,7 +41,7 @@ public ref struct Components<T0>
 ///     Stores a reference group of up to 25 components, as well as an entity.
 /// </summary>
 [SkipLocalsInit]
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public ref struct EntityComponents<T0>
 {
 

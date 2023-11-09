@@ -1,7 +1,7 @@
 ﻿namespace Arch.Core;
 
 /// <inheritdoc cref="ForEachJob"/>
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public struct ForEachJob<T0> : IChunkJob
 {
     /// <inheritdoc cref="ForEachJob.ForEach"/>
@@ -26,7 +26,7 @@ public struct ForEachJob<T0> : IChunkJob
 }
 
 /// <inheritdoc cref="ForEachJob"/>
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public struct ForEachWithEntityJob<T0> : IChunkJob
 {
     /// <inheritdoc cref="ForEachJob.ForEach"/>
@@ -52,7 +52,7 @@ public struct ForEachWithEntityJob<T0> : IChunkJob
 }
 
 /// <inheritdoc cref="IForEachJob{T}"/>
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public struct IForEachJob<T, T0> : IChunkJob where T : struct, IForEach<T0>
 {
     /// <inheritdoc cref="IForEachJob{T}.ForEach"/>
@@ -76,7 +76,7 @@ public struct IForEachJob<T, T0> : IChunkJob where T : struct, IForEach<T0>
     }
 }
 
-[Variadic(nameof(T0), 1, 25)]
+[Variadic(nameof(T0), 24)]
 public struct IForEachWithEntityJob<T, T0> : IChunkJob where T : struct, IForEachWithEntity<T0>
 {
     /// <inheritdoc cref="IForEachJob{T}.ForEach"/>

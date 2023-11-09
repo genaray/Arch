@@ -33,77 +33,19 @@ internal class DefaultAlgorithm : LineAlgorithm
 {
     public override int ExpectedParameterCount { get => 0; }
     public override string Name { get => string.Empty; }
-    public override string Transform(string line, string type, int start, int variations, string[] parameters)
+    public override string Transform(string line, string type, int lastVariadic, string[] parameters)
     {
-        var transformed = new StringBuilder();
+        // Expand the "where" constraints (like where T0 : ISomething)
+        line = Utils.ExpandConstraints(line, type, lastVariadic);
 
-        // copy type constraints for our selected variadic
-        var constraints = Regex.Match(line, @$"where\s+{type}\s*:\s*(?<Constraints>.*?)(?:where|{{|$)");
-        if (constraints.Success)
-        {
-            // append anything prior to the original constraint
-            transformed.Append(line.Substring(0, constraints.Index));
-
-            // append extra constraints as needed
-            for (int i = 1; i < variations; i++)
-            {
-                transformed.Append($" where {VaryType(type, i)} : {constraints.Groups["Constraints"].Value} ");
-            }
-
-            // add in the rest of the line, plus the original constraint
-            transformed.Append(line.Substring(constraints.Index, line.Length - constraints.Index));
-        }
-        else
-        {
-            // no constraints, just add the line
-            transformed.Append(line);
-        }
-
-        // build a string like "T0, T1, ...>"
-        var variadics = new StringBuilder();
-        for (int i = start - 1; i < variations; i++)
-        {
-            variadics.Append(VaryType(type, i));
-            if (i != variations - 1)
-            {
-                variadics.Append(", ");
-            }
-        }
-
-        variadics.Append(">");
-
-        // Apply generics: expand T0> -> T0, T1...>
-        // Applied everywhere, wherever generics appear!
-        transformed.Replace(type + ">", variadics.ToString());
+        // Expand any generic type groups (like <A, T0>)
+        line = Utils.ExpandGenericTypes(line, type, lastVariadic);
 
         // Expand params in header (i.e. T0 component_T0 -> T0 component_T0, T1 component_T1...
-        // This is the 90% case. Occasionally there needs to be special handling for a method header.
-        // Those cases are handled by CopyParamsAlgorithm
-        // Modifiers is ref, in, out etc.
-        // ParamName is the paramname we need to copy,
-        var exp = $@"[(,]\s*(?<Modifiers>(?:in|out|ref|ref\s+readonly)\s+)?{type}\s+(?<ParamName>\w+)_{type}";
-        var paramMatch = Regex.Match(transformed.ToString(), exp);
-        if (paramMatch.Success)
-        {
-            var name = paramMatch.Groups["ParamName"].Value;
-            var modifiers = paramMatch.Groups["Modifiers"].Value;
+        // This is the 90% case. Occasionally there needs to be special handling for a method header with wrapped types, like Span<T0>.
+        // Those cases are handled by CopyParamsAlgorithm; this algorithm incorrectly produces Span<T0, T1...> instead of copying the typed params.
+        line = Utils.ExpandTypedParameters(line, type, type, lastVariadic, out var _, out var _);
 
-            var newParams = new StringBuilder();
-            for (int i = start - 1; i < variations; i++)
-            {
-                var varied = VaryType(type, i);
-                newParams.Append($"{modifiers} {varied} {name}_{varied}");
-                if (i != variations - 1)
-                {
-                    newParams.Append(", ");
-                }
-            }
-
-            transformed.Remove(paramMatch.Index + 1, paramMatch.Length - 1);
-            transformed.Insert(paramMatch.Index + 1, newParams);
-        }
-
-        return transformed.ToString();
-
+        return line;
     }
 }

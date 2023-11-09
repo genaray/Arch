@@ -9,7 +9,7 @@ internal class IgnoreAlgorithm : LineAlgorithm
     public override string Name { get => "Ignore"; }
     public override int ExpectedParameterCount { get => 0; }
 
-    public override string Transform(string line, string type, int start, int variations, string[] parameters)
+    public override string Transform(string line, string type, int lastVariadic, string[] parameters)
     {
         return line;
     }

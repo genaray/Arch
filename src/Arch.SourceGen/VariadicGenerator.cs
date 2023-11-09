@@ -28,14 +28,9 @@ public class VariadicGenerator : IIncrementalGenerator
         public string Type { get; set; } = string.Empty;
 
         /// <summary>
-        /// The amount of total variadics that should be generated, as passed to <see cref="Arch.Core.VariadicAttribute"/>.
+        /// The last variadic index to generate, passed into <see cref="Arch.Core.VariadicAttribute"/>.
         /// </summary>
-        public int Count { get; set; } = 0;
-
-        /// <summary>
-        /// How many variadics have already been specified and should be skipped during generation, as passed to <see cref="Arch.Core.VariadicAttribute"/>.
-        /// </summary>
-        public int Start { get; internal set; }
+        public int LastVariadic { get; set; } = 0;
 
         /// <summary>
         /// The full code of the member the attribute is on, including any preceding documentation and attributes.
@@ -181,8 +176,7 @@ public class VariadicGenerator : IIncrementalGenerator
             if (attr.AttributeClass?.Name == "VariadicAttribute")
             {
                 info.Type = attr.ConstructorArguments[0].Value as string ?? throw new InvalidOperationException();
-                info.Start = Convert.ToInt32(attr.ConstructorArguments[1].Value);
-                info.Count = Convert.ToInt32(attr.ConstructorArguments[2].Value);
+                info.LastVariadic = Convert.ToInt32(attr.ConstructorArguments[1].Value);
                 break;
             }
         }
@@ -231,9 +225,10 @@ public class VariadicGenerator : IIncrementalGenerator
 
         var combined = new StringBuilder();
 
-        // Run for each variadic requested, starting after Start (so if start is 1, it means we already defined 1 variadic <T0>,
+        // Run for each variadic requested, starting after typeNum (so if the type passed is T0, it means we already defined 1 variadic <T0>,
         // and must start by generating <T0, T1>).
-        for (var i = info.Start; i < info.Count; i++)
+        var (_, typeNum) = Utils.ExtractTypeInfo(info.Type);
+        for (var i = typeNum + 1; i <= info.LastVariadic; i++)
         {
             // Process line by line, and run the algorithm on each
             foreach (var line in lines)
@@ -254,7 +249,7 @@ public class VariadicGenerator : IIncrementalGenerator
                 }
 
                 // Run the transformation algorithm on the line
-                combined.AppendLine(algo.Transform(line.Line, info.Type, info.Start, i + 1, line.Parameters));
+                combined.AppendLine(algo.Transform(line.Line, info.Type, i, line.Parameters));
             }
         }
 

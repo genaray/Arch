@@ -7,7 +7,7 @@ namespace Arch.Core;
 public partial struct Chunk
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [Pure]
     // [Variadic: CopyParams(int)]
     private readonly void Index<T0, T1>(out int index_T0, out int index_T1)
@@ -21,7 +21,7 @@ public partial struct Chunk
     /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [SuppressMessage("Style", "IDE0011:Add braces", Justification = "Enables single-line statements")]
     [SuppressMessage("Style", "IDE2001:Embedded statements must be on their own line", Justification = "Enables single-line statements")]
     public readonly bool Has<T0, T1>()
@@ -44,7 +44,7 @@ public partial struct Chunk
     /// <inheritdoc cref="Get{T}(int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     public Components<T0, T1> Get<T0, T1>(int index)
     {
         // [Variadic: CopyArgs(array)]
@@ -58,7 +58,7 @@ public partial struct Chunk
     }
 
     /// <inheritdoc cref="GetRow{T}"/>
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public EntityComponents<T0, T1> GetRow<T0, T1>(int index)
@@ -76,7 +76,7 @@ public partial struct Chunk
     }
 
     /// <inheritdoc cref="Set{T}"/>
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     // [Variadic: CopyParams(T1?)]
     public void Set<T0, T1>(int index, in T0? component_T0, in T1? component_T1)
@@ -90,7 +90,7 @@ public partial struct Chunk
     }
 
     /// <inheritdoc cref="GetArray{T}"/>
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     [SuppressMessage("Style", "IDE0251:Make member 'readonly'", Justification = "Not actually readonly due to unsafe get")]
@@ -107,7 +107,7 @@ public partial struct Chunk
     }
 
     /// <inheritdoc cref="GetSpan{T}"/>
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     // [Variadic: CopyParams(Span<T1>)]
@@ -122,7 +122,7 @@ public partial struct Chunk
     }
 
     /// <inheritdoc cref="GetFirst{T}"/>
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Components<T0, T1> GetFirst<T0, T1>()

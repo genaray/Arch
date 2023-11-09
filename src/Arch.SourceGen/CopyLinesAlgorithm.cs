@@ -22,18 +22,16 @@ internal class CopyLinesAlgorithm : LineAlgorithm
     public override string Name { get => "CopyLines"; }
     public override int ExpectedParameterCount { get => 0; }
 
-    public override string Transform(string line, string type, int start, int variations, string[] parameters)
+    public override string Transform(string line, string type, int lastVariadic, string[] parameters)
     {
+        var (typeName, typeNum) = Utils.ExtractTypeInfo(type);
+           
         var transformed = new StringBuilder();
         transformed.AppendLine(line);
 
-        for (int i = start; i < variations; i++)
+        for (int i = typeNum + 1; i <= lastVariadic; i++)
         {
-            var next = new StringBuilder();
-            next.AppendLine(line);
-            var variadic = VaryType(type, i);
-            next.Replace(type, variadic);
-            transformed.AppendLine(next.ToString());
+            transformed.AppendLine(Utils.ReplaceType(line, type, i));
         }
 
         return transformed.ToString();

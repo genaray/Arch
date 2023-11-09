@@ -5,7 +5,7 @@ public partial class Archetype
 {
     /// <inheritdoc cref="Has{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     public bool Has<T0, T1>()
     {
         var componentId_T0 = Component<T0>.ComponentType.Id;
@@ -19,7 +19,7 @@ public partial class Archetype
 
     /// <inheritdoc cref="Get{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     internal unsafe Components<T0, T1> Get<T0, T1>(scoped ref Slot slot)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
@@ -28,7 +28,7 @@ public partial class Archetype
 
     /// <inheritdoc cref="Set{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     // [Variadic: CopyParams(T1?)]
     internal void Set<T0, T1>(ref Slot slot, in T0? component_T0, in T1? component_T1)
     {
@@ -39,7 +39,7 @@ public partial class Archetype
 
     /// <inheritdoc cref="SetRange{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Variadic(nameof(T1), 2, 25)]
+    [Variadic(nameof(T1), 24)]
     // [Variadic: CopyParams(T1?)]
     internal void SetRange<T0, T1>(in Slot from, in Slot to, in T0? componentValue_T0 = default, in T1? componentValue_T1 = default)
     {
