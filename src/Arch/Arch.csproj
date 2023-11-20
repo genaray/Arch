@@ -14,21 +14,11 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.7</Version>
+    <Version>1.2.7.1-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
-    <PackageReleaseNotes>Added more dangerous utility methods.
-Entity now implements IComparable&lt;Entity&gt;.
-DangerousWorldExtension can now return the Slot for an entity, used for dangerous acess and serialisation.
-Checking a default entity or reference for IsAlive now returns false.
-Archetypes with zero entities are now skipped during iteration.
-BitSets are now vectorized, resulting in faster checks when large amounts of components are used.
-.SetEntities for Archetypes as a dangerous util. 
-Added native-AOT Support:
-Faster single .add and .remove operations.
-Querys can not iterate "empty" entities. 
-Removed in Entity modifier for improved performance. </PackageReleaseNotes>
+    <PackageReleaseNotes>Updated LowLevel which fixes bugs. </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
