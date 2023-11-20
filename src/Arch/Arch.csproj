@@ -99,7 +99,7 @@ Removed in Entity modifier for improved performance. </PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arch.LowLevel" Version="1.0.9" />
+    <PackageReference Include="Arch.LowLevel" Version="1.1.0" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
