@@ -109,7 +109,7 @@ internal class EntityInfoStorage
         );
         EntitySlots = new JaggedArray<EntitySlot>(
             cpuL1CacheSize / Unsafe.SizeOf<EntitySlot>(),
-            new EntitySlot(null, new Slot(-1,-1)),
+            new EntitySlot(null!, new Slot(-1,-1)),
             256
         );
     }

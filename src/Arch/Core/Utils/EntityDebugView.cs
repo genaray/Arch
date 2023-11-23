@@ -43,17 +43,17 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The <see cref="Entity"/>s components.
     /// </summary>
-    public object[] Components { get; }
+    public object[]? Components { get; }
 
     /// <summary>
     ///     The <see cref="World"/> this <see cref="Entity"/> lives in.
     /// </summary>
-    public World World => IsAlive ? World.Worlds[_entity.WorldId] : null;
+    public World? World => IsAlive ? World.Worlds[_entity.WorldId] : null;
 
     /// <summary>
     ///     The <see cref="Archetype"/> this <see cref="Entity"/> lives in.
     /// </summary>
-    public Archetype Archetype => IsAlive ? World.Worlds[_entity.WorldId].GetArchetype(_entity) : null;
+    public Archetype? Archetype => IsAlive ? World.Worlds[_entity.WorldId].GetArchetype(_entity) : null;
 
     /// <summary>
     ///     The <see cref="Archetype"/> this <see cref="Entity"/> lives in.
@@ -63,7 +63,7 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The stored <see cref="EntityInfo"/> for this <see cref="Entity"/>.
     /// </summary>
-    public EntityInfo EntityInfo => IsAlive ? World.EntityInfo[_entity.Id] : new EntityInfo();
+    public EntityInfo EntityInfo => IsAlive ? World?.EntityInfo[_entity.Id] ?? new EntityInfo() : new EntityInfo();
 }
 
 #endif

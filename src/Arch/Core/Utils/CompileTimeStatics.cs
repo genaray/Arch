@@ -41,7 +41,7 @@ public readonly record struct ComponentType
     public Type Type
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ComponentRegistry.Types[Id];
+        get => ComponentRegistry.Types[Id]!;
     }
 
     /// <summary>
