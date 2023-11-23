@@ -652,10 +652,10 @@ public partial class WorldTest
 
         _world.Set(entity, new Transform { X = 20, Y = 20 }, new Rotation { X = 20, Y = 20 });
         var references = _world.Get<Transform, Rotation>(entity);
-        That(references.t0.X, Is.EqualTo(20));
-        That(references.t0.Y, Is.EqualTo(20));
-        That(references.t1.X, Is.EqualTo(20));
-        That(references.t1.Y, Is.EqualTo(20));
+        That(references.Component_T0.X, Is.EqualTo(20));
+        That(references.Component_T0.Y, Is.EqualTo(20));
+        That(references.Component_T1.X, Is.EqualTo(20));
+        That(references.Component_T1.Y, Is.EqualTo(20));
     }
 
     /// <summary>
