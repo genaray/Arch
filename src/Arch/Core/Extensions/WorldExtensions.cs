@@ -126,7 +126,7 @@ public static class WorldExtensions
     /// <param name="components">A <see cref="IList{T}"/> where the components are put it.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void GetRange(this World world, Entity entity, ComponentType[] types, IList<object> components)
+    public static void GetRange(this World world, Entity entity, ComponentType[] types, IList<object?> components)
     {
         var entitySlot = world.EntityInfo.GetEntitySlot(entity.Id);
         for (var index = 0; index < types.Length; index++)

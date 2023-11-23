@@ -314,7 +314,7 @@ public static partial class EntityExtensions
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public static void GetRange(this in Entity entity, ComponentType[] types, IList<object> components)
+    public static void GetRange(this in Entity entity, ComponentType[] types, IList<object?> components)
     {
         var world = World.Worlds[entity.WorldId];
         world.GetRange(entity, types, components);
