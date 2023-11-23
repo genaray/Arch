@@ -106,6 +106,36 @@ public partial class WorldTest
     }
 
     /// <summary>
+    ///     Tests an edge case where entities are being bulk moved between archetypes and destroyed at the same time.
+    /// </summary>
+    [Test]
+    public void DestroyEdgeCase()
+    {
+        var entitiesToChangeColor = new QueryDescription().WithAll<Transform>();
+        var entities = new List<Entity>();
+        for (var i = 0; i < 1000; i++)
+        {
+            var ent = _world.Create(_entityGroup);
+            entities.Add(ent);
+        }
+
+        for (var i = 8; i < entities.Count; i++)
+        {
+            var ent = entities[i];
+            if (i % 3 != 0)
+            {
+                continue;
+            }
+
+            // A demonstration of bulk adding and removing components.
+            _world.Add(in entitiesToChangeColor, 1);
+            _world.Remove<int>(in entitiesToChangeColor);
+
+            _world.Destroy(ent);
+        }
+    }
+
+    /// <summary>
     ///     Checks if the <see cref="World"/> recycles destroyed <see cref="Entity"/> correctly.
     /// </summary>
     [Test]

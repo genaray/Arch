@@ -547,8 +547,7 @@ public sealed unsafe partial class Archetype
     internal void EnsureEntityCapacity(int newCapacity)
     {
         // Calculate amount of required chunks.
-        ref var lastChunk = ref LastChunk;
-        var freeSpots = lastChunk.Capacity - lastChunk.Size;
+        var freeSpots = (Capacity * EntitiesPerChunk) - Entities;
         var neededSpots = newCapacity - freeSpots;
         var neededChunks = (int)Math.Ceiling((float)neededSpots / EntitiesPerChunk);
 
