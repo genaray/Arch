@@ -112,7 +112,7 @@ public static class WorldExtensions
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static object[] GetRange(this World world, Entity entity, params ComponentType[] types)
+    public static object?[] GetRange(this World world, Entity entity, params ComponentType[] types)
     {
         return world.GetRange(entity, types);
     }
