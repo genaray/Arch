@@ -56,7 +56,7 @@ public static class AddWithQueryDescription
                 foreach (var archetype in query.GetArchetypeIterator())
                 {
                     // Archetype with T shouldnt be skipped to prevent undefined behaviour.
-                    if(archetype.Entities == 0 || archetype.Has<{{generics}}>())
+                    if(archetype.EntityCount == 0 || archetype.Has<{{generics}}>())
                     {
                         continue;
                     }

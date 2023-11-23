@@ -39,7 +39,7 @@ public class ArchetypeIterationBenchmark
     [Benchmark]
     public void IterationNormalTwoComponents()
     {
-        var size = _globalArchetype.Size;
+        var size = _globalArchetype.ChunkCount;
         var chunks = _globalArchetype.Chunks;
 
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
@@ -63,7 +63,7 @@ public class ArchetypeIterationBenchmark
     [Benchmark]
     public void IterationUnsafeAddTwoComponents()
     {
-        var size = _globalArchetype.Size;
+        var size = _globalArchetype.ChunkCount;
         ref var chunk = ref _globalArchetype.Chunks[0];
 
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
@@ -92,7 +92,7 @@ public class ArchetypeIterationBenchmark
     public void IterationParallelUnsafeAdd()
     {
         // Partition the entire source array.
-        var rangePartitioner = Partitioner.Create(0, _globalArchetype.Size);
+        var rangePartitioner = Partitioner.Create(0, _globalArchetype.ChunkCount);
         Parallel.ForEach(rangePartitioner, range =>
         {
             var start = range.Item1;
@@ -126,7 +126,7 @@ public class ArchetypeIterationBenchmark
     [Benchmark]
     public void IterationNormalEntityTwoComponents()
     {
-        var size = _globalArchetype.Size;
+        var size = _globalArchetype.ChunkCount;
         var chunks = _globalArchetype.Chunks;
 
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
@@ -154,7 +154,7 @@ public class ArchetypeIterationBenchmark
     [Benchmark]
     public void IterationUnsafeAddEntityTwoComponents()
     {
-        var size = _globalArchetype.Size;
+        var size = _globalArchetype.ChunkCount;
         ref var chunk = ref _globalArchetype.Chunks[0];
 
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)

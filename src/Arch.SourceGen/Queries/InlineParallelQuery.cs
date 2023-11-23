@@ -28,7 +28,7 @@ public static class StringBuilderHpParallelQueryExtensions
                 var query = Query(in description);
                 foreach (var archetype in query.GetArchetypeIterator())
                 {
-                    var archetypeSize = archetype.Size;
+                    var archetypeSize = archetype.ChunkCount;
                     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
                     foreach (var range in part)
                     {
@@ -87,7 +87,7 @@ public static class StringBuilderHpParallelQueryExtensions
                 var query = Query(in description);
                 foreach (var archetype in query.GetArchetypeIterator()) {
 
-                    var archetypeSize = archetype.Size;
+                    var archetypeSize = archetype.ChunkCount;
                     var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
                     foreach (var range in part)
                     {

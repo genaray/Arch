@@ -36,17 +36,17 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        That(archetype.Size, Is.EqualTo(1));  // Since we filled it with n entities, it must have one single chunk.
+        That(archetype.ChunkCount, Is.EqualTo(1));  // Since we filled it with n entities, it must have one single chunk.
     }
 
     /// <summary>
-    ///     Checks if the <see cref="Archetype.ChunkSize"/> increases when <see cref="Entity"/>s and their components become too large.
+    ///     Checks if the <see cref="Archetype.ChunkSizeInBytes"/> increases when <see cref="Entity"/>s and their components become too large.
     /// </summary>
     [Test]
     public void ScaleChunkCapacity()
     {
         var archetype = new Archetype(_heavyGroup);
-        That(archetype.ChunkSize, Is.EqualTo(Archetype.BaseSize * 2)); // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
+        That(archetype.ChunkSizeInBytes, Is.EqualTo(Archetype.BaseSize * 2)); // heavyGroup should be large enough to force the chunk to pick a 32KB chunk instead of 16KB
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        That(archetype.Size, Is.EqualTo(2));
+        That(archetype.ChunkCount, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -83,8 +83,8 @@ public class ArchetypeTest
             archetype.Add(entity, out _);
         }
 
-        That(archetype.Size, Is.EqualTo(10));
-        That(archetype.Capacity, Is.EqualTo(10));
+        That(archetype.ChunkCount, Is.EqualTo(10));
+        That(archetype.ChunkCapacity, Is.EqualTo(10));
     }
 
     /// <summary>
@@ -105,8 +105,8 @@ public class ArchetypeTest
         var slot = new Slot(0, 0);
         archetype.Remove(ref slot, out _);
 
-        That(archetype.Size, Is.EqualTo(2));
-        That(archetype.Capacity, Is.EqualTo(2));
+        That(archetype.ChunkCount, Is.EqualTo(2));
+        That(archetype.ChunkCapacity, Is.EqualTo(2));
         That(archetype.Chunks[0].Size, Is.EqualTo(entities - 50));
         That(archetype.Chunks[1].Size, Is.EqualTo(49));
         That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
@@ -130,8 +130,8 @@ public class ArchetypeTest
         var slot = new Slot(0, 0);
         archetype.Remove(ref slot, out _);
 
-        That(archetype.Size, Is.EqualTo(1));
-        That(archetype.Capacity, Is.EqualTo(2));
+        That(archetype.ChunkCount, Is.EqualTo(1));
+        That(archetype.ChunkCapacity, Is.EqualTo(2));
         That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
         That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
@@ -256,7 +256,7 @@ public class ArchetypeTest
         }
 
         // Make sure that EVERY single entity was copied correctly
-        That(destination.Entities, Is.EqualTo(sourceAmount+destinationAmount));
+        That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
         That(countedSourceItems, Is.EqualTo(sourceAmount));
         That(countedDestinationItems, Is.EqualTo(destinationAmount));
     }
@@ -301,7 +301,7 @@ public class ArchetypeTest
         Archetype.Copy(source, destination);
         source.Clear();
 
-        That(destination.Entities, Is.EqualTo(sourceAmount+destinationAmount));
+        That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
         That(source.Entity(ref sourceSlot), Is.EqualTo(destination.Entity(ref resultSlot)));  // Make sure entities were copied correctly.
     }
 }

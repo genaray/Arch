@@ -112,7 +112,7 @@ public ref struct QueryArchetypeEnumerator
         while (_archetypes.MoveNext())
         {
             var archetype = _archetypes.Current;
-            if (archetype.Entities > 0 && _query.Valid(archetype.BitSet))
+            if (archetype.EntityCount > 0 && _query.Valid(archetype.BitSet))
             {
                 return true;
             }
@@ -199,7 +199,7 @@ public ref struct QueryChunkEnumerator
         // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
-            _index = _archetypeEnumerator.Current.Size;
+            _index = _archetypeEnumerator.Current.ChunkCount;
         }
     }
 
@@ -225,7 +225,7 @@ public ref struct QueryChunkEnumerator
                 return false;
             }
 
-            _index = _archetypeEnumerator.Current.Size-1;
+            _index = _archetypeEnumerator.Current.ChunkCount-1;
             return true;
         }
     }
@@ -243,7 +243,7 @@ public ref struct QueryChunkEnumerator
         // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
-            _index = _archetypeEnumerator.Current.Size;
+            _index = _archetypeEnumerator.Current.ChunkCount;
         }
     }
 

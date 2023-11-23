@@ -46,12 +46,13 @@ public class QueryBenchmark
     [Benchmark]
     public void EntityExtensionQuery()
     {
+        /*
         _world.Query(in _queryDescription, (Entity entity) =>
         {
             var refs = entity.Get<Transform, Velocity>();
             refs.t0.X += refs.t1.X;
             refs.t0.Y += refs.t1.Y;
-        });
+        });*/
     }
 #endif
 

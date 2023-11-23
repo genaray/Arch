@@ -378,7 +378,7 @@ public partial class World : IDisposable
         {
             // Remove empty archetypes.
             var archetype = Archetypes[index];
-            if (archetype.Entities == 0)
+            if (archetype.EntityCount == 0)
             {
                 Capacity += archetype.EntitiesPerChunk; // Since the destruction substracts that amount, add it before due to the way we calculate the new capacity.
                 DestroyArchetype(archetype);
@@ -386,7 +386,7 @@ public partial class World : IDisposable
             }
 
             archetype.TrimExcess();
-            Capacity += archetype.Size * archetype.EntitiesPerChunk; // Since always one chunk always exists.
+            Capacity += archetype.ChunkCount * archetype.EntitiesPerChunk; // Since always one chunk always exists.
         }
     }
 
@@ -454,7 +454,7 @@ public partial class World : IDisposable
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            var entities = archetype.Entities;
+            var entities = archetype.EntityCount;
             counter += entities;
         }
 
@@ -768,7 +768,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            Size -= archetype.Entities;
+            Size -= archetype.EntityCount;
             foreach (ref var chunk in archetype)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
@@ -837,7 +837,7 @@ public partial class World
         foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype with T shouldnt be skipped to prevent undefined behaviour.
-            if (archetype.Entities == 0 || archetype.Has<T>())
+            if (archetype.EntityCount == 0 || archetype.Has<T>())
             {
                 continue;
             }
@@ -889,7 +889,7 @@ public partial class World
         foreach (var archetype in query.GetArchetypeIterator())
         {
             // Archetype without T shouldnt be skipped to prevent undefined behaviour.
-            if (archetype.Entities <= 0 || !archetype.Has<T>())
+            if (archetype.EntityCount <= 0 || !archetype.Has<T>())
             {
                 continue;
             }

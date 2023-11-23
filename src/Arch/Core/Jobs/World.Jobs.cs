@@ -96,7 +96,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            var archetypeSize = archetype.Size;
+            var archetypeSize = archetype.ChunkCount;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
             foreach (var range in part)
             {

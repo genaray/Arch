@@ -45,7 +45,7 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         var chunks = _globalArchetype.Chunks;
 
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var chunk = ref chunks[chunkIndex];
             var transforms = chunk.GetArray<Transform>();
@@ -67,7 +67,7 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         ref var chunk = ref _globalArchetype.Chunks[0];
 
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var transforms = currentChunk.GetArray<Transform>();
@@ -92,7 +92,7 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         var chunks = _globalArchetype.Chunks;
 
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var chunk = ref chunks[chunkIndex];
             var transforms = chunk.GetSpan<Transform>();
@@ -114,7 +114,7 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         ref var chunk = ref _globalArchetype.Chunks[0];
 
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var transforms = currentChunk.GetSpan<Transform>();
@@ -139,7 +139,7 @@ public class ArchetypeIterationTechniquesBenchmark
     public void IterationBackwardsUnsafeAdd()
     {
         ref var chunk = ref _globalArchetype.Chunks[0];
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var chunkSize = currentChunk.Size;
@@ -157,7 +157,7 @@ public class ArchetypeIterationTechniquesBenchmark
     public void IterationBackwardsUnsafeSubstract()
     {
         ref var chunk = ref _globalArchetype.Chunks[0];
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var chunkSize = currentChunk.Size;
@@ -175,7 +175,7 @@ public class ArchetypeIterationTechniquesBenchmark
     public void IterationBackwardsLoop()
     {
         ref var chunk = ref _globalArchetype.Chunks[0];
-        for (var chunkIndex = 0; chunkIndex < _globalArchetype.Size; chunkIndex++)
+        for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
             var chunkSize = currentChunk.Size;
