@@ -58,6 +58,41 @@ public readonly record struct BufferedEntityInfo
 }
 
 /// <summary>
+///     Represents an Entity that will be created when <see cref="CommandBuffer.Playback"/> is called.
+/// </summary>
+public readonly record struct PendingEntity
+{
+    private int Id { get; }
+    private CommandBuffer CommandBuffer { get; }
+    private ushort Generation { get; }
+
+    /// <summary>
+    /// An Entity that has been created in a CommandBuffer, but hasn't yet been added to the scene
+    /// </summary>
+    public PendingEntity(int id, CommandBuffer cmd)
+    {
+        Id = id;
+        CommandBuffer = cmd;
+        Generation = cmd.Generation;
+    }
+
+    public Entity ToEntity(CommandBuffer cmd)
+    {
+        if (cmd != CommandBuffer)
+        {
+            throw new InvalidOperationException("Cannot use a `PendingEntity` created by one `CommandBuffer` with a different `CommandBuffer`");
+        }
+
+        if (cmd.Generation != Generation)
+        {
+            throw new InvalidOperationException("Cannot use a `PendingEntity` created from a previous generation");
+        }
+
+        return new Entity(Id, cmd.World.Id);
+    }
+}
+
+/// <summary>
 ///     The <see cref="CommandBuffer"/> class
 ///     stores operation to <see cref="Entity"/>'s between to play and implement them at a later time in the <see cref="World"/>.
 /// </summary>
@@ -84,6 +119,7 @@ public class CommandBuffer : IDisposable
         Destroys = new PooledList<int>(initialCapacity);
         _addTypes = new PooledList<ComponentType>(16);
         _removeTypes = new PooledList<ComponentType>(16);
+        Generation = 0;
     }
 
     /// <summary>
@@ -95,6 +131,11 @@ public class CommandBuffer : IDisposable
     ///     Gets the amount of <see cref="Entity"/> instances targeted by this <see cref="CommandBuffer"/>.
     /// </summary>
     public int Size { get; private set; }
+
+    /// <summary>
+    ///     Incremented every time <see cref="Playback"/> is called. Used to ensure that a <see cref="PendingEntity"/> from another generation is not used.
+    /// </summary>
+    internal ushort Generation { get; private set; }
 
     /// <summary>
     ///     All <see cref="Entity"/>'s created or modified in this <see cref="CommandBuffer"/>.
@@ -151,6 +192,12 @@ public class CommandBuffer : IDisposable
         Size++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal void Register(in PendingEntity entity, out BufferedEntityInfo info)
+    {
+        Register(entity.ToEntity(this), out info);
+    }
+
     /// TODO : Probably just run this if the wrapped entity is negative? To save some overhead? 
     /// <summary>
     ///     Resolves an <see cref="Entity"/> originally either from a <see cref="StructuralSparseArray"/> or <see cref="SparseArray"/> to its real <see cref="Entity"/>.
@@ -173,11 +220,11 @@ public class CommandBuffer : IDisposable
     /// <param name="types">The <see cref="Entity"/>'s component structure/<see cref="Archetype"/>.</param>
     /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Entity Create(ComponentType[] types)
+    public PendingEntity Create(ComponentType[] types)
     {
         lock (this)
         {
-            var entity = new Entity(-(Size + 1), World.Id);
+            var entity = new PendingEntity(-(Size + 1), this);
             Register(entity, out _);
 
             var command = new CreateCommand(Size - 1, types);
@@ -185,6 +232,16 @@ public class CommandBuffer : IDisposable
 
             return entity;
         }
+    }
+
+    /// <summary>
+    ///     Record a Destroy operation for a <see cref="PendingEntity"/>.
+    ///     Will be destroyed during <see cref="Playback"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/> to destroy.</param>
+    public void Destroy(in PendingEntity entity)
+    {
+        Destroy(entity.ToEntity(this));
     }
 
     /// <summary>
@@ -204,6 +261,20 @@ public class CommandBuffer : IDisposable
 
             Destroys.Add(info.Index);
         }
+    }
+
+    /// <summary>
+    ///     Records a set operation for a <see cref="PendingEntity"/>.
+    ///     Overwrites previous values.
+    ///     Will be set during <see cref="Playback"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="component">The component value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set<T>(in PendingEntity entity, in T? component = default)
+    {
+        Set<T>(entity.ToEntity(this), component);
     }
 
     /// <summary>
@@ -230,6 +301,19 @@ public class CommandBuffer : IDisposable
     }
 
     /// <summary>
+    ///     Records a add operation for a <see cref="PendingEntity"/>.
+    ///     Overwrites previous values.
+    ///     Will be added during <see cref="Playback"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="component">The component value.</param>
+    public void Add<T>(in PendingEntity entity, in T? component = default)
+    {
+        Add(entity.ToEntity(this), component);
+    }
+
+    /// <summary>
     ///     Records a add operation for an (buffered) <see cref="Entity"/>.
     ///     Overwrites previous values.
     ///     Will be added during <see cref="Playback"/>.
@@ -251,6 +335,17 @@ public class CommandBuffer : IDisposable
 
         Adds.Set<T>(info.AddIndex);
         Sets.Set(info.SetIndex, in component);
+    }
+
+    /// <summary>
+    ///     Records a remove operation for a <see cref="PendingEntity"/>.
+    ///     Will be removed during <see cref="Playback"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void Remove<T>(in PendingEntity entity)
+    {
+        Remove<T>(entity.ToEntity(this));
     }
 
     /// <summary>
@@ -282,7 +377,7 @@ public class CommandBuffer : IDisposable
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void AddRange(World world, Entity entity, IList<ComponentType> components)
+    private static void AddRange(World world, Entity entity, IList<ComponentType> components)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
 
@@ -442,6 +537,11 @@ public class CommandBuffer : IDisposable
         Destroys.Clear();
         _addTypes.Clear();
         _removeTypes.Clear();
+
+        unchecked
+        {
+            Generation++;
+        }
     }
 
     /// <summary>
@@ -459,5 +559,10 @@ public class CommandBuffer : IDisposable
         _addTypes.Dispose();
         _removeTypes.Dispose();
         GC.SuppressFinalize(this);
+
+        unchecked
+        {
+            Generation++;
+        }
     }
 }

@@ -57,14 +57,14 @@ public partial class CommandBufferTest
         var world = World.Create();
         var commandBuffer = new CommandBuffer.CommandBuffer(world);
 
-        var entity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
-        commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
-        commandBuffer.Add(in entity, new Ai());
-        commandBuffer.Remove<int>(in entity);
+        var pentity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
+        commandBuffer.Set(in pentity, new Transform { X = 20, Y = 20 });
+        commandBuffer.Add(in pentity, new Ai());
+        commandBuffer.Remove<int>(in pentity);
 
         commandBuffer.Playback();
 
-        entity = new Entity(0, 0);
+        var entity = new Entity(0, 0);
         That(world.Get<Transform>(entity).X, Is.EqualTo(20));
         That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
         IsTrue(world.Has<Ai>(entity));
@@ -78,7 +78,7 @@ public partial class CommandBufferTest
     {
         var world = World.Create();
 
-        var entities = new List<Entity>();
+        var entities = new List<PendingEntity>();
         using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
         {
             entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
@@ -177,8 +177,6 @@ public partial class CommandBufferTest
             That(world.TryGet<Transform>(entities[0], out _), Is.True);
             That(world.TryGet<Rotation>(entities[0], out _), Is.False);
         });
-        
-
 
         World.Destroy(world);
     }
@@ -202,19 +200,42 @@ public partial class CommandBufferTest
 
         commandBuffer.Playback();
 
-        bufferedEntity = new Entity(1, 0);
+        var realBufferedEntity = new Entity(1, 0);
 
         That(world.Get<Transform>(entity).X, Is.EqualTo(20));
         That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
         IsTrue(world.Has<Ai>(entity));
         IsFalse(world.Has<int>(entity));
 
-        That(world.Get<Transform>(bufferedEntity).X, Is.EqualTo(20));
-        That(world.Get<Transform>(bufferedEntity).Y, Is.EqualTo(20));
-        IsTrue(world.Has<Ai>(bufferedEntity));
-        IsFalse(world.Has<int>(bufferedEntity));
+        That(world.Get<Transform>(realBufferedEntity).X, Is.EqualTo(20));
+        That(world.Get<Transform>(realBufferedEntity).Y, Is.EqualTo(20));
+        IsTrue(world.Has<Ai>(realBufferedEntity));
+        IsFalse(world.Has<int>(realBufferedEntity));
 
         World.Destroy(world);
+    }
+
+    [Test]
+    public void CommandBufferEntityErrors()
+    {
+        using var world = World.Create();
+        using var buffer1 = new CommandBuffer.CommandBuffer(world);
+        using var buffer2 = new CommandBuffer.CommandBuffer(world);
+
+        var e = buffer1.Create(Array.Empty<ComponentType>());
+
+        // Use entity with the correct buffer
+        buffer1.Add(e, new Transform());
+
+        // Use the entity with the world - this doesn't even type check now!
+        //world.Get<Transform>(e);
+
+        // Use entity with the wrong buffer
+        Throws<InvalidOperationException>(() => buffer2.Add(e, new Transform()));
+
+        // Playback buffer and then try to use the entity
+        buffer1.Playback();
+        Throws<InvalidOperationException>(() => buffer1.Add(e, new Transform()));
     }
 }
 
