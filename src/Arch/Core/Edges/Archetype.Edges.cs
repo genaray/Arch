@@ -139,9 +139,16 @@ public partial class Archetype
             for (var itemIndex = 0; itemIndex < bucket.Capacity; itemIndex++)
             {
                 var edge = bucket[itemIndex];
-                if (edge == archetype)
+                if (edge != archetype)
                 {
-                    RemoveAddEdge(index);
+                    continue;
+                }
+
+                // Remove from bucket and if the removal caused it being trimmed, break the search and continue with the next
+                RemoveAddEdge((index * BucketSize) + itemIndex);
+                if (bucket.IsEmpty)
+                {
+                    break;
                 }
             }
         }
@@ -159,9 +166,16 @@ public partial class Archetype
             for (var itemIndex = 0; itemIndex < bucket.Capacity; itemIndex++)
             {
                 var edge = bucket[itemIndex];
-                if (edge == archetype)
+                if (edge != archetype)
                 {
-                    RemoveRemoveEdge(index);
+                    continue;
+                }
+
+                // Remove from bucket and if the removal caused it being trimmed, break the search and continue with the next
+                RemoveRemoveEdge((index * BucketSize) + itemIndex);
+                if (bucket.IsEmpty)
+                {
+                    break;
                 }
             }
         }
