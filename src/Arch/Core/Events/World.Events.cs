@@ -80,7 +80,7 @@ public partial class World
         {
             events.ComponentAddedHandlers.Add((in Entity entity) =>
             {
-                ref var compGeneric = ref entity.Get<T>();
+                ref var compGeneric = ref Get<T>(entity);
                 handler(entity, ref compGeneric);
             });
         }
@@ -106,7 +106,7 @@ public partial class World
         {
             events.ComponentSetHandlers.Add((in Entity entity) =>
             {
-                ref var compGeneric = ref entity.Get<T>();
+                ref var compGeneric = ref Get<T>(entity);
                 handler(entity, ref compGeneric);
             });
         }
@@ -132,7 +132,7 @@ public partial class World
         {
             events.ComponentRemovedHandlers.Add((in Entity entity) =>
             {
-                ref var compGeneric = ref entity.Get<T>();
+                ref var compGeneric = ref Get<T>(entity);
                 handler(entity, ref compGeneric);
             });
         }
@@ -204,7 +204,7 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        ref var added = ref entity.Get<T>();
+        ref var added = ref Get<T>(entity);
 
         int count;
         lock (events.ComponentAddedGenericHandlers)
@@ -235,7 +235,7 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        ref var set = ref entity.Get<T>();
+        ref var set = ref Get<T>(entity);
 
         int count;
         lock (events.ComponentSetGenericHandlers)
@@ -266,7 +266,7 @@ public partial class World
     {
 #if EVENTS
         ref readonly var events = ref GetEvents<T>();
-        ref var removed = ref entity.Get<T>();
+        ref var removed = ref Get<T>(entity);
 
         int count;
         lock (events.ComponentRemovedGenericHandlers)
