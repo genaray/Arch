@@ -135,20 +135,21 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    ///     Adds a new <see cref="ComponentType"/> manually and registers it.
-    ///     <remarks>You should only be using this when you exactly know what you are doing.</remarks>
+    ///     Adds a new <see cref="ComponentType"/> by its <see cref="Type"/> manually and registers it.
+    ///     <remarks>Dangerous, does not check if the <see cref="Type"/> and <see cref="ComponentType"/> was registered yet.</remarks>
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
+    /// <param name="componentType">The <see cref="ComponentType"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ComponentType Add(ComponentType type)
+    public static ComponentType Add(Type type, ComponentType componentType)
     {
         // Register and assign component id
-        _typeToComponentType.Add(type, type);
-        _types = _types.Add(type.Id, type.Type);
+        _typeToComponentType.TryAdd(type, componentType);
+        _types = _types.Add(componentType.Id, type);
 
         Size++;
-        return type;
+        return componentType;
     }
 
     /// <summary>
