@@ -12,8 +12,6 @@ namespace Arch.Core.Utils;
 /// </summary>
 public sealed class BitSet
 {
-    private bool Simd => true || Vector.IsHardwareAccelerated;
-
     private const int BitSize = (sizeof(uint) * 8) - 1;           // 31
     private const int IndexSize = 5;                              // log_2(BitSize + 1)
     private static readonly int _padding = Vector<uint>.Count;    // The padding used for vectorisation, the amount of uints required for being vectorized basically
@@ -181,7 +179,7 @@ public sealed class BitSet
     public bool All(BitSet other)
     {
         var min = Math.Min(Math.Min(Length, other.Length), _max);
-        if (!Simd || min < _padding)
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -243,7 +241,7 @@ public sealed class BitSet
     public bool Any(BitSet other)
     {
         var min = Math.Min(Math.Min(Length, other.Length), _max);
-        if (!Simd || min < _padding)
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -305,7 +303,7 @@ public sealed class BitSet
     public bool None(BitSet other)
     {
         var min = Math.Min(Math.Min(Length, other.Length), _max);
-        if (!Simd || min < _padding)
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
@@ -349,7 +347,7 @@ public sealed class BitSet
     {
         var min = Math.Min(Math.Min(Length, other.Length), _max);
 
-        if (!Simd || min < _padding)
+        if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
             var otherBits = other._bits.AsSpan();
