@@ -8,7 +8,7 @@ namespace Arch.Tests;
 ///     Checks <see cref="BitSet"/> and HashCode related methods.
 /// </summary>
 [TestFixture]
-public class BitSetTest
+public sealed class BitSetTest
 {
     /// <summary>
     ///     Checks if <see cref="ComponentType"/>-Arrays with same elements but in different order result in the same hash.

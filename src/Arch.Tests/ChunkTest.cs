@@ -9,7 +9,7 @@ namespace Arch.Tests;
 ///     checks if the <see cref="Chunk"/>s work correctly.
 /// </summary>
 [TestFixture]
-public class ChunkTest
+public sealed class ChunkTest
 {
     private Chunk _chunk;
     private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
@@ -38,7 +38,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if removing of entities form the chunk works correctly. 
+    ///     Checks if removing of entities form the chunk works correctly.
     /// </summary>
     [Test]
     public void ChunkRemove()
@@ -65,7 +65,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if the removal of all entities works correctly. 
+    ///     Checks if the removal of all entities works correctly.
     /// </summary>
     [Test]
     public void ChunkRemoveAll()
@@ -95,7 +95,7 @@ public class ChunkTest
     }
 
     /// <summary>
-    ///     Checks if removing and setting an entity works correctly. 
+    ///     Checks if removing and setting an entity works correctly.
     /// </summary>
     [Test]
     public void ChunkRemoveAndSetAgain()

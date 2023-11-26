@@ -5,6 +5,6 @@
 ///     Structural changes must never be invoked as another thread is accessing the <see cref="World"/> in any way.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public class StructuralChangeAttribute : Attribute
+public sealed class StructuralChangeAttribute : Attribute
 {
 }

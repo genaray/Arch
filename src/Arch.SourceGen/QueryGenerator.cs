@@ -4,7 +4,7 @@ using ArchSourceGenerator;
 namespace Arch.SourceGen;
 
 [Generator]
-public class QueryGenerator : IIncrementalGenerator
+public sealed class QueryGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
