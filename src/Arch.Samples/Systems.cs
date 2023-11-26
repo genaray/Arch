@@ -38,7 +38,7 @@ public abstract class SystemBase<T>
 ///     The <see cref="MovementSystem"/> class
 ///     ensures that all <see cref="Entity"/>s move and stay within the screen and bounce off it.
 /// </summary>
-public class MovementSystem : SystemBase<GameTime>
+public sealed class MovementSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToMove = new QueryDescription().WithAll<Position, Velocity>();
     private readonly Rectangle _viewport;
@@ -157,7 +157,7 @@ public class MovementSystem : SystemBase<GameTime>
 ///     The <see cref="ColorSystem"/> class
 ///     ensures that all <see cref="Entity"/>s update their color.
 /// </summary>
-public class ColorSystem : SystemBase<GameTime>
+public sealed class ColorSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToChangeColor = new QueryDescription().WithAll<Sprite>();
     private static GameTime? _gameTime;
@@ -199,7 +199,7 @@ public class ColorSystem : SystemBase<GameTime>
 ///     The <see cref="DrawSystem"/> class
 ///     ensures that all <see cref="Entity"/>s are drawn to the screen.
 /// </summary>
-public class DrawSystem : SystemBase<GameTime>
+public sealed class DrawSystem : SystemBase<GameTime>
 {
     private readonly QueryDescription _entitiesToDraw = new QueryDescription().WithAll<Position, Sprite>();
     private readonly SpriteBatch _batch;

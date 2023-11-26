@@ -10,7 +10,7 @@ namespace Arch.Tests;
 ///     checks if the enumerators inside the common classes work correctly.
 /// </summary>
 [TestFixture]
-public class EnumeratorTest
+public sealed class EnumeratorTest
 {
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };

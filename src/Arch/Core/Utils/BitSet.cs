@@ -10,7 +10,7 @@ namespace Arch.Core.Utils;
 ///     The <see cref="BitSet"/> class
 ///     represents a resizable collection of bits.
 /// </summary>
-public class BitSet
+public sealed class BitSet
 {
     private const int BitSize = (sizeof(uint) * 8) - 1;           // 31
     private const int IndexSize = 5;                              // log_2(BitSize + 1)

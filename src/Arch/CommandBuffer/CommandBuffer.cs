@@ -61,7 +61,7 @@ public readonly record struct BufferedEntityInfo
 ///     The <see cref="CommandBuffer"/> class
 ///     stores operation to <see cref="Entity"/>'s between to play and implement them at a later time in the <see cref="World"/>.
 /// </summary>
-public class CommandBuffer : IDisposable
+public sealed class CommandBuffer : IDisposable
 {
     private readonly PooledList<ComponentType> _addTypes;
     private readonly PooledList<ComponentType> _removeTypes;

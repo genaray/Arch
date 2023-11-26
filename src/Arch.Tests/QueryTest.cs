@@ -5,7 +5,7 @@ using static NUnit.Framework.Assert;
 namespace Arch.Tests;
 
 [TestFixture]
-public partial class QueryTest
+public sealed partial class QueryTest
 {
     private JobScheduler.JobScheduler _jobScheduler;
     private World? _world;

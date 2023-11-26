@@ -13,7 +13,7 @@ internal unsafe struct HeavyComponent
 }
 
 [TestFixture]
-public class ArchetypeTest
+public sealed class ArchetypeTest
 {
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
     private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };

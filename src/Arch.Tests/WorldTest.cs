@@ -12,7 +12,7 @@ namespace Arch.Tests;
 ///     tests basic <see cref="World"/> operations.
 /// </summary>
 [TestFixture]
-public partial class WorldTest
+public sealed partial class WorldTest
 {
     private World _world;
 

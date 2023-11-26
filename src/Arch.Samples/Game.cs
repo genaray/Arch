@@ -9,7 +9,7 @@ namespace Arch.Samples;
 /// <summary>
 ///     An implementation of the <see cref="Microsoft.Xna.Framework.Game"/> to demonstrate Archs usage.
 /// </summary>
-public class Game : Microsoft.Xna.Framework.Game
+public sealed class Game : Microsoft.Xna.Framework.Game
 {
     // The world and a job scheduler for multithreading.
     private World _world;

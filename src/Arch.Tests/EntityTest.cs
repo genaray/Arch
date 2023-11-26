@@ -13,7 +13,7 @@ namespace Arch.Tests;
 ///     tests basic <see cref="Entity"/> operations and especially their extensions.
 /// </summary>
 [TestFixture]
-public partial class EntityTest
+public sealed partial class EntityTest
 {
     [OneTimeSetUp]
     public void Setup()

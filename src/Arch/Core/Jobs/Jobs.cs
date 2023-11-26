@@ -8,7 +8,7 @@ namespace Arch.Core;
 ///     The <see cref="DefaultObjectPolicy{T}"/> class is a pool policy that creates and returns any generic object in the same way.
 /// </summary>
 /// <typeparam name="T">The generic type.</typeparam>
-public class DefaultObjectPolicy<T> : IPooledObjectPolicy<T> where T : class, new()
+public sealed class DefaultObjectPolicy<T> : IPooledObjectPolicy<T> where T : class, new()
 {
     /// <summary>
     ///     Creates an instance of the generic type <typeparamref name="T"/>.
@@ -132,7 +132,7 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
 ///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> and the <see cref="World"/> to iterate multithreaded over chunks.
 /// </summary>
 /// <typeparam name="T">The generic type that implements the <see cref="IChunkJob"/> interface.</typeparam>
-public class ChunkIterationJob<T> : IJob where T : IChunkJob
+public sealed class ChunkIterationJob<T> : IJob where T : IChunkJob
 {
 
     /// <summary>

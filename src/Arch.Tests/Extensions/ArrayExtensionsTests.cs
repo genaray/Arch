@@ -3,7 +3,7 @@
 namespace Arch.Tests.Extensions;
 
 [TestFixture]
-public class ArrayExtensionsTests
+public sealed class ArrayExtensionsTests
 {
     [Test]
     public void Add_InRange()

@@ -6,7 +6,7 @@ using static NUnit.Framework.Assert;
 namespace Arch.Tests;
 
 [TestFixture]
-public partial class CommandBufferTest
+public sealed partial class CommandBufferTest
 {
 
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
@@ -177,7 +177,7 @@ public partial class CommandBufferTest
             That(world.TryGet<Transform>(entities[0], out _), Is.True);
             That(world.TryGet<Rotation>(entities[0], out _), Is.False);
         });
-        
+
 
 
         World.Destroy(world);
