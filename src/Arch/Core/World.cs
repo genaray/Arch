@@ -408,7 +408,6 @@ public partial class World : IDisposable
         JobHandles.Clear();
         GroupToArchetype.Clear();
         EntityInfo.Clear();
-        RecycledIds.Clear();
         QueryCache.Clear();
 
         // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
