@@ -28,7 +28,7 @@ It's not! Arch does everything for you, you only need to define the entities and
 public struct Position{ float X, Y };
 public struct Velocity{ float Dx, Dy };
 
-public class Game 
+public sealed class Game 
 {
     public static void Main(string[] args) 
     {     
