@@ -293,24 +293,7 @@ public readonly struct EntityReference
         Version = -1;
     }
 
-#if PURE_ECS
-
-    /// <summary>
-    ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
-    /// </summary>
-    /// <param name="world">The <see cref="Entity"/> <see cref="World"/>..</param>
-    /// <returns>True if its alive, otherwhise false.</returns>
-    public bool IsAlive(World world)
-    {
-        if (this == Null)
-        {
-            return false;
-        }
-
-        var reference = world.Reference(Entity);
-        return this == reference;
-    }
-#else
+#if !PURE_ECS
     /// <summary>
     ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
     /// </summary>

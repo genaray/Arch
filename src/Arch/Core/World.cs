@@ -1422,6 +1422,24 @@ public partial class World
 public partial class World
 {
     /// <summary>
+    ///     Checks if the <see cref="EntityReference"/> is alive and valid in this <see cref="World"/>.
+    /// </summary>
+    /// <param name="entityReference">The <see cref="EntityReference"/>.</param>
+    /// <returns>True if it exists and is alive, otherwise false.</returns>
+    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool IsAlive(EntityReference entityReference)
+    {
+        if (entityReference == EntityReference.Null)
+        {
+            return false;
+        }
+
+        var reference = Reference(entityReference.Entity);
+        return entityReference == reference;
+    }
+
+    /// <summary>
     ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
