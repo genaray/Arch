@@ -124,7 +124,7 @@ public sealed class BitSet
 
         // Track highest set bit
         _highestBit = Math.Max(_highestBit, index);
-        _max = (_highestBit/sizeof(uint)/_padding)+1;
+        _max = (_highestBit/(BitSize+1))+1;
         _bits[b] |= 1u << (index & BitSize);
     }
 
@@ -157,7 +157,7 @@ public sealed class BitSet
         }
 
         _highestBit = (_bits.Length * (BitSize + 1)) - 1;
-        _max = (_highestBit/sizeof(uint)/_padding)+1;
+        _max = (_highestBit/(BitSize+1))+1;
     }
 
     /// <summary>
