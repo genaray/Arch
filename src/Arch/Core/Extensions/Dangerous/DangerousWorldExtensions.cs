@@ -1,3 +1,4 @@
+using Arch.Core.Utils;
 using Arch.LowLevel.Jagged;
 
 namespace Arch.Core.Extensions.Dangerous;
@@ -17,8 +18,12 @@ public static class DangerousWorldExtensions
     public static void SetArchetypes(this World world, List<Archetype> archetypes)
     {
         world.Archetypes.AddRange(archetypes);
+
         foreach (var archetype in archetypes)
         {
+            var hash = Component.GetHashCode(archetype.Types);
+            world.GroupToArchetype[hash] = archetype;
+
             world.Size += archetype.EntityCount;
             world.Capacity += archetype.EntitiesPerChunk * archetype.ChunkCount;
         }
