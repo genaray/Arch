@@ -40,6 +40,36 @@ public static class DangerousWorldExtensions
     }
 
     /// <summary>
+    /// Gets the recycled entities for the world.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// /// <returns>a tuple (id, version) list of the recycled entities.</returns>
+    public static List<(int, int)> GetRecycledEntityIds(this World world)
+    {
+        List<(int, int)> recycledIdsList = new();
+        foreach (RecycledEntity id in world.RecycledIds)
+        {
+            recycledIdsList.Add((id.Id, id.Version));
+        }
+
+        return recycledIdsList;
+    }
+
+    /// <summary>
+    /// Sets the recycled entities for the world.
+    /// </summary>
+    /// <param name="world">The <see cref="World"/> instance.</param>
+    /// <param name="recycledEntities">A tuple (id, version) list of recycled entites.</param>
+    public static void SetRecycledEntityIds(this World world, List<(int, int)> recycledEntities)
+    {
+        world.RecycledIds.Clear();
+        foreach ((int, int) recycledEntity in recycledEntities)
+        {
+            world.RecycledIds.Enqueue(new RecycledEntity(recycledEntity.Item1, recycledEntity.Item2));
+        }
+    }
+
+    /// <summary>
     ///     Sets the <see cref="EntityInfo.Archetype"/> for an <see cref="Entity"/>.
     /// </summary>
     /// <param name="world">The <see cref="World"/>.</param>
