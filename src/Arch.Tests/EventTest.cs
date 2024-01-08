@@ -9,7 +9,7 @@ namespace Arch.Tests;
 
 /// <summary>
 ///     The <see cref="EventTest"/> class
-///     adds several methods for checking if events are fired correctly upon entity modifcation.
+///     adds several methods for checking if events are fired correctly upon entity modification.
 /// </summary>
 [TestFixture]
 public sealed class EventTest
@@ -54,6 +54,30 @@ public sealed class EventTest
 
         // Create entity to check if created and add event were fired
         var entity = world.Create<EventTestComponentOne>();
+
+        _asserter.AssertEvents(compOneAdded: 1);
+        That(_asserter.CompOneAdded, Does.Contain(entity));
+        _asserter.Clear();
+
+        // Add another component to see if add was fired
+        world.Add<EventTestComponentTwo>(entity);
+
+        _asserter.AssertEvents(compTwoAdded: 1);
+        That(_asserter.CompTwoAdded, Does.Contain(entity));
+        _asserter.Clear();
+    }
+
+    [Test]
+    public void AddSingleFromArchetype()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentOne _) => _asserter.CompOneAdded.Add(entity));
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
+
+        Span<ComponentType> archetype = stackalloc ComponentType[] { typeof(EventTestComponentOne) };
+
+        // Create entity to check if created and add event were fired
+        var entity = world.Create(archetype);
 
         _asserter.AssertEvents(compOneAdded: 1);
         That(_asserter.CompOneAdded, Does.Contain(entity));
@@ -223,6 +247,62 @@ public sealed class EventTest
         _asserter.AssertEvents(compOneRemoved: 1, compTwoRemoved:1);
         That(_asserter.CompOneRemoved, Does.Contain(entity));
         That(_asserter.CompTwoRemoved, Does.Contain(entity));
+        _asserter.Clear();
+    }
+
+    [Test]
+    public void DestroyDoesRaiseComponentRemove()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentRemoved((in Entity entity,ref EventTestComponentOne _) => _asserter.CompOneRemoved.Add(entity));
+        world.SubscribeComponentRemoved((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoRemoved.Add(entity));
+
+        var entity = world.Create<EventTestComponentOne, EventTestComponentTwo>();
+        world.Destroy(entity);
+
+        _asserter.AssertEvents(compOneRemoved: 1, compTwoRemoved:1);
+        That(_asserter.CompOneRemoved, Does.Contain(entity));
+        That(_asserter.CompTwoRemoved, Does.Contain(entity));
+        _asserter.Clear();
+    }
+
+    [Test]
+    public void DestroyUsingQueryDoesRaiseComponentRemove()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentRemoved((in Entity entity,ref EventTestComponentOne _) => _asserter.CompOneRemoved.Add(entity));
+        world.SubscribeComponentRemoved((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoRemoved.Add(entity));
+
+        var entity = world.Create<EventTestComponentOne, EventTestComponentTwo>();
+
+        world.Destroy(new QueryDescription().WithExclusive<EventTestComponentOne, EventTestComponentTwo>());
+
+        _asserter.AssertEvents(compOneRemoved: 1, compTwoRemoved:1);
+        That(_asserter.CompOneRemoved, Does.Contain(entity));
+        That(_asserter.CompTwoRemoved, Does.Contain(entity));
+        _asserter.Clear();
+    }
+
+    [Test]
+    public void RemoveCompThenDestroyDoesNotRaiseCompRemoveTwice()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentRemoved((in Entity entity,ref EventTestComponentOne _) => _asserter.CompOneRemoved.Add(entity));
+        world.SubscribeComponentRemoved((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoRemoved.Add(entity));
+
+        var entity = world.Create<EventTestComponentOne, EventTestComponentTwo>();
+        world.Remove<EventTestComponentOne, EventTestComponentTwo>(entity);
+
+        _asserter.AssertEvents(compOneRemoved: 1, compTwoRemoved: 1);
+        That(_asserter.CompOneRemoved, Does.Contain(entity));
+        That(_asserter.CompTwoRemoved, Does.Contain(entity));
+        _asserter.Clear();
+
+        world.Destroy(entity);
+
+        _asserter.AssertEvents(compOneRemoved: 0, compTwoRemoved: 0);
+        That(_asserter.CompOneRemoved, Does.Not.Contain(entity));
+        That(_asserter.CompTwoRemoved, Does.Not.Contain(entity));
         _asserter.Clear();
     }
 
