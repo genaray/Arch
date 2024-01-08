@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using System.Threading;
+using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
@@ -297,6 +298,14 @@ public partial class World : IDisposable
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
         Size++;
         OnEntityCreated(entity);
+
+#if EVENTS
+        foreach (ref var type in types)
+        {
+            OnComponentAdded(entity, type);
+        }
+#endif
+
         return entity;
     }
 
@@ -343,6 +352,15 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Destroy(Entity entity)
     {
+        #if EVENTS
+        // Raise the OnComponentRemoved event for each component on the entity.
+        var arch = GetArchetype(entity);
+        foreach (var compType in arch.Types)
+        {
+            OnComponentRemoved(entity, compType);
+        }
+        #endif
+
         OnEntityDestroyed(entity);
 
         // Remove from archetype
@@ -774,6 +792,16 @@ public partial class World
                 foreach (var index in chunk)
                 {
                     var entity = Unsafe.Add(ref entityFirstElement, index);
+
+                    #if EVENTS
+                    // Raise the OnComponentRemoved event for each component on the entity.
+                    var arch = GetArchetype(entity);
+                    foreach (var compType in arch.Types)
+                    {
+                        OnComponentRemoved(entity, compType);
+                    }
+                    #endif
+
                     OnEntityDestroyed(entity);
 
                     var version = EntityInfo.GetVersion(entity.Id);
