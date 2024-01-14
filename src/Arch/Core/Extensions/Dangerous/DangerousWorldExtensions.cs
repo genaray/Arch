@@ -105,20 +105,28 @@ public static class DangerousWorldExtensions
     /// </summary>
     /// <param name="world">The <see cref="World"/> instance.</param>
     /// <returns>Its <see cref="EntityInfoStorage.EntitySlots"/> array.</returns>
-    public static JaggedArray<(Archetype, (int,int))> GetSlots(this World world)
+    public static JaggedArray<(Archetype, (int, int))> GetSlots(this World world)
     {
         var array = world.EntityInfo.EntitySlots;
-        return Unsafe.As<JaggedArray<(Archetype, (int,int))>>(array);
+        return Unsafe.As<JaggedArray<(Archetype, (int, int))>>(array);
     }
 
     /// <summary>
-    ///     Sets the <see cref="EntityInfoStorage.Slots"/> of a <see cref="World"/>.
+    ///     Sets the <see cref="EntityInfoStorage.EntitySlots"/> of a <see cref="World"/>.
     /// </summary>
     /// <param name="world">The <see cref="World"/> instance.</param>
     /// <param name="slots">The new slots array.</param>
-    public static void SetSlots(this World world, JaggedArray<(Archetype, (int,int))> slots)
+    public static void SetSlots(this World world, JaggedArray<(Archetype, (int, int))> slots)
     {
-        world.EntityInfo.EntitySlots = Unsafe.As<JaggedArray<EntitySlot>>(slots);
+        var convertedSlots = new JaggedArray<EntitySlot>(slots.Buckets, slots.Capacity);
+
+        for (int i = 0; i < slots.Capacity; i++)
+        {
+            var slot = slots[i];
+            convertedSlots[i] = new EntitySlot(slot.Item1, new Slot(slot.Item2.Item1, slot.Item2.Item2));
+        }
+
+        world.EntityInfo.EntitySlots = convertedSlots;
     }
 
     /// <summary>
