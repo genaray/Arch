@@ -1,5 +1,6 @@
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -68,7 +69,7 @@ public sealed class Game : Microsoft.Xna.Framework.Game
         _drawSystem = new DrawSystem(_world, _spriteBatch);
 
         // Spawn in entities with position, velocity and sprite
-        for (var index = 0; index < 1002; index++)
+        for (var index = 0; index < 150_000; index++)
         {
             _world.Create(
                 new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
