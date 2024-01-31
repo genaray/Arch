@@ -24,38 +24,7 @@ public static class StringBuilderHpParallelQueryExtensions
                 var innerJob = new IForEachJob<T,{{generics}}>();
                 innerJob.ForEach = iForEach;
 
-                var pool = JobMeta<ChunkIterationJob<IForEachJob<T,{{generics}}>>>.Pool;
-                var query = Query(in description);
-                foreach (var archetype in query.GetArchetypeIterator())
-                {
-                    var archetypeSize = archetype.ChunkCount;
-                    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-                    foreach (var range in part)
-                    {
-                        var job = pool.Get();
-                        job.Start = range.Start;
-                        job.Size = range.Length;
-                        job.Chunks = archetype.Chunks;
-                        job.Instance = innerJob;
-
-                        var jobHandle = SharedJobScheduler.Schedule(job);
-                        JobsCache.Add(job);
-                        JobHandles.Add(jobHandle);
-                    }
-
-                    // Return jobs to pool
-                    SharedJobScheduler.Flush();
-                    JobHandle.CompleteAll(JobHandles.Span);
-
-                    for (var index = 0; index < JobsCache.Count; index++)
-                    {
-                          var job = Unsafe.As<ChunkIterationJob<IForEachJob<T,{{generics}}>>>(JobsCache[index]);
-                          pool.Return(job);
-                    }
-
-                    JobHandles.Clear();
-                    JobsCache.Clear();
-                }
+                InlineParallelChunkQuery(in description, innerJob);
             }
             """;
 
@@ -84,38 +53,7 @@ public static class StringBuilderHpParallelQueryExtensions
                 var innerJob = new IForEachWithEntityJob<T,{{generics}}>();
                 innerJob.ForEach = iForEach;
 
-                var pool = JobMeta<ChunkIterationJob<IForEachWithEntityJob<T,{{generics}}>>>.Pool;
-                var query = Query(in description);
-                foreach (var archetype in query.GetArchetypeIterator()) {
-
-                    var archetypeSize = archetype.ChunkCount;
-                    var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-                    foreach (var range in part)
-                    {
-                        var job = pool.Get();
-                        job.Start = range.Start;
-                        job.Size = range.Length;
-                        job.Chunks = archetype.Chunks;
-                        job.Instance = innerJob;
-
-                        var jobHandle = SharedJobScheduler.Schedule(job);
-                        JobsCache.Add(job);
-                        JobHandles.Add(jobHandle);
-                    }
-
-                    // Return jobs to pool
-                    SharedJobScheduler.Flush();
-                    JobHandle.CompleteAll(JobHandles.Span);
-
-                    for (var index = 0; index < JobsCache.Count; index++)
-                    {
-                        var job = Unsafe.As<ChunkIterationJob<IForEachWithEntityJob<T,{{generics}}>>>(JobsCache[index]);
-                        pool.Return(job);
-                    }
-
-                    JobHandles.Clear();
-                    JobsCache.Clear();
-                }
+                InlineParallelChunkQuery(in description, innerJob);
             }
             """;
 
