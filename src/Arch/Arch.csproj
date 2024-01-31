@@ -96,8 +96,9 @@ Fixed .Add when a newly non registered component was added. </PackageReleaseNote
     <PackageReference Include="Arch.LowLevel" Version="1.1.0" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="ZeroAllocJobScheduler" Version="1.0.1" />
+    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.1" />
   </ItemGroup>
 
 </Project>

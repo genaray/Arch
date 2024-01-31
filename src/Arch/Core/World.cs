@@ -4,7 +4,7 @@ using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
-using JobScheduler;
+using Schedulers;
 using Component = Arch.Core.Utils.Component;
 
 namespace Arch.Core;
@@ -82,6 +82,11 @@ public partial class World
     ///     Tracks how many <see cref="World"/>s exists.
     /// </summary>
     public static int WorldSize { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; [MethodImpl(MethodImplOptions.AggressiveInlining)] private set; }
+
+    /// <summary>
+    ///     The shared static <see cref="JobScheduler"/> used for Multithreading.
+    /// </summary>
+    public static JobScheduler? SharedJobScheduler { get; set; }
 
     /// <summary>
     ///     Creates a <see cref="World"/> instance.

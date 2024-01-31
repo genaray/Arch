@@ -1,6 +1,6 @@
 using CommunityToolkit.HighPerformance;
-using JobScheduler;
 using Microsoft.Extensions.ObjectPool;
+using Schedulers;
 
 namespace Arch.Core;
 

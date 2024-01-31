@@ -56,7 +56,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
             var accessors = new StringBuilder();
             accessors.AppendLine("using System;");
             accessors.AppendLine("using System.Runtime.CompilerServices;");
-            accessors.AppendLine("using JobScheduler;");
+            accessors.AppendLine("using Schedulers;");
             accessors.AppendLine("using Arch.Core.Utils;");
             accessors.AppendLine("using System.Diagnostics.Contracts;");
             accessors.AppendLine("using Arch.Core.Extensions;");

@@ -1,6 +1,6 @@
 using Arch.Core.Utils;
 using Collections.Pooled;
-using IJob = JobScheduler.IJob;
+using Schedulers;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -11,9 +11,9 @@ public partial class World
 {
 
     /// <summary>
-    ///     A list of <see cref="JobScheduler.JobHandle"/> which are pooled to avoid allocs.
+    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
     /// </summary>
-    private PooledList<JobScheduler.JobHandle> JobHandles { get; }
+    private PooledList<JobHandle> JobHandles { get; }
 
     /// <summary>
     ///     A cache used for the parallel queries to prevent list allocations.
@@ -86,7 +86,7 @@ public partial class World
     public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
         // Job scheduler needs to be initialized.
-        if (JobScheduler.JobScheduler.Instance is null)
+        if (SharedJobScheduler is null)
         {
             throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
         }
@@ -105,19 +105,19 @@ public partial class World
                 job.Size = range.Length;
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
+
+                var jobHandle = SharedJobScheduler.Schedule(job);
                 JobsCache.Add(job);
+                JobHandles.Add(jobHandle);
             }
 
             // Schedule, flush, wait, return.
-            IJob.Schedule(JobsCache, JobHandles);
-            JobScheduler.JobScheduler.Instance.Flush();
-            JobScheduler.JobHandle.Complete(JobHandles);
-            JobScheduler.JobHandle.Return(JobHandles);
+            SharedJobScheduler.Flush();
+            JobHandle.CompleteAll(JobHandles.Span);
 
-            // Return jobs to pool.
-            for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
+            for (var index = 0; index < JobsCache.Count; index++)
             {
-                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[jobIndex]);
+                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]);
                 pool.Return(job);
             }
 

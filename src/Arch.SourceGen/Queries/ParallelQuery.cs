@@ -37,18 +37,18 @@ public static class StringBuilderParallelQueryExtensions
                         job.Size = range.Length;
                         job.Chunks = archetype.Chunks;
                         job.Instance = innerJob;
+
+                        var jobHandle = SharedJobScheduler.Schedule(job);
                         JobsCache.Add(job);
+                        JobHandles.Add(jobHandle);
                     }
 
-                    IJob.Schedule(JobsCache, JobHandles);
-                    JobScheduler.JobScheduler.Instance.Flush();
-                    JobHandle.Complete(JobHandles);
-                    JobHandle.Return(JobHandles);
+                    SharedJobScheduler.Flush();
+                    JobHandle.CompleteAll(JobHandles.Span);
 
-                    // Return jobs to pool
-                    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
+                    for (var index = 0; index < JobsCache.Count; index++)
                     {
-                        var job = Unsafe.As<ChunkIterationJob<ForEachJob<{{generics}}>>>(JobsCache[jobIndex]);
+                        var job = Unsafe.As<ChunkIterationJob<ForEachJob<{{generics}}>>>(JobsCache[index]);
                         pool.Return(job);
                     }
 
@@ -97,19 +97,19 @@ public static class StringBuilderParallelQueryExtensions
                         job.Size = range.Length;
                         job.Chunks = archetype.Chunks;
                         job.Instance = innerJob;
+
+                        var jobHandle = SharedJobScheduler.Schedule(job);
                         JobsCache.Add(job);
+                        JobHandles.Add(jobHandle);
                     }
 
-                    IJob.Schedule(JobsCache, JobHandles);
-                    JobScheduler.JobScheduler.Instance.Flush();
-                    JobHandle.Complete(JobHandles);
-                    JobHandle.Return(JobHandles);
+                    SharedJobScheduler.Flush();
+                    JobHandle.CompleteAll(JobHandles.Span);
 
-                    // Return jobs to pool
-                    for (var jobIndex = 0; jobIndex < JobsCache.Count; jobIndex++)
+                    for (var index = 0; index < JobsCache.Count; index++)
                     {
-                        var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>(JobsCache[jobIndex]);
-                        pool.Return(job);
+                      var job = Unsafe.As<ChunkIterationJob<ForEachWithEntityJob<{{generics}}>>>(JobsCache[index]);
+                      pool.Return(job);
                     }
 
                     JobHandles.Clear();

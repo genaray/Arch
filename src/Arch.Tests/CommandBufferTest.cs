@@ -1,6 +1,7 @@
 using Arch.CommandBuffer;
 using Arch.Core;
 using Arch.Core.Utils;
+using Schedulers;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
@@ -222,12 +223,18 @@ public sealed partial class CommandBufferTest
 public partial class CommandBufferTest
 {
 
-    private JobScheduler.JobScheduler _jobScheduler;
+    private JobScheduler _jobScheduler;
 
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler.JobScheduler("CommandBuffer");
+        _jobScheduler = new JobScheduler(
+            new JobScheduler.Config{
+            ThreadPrefixName = "CommandBuffer",
+            ThreadCount = 0,
+            MaxExpectedConcurrentJobs = 64,
+            StrictAllocationMode = false,
+        });
     }
 
     [OneTimeTearDown]
