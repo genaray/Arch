@@ -23,7 +23,9 @@ Fixed issue where Unsafe.As did not work on .Net 2.1 for the Dangerous-Utils.
 Dangerous API now allows setting/getting of recycled ids.
 Fixed archetype duplication after loading a save.
 Fixed .Add when a newly non registered component was added. 
-Now makes use of the updated and improved JobScheduler 1.1.1.</PackageReleaseNotes>
+Now makes use of the updated and improved JobScheduler 1.1.1.
+ScheduleParallelInlineQuery added.
+Added World.IsAlive(EntityReference);</PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>

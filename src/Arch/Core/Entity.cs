@@ -300,21 +300,17 @@ public readonly struct EntityReference
     /// </summary>
     /// <param name="world">The <see cref="Entity"/> <see cref="World"/>..</param>
     /// <returns>True if its alive, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsAlive(World world)
     {
-        if (this == Null)
-        {
-            return false;
-        }
-
-        var reference = world.Reference(Entity);
-        return this == reference;
+        world.IsAlive(this);
     }
 #else
     /// <summary>
     ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
     /// </summary>
     /// <returns>True if its alive, otherwhise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsAlive()
     {
         if (this == Null)

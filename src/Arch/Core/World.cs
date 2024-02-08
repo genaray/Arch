@@ -1467,6 +1467,24 @@ public partial class World
     }
 
     /// <summary>
+    ///     Checks if the <see cref="EntityReference"/> is alive and valid in this <see cref="World"/>.
+    /// </summary>
+    /// <param name="entityReference">The <see cref="EntityReference"/>.</param>
+    /// <returns>True if it exists and is alive, otherwise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public bool IsAlive(EntityReference entityReference)
+    {
+        if (entityReference == EntityReference.Null)
+        {
+            return false;
+        }
+
+        var reference = Reference(entityReference.Entity);
+        return entityReference == reference;
+    }
+
+    /// <summary>
     ///     Returns the version of an <see cref="Entity"/>.
     ///     Indicating how often it was recycled.
     /// </summary>
