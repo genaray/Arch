@@ -303,7 +303,7 @@ public readonly struct EntityReference
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsAlive(World world)
     {
-        world.IsAlive(this);
+        return world.IsAlive(this);
     }
 #else
     /// <summary>
