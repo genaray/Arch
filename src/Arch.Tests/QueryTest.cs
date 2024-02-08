@@ -26,6 +26,8 @@ public sealed partial class QueryTest
                 MaxExpectedConcurrentJobs = 64,
                 StrictAllocationMode = false,
         });
+
+        World.SharedJobScheduler = _jobScheduler;
     }
 
     [OneTimeTearDown]

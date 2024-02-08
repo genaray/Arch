@@ -78,6 +78,12 @@ public partial class World
     /// <remarks>
     ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
     /// </remarks>
+    /// <remarks>
+    ///     Processes <see cref="Chunk"/>s parallel, but blocks the thread until all <see cref="Chunk"/>s are processed.
+    /// </remarks>
+    ///  <remarks>
+    ///     Pools generated <see cref="ChunkIterationJob{T}"/>s internally to avoid garbage.
+    /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
     /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
@@ -112,8 +118,9 @@ public partial class World
             }
 
             // Schedule, flush, wait, return.
+            var handle = SharedJobScheduler.CombineDependencies(JobHandles.Span);
             SharedJobScheduler.Flush();
-            JobHandle.CompleteAll(JobHandles.Span);
+            handle.Complete();
 
             for (var index = 0; index < JobsCache.Count; index++)
             {
@@ -124,5 +131,53 @@ public partial class World
             JobHandles.Clear();
             JobsCache.Clear();
         }
+    }
+
+    /// <summary>
+    ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
+    /// </summary>
+    /// <remarks>
+    ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
+    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
+    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public JobHandle ScheduleInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
+    {
+        // Job scheduler needs to be initialized.
+        if (SharedJobScheduler is null)
+        {
+            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
+        }
+
+        // Cast pool in an unsafe fast way and run the query.
+        var query = Query(in queryDescription);
+        foreach (var archetype in query.GetArchetypeIterator())
+        {
+            var archetypeSize = archetype.ChunkCount;
+            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+            foreach (var range in part)
+            {
+                var job = new ChunkIterationJob<T>
+                {
+                    Start = range.Start,
+                    Size = range.Length,
+                    Chunks = archetype.Chunks,
+                    Instance = innerJob
+                };
+
+                var jobHandle = SharedJobScheduler.Schedule(job);
+                JobHandles.Add(jobHandle);
+            }
+        }
+
+        // Schedule, flush, wait, return.
+        var handle = SharedJobScheduler.CombineDependencies(JobHandles.Span);
+        SharedJobScheduler.Flush();
+        JobHandles.Clear();
+
+        return handle;
     }
 }
