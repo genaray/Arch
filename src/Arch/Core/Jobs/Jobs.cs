@@ -64,7 +64,7 @@ public readonly ref struct Range
 /// </summary>
 public interface IChunkJob
 {
-    public void Execute(int index, ref Chunk chunk);
+    public void Execute(ref Chunk chunk);
 }
 
 /// <summary>
@@ -82,10 +82,9 @@ public struct ForEachJob : IChunkJob
     /// <summary>
     ///     Called on each <see cref="Chunk"/> and iterates over all <see cref="Entity"/>'s to call the <see cref="ForEach"/> callback for each.
     /// </summary>
-    /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void Execute(int index, ref Chunk chunk)
+    public readonly void Execute(ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);
         foreach(var entityIndex in chunk)
@@ -116,7 +115,7 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
     /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Execute(int index, ref Chunk chunk)
+    public void Execute(ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);
         foreach(var entityIndex in chunk)
@@ -132,34 +131,26 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
 ///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> and the <see cref="World"/> to iterate multithreaded over chunks.
 /// </summary>
 /// <typeparam name="T">The generic type that implements the <see cref="IChunkJob"/> interface.</typeparam>
-public sealed class ChunkIterationJob<T> : IJob where T : IChunkJob
+public sealed class ChunkIterationJob<T> : IJobParallelFor where T : IChunkJob
 {
+
+    /// <summary>
+    ///     Represents a section of chunk iteration from one archetype.
+    /// </summary>
+    private struct ChunkIterationPart
+    {
+        public int Start;
+        public int Size;
+        public Chunk[]? Chunks;
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
     /// </summary>
     public ChunkIterationJob()
     {
-        Chunks = Array.Empty<Chunk>();
+        Parts = new List<ChunkIterationPart>();
     }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
-    /// </summary>
-    /// <param name="start">The start at which this job begins to process the <see cref="Chunks"/>.</param>
-    /// <param name="size">The size or lengths, how man <see cref="Chunks"/> this job will process.</param>
-    /// <param name="chunks">The <see cref="Chunk"/> array being processed.</param>
-    public ChunkIterationJob(int start, int size, Chunk[] chunks)
-    {
-        Start = start;
-        Size = size;
-        Chunks = chunks;
-    }
-
-    /// <summary>
-    /// A <see cref="Chunk"/> array, this will be processed.
-    /// </summary>
-    public Chunk[] Chunks { get; set; }
 
     /// <summary>
     /// An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
@@ -171,22 +162,51 @@ public sealed class ChunkIterationJob<T> : IJob where T : IChunkJob
     /// </summary>
     public int Size { get; set; }
 
-    /// <summary>
-    /// The start index.
-    /// </summary>
-    public int Start;
+
+    private List<ChunkIterationPart> Parts { get; set; }
+
+    public int ThreadCount { get; } = Environment.ProcessorCount;
+    public int BatchSize { get; } = 16;
 
     /// <summary>
-    ///     Iterates over all <see cref="Chunks"/> between <see cref="Start"/> and <see cref="Size"/> and calls <see cref="Instance"/>.
+    /// Add an array of chunks to be processed by this job.
     /// </summary>
-    public void Execute()
+    /// <param name="chunks">The chunks to add.</param>
+    /// <param name="start">The first chunk to process in <paramref name="chunks"/></param>
+    /// <param name="size">The amount of chunks to process in <paramref name="chunks"/></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddChunks(Chunk[] chunks, int start, int size)
     {
-        ref var chunk = ref Chunks.DangerousGetReferenceAt(Start);
+        Parts.Add(new ChunkIterationPart{
+            Chunks = chunks,
+            Start = start,
+            Size = size
+        });
+    }
 
-        for (var chunkIndex = 0; chunkIndex < Size; chunkIndex++)
+    public void Execute(int index)
+    {
+        var sizeSoFar = 0;
+        for (var i = 0; i < Parts.Count; i++)
         {
-            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            Instance?.Execute(Start + chunkIndex, ref currentChunk);
+            // If we're about to go over, we're ready to execute
+            var part = Parts[i];
+            if (sizeSoFar + part.Size > index)
+            {
+                // this had better be not null!
+                ref var chunk = ref part.Chunks!.DangerousGetReferenceAt(index - sizeSoFar + part.Start);
+                Instance?.Execute(ref chunk);
+                return;
+            }
+
+            sizeSoFar += part.Size;
         }
+
+        throw new InvalidOperationException("Reached end of chunk, but could not find the correct index!");
+    }
+
+    public void Finish()
+    {
+        Parts.Clear();
     }
 }
