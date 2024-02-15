@@ -411,6 +411,10 @@ public partial class World : IDisposable
             archetype.TrimExcess();
             Capacity += archetype.ChunkCount * archetype.EntitiesPerChunk; // Since always one chunk always exists.
         }
+
+        // Traverse recycled ids and remove all that are higher than the current capacity.
+        // If we do not do this, a new entity might get a id higher than the entityinfo array which causes it to go out of bounds.
+        RecycledIds.RemoveWhere(entity => entity.Id >= Capacity);
     }
 
     /// <summary>
