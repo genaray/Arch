@@ -131,26 +131,34 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
 ///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> and the <see cref="World"/> to iterate multithreaded over chunks.
 /// </summary>
 /// <typeparam name="T">The generic type that implements the <see cref="IChunkJob"/> interface.</typeparam>
-public sealed class ChunkIterationJob<T> : IJobParallelFor where T : IChunkJob
+public sealed class ChunkIterationJob<T> : IJob where T : IChunkJob
 {
-
-    /// <summary>
-    ///     Represents a section of chunk iteration from one archetype.
-    /// </summary>
-    private struct ChunkIterationPart
-    {
-        public int Start;
-        public int Size;
-        public Chunk[]? Chunks;
-    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
     /// </summary>
     public ChunkIterationJob()
     {
-        Parts = new List<ChunkIterationPart>();
+        Chunks = Array.Empty<Chunk>();
     }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
+    /// </summary>
+    /// <param name="start">The start at which this job begins to process the <see cref="Chunks"/>.</param>
+    /// <param name="size">The size or lengths, how man <see cref="Chunks"/> this job will process.</param>
+    /// <param name="chunks">The <see cref="Chunk"/> array being processed.</param>
+    public ChunkIterationJob(int start, int size, Chunk[] chunks)
+    {
+        Start = start;
+        Size = size;
+        Chunks = chunks;
+    }
+
+    /// <summary>
+    /// A <see cref="Chunk"/> array, this will be processed.
+    /// </summary>
+    public Chunk[] Chunks { get; set; }
 
     /// <summary>
     /// An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
@@ -162,51 +170,22 @@ public sealed class ChunkIterationJob<T> : IJobParallelFor where T : IChunkJob
     /// </summary>
     public int Size { get; set; }
 
-
-    private List<ChunkIterationPart> Parts { get; set; }
-
-    public int ThreadCount { get; } = Environment.ProcessorCount;
-    public int BatchSize { get; } = 16;
+    /// <summary>
+    /// The start index.
+    /// </summary>
+    public int Start;
 
     /// <summary>
-    /// Add an array of chunks to be processed by this job.
+    ///     Iterates over all <see cref="Chunks"/> between <see cref="Start"/> and <see cref="Size"/> and calls <see cref="Instance"/>.
     /// </summary>
-    /// <param name="chunks">The chunks to add.</param>
-    /// <param name="start">The first chunk to process in <paramref name="chunks"/></param>
-    /// <param name="size">The amount of chunks to process in <paramref name="chunks"/></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddChunks(Chunk[] chunks, int start, int size)
+    public void Execute()
     {
-        Parts.Add(new ChunkIterationPart{
-            Chunks = chunks,
-            Start = start,
-            Size = size
-        });
-    }
+        ref var chunk = ref Chunks.DangerousGetReferenceAt(Start);
 
-    public void Execute(int index)
-    {
-        var sizeSoFar = 0;
-        for (var i = 0; i < Parts.Count; i++)
+        for (var chunkIndex = 0; chunkIndex < Size; chunkIndex++)
         {
-            // If we're about to go over, we're ready to execute
-            var part = Parts[i];
-            if (sizeSoFar + part.Size > index)
-            {
-                // this had better be not null!
-                ref var chunk = ref part.Chunks!.DangerousGetReferenceAt(index - sizeSoFar + part.Start);
-                Instance?.Execute(ref chunk);
-                return;
-            }
-
-            sizeSoFar += part.Size;
+            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
+            Instance?.Execute(ref currentChunk);
         }
-
-        throw new InvalidOperationException("Reached end of chunk, but could not find the correct index!");
-    }
-
-    public void Finish()
-    {
-        Parts.Clear();
     }
 }

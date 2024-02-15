@@ -18,7 +18,7 @@ public partial class World
     /// <summary>
     ///     A cache used for the parallel queries to prevent list allocations.
     /// </summary>
-    internal List<IJobParallelFor> JobsCache { get; set; }
+    internal List<IJob> JobsCache { get; set; }
 
     /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
@@ -97,39 +97,42 @@ public partial class World
             throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
         }
 
-        if (!SharedJobScheduler.IsMainThread)
-        {
-            throw new Exception("JobScheduler must be called from MainThread.");
-        }
-
         // Cast pool in an unsafe fast way and run the query.
-        var query = Query(in queryDescription);
-
         var pool = JobMeta<ChunkIterationJob<T>>.Pool;
-        var job = pool.Get();
-        job.Instance = innerJob;
-
-        var size = 0;
+        var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
             var archetypeSize = archetype.ChunkCount;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
             foreach (var range in part)
             {
-                job.AddChunks(archetype.Chunks, range.Start, range.Length);
-                size += range.Length;
+                var job = pool.Get();
+                job.Start = range.Start;
+                job.Size = range.Length;
+                job.Chunks = archetype.Chunks;
+                job.Instance = innerJob;
+
+                var jobHandle = SharedJobScheduler.Schedule(job);
+                JobsCache.Add(job);
+                JobHandles.Add(jobHandle);
             }
+
+            // Schedule, flush, wait, return.
+            var handle = SharedJobScheduler.CombineDependencies(JobHandles.Span);
+            SharedJobScheduler.Flush();
+            handle.Complete();
+
+            for (var index = 0; index < JobsCache.Count; index++)
+            {
+                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]);
+                pool.Return(job);
+            }
+
+            JobHandles.Clear();
+            JobsCache.Clear();
         }
-
-        // Schedule, flush, wait, return.
-        var handle = SharedJobScheduler.Schedule(job, size);
-        SharedJobScheduler.Flush();
-        //handle.Complete();
-
-        pool.Return(job);
     }
 
-    /*
     /// <summary>
     ///     Finds all matching <see cref="Chunk"/>'s by a <see cref="QueryDescription"/> and calls an <see cref="IChunkJob"/> on them.
     /// </summary>
@@ -176,5 +179,5 @@ public partial class World
         JobHandles.Clear();
 
         return handle;
-    }*/
+    }
 }

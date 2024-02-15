@@ -192,7 +192,7 @@ public partial class World : IDisposable
 
         // Multithreading/Jobs.
         JobHandles = new PooledList<JobHandle>(Environment.ProcessorCount);
-        JobsCache = new List<IJobParallelFor>(Environment.ProcessorCount);
+        JobsCache = new List<IJob>(Environment.ProcessorCount);
     }
 
     /// <summary>
