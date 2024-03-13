@@ -70,11 +70,9 @@ public sealed class CommandBuffer : IDisposable
     ///     Initializes a new instance of the <see cref="CommandBuffer"/> class
     ///     with the specified <see cref="Core.World"/> and an optional <paramref name="initialCapacity"/> (default: 128).
     /// </summary>
-    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="initialCapacity">The initial capacity.</param>
-    public CommandBuffer(World world, int initialCapacity = 128)
+    public CommandBuffer(int initialCapacity = 128)
     {
-        World = world;
         Entities = new PooledList<Entity>(initialCapacity);
         BufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
         Creates = new PooledList<CreateCommand>(initialCapacity);
@@ -85,11 +83,6 @@ public sealed class CommandBuffer : IDisposable
         _addTypes = new PooledList<ComponentType>(16);
         _removeTypes = new PooledList<ComponentType>(16);
     }
-
-    /// <summary>
-    ///     Gets the <see cref="Core.World"/>.
-    /// </summary>
-    public World World { get; }
 
     /// <summary>
     ///     Gets the amount of <see cref="Entity"/> instances targeted by this <see cref="CommandBuffer"/>.
@@ -170,14 +163,15 @@ public sealed class CommandBuffer : IDisposable
     ///     Records a Create operation for an <see cref="Entity"/> based on its component structure.
     ///     Will be created during <see cref="Playback"/>.
     /// </summary>
+    /// <param name="world"></param>
     /// <param name="types">The <see cref="Entity"/>'s component structure/<see cref="Archetype"/>.</param>
     /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Entity Create(ComponentType[] types)
+    public Entity Create(World world, ComponentType[] types)
     {
         lock (this)
         {
-            var entity = new Entity(-(Size + 1), World.Id);
+            var entity = new Entity(-(Size + 1), world.Id);
             Register(entity, out _);
 
             var command = new CreateCommand(Size - 1, types);
@@ -306,7 +300,7 @@ public sealed class CommandBuffer : IDisposable
 
         world.Move(entity, oldArchetype, newArchetype, out _);
     }
-    
+
     /// <summary>
     ///     Plays back all recorded commands, modifying the world.
     /// </summary>
@@ -314,12 +308,12 @@ public sealed class CommandBuffer : IDisposable
     ///     This operation should only happen on the main thread.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Playback()
+    public void Playback(World world)
     {
         // Create recorded entities.
         foreach (var cmd in Creates)
         {
-            var entity = World.Create(cmd.Types);
+            var entity = world.Create(cmd.Types);
             Entities[cmd.Index] = entity;
         }
 
@@ -344,12 +338,12 @@ public sealed class CommandBuffer : IDisposable
             {
                 continue;
             }
-            
+
             // Resolves the entity to get the real one (e.g. for newly created negative entities and stuff). 
             var entity = Resolve(wrappedEntity.Entity);
-            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
+            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            AddRange(World, entity, _addTypes);
+            AddRange(world, entity, _addTypes);
             _addTypes.Clear();
         }
 
@@ -360,11 +354,11 @@ public sealed class CommandBuffer : IDisposable
             var wrappedEntity = Sets.Entities[index];
             var entity = Resolve(wrappedEntity.Entity);
             var id = wrappedEntity.Index;
-            
-            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
+
+            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
 
             // Get entity chunk
-            var entityInfo = World.EntityInfo[entity.Id];
+            var entityInfo = world.EntityInfo[entity.Id];
             var archetype = entityInfo.Archetype;
             ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
             var chunkIndex = entityInfo.Slot.Index;
@@ -417,18 +411,18 @@ public sealed class CommandBuffer : IDisposable
             {
                 continue;
             }
-            
-            var entity = Resolve(wrappedEntity.Entity);
-            Debug.Assert(World.IsAlive(entity), $"CommandBuffer can not to remove components from the dead {wrappedEntity.Entity}");
 
-            World.RemoveRange(entity, _removeTypes);
+            var entity = Resolve(wrappedEntity.Entity);
+            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to remove components from the dead {wrappedEntity.Entity}");
+
+            world.RemoveRange(entity, _removeTypes);
             _removeTypes.Clear();
         }
 
         // Play back destructions.
         foreach (var cmd in Destroys)
         {
-            World.Destroy(Entities[cmd]);
+            world.Destroy(Entities[cmd]);
         }
 
         // Reset values.
