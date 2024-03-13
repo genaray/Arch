@@ -25,7 +25,12 @@ Fixed archetype duplication after loading a save.
 Fixed .Add when a newly non registered component was added. 
 Now makes use of the updated and improved JobScheduler 1.1.1.
 ScheduleParallelInlineQuery added.
-Added World.IsAlive(EntityReference);</PackageReleaseNotes>
+Added World.IsAlive(EntityReference);
+Fixed bug where `World.TrimExcess` does not trim Recycled-Entities which results in an out of bounds exception sooner or later.
+Fixed bug in JobScheduler which prevents a deadlock.
+Moved CommandBuffer to Buffer namespace, might break references.
+CommandBuffer now accepts a world during playback, world in ctor was removed.
+CommandBuffer now triggers OnComponentRemoved events.  </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
