@@ -23,7 +23,7 @@ Fixed issue where Unsafe.As did not work on .Net 2.1 for the Dangerous-Utils.
 Dangerous API now allows setting/getting of recycled ids.
 Fixed archetype duplication after loading a save.
 Fixed .Add when a newly non registered component was added. 
-Now makes use of the updated and improved JobScheduler 1.1.1.
+Now makes use of the updated and improved JobScheduler 1.1.2.
 ScheduleParallelInlineQuery added.
 Added World.IsAlive(EntityReference);
 Fixed bug where `World.TrimExcess` does not trim Recycled-Entities which results in an out of bounds exception sooner or later.
@@ -106,7 +106,7 @@ CommandBuffer now triggers OnComponentRemoved events.  </PackageReleaseNotes>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.1" />
+    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
   </ItemGroup>
 
 </Project>
