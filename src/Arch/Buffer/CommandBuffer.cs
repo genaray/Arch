@@ -273,8 +273,10 @@ public sealed partial class CommandBuffer : IDisposable
     /// <remarks>
     ///     This operation should only happen on the main thread.
     /// </remarks>
+    /// <param name="world">The <see cref="World"/> where the commands will be playbacked too.</param>
+    /// <param name="dispose">If true it will clear the recorded operations after they were playbacked, if not they will stay.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Playback(World world)
+    public void Playback(World world, bool dispose = true)
     {
         // Create recorded entities.
         foreach (var cmd in Creates)
@@ -347,11 +349,11 @@ public sealed partial class CommandBuffer : IDisposable
                 // Entity also exists in add and the set component was added recently
                 if (Adds.Used.Length > i && Adds.Components[Adds.Used[i]].Contains(id))
                 {
-                    World.OnComponentAdded(entity, sparseArray.Type);
+                    world.OnComponentAdded(entity, sparseArray.Type);
                 }
                 else
                 {
-                    World.OnComponentSet(entity, sparseArray.Type);
+                    world.OnComponentSet(entity, sparseArray.Type);
                 }
 #endif
             }
@@ -392,6 +394,11 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Reset values.
+        if (!dispose)
+        {
+            return;
+        }
+
         Size = 0;
         Entities.Clear();
         BufferedEntityInfo.Clear();
