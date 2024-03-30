@@ -1,3 +1,4 @@
+using System.Buffers;
 using Arch.Core.Utils;
 
 namespace Arch.Core.Extensions.Dangerous;
@@ -36,7 +37,9 @@ public static class DangerousArchetypeExtensions
     /// <param name="chunks">The list of <see cref="Chunk"/>s.</param>
     public static void SetChunks(this Archetype archetype, List<Chunk> chunks)
     {
-        archetype.Chunks = chunks.ToArray();
+        archetype.Chunks = ArrayPool<Chunk>.Shared.Rent(chunks.Count);
+        chunks.CopyTo(archetype.Chunks);
+
         archetype.ChunkCapacity = chunks.Count;
     }
 
