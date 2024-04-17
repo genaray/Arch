@@ -29,8 +29,7 @@ Added World.IsAlive(EntityReference);
 Fixed bug where `World.TrimExcess` does not trim Recycled-Entities which results in an out of bounds exception sooner or later.
 Fixed bug in JobScheduler which prevents a deadlock.
 Moved CommandBuffer to Buffer namespace, might break references.
-CommandBuffer now accepts a world during playback, world in ctor was removed.
-CommandBuffer now triggers OnComponentRemoved events.  </PackageReleaseNotes>
+CommandBuffer now accepts a world during playback, world in ctor was removed.</PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
@@ -103,7 +102,7 @@ CommandBuffer now triggers OnComponentRemoved events.  </PackageReleaseNotes>
   <ItemGroup>
     <PackageReference Include="Arch.LowLevel" Version="1.1.0" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />

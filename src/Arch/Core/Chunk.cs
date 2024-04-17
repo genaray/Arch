@@ -256,7 +256,7 @@ public partial struct Chunk
     {
         var index = Index<T>();
         Debug.Assert(index != -1 && index < Components.Length, $"Index is out of bounds, component {typeof(T)} with id {index} does not exist in this chunk.");
-        ref var array = ref Components.DangerousGetReferenceAt(index);
+        var array = Components.DangerousGetReferenceAt(index);
         return Unsafe.As<T[]>(array);
     }
 
@@ -288,7 +288,6 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
-
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
     ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
