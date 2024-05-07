@@ -230,23 +230,8 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
-
     /// <summary>
-    ///     Returns the component array index of a component.
-    /// </summary>
-    /// <typeparam name="T">The componen type.</typeparam>
-    /// <returns>The index in the <see cref="Components"/> array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    private int Index<T>()
-    {
-        var id = Component<T>.ComponentType.Id;
-        Debug.Assert(id != -1 && id < ComponentIdToArrayIndex.Length, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
-        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
-    }
-
-    /// <summary>
-    ///     Returns the component array for a given component in an unsafe manner.
+    ///     Returns the component array for a given component.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array.</returns>
@@ -254,15 +239,24 @@ public partial struct Chunk
     [Pure]
     public T[] GetArray<T>()
     {
-        var index = Index<T>();
-        Debug.Assert(index != -1 && index < Components.Length, $"Index is out of bounds, component {typeof(T)} with id {index} does not exist in this chunk.");
+        var id = Component<T>.ComponentType.Id;
+        if (id == -1 || id >= ComponentIdToArrayIndex.Length)
+        {
+            ThrowHelper.Throw_ComponentDoesNotExists(typeof(T));
+        }
+
+        var index = ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
+        if (index == -1 || index >= Components.Length)
+        {
+            ThrowHelper.Throw_ComponentDoesNotExists(typeof(T));
+        }
+
         ref var array = ref Components.DangerousGetReferenceAt(index);
         return Unsafe.As<T[]>(array);
     }
 
-
     /// <summary>
-    ///     Returns the component array <see cref="Span{T}"/> for a given component in an unsafe manner.
+    ///     Returns the component array <see cref="Span{T}"/> for a given component.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array <see cref="Span{T}"/>.</returns>
@@ -335,24 +329,6 @@ public partial struct Chunk
     }
 
     /// <summary>
-    ///     Returns the component array index of a component by its type.
-    /// </summary>
-    /// <param name="type">The <see cref="ComponentType"/>.</param>
-    /// <returns>The index in the <see cref="Components"/> array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    private int Index(ComponentType type)
-    {
-        var id = type.Id;
-        if (id >= ComponentIdToArrayIndex.Length)
-        {
-            return -1;
-        }
-
-        return ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
-    }
-
-    /// <summary>
     ///      Returns the component array for a given component type.
     /// </summary>
     /// <param name="type">The type.</param>
@@ -361,7 +337,18 @@ public partial struct Chunk
     [Pure]
     public Array GetArray(ComponentType type)
     {
-        var index = Index(type);
+        var id = type.Id;
+        if (id >= ComponentIdToArrayIndex.Length)
+        {
+            ThrowHelper.Throw_ComponentDoesNotExists(type);
+        }
+
+        var index = ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
+        if (index == -1 || index >= Components.Length)
+        {
+            ThrowHelper.Throw_ComponentDoesNotExists(type);
+        }
+
         return Components.DangerousGetReferenceAt(index);
     }
 }
