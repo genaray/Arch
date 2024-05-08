@@ -39,6 +39,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
             references.AppendLine("using System;");
             references.AppendLine("using System.Runtime.CompilerServices;");
             references.AppendLine("using CommunityToolkit.HighPerformance;");
+            references.AppendLine("using Arch.Core.Utils;");
             references.AppendLine("namespace Arch.Core;");
             references.AppendComponents(25);
             references.AppendEntityComponents(25);

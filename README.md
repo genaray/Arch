@@ -15,7 +15,7 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222), get started today and join the [Discord](https://discord.gg/htc8tX3NxZ)!
 ```console
-dotnet add PROJECT package Arch --version 1.2.7.1-alpha
+dotnet add PROJECT package Arch --version 1.2.8.1-alpha
 ```
 
 # Code Sample
@@ -185,6 +185,7 @@ Arch has some extensions that add more features and tools. Among them for exampl
 - 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
 - 🔎 *_[Godot Entity Debugger](https://github.com/RoadTurtleGames/ArchGodotEntityDebugger)_* > An Arch Entity debugger for the Godot engine!
 - 🔎 *_[Stride Entity Debugger](https://github.com/Doprez/stride-arch-ecs)_* > An example of Arch in the Stride engine, with additional entity and system inspector!
+- 🔎 *_[Arch.Unity](https://github.com/AnnulusGames/Arch.Unity)_* > A library that makes the integration of Arch in Unity much easier, with many cool new features! 
 - ❓ **_Your Tool-Library?_** > If you develop more tools and features for Arch, let us know and we'll list them here!
 
 # Performance

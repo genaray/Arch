@@ -1,4 +1,4 @@
-using Arch.CommandBuffer;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Utils;
 using Schedulers;
@@ -36,14 +36,14 @@ public sealed partial class CommandBufferTest
     public void CommandBufferForExistingEntity()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer.CommandBuffer(world);
+        var commandBuffer = new CommandBuffer();
 
         var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
         commandBuffer.Add(in entity, new Ai());
         commandBuffer.Remove<int>(in entity);
 
-        commandBuffer.Playback();
+        commandBuffer.Playback(world);
         That(world.Get<Transform>(entity).X, Is.EqualTo(20));
         That(world.Get<Transform>(entity).Y, Is.EqualTo(20));
         IsTrue(world.Has<Ai>(entity));
@@ -56,14 +56,14 @@ public sealed partial class CommandBufferTest
     public void CommandBuffer()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer.CommandBuffer(world);
+        var commandBuffer = new CommandBuffer();
 
         var entity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
         commandBuffer.Add(in entity, new Ai());
         commandBuffer.Remove<int>(in entity);
 
-        commandBuffer.Playback();
+        commandBuffer.Playback(world);
 
         entity = new Entity(0, 0);
         That(world.Get<Transform>(entity).X, Is.EqualTo(20));
@@ -80,12 +80,12 @@ public sealed partial class CommandBufferTest
         var world = World.Create();
 
         var entities = new List<Entity>();
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
             entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
             entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
             entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
-            commandBuffer.Playback();
+            commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(entities.Count));
@@ -98,13 +98,13 @@ public sealed partial class CommandBufferTest
     {
         var world = World.Create();
 
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
             commandBuffer.Create(new ComponentType[] { typeof(Transform) });
             commandBuffer.Create(new ComponentType[] { typeof(Transform) });
             var e = commandBuffer.Create(new ComponentType[] { typeof(Transform) });
             commandBuffer.Destroy(e);
-            commandBuffer.Playback();
+            commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(2));
@@ -113,10 +113,10 @@ public sealed partial class CommandBufferTest
         var entities = new Entity[world.CountEntities(query)];
         world.GetEntities(query, entities);
 
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
             commandBuffer.Destroy(entities[0]);
-            commandBuffer.Playback();
+            commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(1));
@@ -130,10 +130,10 @@ public sealed partial class CommandBufferTest
         var world = World.Create();
 
         // Create an entity
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
-            commandBuffer.Create(new ComponentType[] { typeof(int) });
-            commandBuffer.Playback();
+            commandBuffer.Create( new ComponentType[] { typeof(int) });
+            commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(1));
@@ -151,11 +151,11 @@ public sealed partial class CommandBufferTest
         });
 
         // Add to it
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
             commandBuffer.Add<Transform>(entities[0]);
             commandBuffer.Add<Rotation>(entities[0]);
-            commandBuffer.Playback();
+            commandBuffer.Playback(world);
         }
 
         // Check modification added things
@@ -166,10 +166,10 @@ public sealed partial class CommandBufferTest
         });
 
         // Remove from it
-        using (var commandBuffer = new CommandBuffer.CommandBuffer(world))
+        using (var commandBuffer = new CommandBuffer())
         {
             commandBuffer.Remove<Rotation>(entities[0]);
-            commandBuffer.Playback();
+            commandBuffer.Playback(world);
         }
 
         // Check modification removed rotation
@@ -188,7 +188,7 @@ public sealed partial class CommandBufferTest
     public void CommandBufferCombined()
     {
         var world = World.Create();
-        var commandBuffer = new CommandBuffer.CommandBuffer(world);
+        var commandBuffer = new CommandBuffer();
 
         var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
         var bufferedEntity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
@@ -201,7 +201,7 @@ public sealed partial class CommandBufferTest
         commandBuffer.Add(in bufferedEntity, new Ai());
         commandBuffer.Remove<int>(in bufferedEntity);
 
-        commandBuffer.Playback();
+        commandBuffer.Playback(world);
 
         bufferedEntity = new Entity(1, 0);
 

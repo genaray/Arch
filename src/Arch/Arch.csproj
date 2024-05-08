@@ -14,18 +14,13 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.8</Version>
+    <Version>1.2.8.1-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
-    <PackageReleaseNotes>Updated LowLevel which fixes bugs. 
-Fixed issue where Unsafe.As did not work on .Net 2.1 for the Dangerous-Utils.
-Dangerous API now allows setting/getting of recycled ids.
-Fixed archetype duplication after loading a save.
-Fixed .Add when a newly non registered component was added. 
-Now makes use of the updated and improved JobScheduler 1.1.1.
-ScheduleParallelInlineQuery added.
-Added World.IsAlive(EntityReference);</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated CommunityToolkit, increases speed slightly. 
+Fixed some DangerousUtilities. 
+Refactored adding of entities to be faster. </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>
@@ -98,10 +93,10 @@ Added World.IsAlive(EntityReference);</PackageReleaseNotes>
   <ItemGroup>
     <PackageReference Include="Arch.LowLevel" Version="1.1.0" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="7.1.2" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.1" />
+    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
   </ItemGroup>
 
 </Project>

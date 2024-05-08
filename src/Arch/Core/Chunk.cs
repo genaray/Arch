@@ -282,7 +282,6 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
-
     /// <summary>
     ///     Sets or replaces a component for an index in the chunk.
     ///     This won't fire an event for <see cref="ComponentSetHandler{T}"/>.
