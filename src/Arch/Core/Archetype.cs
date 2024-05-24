@@ -547,6 +547,11 @@ public sealed unsafe partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureChunkCapacity(int newCapacity)
     {
+        if (ChunkCapacity >= newCapacity)
+        {
+            return;
+        }
+
         // Increase chunk array size
         var newChunks = ArrayPool<Chunk>.Shared.Rent(newCapacity);
         Array.Copy(Chunks, newChunks, ChunkCapacity);
