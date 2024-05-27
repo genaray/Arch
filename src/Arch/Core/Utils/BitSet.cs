@@ -407,8 +407,8 @@ public sealed class BitSet
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<uint> AsSpan()
     {
-        var max = (_highestBit / sizeof(uint) / _padding) + 1;
-        return _bits.AsSpan(0, max);
+        //var max = (_highestBit / sizeof(uint) / _padding) + 1;
+        return _bits.AsSpan(0, _max);
     }
 
     /// <summary>
