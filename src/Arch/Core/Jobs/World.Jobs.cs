@@ -94,7 +94,7 @@ public partial class World
         // Job scheduler needs to be initialized.
         if (SharedJobScheduler is null)
         {
-            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
+            throw new Exception($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
         }
 
         // Cast pool in an unsafe fast way and run the query.
