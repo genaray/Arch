@@ -77,9 +77,14 @@ public static class RemoveWithQueryDesription
                     Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
                     EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
+                    var oldCapacity = newArchetype.EntityCapacity;
                     Archetype.Copy(archetype, newArchetype);
                     archetype.Clear();
+
+                    Capacity += newArchetype.EntityCapacity - oldCapacity;
                 }
+
+                EntityInfo.EnsureCapacity(Capacity);
             }
             """;
 

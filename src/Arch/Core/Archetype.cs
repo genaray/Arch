@@ -560,24 +560,16 @@ public sealed unsafe partial class Archetype
         ChunkCapacity = newCapacity;
     }
 
-    /// TODO : Currently this only ensures additional entity capacity, instead it should take the whole capacity in count.
     /// <summary>
-    ///     Ensures the capacity of the <see cref="Chunks"/> array.
-    ///     Increases the <see cref="ChunkCapacity"/>.
+    ///     Ensures the capacity of the <see cref="Chunks"/> array for a certain amount of <see cref="Entity"/>s.
+    ///     Increases the <see cref="ChunkCapacity"/> to fit all entities within it.
     /// </summary>
-    /// <param name="newCapacity">The amount of <see cref="Chunk"/>'s required, in total.</param>
+    /// <param name="newCapacity">The amount of <see cref="Entity"/>'s required, in total.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void EnsureEntityCapacity(int newCapacity)
     {
-        // TODO: LastChunk updated sich nicht wenn von einem archetype weniger entities in einen anderen kopier werden als vorher drin waren.
-        // TODO: Dadurch bleibt z.B. ein Chunk am ende des Archetypes frei, wodurch beim entfernen eines entities wieder nen index -1 auftritt und ne exception
-        // TODO: LastChunk MUSS sich irgendwie updaten bei so nem Kopier quatsch? Glaube in dieser Methode machts keinen Sinn? Oder vllt doch?
-
         // Calculate amount of required chunks.
-        //var freeSpots = EntityCapacity - EntityCount;
-        //var neededSpots = newCapacity - freeSpots;
         var neededChunks = (int)Math.Ceiling((float)newCapacity / EntitiesPerChunk);
-
         if (ChunkCapacity-ChunkCount > neededChunks)
         {
             return;
@@ -592,12 +584,6 @@ public sealed unsafe partial class Archetype
             var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
             Chunks[previousCapacity + index] = newChunk;
         }
-
-        // If last chunk was full, add.
-        /*if (freeSpots == 0)
-        {
-            ChunkCount++;
-        }*/
     }
 
     /// <summary>

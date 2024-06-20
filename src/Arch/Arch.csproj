@@ -91,7 +91,7 @@ Refactored adding of entities to be faster. </PackageReleaseNotes>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arch.LowLevel" Version="1.1.0" />
+    <PackageReference Include="Arch.LowLevel" Version="1.1.1" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />

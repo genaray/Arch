@@ -515,6 +515,39 @@ public partial class WorldTest
         That(world.CountEntities(in withAIQueryDesc), Is.EqualTo(0));
         That(world.CountEntities(in withoutAIQueryDesc), Is.EqualTo(1000));
     }
+
+    /// <summary>
+    ///     Checks if the world fills an empty archetype with left capacity correctly
+    /// </summary>
+    [Test]
+    public void FillEmptyArchetypeWithCapacityLeft()
+    {
+        // Create entities with a single archetype
+        for (var i = 0; i < 100; i++)
+        {
+            _world.Create(new Transform());
+        }
+
+        // Create entities with a duplex archetype
+        var archetype = _world.Archetypes[0];
+        var entityCapacity = archetype.EntityCapacity;
+        for (var i = 0; i <= entityCapacity; i++)
+        {
+            _world.Create(new Transform(), new Rotation());
+        }
+
+        // Try move entities from duplex archetype to single archetype
+        _world.Remove<Rotation>(new QueryDescription().WithAll<Transform, Rotation>());
+
+        // Just a big value to ensure it goes beyond the original capacity
+        // Capacity should grow properly
+        entityCapacity = archetype.EntityCapacity;
+        for (var i = 0; i <= entityCapacity; i++)
+        {
+            // Create entities with a duplex archetype
+            DoesNotThrow(() => _world.Create(new Transform(), new Rotation()), "Overflow at {0}", i);
+        }
+    }
 }
 
 // Get, Set, Has, Remove, Add

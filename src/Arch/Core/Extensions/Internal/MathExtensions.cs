@@ -7,25 +7,14 @@
 internal static class MathExtensions
 {
     /// <summary>
-    /// This method will round down to the nearest power of 2 number. If the supplied number is a power of 2 it will return it.
+    ///     Returns the max of two ints by bit operation without branching.
     /// </summary>
-    /// <param name="num"></param>
-    /// <returns></returns>
+    /// <param name="a">The first int.</param>
+    /// <param name="b">The second int.</param>
+    /// <returns>The highest of both ints.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int RoundToPowerOfTwo(int num)
+    public static int Max(int a, int b)
     {
-        // If num is a power of 2, return it
-        if (num > 0 && (num & (num - 1)) == 0)
-        {
-            return num;
-        }
-
-        // Find the exponent of the nearest power of 2 (rounded down)
-        int exponent = (int)Math.Floor(Math.Log(num) / Math.Log(2));
-
-        // Calculate the nearest power of 2
-        int result = (int)Math.Pow(2, exponent);
-
-        return result;
+        return a - ((a - b) & ((a - b) >> 31));
     }
 }

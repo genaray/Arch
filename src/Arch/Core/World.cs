@@ -268,6 +268,7 @@ public partial class World : IDisposable
         return Create(types.AsSpan());
     }
 
+    // TODO: Find cleaner way to resize the EntityInfo? Let archetype.Create return an amount which is added to Capacity or whatever?
     /// <summary>
     ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
     ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
@@ -299,7 +300,7 @@ public partial class World : IDisposable
             EntityInfo.EnsureCapacity(Capacity);
         }
 
-        // Map
+        // Add entity to info storage
         EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
         Size++;
         OnEntityCreated(entity);
@@ -895,14 +896,19 @@ public partial class World
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
-            // Copy, set and clear
+            // Copy, Set and clear
+            var oldCapacity = newArchetype.EntityCapacity;
             Archetype.Copy(archetype, newArchetype);
             var lastSlot = newArchetype.LastSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
 
+            // Adjust capacity since the new archetype may have changed in size
+            Capacity += newArchetype.EntityCapacity - oldCapacity;
             OnComponentAdded<T>(newArchetype);
         }
+
+        EntityInfo.EnsureCapacity(Capacity);
     }
 
     /// <summary>
@@ -949,9 +955,16 @@ public partial class World
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
+            // Copy and track capacity difference
+            var oldCapacity = newArchetype.EntityCapacity;
             Archetype.Copy(archetype, newArchetype);
             archetype.Clear();
+
+            // Adjust capacity since the new archetype may have changed in size
+            Capacity += newArchetype.EntityCapacity - oldCapacity;
         }
+
+        EntityInfo.EnsureCapacity(Capacity);
     }
 }
 
