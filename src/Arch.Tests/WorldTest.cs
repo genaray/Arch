@@ -188,7 +188,7 @@ public sealed partial class WorldTest
 #endif
 
         // Entity reference null is NOT alive.
-        EntityReference cons = new EntityReference{};
+        EntityReference cons = new EntityReference { };
         EntityReference refs = EntityReference.Null;
 
 #if PURE_ECS
@@ -411,7 +411,7 @@ public partial class WorldTest
     {
 
         var queryDesc = new QueryDescription().WithAll<Transform>();
-        _world.Set(in queryDesc, new Transform{ X = 100, Y = 100});
+        _world.Set(in queryDesc, new Transform { X = 100, Y = 100 });
         _world.Query(in queryDesc, (ref Transform transform) =>
         {
             That(transform.X, Is.EqualTo(100));
@@ -476,7 +476,7 @@ public partial class WorldTest
         for (int index = 0; index < 1000; index++)
         {
             var entity = world.Create(_entityGroup);
-            world.Add(entity,10);
+            world.Add(entity, 10);
         }
 
         // Add int to all entities without int
@@ -486,8 +486,10 @@ public partial class WorldTest
         var counter = 0;
         world.Query(in withIntQueryDesc, (ref int i) =>
         {
-            if (i == 10) previousCounter++;
-            if (i == 100) counter++;
+            if (i == 10)
+                previousCounter++;
+            if (i == 100)
+                counter++;
         });
 
         That(world.CountEntities(in withIntQueryDesc), Is.EqualTo(2000));
@@ -560,7 +562,6 @@ public partial class WorldTest
     [Test]
     public void SetGetAndHas()
     {
-
         var entity = _world.Create(_entityGroup);
         True(_world.Has<Transform>(entity));
 
@@ -569,6 +570,9 @@ public partial class WorldTest
 
         That(transform.X, Is.EqualTo(10));
         That(transform.Y, Is.EqualTo(10));
+
+        Throws<InvalidOperationException>(() => _world.Get<Ai>(entity));
+        Throws<InvalidOperationException>(() => _world.Set<Ai>(entity, default));
     }
 
     /// <summary>
@@ -577,7 +581,6 @@ public partial class WorldTest
     [Test]
     public void Remove()
     {
-
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
         _world.Remove<Transform>(entity);
@@ -586,6 +589,8 @@ public partial class WorldTest
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
         That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
+
+        Throws<InvalidOperationException>(() => _world.Remove<Ai>(entity));
     }
 
     /// <summary>
@@ -602,6 +607,8 @@ public partial class WorldTest
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
+
+        Throws<InvalidOperationException>(() => _world.Add<Ai>(entity));
     }
 }
 
@@ -624,6 +631,9 @@ public partial class WorldTest
 
         That(transform.X, Is.EqualTo(10));
         That(transform.Y, Is.EqualTo(10));
+
+        Throws<InvalidOperationException>(() => _world.Get(entity, typeof(Ai)));
+        Throws<InvalidOperationException>(() => _world.Set(entity, (object)default(Ai)));
     }
 
     /// <summary>
@@ -640,6 +650,8 @@ public partial class WorldTest
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
         That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
+
+        Throws<InvalidOperationException>(() => _world.RemoveRange(entity, typeof(Ai)));
     }
 
     /// <summary>
@@ -656,6 +668,8 @@ public partial class WorldTest
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
+
+        Throws<InvalidOperationException>(() => _world.AddRange(entity, new Ai()));
     }
 }
 

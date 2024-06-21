@@ -326,8 +326,11 @@ public partial class World : IDisposable
     internal void Move(Entity entity, Archetype source, Archetype destination, out Slot destinationSlot)
     {
         // A common mistake, happening in many cases.
-        Debug.Assert(source != destination, "From-Archetype is the same as the To-Archetype. Entities cannot move within the same archetype using this function. Probably an attempt was made to attach already existing components to the entity or to remove non-existing ones.");
-
+        if (source == destination)
+        {
+            ThrowHelper.Throw_SameArchetype();
+        }
+        
         // Copy entity to other archetype
         ref var slot = ref EntityInfo.GetSlot(entity.Id);
         var created = destination.Add(entity, out destinationSlot);

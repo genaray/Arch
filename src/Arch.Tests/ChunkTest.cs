@@ -140,4 +140,21 @@ public sealed class ChunkTest
         That(_chunk.Has<Ai>(), Is.False);
         That(_chunk.Has<Rotation>(), Is.True);
     }
+
+    [Test]
+    public void ChunkErrors()
+    {
+        _chunk = new Chunk(1000, _types);
+
+        Throws<InvalidOperationException>(() => _chunk.GetArray<Ai>());
+        Throws<InvalidOperationException>(() => _chunk.Get<Ai>(0));
+        Throws<InvalidOperationException>(() => _chunk.Set<Ai>(0, default));
+        Throws<InvalidOperationException>(() => _chunk.GetFirst<Ai>());
+
+        var type = (ComponentType)typeof(Ai);
+
+        Throws<InvalidOperationException>(() => _chunk.GetArray(type));
+        Throws<InvalidOperationException>(() => _chunk.Get(0, type));
+        Throws<InvalidOperationException>(() => _chunk.Set(0, (object)default(Ai)));
+    }
 }
