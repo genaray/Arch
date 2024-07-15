@@ -236,6 +236,7 @@ public partial struct Chunk
     /// </summary>
     /// <typeparam name="T">The componen type.</typeparam>
     /// <returns>The index in the <see cref="Components"/> array.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     private int Index<T>()
@@ -250,12 +251,14 @@ public partial struct Chunk
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public T[] GetArray<T>()
     {
         var index = Index<T>();
         Debug.Assert(index != -1 && index < Components.Length, $"Index is out of bounds, component {typeof(T)} with id {index} does not exist in this chunk.");
+
         var array = Components.DangerousGetReferenceAt(index);
         return Unsafe.As<T[]>(array);
     }
@@ -266,11 +269,13 @@ public partial struct Chunk
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array <see cref="Span{T}"/>.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public Span<T> GetSpan<T>()
     {
-        return new Span<T>(GetArray<T>());
+        var array = GetArray<T>();
+        return MemoryMarshal.CreateSpan(ref array[0], array.Length);
     }
 
     /// <summary>
@@ -278,6 +283,7 @@ public partial struct Chunk
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>A reference to the first element.</returns>
+    [SkipLocalsInit]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
     public ref T GetFirst<T>()

@@ -12,30 +12,38 @@ namespace Arch.Core;
 [SkipLocalsInit]
 public partial struct QueryDescription : IEquatable<QueryDescription>
 {
-
     /// <summary>
     ///     A null reference, basically an empty <see cref="QueryDescription"/> that queries for all <see cref="Entity"/>s.
     /// </summary>
     public static readonly QueryDescription Null = new();
 
     /// <summary>
+    ///     A cached hash code that is used to find the matching <see cref="Query"/> for this instance.
+    /// </summary>
+    private int _hashCode;
+
+    /// <summary>
     ///     An array of all components that an <see cref="Entity"/> should have mandatory.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
     public ComponentType[] All = Array.Empty<ComponentType>();
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should have at least one.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
     public ComponentType[] Any = Array.Empty<ComponentType>();
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should not have any.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
     public ComponentType[] None = Array.Empty<ComponentType>();
 
     /// <summary>
     ///     An array of all components that exactly match the structure of an <see cref="Entity"/>.
     ///     <see cref="Entity"/>'s with more or less components than those defined in the array are not addressed.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
     public ComponentType[] Exclusive = Array.Empty<ComponentType>();
 
@@ -43,6 +51,33 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
     /// </summary>
     public QueryDescription() { }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
+    /// </summary>
+    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
+    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
+    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
+    public QueryDescription(ComponentType[]? all = null, ComponentType[]? any = null, ComponentType[]? none = null, ComponentType[]? exclusive = null)
+    {
+        All = all ?? Array.Empty<ComponentType>();
+        Any = any ?? Array.Empty<ComponentType>();
+        None = none ?? Array.Empty<ComponentType>();
+        Exclusive = exclusive ?? Array.Empty<ComponentType>();
+        _hashCode = GetHashCode();
+    }
+
+    /// <summary>
+    ///     Recreates this instance by calculating a new <see cref="_hashCode"/>.
+    ///     Is actually only needed if the passed arrays are changed afterwards.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Rebuild()
+    {
+        _hashCode = -1;
+        _hashCode = GetHashCode();
+    }
 
     /// <summary>
     ///     All components that an <see cref="Entity"/> should have mandatory.
@@ -54,6 +89,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithAll<T>()
     {
         All = Group<T>.Types;
+        _hashCode = -1;
         return ref this;
     }
 
@@ -67,6 +103,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithAny<T>()
     {
         Any = Group<T>.Types;
+        _hashCode = -1;
         return ref this;
     }
 
@@ -80,6 +117,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithNone<T>()
     {
         None = Group<T>.Types;
+        _hashCode = -1;
         return ref this;
     }
 
@@ -94,6 +132,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithExclusive<T>()
     {
         Exclusive = Group<T>.Types;
+        _hashCode = -1;
         return ref this;
     }
 
@@ -104,10 +143,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
     public bool Equals(QueryDescription other)
     {
-        var allHash = Component.GetHashCode(All);
-        var anyHash = Component.GetHashCode(Any);
-        var noneHash = Component.GetHashCode(None);
-        return allHash == Component.GetHashCode(other.All) && anyHash == Component.GetHashCode(other.Any) && noneHash == Component.GetHashCode(other.None);
+        return GetHashCode() == other.GetHashCode();
     }
 
     /// <summary>
@@ -127,6 +163,12 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <returns>The hash.</returns>
     public override int GetHashCode()
     {
+        // Cache hashcode since the calculation is expensive.
+        if (_hashCode != -1)
+        {
+            return _hashCode;
+        }
+
         unchecked
         {
             // Overflow is fine, just wrap{
@@ -134,6 +176,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
             hash = (hash * 23) + All.GetHashCode();
             hash = (hash * 23) + Any.GetHashCode();
             hash = (hash * 23) + None.GetHashCode();
+            hash = (hash * 23) + Exclusive.GetHashCode();
+            _hashCode = hash;
             return hash;
         }
     }

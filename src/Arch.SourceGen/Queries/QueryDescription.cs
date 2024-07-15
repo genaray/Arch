@@ -23,6 +23,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithAll<{{generics}}>()
             {
                All = Group<{{generics}}>.Types;
+               _hashCode = -1;
                return ref this;
             }
             """;
@@ -52,6 +53,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithAny<{{generics}}>()
             {
                Any = Group<{{generics}}>.Types;
+               _hashCode = -1;
                return ref this;
             }
             """;
@@ -81,6 +83,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithNone<{{generics}}>()
             {
                None = Group<{{generics}}>.Types;
+               _hashCode = -1;
                return ref this;
             }
             """;
@@ -110,6 +113,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithExclusive<{{generics}}>()
             {
                Exclusive = Group<{{generics}}>.Types;
+               _hashCode = -1;
                return ref this;
             }
             """;
