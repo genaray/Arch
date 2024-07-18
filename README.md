@@ -26,7 +26,6 @@ It's not! Arch does everything for you, you only need to define the entities and
 
 I bet you don't want to read tons of documentation, theory, and other boring stuff right?  
 Let's just ignore all that deep knowledge and jump in directly to get something done. 
-> 📖 For more detailed API and features, check out the [wiki](https://github.com/genaray/Arch/wiki)!
 
 ```cs
 // Components ( ignore the formatting, this saves space )
@@ -42,15 +41,18 @@ public sealed class Game
         for (var index = 0; index < 1000; index++) 
             world.Create(new Position{ X = 0, Y = 0}, new Velocity{ Dx = 1, Dy = 1});
         
-        // Query and modify entities ( There are many alternatives and query techniques, also without generics and lambdas ) 
-        var query = new QueryDescription().WithAll<Position,Velocity>(); // Targets entities with Position AND Velocity.
-        world.Query(in query, (ref Position pos, ref Velocity vel) => {
+        // Enumerate entities with Position AND Velocity to modify them
+        var query = new QueryDescription().WithAll<Position,Velocity>();
+        world.Query(in query, (Entity entity, ref Position pos, ref Velocity vel) => {
             pos.X += vel.Dx;
             pos.Y += vel.Dy;
-        });
+            Console.WriteLine($"Moved: {entity.Id}"); 
+        }); 
     }
 }
 ```
+> [!NOTE]
+> The example is very simple. There more features including queries without lambda or an API without generics and much more. Checkout the [Documentation](https://github.com/genaray/Arch/wiki)!
 
 # 💡 Highlights
 
