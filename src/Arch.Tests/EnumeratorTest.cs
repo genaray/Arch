@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
 

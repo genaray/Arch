@@ -30,7 +30,7 @@ public static class CreateExtensions
             [StructuralChange]
             public Entity Create<{{generics}}>({{parameters}})
             {
-                var types = Group<{{generics}}>.Types;
+                var signature = Component<{{generics}}>.Signature;
 
                 // Recycle id or increase
                 var recycle = RecycledIds.TryDequeue(out var recycledId);
@@ -40,7 +40,7 @@ public static class CreateExtensions
                 var entity = new Entity(recycled.Id, Id);
 
                 // Add to archetype & mapping
-                var archetype = GetOrCreate(types);
+                var archetype = GetOrCreate(signature);
                 var createdChunk = archetype.Add(entity, out var slot);
 
                 archetype.Set<{{generics}}>(ref slot, {{inParameters}});

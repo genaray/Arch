@@ -20,7 +20,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
             compileTimeStatics.AppendLine("using System;");
             compileTimeStatics.AppendLine("using System.Threading;");
             compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
-            compileTimeStatics.AppendGroups(25);
+            compileTimeStatics.AppendComponents(25);
 
             var delegates = new StringBuilder();
             delegates.AppendLine("using System;");
@@ -41,7 +41,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
             references.AppendLine("using CommunityToolkit.HighPerformance;");
             references.AppendLine("using Arch.Core.Utils;");
             references.AppendLine("namespace Arch.Core;");
-            references.AppendComponents(25);
+            ReferencesExtensions.AppendComponents(references, 25);
             references.AppendEntityComponents(25);
 
             var jobs = new StringBuilder();

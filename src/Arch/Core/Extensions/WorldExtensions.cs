@@ -10,21 +10,26 @@ namespace Arch.Core.Extensions;
 [WorldExtensions]
 public static class WorldExtensions
 {
-
+    /*
     /// <summary>
-    ///     Reserves space for a certain number of <see cref="Entity"/>'s of a given component structure/<see cref="Archetype"/>.
+    ///     Reserves space for a certain number of <see cref="Entity"/>s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
     /// </remarks>
-    /// <param name="world">The <see cref="World"/>.</param>
     /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
-    /// <param name="amount">The amount.</param>
+    /// <param name="amount">The amount of <see cref="Entity"/>s to reserve space for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Reserve(this World world, ComponentType[] types, int amount)
+    [StructuralChange]
+    public static void Reserve(this World world, Span<ComponentType> types, int amount)
     {
-        world.Reserve(types, amount);
-    }
+        var archetype = world.GetOrCreate(types);
+        archetype.Reserve(amount);
+
+        var requiredCapacity = world.Capacity + amount;
+        EntityInfo.EnsureCapacity(requiredCapacity);
+        Capacity = requiredCapacity;
+    }*/
 
     /// <summary>
     ///     Search all matching <see cref="Entity"/>'s and put them into the given <see cref="IList{T}"/>.

@@ -230,21 +230,19 @@ public partial class World : IDisposable
     /// </summary>
     internal PooledDictionary<QueryDescription, Query> QueryCache { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
-    private ReaderWriterLockSlim _queryCacheLock = new();
-
     /// <summary>
     ///     Reserves space for a certain number of <see cref="Entity"/>s of a given component structure/<see cref="Archetype"/>.
     /// </summary>
     /// <remarks>
     ///     Causes a structural change.
     /// </remarks>
-    /// <param name="types">The component structure/<see cref="Archetype"/>.</param>
+    /// <param name="signature">The component structure/<see cref="Archetype"/>.</param>
     /// <param name="amount">The amount of <see cref="Entity"/>s to reserve space for.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
-    public void Reserve(Span<ComponentType> types, int amount)
+    public void Reserve(in Signature signature, int amount)
     {
-        var archetype = GetOrCreate(types);
+        var archetype = GetOrCreate(signature);
         archetype.Reserve(amount);
 
         var requiredCapacity = Capacity + amount;
@@ -265,7 +263,7 @@ public partial class World : IDisposable
     [StructuralChange]
     public Entity Create(params ComponentType[] types)
     {
-        return Create(types.AsSpan());
+        return Create((Signature)types);
     }
 
     // TODO: Find cleaner way to resize the EntityInfo? Let archetype.Create return an amount which is added to Capacity or whatever?
@@ -280,7 +278,7 @@ public partial class World : IDisposable
     /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
-    public Entity Create(Span<ComponentType> types)
+    public Entity Create(in Signature types)
     {
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
@@ -290,7 +288,7 @@ public partial class World : IDisposable
         var entity = new Entity(recycled.Id, Id);
 
         // Add to archetype & mapping
-        var archetype = GetOrCreate(types);
+        var archetype = GetOrCreate(in types);
         var createdChunk = archetype.Add(entity, out var slot);
 
         // Resize map & Array to fit all potential new entities
@@ -594,28 +592,28 @@ public partial class World : IDisposable
 public partial class World
 {
     /// <summary>
-    ///     Maps a <see cref="Group"/> hash to its <see cref="Archetype"/>.
+    ///     Maps a <see cref="Components"/> hash to its <see cref="Archetype"/>.
     /// </summary>
     internal PooledDictionary<int, Archetype> GroupToArchetype { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
 
     /// <summary>
     ///     Returns an <see cref="Archetype"/> based on its components. If it does not exist, it will be created.
     /// </summary>
-    /// <param name="types">Its <see cref="ComponentType"/>s.</param>
+    /// <param name="signature">Its <see cref="ComponentType"/>s.</param>
     /// <returns>An existing or new <see cref="Archetype"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Archetype GetOrCreate(Span<ComponentType> types)
+    internal Archetype GetOrCreate(in Signature signature)
     {
-        if (TryGetArchetype(types, out var archetype))
+        var hashCode = signature.GetHashCode();
+        if (TryGetArchetype(hashCode, out var archetype))
         {
             return archetype;
         }
 
         // Create archetype
-        archetype = new Archetype(types.ToArray());
-        var hash = Component.GetHashCode(types);
+        archetype = new Archetype(signature);
 
-        GroupToArchetype[hash] = archetype;
+        GroupToArchetype[hashCode] = archetype;
         Archetypes.Add(archetype);
 
         // Archetypes always allocate one single chunk upon construction
@@ -639,43 +637,16 @@ public partial class World
     }
 
     /// <summary>
-    ///     Tries to find an <see cref="Archetype"/> by a <see cref="BitSet"/>.
+    ///     Tries to find an <see cref="Archetype"/> by a provided <see cref="Signature"/>.
     /// </summary>
-    /// <param name="bitset">A <see cref="BitSet"/> indicating the <see cref="Archetype"/> structure.</param>
+    /// <param name="signature">Its <see cref="Signature"/>.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwise false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [Pure]
-    public bool TryGetArchetype(BitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
+    public bool TryGetArchetype(in Signature signature, [MaybeNullWhen(false)] out Archetype archetype)
     {
-        return TryGetArchetype(bitset.GetHashCode(), out archetype);
-    }
-
-    /// <summary>
-    ///     Tries to find an <see cref="Archetype"/> by a <see cref="SpanBitSet"/>.
-    /// </summary>
-    /// <param name="bitset">A <see cref="SpanBitSet"/> indicating the <see cref="Archetype"/> structure.</param>
-    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public bool TryGetArchetype(SpanBitSet bitset, [MaybeNullWhen(false)] out Archetype archetype)
-    {
-        return TryGetArchetype(bitset.GetHashCode(), out archetype);
-    }
-
-    /// <summary>
-    ///     Tries to find an <see cref="Archetype"/> by the hash of its components.
-    /// </summary>
-    /// <param name="types">Its <see cref="ComponentType"/>s.</param>
-    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
-    /// <returns>True if found, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Pure]
-    public bool TryGetArchetype(Span<ComponentType> types, [MaybeNullWhen(false)] out Archetype archetype)
-    {
-        var hash = Component.GetHashCode(types);
-        return TryGetArchetype(hash, out archetype);
+        return TryGetArchetype(signature.GetHashCode(), out archetype);
     }
 
     /// <summary>

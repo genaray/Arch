@@ -101,7 +101,7 @@ internal class EntityInfoStorage
     /// </summary>
     internal EntityInfoStorage()
     {
-        var cpuL1CacheSize = 16_000;
+        var cpuL1CacheSize = 16_384;
 
         Versions = new JaggedArray<int>(
             cpuL1CacheSize / Unsafe.SizeOf<int>(),

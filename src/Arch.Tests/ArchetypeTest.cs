@@ -15,9 +15,9 @@ internal unsafe struct HeavyComponent
 [TestFixture]
 public sealed class ArchetypeTest
 {
-    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
-    private static readonly ComponentType[] _otherGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
-    private static readonly ComponentType[] _heavyGroup = { typeof(Transform), typeof(Rotation), typeof(HeavyComponent) };
+    private static readonly Signature _group = new(typeof(Transform), typeof(Rotation));
+    private static readonly Signature _otherGroup = new(typeof(Transform), typeof(Rotation), typeof(Ai));
+    private static readonly Signature _heavyGroup = new(typeof(Transform), typeof(Rotation), typeof(HeavyComponent));
 
     /// <summary>
     ///     Tests if <see cref="Archetype"/>s and their <see cref="Chunk"/> are created correctly.

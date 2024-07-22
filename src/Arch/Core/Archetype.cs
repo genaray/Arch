@@ -123,7 +123,7 @@ public sealed partial class Archetype
     /// <summary>
     ///     The minimum size of a regular L1 cache.
     /// </summary>
-    internal const int BaseSize = 16000; // 16KB Chunk size
+    internal const int BaseSize = 16_384; // 16KB Chunk size
 
     /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
@@ -134,22 +134,22 @@ public sealed partial class Archetype
     /// <summary>
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
-    /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
-    internal Archetype(ComponentType[] types)
+    /// <param name="signature">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
+    internal Archetype(Signature signature)
     {
-        Types = types;
+        Types = signature;
 
         // Calculations
-        ChunkSizeInBytes = MinimumRequiredChunkSize(types);
-        EntitiesPerChunk = CalculateEntitiesPerChunk(types);
+        ChunkSizeInBytes = MinimumRequiredChunkSize(signature);
+        EntitiesPerChunk = CalculateEntitiesPerChunk(signature);
 
         // The bitmask/set
-        BitSet = types.ToBitSet();
-        _componentIdToArrayIndex = types.ToLookupArray();
+        BitSet = signature;
+        _componentIdToArrayIndex = signature.Components.ToLookupArray();
 
         // Setup arrays and mappings
         Chunks = ArrayPool<Chunk>.Shared.Rent(1);
-        Chunks[0] = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, types);
+        Chunks[0] = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, signature);
 
         ChunkCount = 1;
         ChunkCapacity = 1;
@@ -164,6 +164,11 @@ public sealed partial class Archetype
     public ComponentType[] Types { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
+    ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.
+    /// </summary>
+    public BitSet BitSet { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+    /// <summary>
     ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory.
     /// </summary>
     internal int[] LookupArray
@@ -171,11 +176,6 @@ public sealed partial class Archetype
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _componentIdToArrayIndex;
     }
-
-    /// <summary>
-    ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.
-    /// </summary>
-    public BitSet BitSet { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>
     ///     The number of entities that are stored per <see cref="Chunk"/>.
@@ -523,7 +523,7 @@ public sealed unsafe partial class Archetype
     /// </summary>
     /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
     /// <returns>The amount of <see cref="Chunk"/>'s required.</returns>
-    public int MinimumRequiredChunkSize(ComponentType[] types)
+    public int MinimumRequiredChunkSize(Span<ComponentType> types)
     {
         var minimumEntities = (sizeof(Entity) + types.ToByteSize()) * MinimumAmountOfEntitiesPerChunk;
         return (int)Math.Ceiling((float)minimumEntities / BaseSize) * BaseSize;
@@ -534,7 +534,7 @@ public sealed unsafe partial class Archetype
     /// </summary>
     /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
     /// <returns>The amount of <see cref="Arch.Core.Entity"/>'s.</returns>
-    public int CalculateEntitiesPerChunk(ComponentType[] types)
+    public int CalculateEntitiesPerChunk(Span<ComponentType> types)
     {
         return ChunkSizeInBytes / (sizeof(Entity) + types.ToByteSize());
     }

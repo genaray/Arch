@@ -374,30 +374,6 @@ public static class ArrayRegistry
     }
 }
 
-/// <summary>
-///     The <see cref="Component{T}"/> class, provides compile time static information about a component.
-/// </summary>
-/// <typeparam name="T">Its generic type.</typeparam>
-/// <remarks>
-///     A <see cref="Component{T}"/> is created once during its first use.
-///     Subsequent uses access statically stored information.
-/// </remarks>
-public static class Component<T>
-{
-    /// <summary>
-    ///     Creates the compile time static class for acessing its information.
-    ///     Registers the component.
-    /// </summary>
-    static Component()
-    {
-        ComponentType = ComponentRegistry.Add<T>();
-    }
-
-    /// <summary>
-    ///     A static reference to information about the compile time static registered class.
-    /// </summary>
-    public static readonly ComponentType ComponentType;
-}
 
 /// <summary>
 ///     The <see cref="Component"/> class provides information about a component during runtime.
@@ -408,6 +384,8 @@ public static class Component<T>
 /// </remarks>
 public static class Component
 {
+    internal static int Id;
+
     /// <summary>
     ///     Searches a <see cref="ComponentType"/> by its <see cref="Type"/>. If it does not exist, it will be added.
     /// </summary>
@@ -456,12 +434,49 @@ public static class Component
           return GetHashCode(stack);
     }
 
+    /// <summary>
+    ///     Calculates the hash code of a <see cref="uint"/> array, which is unique for the elements contained in the array.
+    /// </summary>
+    /// <param name="span">The <see cref="Span{T}"/>.</param>
+    /// <returns>A unique hashcode for the contained elements.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int GetHashCode(Span<uint> span)
     {
         var hashCode = new HashCode();
         hashCode.AddSpan(span);
         return hashCode.ToHashCode();
+    }
+}
+
+/// <summary>
+///     The <see cref="Component{T}"/> class, provides compile time static information about a component.
+/// </summary>
+/// <typeparam name="T">Its generic type.</typeparam>
+/// <remarks>
+///     A <see cref="Component{T}"/> is created once during its first use.
+///     Subsequent uses access statically stored information.
+/// </remarks>
+public static class Component<T>
+{
+
+    /// <summary>
+    ///     A static reference to information about the compile time static registered class.
+    /// </summary>
+    public static readonly ComponentType ComponentType;
+
+    /// <summary>
+    ///     An <see cref="Signature"/> for this given set of components.
+    /// </summary>
+    public static readonly Signature Signature;
+
+    /// <summary>
+    ///     Creates the compile time static class for acessing its information.
+    ///     Registers the component.
+    /// </summary>
+    static Component()
+    {
+        ComponentType = ComponentRegistry.Add<T>();
+        Signature = new Signature(ComponentType);
     }
 }
 
@@ -510,16 +525,4 @@ public static class JobMeta<T> where T : class, new()
     ///     So that during multithreading new jobs are not permanently associated, which is better for efficiency.
     /// </summary>
     public static readonly DefaultObjectPool<T> Pool;
-}
-
-// TODO: Based on the hash of each `Group` we can easily Map a `Group<T, T, T, ...>` to another `Group`.
-//       E.g.: `Group<int, byte>` to `Group<byte, int>`, as they return the same hash.
-/// <summary>
-///     The <see cref="Group"/> class counts the IDs of registered <see cref="ComponentType"/> groups in an compile-time static way,
-///     and stores an underlying array for dynamic access. In this way, its related classes (<see cref="Group{T0}"/>, <see cref="Group{T0, T1}"/>...)
-///     can be used to statically track sets of components from generic calls with zero overhead.
-/// </summary>
-public static class Group
-{
-    internal static int Id;
 }

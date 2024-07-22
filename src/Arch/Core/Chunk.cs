@@ -15,13 +15,14 @@ namespace Arch.Core;
 [SkipLocalsInit]  // Really a speed improvements? The benchmark only showed a slight improvement
 public partial struct Chunk
 {
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="Chunk"/> struct.
     ///     Automatically creates a lookup array for quick access to internal components.
     /// </summary>
     /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
     /// <param name="types">The respective component structure of all entities in this <see cref="Chunk"/>.</param>
-    internal Chunk(int capacity, params ComponentType[] types)
+    internal Chunk(int capacity, Span<ComponentType> types)
         : this(capacity, types.ToLookupArray(), types) { }
 
     /// <summary>
@@ -30,7 +31,7 @@ public partial struct Chunk
     /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
     /// <param name="componentIdToArrayIndex">A lookup array which maps the component id to the array index of the component array.</param>
     /// <param name="types">The respective component structure of all entities in this <see cref="Chunk"/>.</param>
-    internal Chunk(int capacity, int[] componentIdToArrayIndex, params ComponentType[] types)
+    internal Chunk(int capacity, int[] componentIdToArrayIndex, Span<ComponentType> types)
     {
         // Calculate capacity and init arrays.
         Size = 0;
