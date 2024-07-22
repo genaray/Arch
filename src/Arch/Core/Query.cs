@@ -5,7 +5,7 @@ using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
-
+using Arch.Core;
 
 /// <summary>
 ///     The <see cref="Signature"/> struct
@@ -113,6 +113,16 @@ public struct Signature : IEquatable<Signature>
             _hashCode = Component.GetHashCode(Components);
             return _hashCode;
         }
+    }
+
+    /// <summary>
+    ///     Creates an <see cref="Enumerator{T}"/> which iterates over all <see cref="Components"/> in this <see cref="Signature"/>.
+    /// </summary>
+    /// <returns>An <see cref="Enumerator{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Enumerator<ComponentType> GetEnumerator()
+    {
+        return new Enumerator<ComponentType>(Components);
     }
 
     /// <summary>
