@@ -74,10 +74,8 @@ public sealed class EventTest
         world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentOne _) => _asserter.CompOneAdded.Add(entity));
         world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
 
-        Span<ComponentType> archetype = stackalloc ComponentType[] { typeof(EventTestComponentOne) };
-
         // Create entity to check if created and add event were fired
-        var entity = world.Create(archetype);
+        var entity = world.Create<EventTestComponentOne>();
 
         _asserter.AssertEvents(compOneAdded: 1);
         That(_asserter.CompOneAdded, Does.Contain(entity));
