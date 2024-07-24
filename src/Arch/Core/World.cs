@@ -1397,7 +1397,7 @@ public partial class World
         Move(entity, oldArchetype, newArchetype, out _);
 
 #if EVENTS
-        for (var i = 0; i < components.Count; i++)
+        for (var i = 0; i < components.Length; i++)
         {
             OnComponentAdded(entity, components[i]);
         }
