@@ -34,6 +34,7 @@ public partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void AddAddEdge(int index, Archetype archetype)
     {
+        _addEdges.EnsureCapacity(index);
         _addEdges.Add(index, archetype);
     }
 
@@ -45,6 +46,7 @@ public partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void AddRemoveEdge(int index, Archetype archetype)
     {
+        _removeEdges.EnsureCapacity(index);
         _removeEdges.Add(index, archetype);
     }
 
