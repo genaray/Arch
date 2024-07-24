@@ -1361,6 +1361,50 @@ public partial class World
     }
 
     /// <summary>
+    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Causes a structural change.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/>.</param>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [StructuralChange]
+    public void AddRange(Entity entity, Span<ComponentType> components)
+    {
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
+
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+
+        for (var index = 0; index < components.Length; index++)
+        {
+            var type = components[index];
+            spanBitSet.SetBit(type.Id);
+        }
+
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        {
+            newArchetype = GetOrCreate(oldArchetype.Types.Add(components.ToArray()));
+        }
+
+        Move(entity, oldArchetype, newArchetype, out _);
+
+#if EVENTS
+        for (var i = 0; i < components.Count; i++)
+        {
+            OnComponentAdded(entity, components[i]);
+        }
+#endif
+    }
+
+    /// <summary>
     ///     Removes a <see cref="ComponentType"/> from the <see cref="Entity"/> and moves it to a different <see cref="Archetype"/>.
     /// </summary>
     /// <remarks>

@@ -387,7 +387,7 @@ public sealed partial class CommandBuffer : IDisposable
             var entity = Resolve(wrappedEntity.Entity);
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to remove components from the dead {wrappedEntity.Entity}");
 
-            world.RemoveRange(entity, _removeTypes);
+            world.RemoveRange(entity, _removeTypes.Span);
             _removeTypes.Clear();
         }
 

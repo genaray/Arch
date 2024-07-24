@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
+using CommunityToolkit.HighPerformance;
 using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
@@ -91,10 +92,10 @@ public sealed partial class WorldTest
     {
         var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
 
-        var entities = new List<Entity>();
-        _world.GetEntities(query, entities);
+        var entities = new Entity[_world.CountEntities(query)];
+        _world.GetEntities(query, entities.AsSpan());
 
-        for (var i = 0; i < entities.Count; i++)
+        for (var i = 0; i < entities.Length; i++)
         {
             var entity = entities[i];
             _world.Destroy(entity);
@@ -363,15 +364,15 @@ public sealed partial class WorldTest
         var entity = world.Create(archTypes);
 
         // Get entities
-        var entites = new List<Entity>();
-        world.GetEntities(query, entites);
+        var entites = new Entity[world.CountEntities(query)];
+        world.GetEntities(query, entites.AsSpan());
 
         That(entites.Count, Is.EqualTo(1));
 
         // Destroy the one entity
-        entites.Clear();
         world.Destroy(entity);
-        world.GetEntities(query, entites);
+        entites = new Entity[world.CountEntities(query)];
+        world.GetEntities(query, entites.AsSpan());
 
         That(entites.Count, Is.EqualTo(0));
     }
@@ -634,8 +635,8 @@ public partial class WorldTest
     {
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.RemoveRange(entity, typeof(Transform));
-        _world.RemoveRange(entity2, typeof(Transform));
+        _world.RemoveRange(entity, new ComponentType[]{typeof(Transform)});
+        _world.RemoveRange(entity2, new ComponentType[]{typeof(Transform)});
 
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
@@ -650,8 +651,8 @@ public partial class WorldTest
     {
         var entity = _world.Create(_entityGroup);
         var entity2 = _world.Create(_entityGroup);
-        _world.AddRange(entity, new Ai());
-        _world.AddRange(entity2, new Ai());
+        _world.AddRange(entity, new object[]{new Ai()});
+        _world.AddRange(entity2, new object[]{new Ai()});
 
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
