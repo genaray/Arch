@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using System.Drawing;
 using Arch.Core.Events;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
@@ -87,10 +88,12 @@ public partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal int Add(Entity entity)
     {
-        Entities[Size] = entity;
-        Size++;
+        // Stack variable faster than accessing 3 times the Size field.
+        var size = Size;
+        Entities[size] = entity;
+        Size = size + 1;
 
-        return Size - 1;
+        return size;
     }
 
     /// <summary>
@@ -171,7 +174,7 @@ public partial struct Chunk
     [Pure]
     public ref Entity Entity(int index)
     {
-        return ref Entities.AsSpan()[index];
+        return ref Entities.DangerousGetReferenceAt(index);
     }
 
     /// <summary>

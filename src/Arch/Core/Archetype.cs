@@ -260,25 +260,28 @@ public sealed partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool Add(Entity entity, out Slot slot)
     {
-        // Fill chunk
+        // Storing stack variables to prevent multiple times acessing those fields.
         ref var lastChunk = ref LastChunk;
+        var chunkCount = ChunkCount;
+
+        // Fill chunk
         if (lastChunk.Size != lastChunk.Capacity)
         {
             slot.Index = lastChunk.Add(entity);
-            slot.ChunkIndex = ChunkCount - 1;
+            slot.ChunkIndex = chunkCount - 1;
             EntityCount++;
 
             return false;
         }
 
         // Chunk full? Use next allocated chunk
-        if (ChunkCount < ChunkCapacity )
+        if (chunkCount < ChunkCapacity)
         {
             ChunkCount++;
             lastChunk = ref LastChunk;
 
             slot.Index = lastChunk.Add(entity);
-            slot.ChunkIndex = ChunkCount - 1;
+            slot.ChunkIndex = chunkCount;
             EntityCount++;
 
             return false;
@@ -287,12 +290,12 @@ public sealed partial class Archetype
         // No more free allocated chunks? Create new chunk
         var newChunk = new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Types);
         slot.Index = newChunk.Add(entity);
+        slot.ChunkIndex = chunkCount;
         EntityCount++;
-        slot.ChunkIndex = ChunkCount;
 
         // Resize chunks & map entity
-        EnsureChunkCapacity(ChunkCount + 1);
-        Chunks[ChunkCount] = newChunk;
+        EnsureChunkCapacity(chunkCount + 1);
+        Chunks[chunkCount] = newChunk;
 
         // Increase size
         ChunkCount++;

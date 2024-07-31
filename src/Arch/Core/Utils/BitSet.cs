@@ -408,7 +408,7 @@ public sealed class BitSet
     public Span<uint> AsSpan()
     {
         var max = (_highestBit / (BitSize + 1)) + 1;
-        return _bits.AsSpan(0, max);
+        return MemoryMarshal.CreateSpan(ref _bits[0], max);
     }
 
     /// <summary>
@@ -433,7 +433,7 @@ public sealed class BitSet
             span[index] = 0;
         }
 
-        return span[..length];
+        return MemoryMarshal.CreateSpan(ref span[0], length);
     }
 
     /// <summary>

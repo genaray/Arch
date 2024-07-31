@@ -985,8 +985,9 @@ public partial class World
     [Pure]
     public ref T Get<T>(Entity entity)
     {
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
+        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+        var slot = entitySlot.Slot;
+        var archetype = entitySlot.Archetype;
         return ref archetype.Get<T>(ref slot);
     }
 
@@ -1411,8 +1412,7 @@ public partial class World
     ///     Causes a structural change.
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="type">The <see cref="ComponentType"/> to remove from the the <see cref="Entity"/>.</param>
-    [SkipLocalsInit]
+    /// <param name="type">The <see cref="ComponentType"/> to remove from the <see cref="Entity"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [StructuralChange]
     public void Remove(Entity entity, ComponentType type)
