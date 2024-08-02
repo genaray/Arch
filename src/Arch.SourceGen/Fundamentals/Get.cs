@@ -260,8 +260,9 @@ public static class GetExtensions
             [Pure]
             public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
-                var slot = EntityInfo.GetSlot(entity.Id);
-                var archetype = EntityInfo.GetArchetype(entity.Id);
+                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+                var slot = entitySlot.Slot;
+                var archetype = entitySlot.Archetype;
                 return archetype.Get<{{generics}}>(ref slot);
             }
             """;

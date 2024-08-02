@@ -955,8 +955,9 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(Entity entity, in T? component = default)
     {
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
+        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+        var slot = entitySlot.Slot;
+        var archetype = entitySlot.Archetype;
         archetype.Set(ref slot, in component);
         OnComponentSet<T>(entity);
     }
@@ -1005,8 +1006,9 @@ public partial class World
     {
         component = default;
 
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
+        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+        var slot = entitySlot.Slot;
+        var archetype = entitySlot.Archetype;
 
         if (!archetype.Has<T>())
         {
@@ -1028,8 +1030,9 @@ public partial class World
     [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        var slot = EntityInfo.GetSlot(entity.Id);
-        var archetype = EntityInfo.GetArchetype(entity.Id);
+        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+        var slot = entitySlot.Slot;
+        var archetype = entitySlot.Archetype;
 
         if (!(exists = archetype.Has<T>()))
         {
