@@ -451,18 +451,19 @@ public partial class World : IDisposable
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <returns>The generated <see cref="Core.Query"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     [Pure]
     public Query Query(in QueryDescription queryDescription)
     {
         // Looping over all archetypes, their chunks and their entities.
-        if (QueryCache.TryGetValue(queryDescription, out var query))
+        var queryCache = QueryCache; // Storing locally to only access the QueryCache once
+        if (queryCache.TryGetValue(queryDescription, out var query))
         {
             return query;
         }
 
         query = new Query(Archetypes, queryDescription);
-        QueryCache[queryDescription] = query;
+        queryCache[queryDescription] = query;
 
         return query;
     }

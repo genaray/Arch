@@ -3,6 +3,7 @@ using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Arch.LowLevel.Jagged;
+using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
@@ -312,12 +313,14 @@ public sealed partial class Archetype
     internal void Remove(ref Slot slot, out int movedEntityId)
     {
         // Move the last entity from the last chunk into the chunk to replace the removed entity directly
-        ref var chunk = ref Chunks[slot.ChunkIndex];
-        movedEntityId = chunk.Transfer(slot.Index, ref LastChunk);
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        ref var lastChunk = ref LastChunk;
+
+        movedEntityId = chunk.Transfer(slot.Index, ref lastChunk);
         EntityCount--;
 
         // Return to prevent that Size decreases when chunk IS not Empty and to prevent Size becoming 0 or -1.
-        if (LastChunk.Size != 0 || ChunkCount <= 1)
+        if (lastChunk.Size != 0 || ChunkCount <= 1)
         {
             return;
         }
@@ -384,7 +387,7 @@ public sealed partial class Archetype
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Chunk GetChunk(int index)
     {
-        return ref Chunks[index];
+        return ref Chunks.DangerousGetReferenceAt(index);
     }
 
     /// <summary>

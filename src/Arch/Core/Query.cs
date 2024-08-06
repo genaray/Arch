@@ -103,15 +103,17 @@ public struct Signature : IEquatable<Signature>
     public override int GetHashCode()
     {
         // Cache hashcode since the calculation is expensive.
-        if (_hashCode != -1)
+        var hash = _hashCode;  // Local copy for improved speed by reducing property access.
+        if (hash != -1)
         {
-            return _hashCode;
+            return hash;
         }
 
         unchecked
         {
-            _hashCode = Component.GetHashCode(Components);
-            return _hashCode;
+            hash = Component.GetHashCode(Components);
+            _hashCode = hash;
+            return hash;
         }
     }
 
@@ -370,15 +372,16 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public override int GetHashCode()
     {
         // Cache hashcode since the calculation is expensive.
-        if (_hashCode != -1)
+        var hash = _hashCode;
+        if (hash != -1)
         {
-            return _hashCode;
+            return hash;
         }
 
         unchecked
         {
             // Overflow is fine, just wrap{
-            var hash = 17;
+            hash = 17;
             hash = (hash * 23) + All.GetHashCode();
             hash = (hash * 23) + Any.GetHashCode();
             hash = (hash * 23) + None.GetHashCode();

@@ -110,10 +110,12 @@ public ref struct QueryArchetypeEnumerator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
+        // Caching query locally for less lookups, improved speed
+        var query = _query;
         while (_archetypes.MoveNext())
         {
             var archetype = _archetypes.Current;
-            if (archetype.EntityCount > 0 && _query.Valid(archetype.BitSet))
+            if (archetype.EntityCount > 0 && query.Valid(archetype.BitSet))
             {
                 return true;
             }

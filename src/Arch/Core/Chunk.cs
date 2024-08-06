@@ -106,8 +106,8 @@ public partial struct Chunk
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set<T>(int index, in T cmp)
     {
-        var array = GetSpan<T>();
-        array[index] = cmp;
+        ref var item = ref GetFirst<T>();
+        Unsafe.Add(ref item, index) = cmp;
     }
 
     /// <summary>
@@ -133,8 +133,8 @@ public partial struct Chunk
     [Pure]
     public ref T Get<T>(int index)
     {
-        var array = GetSpan<T>();
-        return ref array[index];
+        ref var item = ref GetFirst<T>();
+        return ref Unsafe.Add(ref item, index);
     }
 
     /// <summary>
@@ -190,15 +190,19 @@ public partial struct Chunk
         var lastIndex = Size - 1;
 
         // Copy last entity to replace the removed one.
-        Entities[index] = Entities[lastIndex];
-        for (var i = 0; i < Components.Length; i++)
+        ref var entities = ref Entities.DangerousGetReference();
+        Unsafe.Add(ref entities, index) = Unsafe.Add(ref entities, lastIndex);  // entities[index] = entities[lastIndex]; but without bound checks
+
+        // Copy components of last entity to replace the removed one
+        var components = Components;
+        for (var i = 0; i < components.Length; i++)
         {
-            var array = Components[i];
+            var array = components[i];
             Array.Copy(array, lastIndex, array, index, 1);
         }
 
         // Update the mapping.
-        Size--;
+        Size = lastIndex;
     }
 
     /// <summary>
@@ -278,8 +282,8 @@ public partial struct Chunk
     [Pure]
     public Span<T> GetSpan<T>()
     {
-        var array = GetArray<T>();
-        return MemoryMarshal.CreateSpan(ref array[0], array.Length);
+        ref var item = ref GetFirst<T>();
+        return MemoryMarshal.CreateSpan(ref item, Capacity);
     }
 
     /// <summary>
