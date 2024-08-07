@@ -16,12 +16,12 @@ public static class SetExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInParams(amount);
-        var arrays = new StringBuilder().GetChunkArrays(amount);
+        var arrays = new StringBuilder().GetChunkFirstGenericElements(amount);
 
         var sets = new StringBuilder();
         for (var index = 0; index <= amount; index++)
         {
-            sets.AppendLine($"t{index}Array[index] = t{index}Component;");
+            sets.AppendLine($"Unsafe.Add(ref t{index}FirstElement, index) = t{index}Component;");
         }
 
         var template =
@@ -80,7 +80,7 @@ public static class SetExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
-        var getFirstElements = new StringBuilder().GetFirstGenericElements(amount);
+        var getFirstElements = new StringBuilder().GetChunkFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
 
         var assignComponents = new StringBuilder();

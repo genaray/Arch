@@ -29,7 +29,7 @@ public static class SetWithQueryDesription
     public static void AppendSetWithQueryDescription(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getFirsts = new StringBuilder().GetFirstGenericElements(amount);
+        var getFirsts = new StringBuilder().GetChunkFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var parameters = new StringBuilder().GenericInDefaultParams(amount,"ComponentValue");
 

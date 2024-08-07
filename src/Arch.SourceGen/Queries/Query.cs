@@ -63,7 +63,7 @@ public static class StringBuilderQueryExtensions
     public static StringBuilder AppendQueryMethod(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
+        var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 
@@ -103,7 +103,7 @@ public static class StringBuilderQueryExtensions
     public static StringBuilder AppendEntityQueryMethod(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getFirstElement = new StringBuilder().GetFirstGenericElements(amount);
+        var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(amount);
         var getComponents = new StringBuilder().GetGenericComponents(amount);
         var insertParams = new StringBuilder().InsertGenericParams(amount);
 

@@ -81,7 +81,7 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
 
@@ -111,7 +111,7 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
 
@@ -148,7 +148,7 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
 
@@ -181,7 +181,7 @@ public static class StringBuilderHpQueryExtensions
         for (var index = 0; index <= amount; index++)
         {
             var generics = new StringBuilder().GenericWithoutBrackets(index);
-            var getFirstElement = new StringBuilder().GetFirstGenericElements(index);
+            var getFirstElement = new StringBuilder().GetChunkFirstGenericElements(index);
             var getComponents = new StringBuilder().GetGenericComponents(index);
             var insertParams = new StringBuilder().InsertGenericParams(index);
 

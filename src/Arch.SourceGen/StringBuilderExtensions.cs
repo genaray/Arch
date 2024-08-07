@@ -48,7 +48,7 @@ public static class StringBuilderExtensions
     /// <param name="sb"></param>
     /// <param name="amount"></param>
     /// <returns></returns>
-    public static StringBuilder GetFirstGenericElements(this StringBuilder sb, int amount)
+    public static StringBuilder GetChunkFirstGenericElements(this StringBuilder sb, int amount)
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
         {
