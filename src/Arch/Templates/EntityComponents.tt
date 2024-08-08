@@ -1,0 +1,67 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+
+<#
+    for (var index = 1; index < Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericRefParameters(index);
+
+        var refStructs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            refStructs.AppendLine($"public Ref<T{i}> t{i};");
+
+        var references = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            references.AppendLine($"public ref T{i} t{i};");
+
+        var assignRefStructs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            assignRefStructs.AppendLine($"t{i} = new Ref<T{i}>(ref t{i}Component);");
+
+        var assignRefs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            assignRefs.AppendLine($"t{i} = ref t{i}Component;");
+#>
+
+[SkipLocalsInit]
+public ref struct EntityComponents<<#= generics #>>
+{
+
+#if NETSTANDARD2_1 || NET6_0
+    public ReadOnlyRef<Entity> Entity;
+    <#= refStructs #>
+#else
+    public ref readonly Entity Entity;
+    <#= references #>
+#endif
+
+    [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public EntityComponents(ref Entity entity, <#= parameters #>){
+
+#if NETSTANDARD2_1 || NET6_0
+    Entity = new ReadOnlyRef<Entity>(in entity);
+    <#= assignRefStructs #>
+#else
+    Entity = ref entity;
+    <#= assignRefs #>
+#endif
+
+    }
+}
+
+<#
+    }
+#>
+
+

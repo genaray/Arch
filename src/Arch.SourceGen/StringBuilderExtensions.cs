@@ -48,11 +48,11 @@ public static class StringBuilderExtensions
     /// <param name="sb"></param>
     /// <param name="amount"></param>
     /// <returns></returns>
-    public static StringBuilder GetChunkFirstGenericElements(this StringBuilder sb, int amount)
+    public static StringBuilder GetChunkFirstGenericElements(this StringBuilder sb, int amount, String placeholder = "chunk.")
     {
         for (var localIndex = 0; localIndex <= amount; localIndex++)
         {
-            sb.AppendLine($"ref var t{localIndex}FirstElement = ref chunk.GetFirst<T{localIndex}>();");
+            sb.AppendLine($"ref var t{localIndex}FirstElement = ref {placeholder}GetFirst<T{localIndex}>();");
         }
         return sb;
     }

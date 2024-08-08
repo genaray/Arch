@@ -149,7 +149,7 @@ public static class GetExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var inParams = new StringBuilder().InsertGenericParams(amount);
-        var arrays = new StringBuilder().GetChunkFirstGenericElements(amount);
+        var arrays = new StringBuilder().GetChunkFirstGenericElements(amount, "");
 
         var gets = new StringBuilder();
         for (var index = 0; index <= amount; index++)
@@ -186,7 +186,7 @@ public static class GetExtensions
     public static StringBuilder AppendChunkIndexGetRow(this StringBuilder sb, int amount)
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var getArrays = new StringBuilder().GetChunkFirstGenericElements(amount);
+        var getArrays = new StringBuilder().GetChunkFirstGenericElements(amount, "");
         var inParams = new StringBuilder().InsertGenericParams(amount);
 
         var gets = new StringBuilder();

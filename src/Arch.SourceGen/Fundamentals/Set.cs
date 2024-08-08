@@ -16,7 +16,7 @@ public static class SetExtensions
     {
         var generics = new StringBuilder().GenericWithoutBrackets(amount);
         var parameters = new StringBuilder().GenericInParams(amount);
-        var arrays = new StringBuilder().GetChunkFirstGenericElements(amount);
+        var arrays = new StringBuilder().GetChunkFirstGenericElements(amount, "");
 
         var sets = new StringBuilder();
         for (var index = 0; index <= amount; index++)

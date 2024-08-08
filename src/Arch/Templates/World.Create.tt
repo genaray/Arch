@@ -1,0 +1,64 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+
+<#
+    for (var index = 1; index < Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index);
+        var inParameters = InsertGenericInParams(index);
+
+        var addEvents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
+#>
+
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+[StructuralChange]
+public Entity Create<{{generics}}>({{parameters}})
+{
+    var signature = Component<{{generics}}>.Signature;
+
+    // Recycle id or increase
+    var recycle = RecycledIds.TryDequeue(out var recycledId);
+    var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
+
+    // Create new entity and put it to the back of the array
+    var entity = new Entity(recycled.Id, Id);
+
+    // Add to archetype & mapping
+    var archetype = GetOrCreate(signature);
+    var createdChunk = archetype.Add(entity, out var slot);
+
+    archetype.Set<{{generics}}>(ref slot, {{inParameters}});
+
+    // Resize map & Array to fit all potential new entities
+    if (createdChunk)
+    {
+        Capacity += archetype.EntitiesPerChunk;
+        EntityInfo.EnsureCapacity(Capacity);
+    }
+
+    // Map
+    EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
+
+    Size++;
+    OnEntityCreated(entity);
+
+    {{addEvents}}
+    return entity;
+}
+<#
+    }
+#>
+
+

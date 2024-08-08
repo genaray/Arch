@@ -94,12 +94,27 @@ Introduced breaking changes by renaming Group to Component and several other sma
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arch.LowLevel" Version="1.1.1" />
+    <PackageReference Include="Arch.LowLevel" Version="1.1.3" />
     <PackageReference Include="Collections.Pooled" Version="2.0.0-preview.27" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Templates\Component.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Component.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Components.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Components.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\EntityComponents.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>EntityComponents.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

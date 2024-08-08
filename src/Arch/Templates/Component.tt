@@ -1,0 +1,46 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using Arch.Core;
+using System;
+using System.Threading;
+
+namespace Arch.Core.Utils;
+
+<#
+    for (var index = 1; index < Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var types = AppendTypes(index);
+#>
+
+/// <inheritdoc cref="Component"/>
+public static class Component<<#= generics #>>
+{
+    internal static readonly int Id;
+
+    /// <summary>
+    ///     An <see cref="Signature"/> for this given set of components.
+    /// </summary>
+    public static readonly Signature Signature;
+
+    /// <summary>
+    ///     The hash code for this given set of components.
+    /// </summary>
+    public static readonly int Hash;
+
+    static Component()
+    {
+        Id = Interlocked.Increment(ref Component.Id);
+        Signature = new Signature(new [] { <#= types #> });
+        Hash = Signature.GetHashCode();
+    }
+}
+
+<#
+    }
+#>
+
+
