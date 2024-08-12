@@ -31,7 +31,7 @@ Introduced breaking changes by renaming Group to Component and several other sma
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
 
-    <LangVersion>11</LangVersion>
+    <LangVersion>12</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Apache2.0</Copyright>
 

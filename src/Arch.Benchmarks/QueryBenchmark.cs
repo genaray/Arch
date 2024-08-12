@@ -13,7 +13,7 @@ public class QueryBenchmark
     [Params(10000, 100000, 1000000)] public int Amount;
 
     private static readonly ComponentType[] _group = { typeof(Transform), typeof(Velocity) };
-    private readonly QueryDescription _queryDescription = new() { All = _group };
+    private readonly QueryDescription _queryDescription = new(all: _group);
 
     private static World? _world;
 

@@ -226,26 +226,26 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     An <see cref="Signature"/> of all components that an <see cref="Entity"/> should have mandatory.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature All { get; private set; } = new();
+    public Signature All { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should have at least one.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature Any { get; private set; } = new();
+    public Signature Any { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should not have any.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature None { get; private set; } = new();
+    public Signature None { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components that exactly match the structure of an <see cref="Entity"/>.
     ///     <see cref="Entity"/>'s with more or less components than those defined in the array are not addressed.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature Exclusive { get; private set; } = new();
+    public Signature Exclusive { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
@@ -253,6 +253,24 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public QueryDescription()
     {
         _hashCode = -1;
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
+    /// </summary>
+    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
+    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
+    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
+    public QueryDescription(Signature? all = null, Signature? any = null, Signature? none = null, Signature? exclusive = null)
+    {
+        All = all ?? All;
+        Any = any ?? Any;
+        None = none ?? None;
+        Exclusive = exclusive ?? Exclusive;
+
+        _hashCode = -1;
+        _hashCode = GetHashCode();
     }
 
     /// <summary>
@@ -271,11 +289,6 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 
         _hashCode = -1;
         _hashCode = GetHashCode();
-    }
-
-    public QueryDescription(Signature all) : this()
-    {
-        All = all;
     }
 
     /// <summary>
