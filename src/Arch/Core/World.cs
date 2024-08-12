@@ -19,12 +19,12 @@ internal record struct RecycledEntity
     /// <summary>
     ///     The recycled id.
     /// </summary>
-    public int Id;
+    public readonly int Id;
 
     /// <summary>
     ///     The new version.
     /// </summary>
-    public int Version;
+    public readonly int Version;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RecycledEntity"/> struct.

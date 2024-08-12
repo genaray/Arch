@@ -1,0 +1,47 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+
+public partial struct Chunk
+{
+
+<#
+    for (var index = 1; index < Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+
+        var arrays = new StringBuilder();
+        for (var i = 0; i <= index; i++)
+            arrays.Append($"out var t{i}Array,");
+        arrays.Length--;
+
+        var insertParams = new StringBuilder();
+        for (var i = 0; i <= index; i++)
+            insertParams.Append($"ref t{i}Array.DangerousGetReference(),");
+        insertParams.Length--;
+
+#>
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public Components<<#= generics #>> GetFirst<<#= generics #>>()
+    {
+        GetArray<<#= generics #>>(<#= arrays #>);
+        return new Components<<#= generics #>>(<#= insertParams #>);
+    }
+
+<#
+    }
+#>
+
+}
+
+

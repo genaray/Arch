@@ -14,16 +14,21 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>1.2.8.2-alpha</Version>
+    <Version>1.3.0-alpha</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Description>A high performance c# net.6 and net.7 archetype based ECS ( Entity component system ).</Description>
+    <Description>A high performance c# net.7 and net.8 archetype based ECS ( Entity component system ).</Description>
     <PackageReleaseNotes>Updated CommunityToolkit, increases speed slightly. 
 Fixed some DangerousUtilities. 
 Refactored adding of entities to be faster. 
 Introduced Signature for improved performance. 
 Added MemoryMarshal.CreateSpan in some places for improved performance.
-Introduced breaking changes by renaming Group to Component and several other small changes. </PackageReleaseNotes>
+Introduced breaking changes by renaming Group to Component and several other small changes. 
+Updated Arch.LowLevel.
+Improved performance of almost all operations.
+Refatored QueryDescription, use the constructor or generics now instead.
+Improved ASM-Code generation for improved performance for smaller querys. 
+Removed several methods from arch to slim down the core. </PackageReleaseNotes>
     <PackageTags>c#;.net;.net6;.net7;ecs;game;entity;gamedev; game-development; game-engine; entity-component-system;stride;unity;godot;</PackageTags>
 
     <PackageProjectUrl>https://github.com/genaray/Arch</PackageProjectUrl>

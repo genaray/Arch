@@ -1,0 +1,55 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+
+public partial struct Chunk
+{
+
+<#
+    for (var index = 1; index < Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+
+        var addEvents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
+
+        var outs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            outs.Append($"out T{i}[] t{i}Array,");
+        outs.Length--;
+
+        var indexes = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            indexes.Append($"out var t{i}Index,");
+        indexes.Length--;
+
+        var assignComponents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            assignComponents.AppendLine($"t{i}Array = Unsafe.As<T{i}[]>(Unsafe.Add(ref arrays, t{i}Index));");
+
+#>
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    public void GetArray<<#= generics #>>(<#= outs #>)
+    {
+        Index<<#= generics #>>(<#= indexes #>);
+        ref var arrays = ref Components.DangerousGetReference();
+        <#= assignComponents #>
+    }
+<#
+    }
+#>
+
+}
+
+

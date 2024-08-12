@@ -224,26 +224,26 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 
     /// <summary>
     ///     An <see cref="Signature"/> of all components that an <see cref="Entity"/> should have mandatory.
-    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
     /// </summary>
     public Signature All { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should have at least one.
-    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
     /// </summary>
     public Signature Any { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should not have any.
-    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
     /// </summary>
     public Signature None { get; private set; } = Signature.Null;
 
     /// <summary>
     ///     An array of all components that exactly match the structure of an <see cref="Entity"/>.
     ///     <see cref="Entity"/>'s with more or less components than those defined in the array are not addressed.
-    /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
     /// </summary>
     public Signature Exclusive { get; private set; } = Signature.Null;
 
@@ -292,11 +292,11 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     }
 
     /// <summary>
-    ///     Recreates this instance by calculating a new <see cref="_hashCode"/>.
+    ///     Builds this instance by calculating a new <see cref="_hashCode"/>.
     ///     Is actually only needed if the passed arrays are changed afterwards.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Rebuild()
+    public void Build()
     {
         _hashCode = -1;
         _hashCode = GetHashCode();
@@ -312,7 +312,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithAll<T>()
     {
         All = Component<T>.Signature;
-        _hashCode = -1;
+        Build();
         return ref this;
     }
 
@@ -326,7 +326,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithAny<T>()
     {
         Any = Component<T>.Signature;
-        _hashCode = -1;
+        Build();
         return ref this;
     }
 
@@ -340,7 +340,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithNone<T>()
     {
         None = Component<T>.Signature;
-        _hashCode = -1;
+        Build();
         return ref this;
     }
 
@@ -355,7 +355,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     public ref QueryDescription WithExclusive<T>()
     {
         Exclusive = Component<T>.Signature;
-        _hashCode = -1;
+        Build();
         return ref this;
     }
 

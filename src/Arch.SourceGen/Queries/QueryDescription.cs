@@ -23,7 +23,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithAll<{{generics}}>()
             {
                All = Component<{{generics}}>.Signature;
-               _hashCode = -1;
+               Build();
                return ref this;
             }
             """;
@@ -53,7 +53,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithAny<{{generics}}>()
             {
                Any = Component<{{generics}}>.Signature;
-               _hashCode = -1;
+               Build();
                return ref this;
             }
             """;
@@ -83,7 +83,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithNone<{{generics}}>()
             {
                None = Component<{{generics}}>.Signature;
-               _hashCode = -1;
+               Build();
                return ref this;
             }
             """;
@@ -113,7 +113,7 @@ public static class QueryDescriptionExtensions
             public ref QueryDescription WithExclusive<{{generics}}>()
             {
                Exclusive = Component<{{generics}}>.Signature;
-               _hashCode = -1;
+               Build();
                return ref this;
             }
             """;
