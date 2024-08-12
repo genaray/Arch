@@ -12,7 +12,7 @@ namespace Arch.Tests;
 public sealed class ChunkTest
 {
     private Chunk _chunk;
-    private readonly ComponentType[] _types = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _types = [typeof(Transform), typeof(Rotation)];
 
     /// <summary>
     ///     Checks if data inside the chunk is being set correctly.

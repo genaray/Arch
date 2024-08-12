@@ -17,8 +17,8 @@ public sealed partial class WorldTest
 {
     private World _world;
 
-    private readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private readonly ComponentType[] _entityGroup = [typeof(Transform), typeof(Rotation)];
+    private readonly ComponentType[] _entityAiGroup = [typeof(Transform), typeof(Rotation), typeof(Ai)];
 
     [SetUp]
     public void Setup()
@@ -90,7 +90,7 @@ public sealed partial class WorldTest
     [Test]
     public void DestroyAll()
     {
-        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
+        var query = new QueryDescription(all: [typeof(Transform)]);
 
         var entities = new Entity[_world.CountEntities(query)];
         _world.GetEntities(query, entities.AsSpan());
@@ -357,7 +357,7 @@ public sealed partial class WorldTest
     {
         // Query
         var archTypes = new ComponentType[] { typeof(Transform) };
-        var query = new QueryDescription { All = archTypes };
+        var query = new QueryDescription(all: archTypes);
 
         // World
         using var world = World.Create();
@@ -385,7 +385,7 @@ public sealed partial class WorldTest
     {
         // Query
         var archTypes = new ComponentType[] { typeof(Transform) };
-        var query = new QueryDescription { All = archTypes };
+        var query = new QueryDescription(all: archTypes);
 
         // World
         using var world = World.Create();

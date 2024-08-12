@@ -10,9 +10,9 @@ namespace Arch.Tests;
 public sealed partial class CommandBufferTest
 {
 
-    private static readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
-    private static readonly ComponentType[] _secondGroup = { typeof(Transform), typeof(Rotation), typeof(Ai), typeof(int) };
-    private readonly QueryDescription _queryDescription = new() { All = _group };
+    private static readonly ComponentType[] _group = [typeof(Transform), typeof(Rotation)];
+    private static readonly ComponentType[] _secondGroup = [typeof(Transform), typeof(Rotation), typeof(Ai), typeof(int)];
+    private readonly QueryDescription _queryDescription = new(all: _group);
 
     [Test]
     public void CommandBufferSparseSet()
@@ -38,7 +38,7 @@ public sealed partial class CommandBufferTest
         var world = World.Create();
         var commandBuffer = new CommandBuffer();
 
-        var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
+        var entity = world.Create([typeof(Transform), typeof(Rotation), typeof(int)]);
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
         commandBuffer.Add(in entity, new Ai());
         commandBuffer.Remove<int>(in entity);
@@ -58,7 +58,7 @@ public sealed partial class CommandBufferTest
         var world = World.Create();
         var commandBuffer = new CommandBuffer();
 
-        var entity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
+        var entity = commandBuffer.Create([typeof(Transform), typeof(Rotation), typeof(int)]);
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
         commandBuffer.Add(in entity, new Ai());
         commandBuffer.Remove<int>(in entity);
@@ -82,9 +82,9 @@ public sealed partial class CommandBufferTest
         var entities = new List<Entity>();
         using (var commandBuffer = new CommandBuffer())
         {
-            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
-            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
-            entities.Add(commandBuffer.Create(new ComponentType[] { typeof(Transform) }));
+            entities.Add(commandBuffer.Create([typeof(Transform)]));
+            entities.Add(commandBuffer.Create([typeof(Transform)]));
+            entities.Add(commandBuffer.Create([typeof(Transform)]));
             commandBuffer.Playback(world);
         }
 
@@ -100,16 +100,16 @@ public sealed partial class CommandBufferTest
 
         using (var commandBuffer = new CommandBuffer())
         {
-            commandBuffer.Create(new ComponentType[] { typeof(Transform) });
-            commandBuffer.Create(new ComponentType[] { typeof(Transform) });
-            var e = commandBuffer.Create(new ComponentType[] { typeof(Transform) });
+            commandBuffer.Create([typeof(Transform)]);
+            commandBuffer.Create([typeof(Transform)]);
+            var e = commandBuffer.Create([typeof(Transform)]);
             commandBuffer.Destroy(e);
             commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(2));
 
-        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
+        var query = new QueryDescription(all: [typeof(Transform)]);
         var entities = new Entity[world.CountEntities(query)];
         world.GetEntities(query, entities);
 
@@ -132,14 +132,14 @@ public sealed partial class CommandBufferTest
         // Create an entity
         using (var commandBuffer = new CommandBuffer())
         {
-            commandBuffer.Create( new ComponentType[] { typeof(int) });
+            commandBuffer.Create([typeof(int)]);
             commandBuffer.Playback(world);
         }
 
         That(world.Size, Is.EqualTo(1));
 
         // Retrieve the entity we just created
-        var query = new QueryDescription { All = new ComponentType[] { typeof(int) } };
+        var query = new QueryDescription(all: [typeof(int)]);
         var entities = new Entity[world.CountEntities(query)];
         world.GetEntities(query, entities);
 
@@ -190,8 +190,8 @@ public sealed partial class CommandBufferTest
         var world = World.Create();
         var commandBuffer = new CommandBuffer();
 
-        var entity = world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
-        var bufferedEntity = commandBuffer.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), typeof(int) });
+        var entity = world.Create([typeof(Transform), typeof(Rotation), typeof(int)]);
+        var bufferedEntity = commandBuffer.Create([typeof(Transform), typeof(Rotation), typeof(int)]);
 
         commandBuffer.Set(in entity, new Transform { X = 20, Y = 20 });
         commandBuffer.Add(in entity, new Ai());

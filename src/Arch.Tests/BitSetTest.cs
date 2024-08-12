@@ -16,9 +16,9 @@ public sealed class BitSetTest
     [Test]
     public void ComponentHashOrder()
     {
-        ComponentType[] array1 = { typeof(int), typeof(byte) };
-        ComponentType[] array2 = { typeof(int), typeof(byte) };
-        ComponentType[] array3 = { typeof(byte), typeof(int) };
+        ComponentType[] array1 = [typeof(int), typeof(byte)];
+        ComponentType[] array2 = [typeof(int), typeof(byte)];
+        ComponentType[] array3 = [typeof(byte), typeof(int)];
 
         That(Component.GetHashCode(array2), Is.EqualTo(Component.GetHashCode(array1)));
         That(Component.GetHashCode(array3), Is.EqualTo(Component.GetHashCode(array1)));
@@ -243,8 +243,8 @@ public sealed class BitSetTest
         var componentTypeNotOnBorder = new ComponentType(borderComponentId - 10, 0);
         var componentTypeOnBorder = new ComponentType(borderComponentId, 0);
 
-        ComponentType[] array1 = { componentTypeNotOnBorder, componentTypeOnBorder };
-        ComponentType[] array2 = { componentTypeNotOnBorder };
+        ComponentType[] array1 = [componentTypeNotOnBorder, componentTypeOnBorder];
+        ComponentType[] array2 = [componentTypeNotOnBorder];
 
         That(Component.GetHashCode(array1), Is.Not.EqualTo(Component.GetHashCode(array2)));
     }

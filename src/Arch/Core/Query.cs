@@ -226,26 +226,26 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     An <see cref="Signature"/> of all components that an <see cref="Entity"/> should have mandatory.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature All { get; set; } = new();
+    public Signature All { get; private set; } = new();
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should have at least one.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature Any { get; set; } = new();
+    public Signature Any { get; private set; } = new();
 
     /// <summary>
     ///     An array of all components of which an <see cref="Entity"/> should not have any.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature None { get; set; } = new();
+    public Signature None { get; private set; } = new();
 
     /// <summary>
     ///     An array of all components that exactly match the structure of an <see cref="Entity"/>.
     ///     <see cref="Entity"/>'s with more or less components than those defined in the array are not addressed.
     /// <remarks>If the content of the array is subsequently changed, a <see cref="Rebuild"/> should be carried out.</remarks>
     /// </summary>
-    public Signature Exclusive { get; set; } = new();
+    public Signature Exclusive { get; private set; } = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
@@ -271,6 +271,11 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 
         _hashCode = -1;
         _hashCode = GetHashCode();
+    }
+
+    public QueryDescription(Signature all) : this()
+    {
+        All = all;
     }
 
     /// <summary>

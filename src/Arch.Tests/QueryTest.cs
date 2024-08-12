@@ -11,11 +11,11 @@ public sealed partial class QueryTest
     private JobScheduler _jobScheduler;
     private World? _world;
 
-    private static readonly ComponentType[] _entityGroup = { typeof(Transform), typeof(Rotation) };
-    private static readonly ComponentType[] _entityAiGroup = { typeof(Transform), typeof(Rotation), typeof(Ai) };
+    private static readonly ComponentType[] _entityGroup = [typeof(Transform), typeof(Rotation)];
+    private static readonly ComponentType[] _entityAiGroup = [typeof(Transform), typeof(Rotation), typeof(Ai)];
 
-    private readonly QueryDescription _withoutAiQuery = new() { All = new ComponentType[] { typeof(Transform) }, Any = new ComponentType[] { typeof(Rotation) }, None = new ComponentType[] { typeof(Ai) } };
-    private readonly QueryDescription _allQuery = new() { All = new ComponentType[] { typeof(Transform), typeof(Rotation) }, Any = new ComponentType[] { typeof(Ai) } };
+    private readonly QueryDescription _withoutAiQuery = new( all: [typeof(Transform)], any: [typeof(Rotation)], none: [typeof(Ai)]);
+    private readonly QueryDescription _allQuery = new(all: [typeof(Transform), typeof(Rotation)], any: [typeof(Ai)]);
 
     [OneTimeSetUp]
     public void Setup()
@@ -39,7 +39,7 @@ public sealed partial class QueryTest
     [Test]
     public void AllQuery()
     {
-        var query = new QueryDescription { All = new ComponentType[] { typeof(Transform) } };
+        var query = new QueryDescription(all: [typeof(Transform)]);
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -48,14 +48,14 @@ public sealed partial class QueryTest
         }
 
         var count = 0;
-        _world.Query(query, (Entity entity) => count++);
+        _world.Query(query, _ => count++);
         That(count, Is.EqualTo(100));
     }
 
     [Test]
     public void AnyQuery()
     {
-        var query = new QueryDescription { Any = new ComponentType[] { typeof(Transform) } };
+        var query = new QueryDescription(any: [typeof(Transform)]);
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -64,14 +64,14 @@ public sealed partial class QueryTest
         }
 
         var count = 0;
-        _world.Query(query, (Entity entity) => count++);
+        _world.Query(query, _ => count++);
         That(count, Is.EqualTo(100));
     }
 
     [Test]
     public void NoneQuery()
     {
-        var query = new QueryDescription { None = new ComponentType[] { typeof(Transform) } };
+        var query = new QueryDescription(none: [typeof(Transform)]);
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)
@@ -80,14 +80,14 @@ public sealed partial class QueryTest
         }
 
         var count = 0;
-        _world.Query(query, (Entity entity) => count++);
+        _world.Query(query, _ => count++);
         That(count, Is.EqualTo(0));
     }
 
     [Test]
     public void EmptyQuery()
     {
-        var query = new QueryDescription { None = new ComponentType[] { typeof(int) } };
+        var query = new QueryDescription(none: [typeof(int)]);
 
         _world = World.Create();
         _world.Create();
@@ -101,7 +101,7 @@ public sealed partial class QueryTest
     public void ExclusiveQuery()
     {
         var exclusiveGroup = new ComponentType[] { typeof(Transform), typeof(Rotation) };
-        var query = new QueryDescription { Exclusive = exclusiveGroup };
+        var query = new QueryDescription(exclusive: exclusiveGroup);
 
         _world = World.Create();
         for (var index = 0; index < 100; index++)

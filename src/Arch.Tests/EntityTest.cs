@@ -23,7 +23,7 @@ public sealed partial class EntityTest
     }
 
     private World _world;
-    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private readonly ComponentType[] _group = [typeof(Transform), typeof(Rotation)];
     private Entity _entity;
 
     /// <summary>

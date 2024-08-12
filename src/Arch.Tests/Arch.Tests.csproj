@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release;Release-Pure;Release-PureECS;Release-Events;Debug-PureECS;Debug-Events</Configurations>
+    <LangVersion>12</LangVersion>
     <!--<TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
   </PropertyGroup>
 
