@@ -26,7 +26,7 @@ public static class SetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void Set<{{generics}}>(int index, {{parameters}})
             {
                 {{arrays}}
@@ -55,7 +55,7 @@ public static class SetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             internal void Set<{{generics}}>(ref Slot slot, {{parameters}})
             {
                 ref var chunk = ref GetChunk(slot.ChunkIndex);
@@ -91,7 +91,7 @@ public static class SetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             internal void SetRange<{{generics}}>(in Slot from, in Slot to, {{parameters}})
             {
                 // Set the added component, start from the last slot and move down
@@ -143,7 +143,7 @@ public static class SetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void Set<{{generics}}>(Entity entity, {{parameters}})
             {
                 var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
@@ -175,7 +175,7 @@ public static class SetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public static void Set<{{generics}}>(this Entity entity, {{parameters}})
             {
                 var world = World.Worlds[entity.WorldId];

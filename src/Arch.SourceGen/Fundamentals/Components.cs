@@ -49,7 +49,7 @@ public static class ReferencesExtensions
             #endif
 
                 [SkipLocalsInit]
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public Components({{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0
@@ -111,7 +111,7 @@ public static class ReferencesExtensions
             #endif
 
                 [SkipLocalsInit]
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public EntityComponents(ref Entity entity, {{parameters}}){
 
             #if NETSTANDARD2_1 || NET6_0

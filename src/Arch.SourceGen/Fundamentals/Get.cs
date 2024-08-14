@@ -38,7 +38,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public void GetArray<{{generics}}>({{outs}})
             {
@@ -87,7 +87,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public void GetSpan<{{generics}}>({{outs}})
             {
@@ -123,7 +123,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public Components<{{generics}}> GetFirst<{{generics}}>()
             {
@@ -159,7 +159,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public Components<{{generics}}> Get<{{generics}}>(int index)
             {
@@ -197,7 +197,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public EntityComponents<{{generics}}> GetRow<{{generics}}>(int index)
             {
@@ -229,7 +229,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             internal unsafe Components<{{generics}}> Get<{{generics}}>(scoped ref Slot slot)
             {
                 ref var chunk = ref GetChunk(slot.ChunkIndex);
@@ -256,7 +256,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public Components<{{generics}}> Get<{{generics}}>(Entity entity)
             {
@@ -286,7 +286,7 @@ public static class GetExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public static Components<{{generics}}> Get<{{generics}}>(this Entity entity)
             {

@@ -40,7 +40,7 @@ public readonly record struct ComponentType
     /// </summary>
     public Type Type
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => ComponentRegistry.Types[Id]!;
     }
 
@@ -48,7 +48,7 @@ public readonly record struct ComponentType
     ///     Converts a <see cref="Type"/> to its <see cref="ComponentType"/>.
     /// </summary>
     /// <param name="value">The type that is being converted.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator ComponentType(Type value)
     {
         return Component.GetComponentType(value);
@@ -58,7 +58,7 @@ public readonly record struct ComponentType
     ///     Converts the <see cref="ComponentType"/> to its original <see cref="Type"/>.
     /// </summary>
     /// <param name="value">The type that is being converted.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator Type(ComponentType value)
     {
         return value.Type;
@@ -85,7 +85,7 @@ public static class ComponentRegistry
     /// </summary>
     public static IReadOnlyDictionary<Type, ComponentType> TypeToComponentType
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => _typeToComponentType;
     }
 
@@ -94,7 +94,7 @@ public static class ComponentRegistry
     /// </summary>
     public static ReadOnlySpan<Type?> Types
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => _types;
     }
 
@@ -103,9 +103,9 @@ public static class ComponentRegistry
     /// </summary>
     public static int Size
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         private set;
     }
 
@@ -116,7 +116,7 @@ public static class ComponentRegistry
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <param name="typeSize">The size in bytes of <see cref="type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private static ComponentType Add(Type type, int typeSize)
     {
         if (TryGet(type, out var meta))
@@ -141,7 +141,7 @@ public static class ComponentRegistry
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <param name="componentType">The <see cref="ComponentType"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static ComponentType Add(Type type, ComponentType componentType)
     {
         // Register and assign component id
@@ -157,7 +157,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static ComponentType Add<T>()
     {
         return Add(typeof(T), SizeOf<T>());
@@ -168,7 +168,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static ComponentType Add(Type type)
     {
         return Add(type, SizeOf(type));
@@ -180,7 +180,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">Its generic type.</typeparam>
     /// <returns>True if it is, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool Has<T>()
     {
         return Has(typeof(T));
@@ -192,7 +192,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <returns>True if it is, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool Has(Type type)
     {
         return TypeToComponentType.ContainsKey(type);
@@ -203,7 +203,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">The component to remove.</typeparam>
     /// <returns>True if it was successful, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool Remove<T>()
     {
         var componentType = Component<T>.ComponentType;
@@ -216,7 +216,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">The component <see cref="Type"/> to remove.</param>
     /// <returns>True if it was successful, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool Remove(Type type)
     {
         ComponentType componentType = type;
@@ -230,7 +230,7 @@ public static class ComponentRegistry
     /// <param name="type">The component <see cref="Type"/> to remove.</param>
     /// <param name="compType">The removed <see cref="ComponentType"/>, if it existed.</param>
     /// <returns>True if it was successful, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool Remove(Type type, out ComponentType compType)
     {
         var removed = _typeToComponentType.Remove(type, out compType);
@@ -246,7 +246,7 @@ public static class ComponentRegistry
     /// <param name="oldType">The old component <see cref="Type"/> to be replaced.</param>
     /// <param name="newType">The new component <see cref="Type"/> that replaced the old one.</param>
     /// <param name="newTypeSize">The size in bytes of <see cref="newType"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static void Replace(Type oldType, Type newType, int newTypeSize)
     {
         var id = Remove(oldType, out var oldComponentType) ? oldComponentType.Id : ++Size;
@@ -262,7 +262,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T0">The old component to be replaced.</typeparam>
     /// <typeparam name="T1">The new component that replaced the old one.</typeparam>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static void Replace<T0, T1>()
     {
         Replace(typeof(T0), typeof(T1), SizeOf<T1>());
@@ -275,7 +275,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="oldType">The old component <see cref="Type"/> to be replaced.</param>
     /// <param name="newType">The new component <see cref="Type"/> that replaced the old one.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static void Replace(Type oldType, Type newType)
     {
         Replace(oldType, newType, SizeOf(newType));
@@ -287,7 +287,7 @@ public static class ComponentRegistry
     /// <typeparam name="T">Its generic type.</typeparam>
     /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
     /// <returns>True if it registered, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool TryGet<T>(out ComponentType componentType)
     {
         return TryGet(typeof(T), out componentType);
@@ -299,7 +299,7 @@ public static class ComponentRegistry
     /// <param name="type">Its <see cref="Type"/>.</param>
     /// <param name="componentType">Its <see cref="ComponentType"/>, if it is registered.</param>
     /// <returns>True if it registered, otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool TryGet(Type type, out ComponentType componentType)
     {
         return TypeToComponentType.TryGetValue(type, out componentType);
@@ -310,7 +310,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">The generic.</typeparam>
     /// <returns>Its size.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private static int SizeOf<T>()
     {
         return typeof(T).IsValueType ? Unsafe.SizeOf<T>() : IntPtr.Size;
@@ -322,7 +322,7 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>Its size in bytes.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private static int SizeOf(Type type)
     {
         if (type.IsValueType)
@@ -394,7 +394,7 @@ public static class Component
     /// </remarks>
     /// <param name="type">The <see cref="Type"/>.</param>
     /// <returns>The <see cref="ComponentType"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static ComponentType GetComponentType(Type type)
     {
         return !ComponentRegistry.TryGet(type, out var index) ? ComponentRegistry.Add(type) : index;
@@ -407,7 +407,7 @@ public static class Component
     /// </summary>
     /// <param name="obj">The <see cref="ComponentType"/> array.</param>
     /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static int GetHashCode(Span<ComponentType> obj)
     {
           // Search for the highest id to determine how much uints we need for the stack.
@@ -439,7 +439,7 @@ public static class Component
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/>.</param>
     /// <returns>A unique hashcode for the contained elements.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static int GetHashCode(Span<uint> span)
     {
         var hashCode = new HashCode();

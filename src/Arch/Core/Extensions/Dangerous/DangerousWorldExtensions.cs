@@ -17,7 +17,7 @@ public static class DangerousWorldExtensions
     /// <param name="archetypes">The new list of <see cref="Archetype"/>s.</param>
     public static void SetArchetypes(this World world, List<Archetype> archetypes)
     {
-        world.Archetypes.AddRange(archetypes);
+        world.Archetypes.Items.AddRange(archetypes);
 
         foreach (var archetype in archetypes)
         {

@@ -134,7 +134,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to register.</param>
     /// <param name="info">Its <see cref="BufferedEntityInfo"/> which stores indexes used for <see cref="CommandBuffer"/> operations.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     internal void Register(in Entity entity, out BufferedEntityInfo info)
     {
         var setIndex = Sets.Create(in entity);
@@ -156,7 +156,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> with a negative or positive id to resolve.</param>
     /// <returns>Its real <see cref="Entity"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     internal Entity Resolve(Entity entity)
     {
         var entityIndex = BufferedEntityInfo[entity.Id].Index;
@@ -169,7 +169,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <param name="types">The <see cref="Entity"/>'s component structure/<see cref="Archetype"/>.</param>
     /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Entity Create(ComponentType[] types)
     {
         lock (this)
@@ -189,7 +189,7 @@ public sealed partial class CommandBuffer : IDisposable
     ///     Will be destroyed during <see cref="Playback"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to destroy.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Destroy(in Entity entity)
     {
         lock (this)
@@ -211,7 +211,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Set<T>(in Entity entity, in T? component = default)
     {
         BufferedEntityInfo info;
@@ -234,7 +234,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Add<T>(in Entity entity, in T? component = default)
     {
         BufferedEntityInfo info;
@@ -256,7 +256,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Remove<T>(in Entity entity)
     {
         BufferedEntityInfo info;
@@ -279,7 +279,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// </remarks>
     /// <param name="world">The <see cref="World"/> where the commands will be playbacked too.</param>
     /// <param name="dispose">If true it will clear the recorded operations after they were playbacked, if not they will stay.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Playback(World world, bool dispose = true)
     {
         // Create recorded entities.
@@ -442,7 +442,7 @@ public sealed partial class CommandBuffer
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     internal static void AddRange(World world, Entity entity, IList<ComponentType> components)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);

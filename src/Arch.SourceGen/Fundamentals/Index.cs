@@ -31,7 +31,7 @@ public static class IndexExtensions
         }
 
         var template = $$"""
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         [Pure]
         private void Index<{{generics}}>({{outs}})
         {

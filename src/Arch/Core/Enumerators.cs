@@ -44,7 +44,7 @@ public ref struct Enumerator<T>
     ///     Moves to the next item.
     /// </summary>
     /// <returns>True if there still items, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool MoveNext()
     {
         return unchecked(--_index) >= 0;
@@ -53,7 +53,7 @@ public ref struct Enumerator<T>
     /// <summary>
     ///     Resets this instance.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Reset()
     {
         _index = _length;
@@ -64,7 +64,7 @@ public ref struct Enumerator<T>
     /// </summary>
     public readonly ref T Current
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get
         {
 
@@ -87,18 +87,14 @@ public ref struct Enumerator<T>
 [SkipLocalsInit]
 public ref struct QueryArchetypeEnumerator
 {
-    private readonly Query _query;
     private Enumerator<Archetype> _archetypes;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryArchetypeEnumerator"/> struct.
     /// </summary>
-    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Archetype"/>'s fit.</param>
     /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which are checked using the <see cref="Query"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryArchetypeEnumerator(Query query, Span<Archetype> archetypes)
+    public QueryArchetypeEnumerator(Span<Archetype> archetypes)
     {
-        _query = query;
         _archetypes = new Enumerator<Archetype>(archetypes);
     }
 
@@ -107,15 +103,13 @@ public ref struct QueryArchetypeEnumerator
     /// </summary>
     /// <returns>True if theres a next <see cref="Archetype"/>, otherwhise false.</returns>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         // Caching query locally for less lookups, improved speed
-        var query = _query;
         while (_archetypes.MoveNext())
         {
             var archetype = _archetypes.Current;
-            if (archetype.EntityCount > 0 && query.Valid(archetype.BitSet))
+            if (archetype.EntityCount > 0)
             {
                 return true;
             }
@@ -128,7 +122,6 @@ public ref struct QueryArchetypeEnumerator
     ///     Resets this instance.
     /// </summary>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
         _archetypes.Reset();
@@ -140,7 +133,6 @@ public ref struct QueryArchetypeEnumerator
     public readonly Archetype Current
     {
         [SkipLocalsInit]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _archetypes.Current;
     }
 }
@@ -152,17 +144,14 @@ public ref struct QueryArchetypeEnumerator
 [SkipLocalsInit]
 public readonly ref struct QueryArchetypeIterator
 {
-    private readonly Query _query;
     private readonly Span<Archetype> _archetypes;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryArchetypeIterator"/> struct.
     /// </summary>
-    /// <param name="query">The <see cref="Query"/> each <see cref="QueryArchetypeEnumerator"/> will use.</param>
     /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryArchetypeEnumerator"/> will use.</param>
-    public QueryArchetypeIterator(Query query, Span<Archetype> archetypes)
+    public QueryArchetypeIterator(Span<Archetype> archetypes)
     {
-        _query = query;
         _archetypes = archetypes;
     }
 
@@ -171,10 +160,9 @@ public readonly ref struct QueryArchetypeIterator
     /// </summary>
     /// <returns>The new <see cref="QueryArchetypeEnumerator"/> instance.</returns>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryArchetypeEnumerator GetEnumerator()
     {
-        return new QueryArchetypeEnumerator(_query, _archetypes);
+        return new QueryArchetypeEnumerator(_archetypes);
     }
 }
 
@@ -191,13 +179,11 @@ public ref struct QueryChunkEnumerator
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryChunkEnumerator"/> struct.
     /// </summary>
-    /// <param name="query">The <see cref="Query"/> which contains a description and tells which <see cref="Chunk"/>'s fit.</param>
     /// <param name="archetypes">A <see cref="Span{T}"/> of <see cref="Archetype"/>'s which <see cref="Chunk"/>'s are checked using the <see cref="Query"/>.</param>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkEnumerator(Query query, Span<Archetype> archetypes)
+    public QueryChunkEnumerator(Span<Archetype> archetypes)
     {
-        _archetypeEnumerator = new QueryArchetypeEnumerator(query, archetypes);
+        _archetypeEnumerator = new QueryArchetypeEnumerator(archetypes);
 
         // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
@@ -211,7 +197,6 @@ public ref struct QueryChunkEnumerator
     /// </summary>
     /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         unchecked
@@ -237,7 +222,6 @@ public ref struct QueryChunkEnumerator
     ///     Resets this instance.
     /// </summary>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
         _index = -1;
@@ -256,7 +240,6 @@ public ref struct QueryChunkEnumerator
     public readonly ref Chunk Current
     {
         [SkipLocalsInit]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _archetypeEnumerator.Current.GetChunk(_index);
     }
 }
@@ -268,19 +251,15 @@ public ref struct QueryChunkEnumerator
 [SkipLocalsInit]
 public readonly ref struct QueryChunkIterator
 {
-    private readonly Query _query;
     private readonly Span<Archetype> _archetypes;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryChunkIterator"/> struct
     /// </summary>
-    /// <param name="query">The <see cref="Query"/> each <see cref="QueryChunkEnumerator"/> will use.</param>
     /// <param name="archetypes">The <see cref="Archetype"/>'s each <see cref="QueryChunkEnumerator"/> will use.</param>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public QueryChunkIterator(Query query, Span<Archetype> archetypes)
+    public QueryChunkIterator(Span<Archetype> archetypes)
     {
-        _query = query;
         _archetypes = archetypes;
     }
 
@@ -289,10 +268,9 @@ public readonly ref struct QueryChunkIterator
     /// </summary>
     /// <returns>The new <see cref="QueryChunkEnumerator"/> instance.</returns>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkEnumerator GetEnumerator()
     {
-        return new QueryChunkEnumerator(_query, _archetypes);
+        return new QueryChunkEnumerator(_archetypes);
     }
 }
 
@@ -315,7 +293,6 @@ public ref struct ChunkRangeEnumerator
     /// <param name="archetype">The <see cref="Archetype"/> to retrieve <see cref="Chunk"/>'s from.</param>
     /// <param name="to">The index of the last chunk to return</param>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal ChunkRangeEnumerator(Archetype archetype, int from, int to)
     {
         _archetype = archetype;
@@ -328,7 +305,6 @@ public ref struct ChunkRangeEnumerator
     /// </summary>
     /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         unchecked
@@ -342,7 +318,6 @@ public ref struct ChunkRangeEnumerator
     ///     Resets this instance.
     /// </summary>
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
         throw new NotImplementedException();
@@ -354,7 +329,7 @@ public ref struct ChunkRangeEnumerator
     public readonly ref Chunk Current
     {
         [SkipLocalsInit]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => ref _archetype.GetChunk(_chunkIndex);
     }
 }
@@ -371,7 +346,6 @@ public readonly ref struct ChunkRangeIterator
     private readonly int _to;
 
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ChunkRangeIterator(Archetype archetype, int from, int to)
     {
         _archetype = archetype;
@@ -380,7 +354,6 @@ public readonly ref struct ChunkRangeIterator
     }
 
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ChunkRangeEnumerator GetEnumerator()
     {
         return new ChunkRangeEnumerator(_archetype, _from, _to);
@@ -402,7 +375,6 @@ public ref struct EntityEnumerator
     ///     Initializes a new instance of the <see cref="EntityEnumerator"/> struct.
     /// </summary>
     /// <param name="length">The length/number of all <see cref="Entity"/>'s in the given <see cref="Chunk"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityEnumerator(int length)
     {
         _length = length;
@@ -413,7 +385,6 @@ public ref struct EntityEnumerator
     ///     Moves to the next <see cref="Entity"/>.
     /// </summary>
     /// <returns>True if theres a next <see cref="Entity"/>, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         return unchecked(--_index >= 0);
@@ -422,7 +393,6 @@ public ref struct EntityEnumerator
     /// <summary>
     ///     Resets this instance.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
         _index = _length;
@@ -433,7 +403,6 @@ public ref struct EntityEnumerator
     /// </summary>
     public int Current
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _index;
     }
 }
@@ -450,7 +419,6 @@ public readonly ref struct EntityIterator
     ///     Initializes a new instance of the <see cref="EntityIterator"/> struct
     /// </summary>
     /// <param name="length">The length/number of all <see cref="Entity"/>'s in the given <see cref="Chunk"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityIterator(int length)
     {
         _length = length;
@@ -460,7 +428,6 @@ public readonly ref struct EntityIterator
     ///     Creates a new instance of <see cref="EntityEnumerator"/>.
     /// </summary>
     /// <returns>The new <see cref="EntityEnumerator"/> instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityEnumerator GetEnumerator()
     {
         return new EntityEnumerator(_length);
@@ -499,7 +466,6 @@ public ref struct RangeEnumerator
     /// </summary>
     /// <param name="i">Its index, basically the number of the job.</param>
     /// <returns>Its amount.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int AmountForJob(int i)
     {
         if (i <= 0)
@@ -520,7 +486,6 @@ public ref struct RangeEnumerator
     ///     Moves next.
     /// </summary>
     /// <returns>True if its still in the range, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         return unchecked(++_index) < _jobs;
@@ -529,7 +494,6 @@ public ref struct RangeEnumerator
     /// <summary>
     ///     Resets the instance.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Reset()
     {
         _index = -1;
@@ -568,7 +532,7 @@ public readonly ref struct RangePartitioner
     ///     Returns a new instance of a <see cref="RangeEnumerator"/>.
     /// </summary>
     /// <returns>A new <see cref="RangeEnumerator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public RangeEnumerator GetEnumerator()
     {
         return new RangeEnumerator(_threads, _size);

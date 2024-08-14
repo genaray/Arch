@@ -74,12 +74,12 @@ internal class SparseArray
     ///     Gets an array of components contained by the <see cref="SparseArray"/>.
     /// </summary>
     public Array Components { get; private set; }
-    
+
     /// <summary>
     ///     Adds an item to the array.
     /// </summary>
     /// <param name="index">Its index in the array.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Add(int index)
     {
         lock (this)
@@ -114,7 +114,7 @@ internal class SparseArray
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <returns>True if an component exists there, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Contains(int index)
     {
         return index < Entities.Length && Entities[index] != -1;
@@ -126,7 +126,7 @@ internal class SparseArray
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array instance if it exists.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private T[] GetArray<T>()
     {
         return Unsafe.As<T[]>(Components);
@@ -237,7 +237,7 @@ internal class SparseSet
     ///     <remarks>Does not ensure the capacity in terms of how many operations or components are recorded.</remarks>
     /// </summary>
     /// <param name="capacity">The new capacity, the id of the component which will be ensured to fit into the arrays.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void EnsureTypeCapacity(int capacity)
     {
         // Allocate new `SparseArray` for new component type.
@@ -252,7 +252,7 @@ internal class SparseSet
     ///     Ensures the capacity for the <see cref="Used"/> array.
     /// </summary>
     /// <param name="capacity">The new capacity.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void EnsureUsedCapacity(int capacity)
     {
         // Resize UsedSize array.
@@ -268,7 +268,7 @@ internal class SparseSet
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>The index in the <see cref="SparseSet"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public int Create(in Entity entity)
     {
         lock (_createLock)
@@ -286,7 +286,7 @@ internal class SparseSet
     ///     Adds an <see cref="SparseArray"/> to the <see cref="Components"/> list and updates the <see cref="Used"/> properly.
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/> of the <see cref="SparseArray"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void AddSparseArray(ComponentType type)
     {
         Components[type.Id] = new SparseArray(type, type.Id);
@@ -300,7 +300,7 @@ internal class SparseSet
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/> to check.</param>
     /// <returns>True if it does, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private bool HasSparseArray(ComponentType type)
     {
         return Components[type.Id] != null;
@@ -311,7 +311,7 @@ internal class SparseSet
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/>.</param>
     /// <returns>The existing <see cref="StructuralSparseArray"/> instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private SparseArray GetSparseArray(ComponentType type)
     {
         return Components[type.Id];
@@ -324,7 +324,7 @@ internal class SparseSet
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="index">The index.</param>
     /// <param name="component">The component instance.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Set<T>(int index, in T component)
     {
         var componentType = Component<T>.ComponentType;
@@ -358,7 +358,7 @@ internal class SparseSet
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <returns>True if an component exists there, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Contains<T>(int index)
     {
         var id = Component<T>.ComponentType.Id;
@@ -375,7 +375,7 @@ internal class SparseSet
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="index">The index.</param>
     /// <returns>A reference to the component.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref T Get<T>(int index)
     {
         var id = Component<T>.ComponentType.Id;
@@ -387,7 +387,7 @@ internal class SparseSet
     /// <summary>
     ///     Clears the <see cref="SparseSet"/>.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Clear()
     {
         Count = 0;

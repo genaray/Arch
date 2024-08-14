@@ -30,7 +30,7 @@ public partial struct Chunk
 
 #>
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     [Pure]
     public Components<<#= generics #>> GetFirst<<#= generics #>>()
     {

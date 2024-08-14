@@ -83,7 +83,7 @@ public struct ForEachJob : IChunkJob
     ///     Called on each <see cref="Chunk"/> and iterates over all <see cref="Entity"/>'s to call the <see cref="ForEach"/> callback for each.
     /// </summary>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public readonly void Execute(ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);
@@ -114,7 +114,7 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
     /// </summary>
     /// <param name="index">The chunk index.</param>
     /// <param name="chunk">A reference to the chunk which is currently processed.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Execute(ref Chunk chunk)
     {
         ref var entityFirstElement = ref chunk.Entity(0);

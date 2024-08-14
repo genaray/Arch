@@ -31,7 +31,7 @@ public static class StringBuilderHpQueryExtensions
             $$"""
             public interface {{interfaceInfo.Name}}<{{genericSb}}>
             {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 void Update({{paramSb}});
             }
             """;
@@ -87,7 +87,7 @@ public static class StringBuilderHpQueryExtensions
 
             var template =
                 $$"""
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void InlineQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<{{generics}}>
                 {
                     var query = Query(in description);
@@ -117,7 +117,7 @@ public static class StringBuilderHpQueryExtensions
 
             var template =
                 $$"""
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void InlineQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEach<{{generics}}>
                 {
                     var t = new T();
@@ -154,7 +154,7 @@ public static class StringBuilderHpQueryExtensions
 
             var template =
                 $$"""
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void InlineEntityQuery<T,{{generics}}>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<{{generics}}>
                 {
                     var query = Query(in description);
@@ -187,7 +187,7 @@ public static class StringBuilderHpQueryExtensions
 
             var template =
                 $$"""
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void InlineEntityQuery<T,{{generics}}>(in QueryDescription description) where T : struct, IForEachWithEntity<{{generics}}>
                 {
                     var t = new T();

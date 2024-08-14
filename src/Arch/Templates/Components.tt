@@ -44,7 +44,7 @@ public ref struct Components<<#= generics #>>
 #endif
 
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Components(<#= parameters #>){
 
 #if NETSTANDARD2_1 || NET6_0

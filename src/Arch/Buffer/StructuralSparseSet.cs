@@ -68,7 +68,7 @@ internal class StructuralSparseArray
     ///     Adds an item to the array.
     /// </summary>
     /// <param name="index">Its index in the array.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Add(int index)
     {
         lock (this)
@@ -92,7 +92,7 @@ internal class StructuralSparseArray
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <returns>True if an component exists there, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Contains(int index)
     {
         return index < Entities.Length && Entities[index] != -1;
@@ -171,7 +171,7 @@ internal class StructuralSparseSet
     ///     <remarks>Does not ensure the capacity in terms of how many operations or components are recorded.</remarks>
     /// </summary>
     /// <param name="capacity">The new capacity, the id of the component which will be ensured to fit into the arrays.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void EnsureTypeCapacity(int capacity)
     {
         // Resize arrays
@@ -185,7 +185,7 @@ internal class StructuralSparseSet
     ///     Ensures the capacity for the <see cref="Used"/> array.
     /// </summary>
     /// <param name="capacity">The new capacity.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void EnsureUsedCapacity(int capacity)
     {
         // Resize UsedSize array.
@@ -200,7 +200,7 @@ internal class StructuralSparseSet
     ///     Adds an <see cref="StructuralSparseArray"/> to the <see cref="Components"/> list and updates the <see cref="Used"/> properly.
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/> of the <see cref="StructuralSparseArray"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private void AddStructuralSparseArray(ComponentType type)
     {
         Components[type.Id] = new StructuralSparseArray(type, Capacity);
@@ -214,7 +214,7 @@ internal class StructuralSparseSet
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/> to check.</param>
     /// <returns>True if it does, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private bool HasStructuralSparseArray(ComponentType type)
     {
         return Components[type.Id] != null;
@@ -225,7 +225,7 @@ internal class StructuralSparseSet
     /// </summary>
     /// <param name="type">The <see cref="ComponentType"/>.</param>
     /// <returns>The existing <see cref="StructuralSparseArray"/> instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     private StructuralSparseArray GetStructuralSparseArray(ComponentType type)
     {
         return Components[type.Id];
@@ -236,7 +236,7 @@ internal class StructuralSparseSet
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its index in this <see cref="StructuralSparseSet"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public int Create(in Entity entity)
     {
         lock (_createLock)
@@ -255,7 +255,7 @@ internal class StructuralSparseSet
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="index">The index.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Set<T>(int index)
     {
         var componentType = Component<T>.ComponentType;
@@ -287,7 +287,7 @@ internal class StructuralSparseSet
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <returns>True if an component exists there, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Contains<T>(int index)
     {
         var id = Component<T>.ComponentType.Id;
@@ -299,7 +299,7 @@ internal class StructuralSparseSet
     /// <summary>
     ///     Clears the <see cref="StructuralSparseSet"/>.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Clear()
     {
         Count = 0;

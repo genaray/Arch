@@ -18,7 +18,7 @@ public static class StringBuilderParallelQueryExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void ParallelQuery<{{generics}}>(in QueryDescription description, ForEach<{{generics}}> forEach)
             {
                 var innerJob = new ForEachJob<{{generics}}>();
@@ -48,7 +48,7 @@ public static class StringBuilderParallelQueryExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void ParallelQuery<{{generics}}>(in QueryDescription description, ForEachWithEntity<{{generics}}> forEach)
             {
                 var innerJob = new ForEachWithEntityJob<{{generics}}>();

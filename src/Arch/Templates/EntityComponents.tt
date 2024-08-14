@@ -46,7 +46,7 @@ public ref struct EntityComponents<<#= generics #>>
 #endif
 
     [SkipLocalsInit]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public EntityComponents(ref Entity entity, <#= parameters #>){
 
 #if NETSTANDARD2_1 || NET6_0

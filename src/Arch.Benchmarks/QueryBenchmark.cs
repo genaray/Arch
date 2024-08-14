@@ -7,7 +7,7 @@ namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
-//[HardwareCounters(HardwareCounter.CacheMisses)]
+[HardwareCounters(HardwareCounter.CacheMisses)]
 public class QueryBenchmark
 {
     [Params(10000, 100000, 1000000)] public int Amount;

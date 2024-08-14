@@ -43,7 +43,7 @@ public static class SetWithQueryDesription
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void Set<{{generics}}>(in QueryDescription queryDescription, {{parameters}})
             {
                 var query = Query(in queryDescription);

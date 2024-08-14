@@ -33,7 +33,7 @@ public partial struct Chunk
 
 #>
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     [Pure]
     public void GetSpan<<#= generics #>>(<#= outs #>)
     {

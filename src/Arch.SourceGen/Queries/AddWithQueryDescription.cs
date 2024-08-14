@@ -45,7 +45,7 @@ public static class AddWithQueryDescription
         var template =
             $$"""
             [SkipLocalsInit]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [StructuralChange]
             public void Add<{{generics}}>(in QueryDescription queryDescription, {{parameters}})
             {

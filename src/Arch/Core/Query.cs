@@ -50,7 +50,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     internal ComponentType[] ComponentsArray
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get;
         set;
     } = Array.Empty<ComponentType>();
@@ -60,7 +60,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     public Span<ComponentType> Components
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => MemoryMarshal.CreateSpan(ref ComponentsArray.DangerousGetReferenceAt(0), Count);
     }
 
@@ -69,7 +69,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     public int Count
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get => ComponentsArray.Length;
     }
 
@@ -78,7 +78,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="other">The other <see cref="Signature"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Equals(Signature other)
     {
         return GetHashCode() == other.GetHashCode();
@@ -89,7 +89,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public override bool Equals(object? obj)
     {
         return obj is Signature other && Equals(other);
@@ -99,7 +99,7 @@ public struct Signature : IEquatable<Signature>
     ///     Calculates the hash.
     /// </summary>
     /// <returns>The hash.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public override int GetHashCode()
     {
         // Cache hashcode since the calculation is expensive.
@@ -121,7 +121,7 @@ public struct Signature : IEquatable<Signature>
     ///     Creates an <see cref="Enumerator{T}"/> which iterates over all <see cref="Components"/> in this <see cref="Signature"/>.
     /// </summary>
     /// <returns>An <see cref="Enumerator{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Enumerator<ComponentType> GetEnumerator()
     {
         return new Enumerator<ComponentType>(Components);
@@ -133,7 +133,7 @@ public struct Signature : IEquatable<Signature>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
     /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool operator ==(Signature left, Signature right)
     {
         return left.Equals(right);
@@ -145,7 +145,7 @@ public struct Signature : IEquatable<Signature>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
     /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool operator !=(Signature left, Signature right)
     {
         return !left.Equals(right);
@@ -156,7 +156,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="components">The passed <see cref="ComponentType"/>s.</param>
     /// <returns>A new <see cref="Signature"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator Signature(ComponentType[] components)
     {
         return new Signature(components);
@@ -167,7 +167,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>The <see cref="ComponentType"/>s array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator ComponentType[](Signature signature)
     {
         return signature.ComponentsArray;
@@ -178,7 +178,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>The <see cref="ComponentType"/>s array.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator Span<ComponentType>(Signature signature)
     {
         return signature.Components;
@@ -189,7 +189,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>A new <see cref="BitSet"/>s.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static implicit operator BitSet(Signature signature)
     {
         if (signature.Count == 0)
@@ -295,7 +295,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Builds this instance by calculating a new <see cref="_hashCode"/>.
     ///     Is actually only needed if the passed arrays are changed afterwards.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Build()
     {
         _hashCode = -1;
@@ -308,7 +308,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref QueryDescription WithAll<T>()
     {
         All = Component<T>.Signature;
@@ -322,7 +322,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref QueryDescription WithAny<T>()
     {
         Any = Component<T>.Signature;
@@ -336,7 +336,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref QueryDescription WithNone<T>()
     {
         None = Component<T>.Signature;
@@ -351,7 +351,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <typeparam name="T">The generic type.</typeparam>
     /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
     [UnscopedRef]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref QueryDescription WithExclusive<T>()
     {
         Exclusive = Component<T>.Signature;
@@ -364,7 +364,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="other">The other <see cref="QueryDescription"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Equals(QueryDescription other)
     {
         return GetHashCode() == other.GetHashCode();
@@ -375,7 +375,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
     /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public override bool Equals(object? obj)
     {
         return obj is QueryDescription other && Equals(other);
@@ -386,7 +386,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Calculates the hash.
     /// </summary>
     /// <returns>The hash.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public override int GetHashCode()
     {
         // Cache hashcode since the calculation is expensive.
@@ -415,7 +415,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
     /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool operator ==(QueryDescription left, QueryDescription right)
     {
         return left.Equals(right);
@@ -427,7 +427,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
     /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static bool operator !=(QueryDescription left, QueryDescription right)
     {
         return !left.Equals(right);
@@ -440,11 +440,13 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 ///     It provides some methods to iterate over all <see cref="Entity"/>'s that match the aspect of the <see cref="QueryDescription"/> that was used to create this instance.
 /// </summary>
 [SkipLocalsInit]
-public readonly partial struct Query : IEquatable<Query>
+public partial class Query : IEquatable<Query>
 {
-    private readonly PooledList<Archetype> _archetypes;
-    private readonly QueryDescription _queryDescription;
+    private readonly Archetypes _allArchetypes;
+    private readonly PooledList<Archetype> _matchingArchetypes;
+    private int _allArchetypesHashCode;
 
+    private readonly QueryDescription _queryDescription;
     private readonly BitSet _any;
     private readonly BitSet _all;
     private readonly BitSet _none;
@@ -455,11 +457,13 @@ public readonly partial struct Query : IEquatable<Query>
     /// <summary>
     ///     Initializes a new instance of the <see cref="Query"/> struct.
     /// </summary>
-    /// <param name="archetypes">The <see cref="Archetype"/>'s this query iterates over.</param>
+    /// <param name="allArchetypes">The <see cref="Archetype"/>'s this query has to filter.</param>
     /// <param name="description">The <see cref="QueryDescription"/> used to target <see cref="Entity"/>'s.</param>
-    internal Query(PooledList<Archetype> archetypes, QueryDescription description) : this()
+    internal Query(Archetypes allArchetypes, QueryDescription description)
     {
-        _archetypes = archetypes;
+        _allArchetypes = allArchetypes;
+        _matchingArchetypes = new PooledList<Archetype>();
+        _allArchetypesHashCode = -1;
 
         Debug.Assert(
             !((description.Any.Count != 0 ||
@@ -488,31 +492,58 @@ public readonly partial struct Query : IEquatable<Query>
     ///     Checks whether the specified <see cref="BitSet"/> matches.
     /// </summary>
     /// <param name="bitset">The <see cref="BitSet"/> to compare with.</param>
-    /// <returns>True if it matches, otherwhise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Valid(BitSet bitset)
+    /// <returns>True if it matches, otherwise false.</returns>
+    public bool Matches(BitSet bitset)
     {
         return _isExclusive ? _exclusive.Exclusive(bitset) : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
+    }
+
+    /// <summary>
+    ///     If the list of <see cref="_allArchetypes"/> has been changed, the entire list is scanned again to create a new list of <see cref="_matchingArchetypes"/> that match the query.
+    ///     This means that there is no need to constantly recheck.
+    /// </summary>
+    private void Match()
+    {
+        // Hashcode changed, list was modified?
+        var newArchetypesHashCode = _allArchetypes.GetHashCode();
+        if (_allArchetypesHashCode == newArchetypesHashCode)
+        {
+            return;
+        }
+
+        // Check all archetypes and update list
+        var allArchetypes = _allArchetypes.AsSpan();
+        _matchingArchetypes.Clear();
+        foreach (var archetype in allArchetypes)
+        {
+            var matches = Matches(archetype.BitSet);
+            if (matches)
+            {
+                _matchingArchetypes.Add(archetype);
+            }
+        }
+
+        _allArchetypesHashCode = newArchetypesHashCode;
     }
 
     /// <summary>
     ///     Returns an iterator to iterate over all <see cref="Archetype"/>'s containing <see cref="Entity"/>'s addressed by this <see cref="Query"/>.
     /// </summary>
     /// <returns>A new instance of the <see cref="QueryArchetypeIterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryArchetypeIterator GetArchetypeIterator()
     {
-        return new QueryArchetypeIterator(this, _archetypes.Span);
+        Match();
+        return new QueryArchetypeIterator(_matchingArchetypes.Span);
     }
 
     /// <summary>
     ///     Returns an iterator to iterate over all <see cref="Chunk"/>'s containing <see cref="Entity"/>'s addressed by this <see cref="Query"/>.
     /// </summary>
     /// <returns>A new instance of the <see cref="QueryChunkIterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public QueryChunkIterator GetChunkIterator()
     {
-        return new QueryChunkIterator(this, _archetypes.Span);
+        Match();
+        return new QueryChunkIterator(_matchingArchetypes.Span);
     }
 
     /// <summary>
@@ -521,7 +552,8 @@ public readonly partial struct Query : IEquatable<Query>
     /// <returns>A new instance of the <see cref="QueryChunkIterator"/>.</returns>
     public QueryChunkEnumerator GetEnumerator()
     {
-        return new QueryChunkEnumerator(this, _archetypes.Span);
+        Match();
+        return new QueryChunkEnumerator(_matchingArchetypes.Span);
     }
 
     /// <summary>
@@ -544,7 +576,6 @@ public readonly partial struct Query : IEquatable<Query>
         return obj is Query other && Equals(other);
     }
 
-    /// NOTE: Probably we should use Component.GetHashCode(...) ?
     /// <summary>
     ///     Calculates the hash.
     /// </summary>

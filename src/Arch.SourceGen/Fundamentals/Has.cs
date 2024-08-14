@@ -36,7 +36,7 @@ public static class HasExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public bool Has<{{generics}}>()
             {
@@ -81,7 +81,7 @@ public static class HasExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public bool Has<{{generics}}>()
             {
                 {{getIds}}
@@ -108,7 +108,7 @@ public static class HasExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public bool Has<{{generics}}>(Entity entity)
             {
@@ -136,7 +136,7 @@ public static class HasExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [Pure]
             public static bool Has<{{generics}}>(this Entity entity)
             {

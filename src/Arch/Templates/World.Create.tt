@@ -23,7 +23,7 @@ public partial class World
             addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
 #>
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     [StructuralChange]
     public Entity Create<<#= generics #>>(<#= parameters #>)
     {

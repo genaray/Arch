@@ -23,7 +23,7 @@ public static class StringBuilderChunkJobExtensions
             {
                 public ForEach<{{generics}}> ForEach;
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void Execute(ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
@@ -62,7 +62,7 @@ public static class StringBuilderChunkJobExtensions
             {
                 public ForEachWithEntity<{{generics}}> ForEach;
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void Execute(ref Chunk chunk)
                 {
                     ref var entityFirstElement = ref chunk.Entity(0);
@@ -103,7 +103,7 @@ public static class StringBuilderChunkJobExtensions
             {
                 public T ForEach;
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void Execute(ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;
@@ -142,7 +142,7 @@ public static class StringBuilderChunkJobExtensions
             {
                 public T ForEach;
 
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
                 public void Execute(ref Chunk chunk)
                 {
                     var chunkSize = chunk.Size;

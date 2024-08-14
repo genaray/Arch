@@ -14,7 +14,7 @@ internal static class JobExtensions
     /// <param name="arraySize">The array size.</param>
     /// <param name="requiredThreads">The amount of required threads.</param>
     /// <param name="perThread">How many items per thread should be processed.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     internal static void PartionateArray(int threadCount, int arraySize, out int requiredThreads, out int perThread)
     {
         requiredThreads = Math.Min(arraySize, threadCount);

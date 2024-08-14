@@ -42,7 +42,7 @@ public static class RemoveWithQueryDesription
         var template =
             $$"""
             [SkipLocalsInit]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [StructuralChange]
             public void Remove<{{generics}}>(in QueryDescription queryDescription)
             {

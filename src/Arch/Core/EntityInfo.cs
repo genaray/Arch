@@ -88,13 +88,13 @@ internal class EntityInfoStorage
     /// <summary>
     ///     The <see cref="Entity"/> versions in an jagged array.
     /// </summary>
-    internal JaggedArray<int> Versions { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
+    internal JaggedArray<int> Versions {  get; set; }
 
     /// <summary>
     ///     The <see cref="Entity"/> <see cref="Archetype"/> and <see cref="Slot"/>s in an jagged array.
     /// <remarks>Because usually both are needed and thus an array access can be saved.</remarks>
     /// </summary>
-    internal JaggedArray<EntitySlot> EntitySlots { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; set; }
+    internal JaggedArray<EntitySlot> EntitySlots {  get; set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
@@ -122,7 +122,7 @@ internal class EntityInfoStorage
     /// <param name="version">Its version.</param>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Add(int id, int version, Archetype archetype, Slot slot)
     {
         Versions.Add(id, version);
@@ -134,7 +134,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>True if its data exists in here, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool Has(int id)
     {
         return Versions.TryGetValue(id, out int _);
@@ -145,7 +145,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>Its <see cref="Archetype"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public Archetype GetArchetype(int id)
     {
         return EntitySlots[id].Archetype;
@@ -156,7 +156,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>Its <see cref="Slot"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public ref Slot GetSlot(int id)
     {
         return ref EntitySlots[id].Slot;
@@ -167,7 +167,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>Its <see cref="Slot"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public int GetVersion(int id)
     {
         return Versions[id];
@@ -179,7 +179,7 @@ internal class EntityInfoStorage
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <param name="version">The <see cref="Entity"/>s version.</param>
     /// <returns>True if it exists, false if not.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public bool TryGetVersion(int id, out int version)
     {
         return Versions.TryGetValue(id, out version);
@@ -190,7 +190,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>Its <see cref="EntitySlot"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public EntitySlot GetEntitySlot(int id)
     {
         return EntitySlots[id];
@@ -200,7 +200,7 @@ internal class EntityInfoStorage
     ///     Removes an enlisted <see cref="Entity"/> from this <see cref="EntityInfoStorage"/>.
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Remove(int id)
     {
         Versions.Remove(id);
@@ -212,7 +212,7 @@ internal class EntityInfoStorage
     /// </summary>
     /// <param name="id">The <see cref="Entity"/> id.</param>
     /// <param name="slot">Its new <see cref="Slot"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Move(int id, Slot slot)
     {
         EntitySlots[id].Slot = slot;
@@ -224,7 +224,7 @@ internal class EntityInfoStorage
     /// <param name="id">The <see cref="Entity"/> id.</param>
     /// <param name="archetype">Its new <see cref="Archetype"/>.</param>
     /// <param name="slot">Its new <see cref="Slot"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Move(int id, Archetype archetype, Slot slot)
     {
         EntitySlots[id] = new EntitySlot(archetype,slot);
@@ -238,7 +238,7 @@ internal class EntityInfoStorage
     /// <param name="archetypeSlot">The old <see cref="Slot"/> where the shift operation started.</param>
     /// <param name="newArchetype">The new <see cref="Archetype"/>.</param>
     /// <param name="newArchetypeSlot">The new <see cref="Slot"/> where the entities were shifted to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Shift(Archetype archetype, Slot archetypeSlot, Archetype newArchetype, Slot newArchetypeSlot)
     {
         // Update the entityInfo of all copied entities.
@@ -273,7 +273,7 @@ internal class EntityInfoStorage
     ///     Ensures the capacity of the underlaying arrays and resizes them properly.
     /// </summary>
     /// <param name="capacity"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void EnsureCapacity(int capacity)
     {
         Versions.EnsureCapacity(capacity);
@@ -284,7 +284,7 @@ internal class EntityInfoStorage
     ///     Trims the <see cref="EntityInfoStorage"/> and all of its underlaying arrays.
     ///     Releases memory.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void TrimExcess()
     {
         Versions.TrimExcess();
@@ -294,7 +294,7 @@ internal class EntityInfoStorage
     /// <summary>
     ///     Clears the <see cref="EntityInfoStorage"/> and all of its underlaying arrays.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public void Clear()
     {
         Versions.Clear();
@@ -307,7 +307,7 @@ internal class EntityInfoStorage
     /// <param name="id">The index.</param>
     internal EntityInfo this[int id]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         get
         {
             var entitySlot = EntitySlots[id];

@@ -38,7 +38,7 @@ public partial struct Chunk
 
 #>
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     [Pure]
     public void GetArray<<#= generics #>>(<#= outs #>)
     {

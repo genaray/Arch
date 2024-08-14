@@ -69,7 +69,7 @@ public static class StringBuilderQueryExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void Query<{{generics}}>(in QueryDescription description, ForEach<{{generics}}> forEach)
             {
                 var query = Query(in description);
@@ -109,7 +109,7 @@ public static class StringBuilderQueryExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public void Query<{{generics}}>(in QueryDescription description, ForEachWithEntity<{{generics}}> forEach)
             {
                 var query = Query(in description);

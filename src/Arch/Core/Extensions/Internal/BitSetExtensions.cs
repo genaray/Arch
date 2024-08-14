@@ -15,7 +15,7 @@ internal static class BitSetExtensions
     /// </summary>
     /// <param name="bitSet">The <see cref="BitSet"/>.</param>
     /// <param name="types">The <see cref="ComponentType"/>'s array.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     internal static void SetBits(this BitSet bitSet, Span<ComponentType> types)
     {
         foreach (var type in types)

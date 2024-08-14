@@ -17,12 +17,13 @@ public class Benchmark
             .AddValidator(JitOptimizationsValidator.DontFailOnError)
             .AddLogger(ConsoleLogger.Default)
             .AddColumnProvider(DefaultColumnProviders.Instance);
-#pragma warning restore HAA0101 // Array allocation for params parameter*/
+#pragma warning restore HAA0101 // Array allocation for params parameter
+        */
+
 
 
         var world = World.Create();
-        var signature = new Signature(typeof(int), typeof(long));
-        for (var index = 0; index <= 1; index++)
+        for (var index = 0; index <= 100; index++)
         {
             world.Create<int>();
         }

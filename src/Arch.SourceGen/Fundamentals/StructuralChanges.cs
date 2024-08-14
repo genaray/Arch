@@ -32,7 +32,7 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [SkipLocalsInit]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [StructuralChange]
             public void Add<{{generics}}>(Entity entity, {{parameters}})
             {
@@ -87,7 +87,7 @@ public static class StructuralChangesExtensions
         var template =
             $$"""
             [SkipLocalsInit]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             [StructuralChange]
             public void Remove<{{generics}}>(Entity entity)
             {
@@ -130,7 +130,7 @@ public static class StructuralChangesExtensions
 
         var template =
             $$"""
-              [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
               public static void Add<{{generics}}>(this Entity entity, {{parameters}})
               {
                   var world = World.Worlds[entity.WorldId];
@@ -157,7 +157,7 @@ public static class StructuralChangesExtensions
 
         var template =
             $$"""
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
             public static void Remove<{{generics}}>(this Entity entity)
             {
                 var world = World.Worlds[entity.WorldId];
