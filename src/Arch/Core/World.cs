@@ -992,7 +992,7 @@ public partial class World
             return false;
         }
 
-        ref var chunk = ref slot.Archetype.Chunks[slot.Slot.ChunkIndex];
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
         Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this chunk.");
         var array = Unsafe.As<T[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
         component = array[slot.Slot.Index];
