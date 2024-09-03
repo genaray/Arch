@@ -5,7 +5,7 @@ namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
-// [HardwareCounters(HardwareCounter.CacheMisses)]
+[HardwareCounters(HardwareCounter.CacheMisses)]
 public class TryGetBenchmark
 {
     private static World _world;
