@@ -6,6 +6,8 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+// TODO: Add tests for query cache
+
 /// <summary>
 ///     The <see cref="EnumeratorTest"/>
 ///     checks if the enumerators inside the common classes work correctly.
@@ -69,7 +71,7 @@ public sealed class EnumeratorTest
             counter++;
         }
 
-        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / archetype.CalculateEntitiesPerChunk(_group))));
+        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group))));
     }
 
     /// <summary>

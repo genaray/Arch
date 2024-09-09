@@ -29,8 +29,8 @@ public sealed class ChunkTest
 
             var t = new Transform();
             var r = new Rotation();
-            _chunk.Set(index, t);
-            _chunk.Set(index, r);
+            _chunk.Copy(index, t);
+            _chunk.Copy(index, r);
         }
 
         // Make sure the amount fits
@@ -52,8 +52,8 @@ public sealed class ChunkTest
 
             var t = new Transform();
             var r = new Rotation();
-            _chunk.Set(index, t);
-            _chunk.Set(index, r);
+            _chunk.Copy(index, t);
+            _chunk.Copy(index, r);
         }
 
         // Get last one, remove first one
@@ -79,8 +79,8 @@ public sealed class ChunkTest
 
             var t = new Transform();
             var r = new Rotation();
-            _chunk.Set(index, t);
-            _chunk.Set(index, r);
+            _chunk.Copy(index, t);
+            _chunk.Copy(index, r);
         }
 
         // Backward delete all since forward does not work while keeping the array dense
@@ -132,8 +132,8 @@ public sealed class ChunkTest
 
             var t = new Transform();
             var r = new Rotation();
-            _chunk.Set(index, t);
-            _chunk.Set(index, r);
+            _chunk.Copy(index, t);
+            _chunk.Copy(index, r);
         }
 
         That(_chunk.Has<Transform>(), Is.True);

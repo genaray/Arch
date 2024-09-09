@@ -65,7 +65,7 @@
         var sb = new StringBuilder();
         for (var localIndex = 0; localIndex < amount; localIndex++)
         {
-            sb.Append($"in T{localIndex} t{localIndex}{name} = default,");
+            sb.Append($"in T{localIndex}? t{localIndex}{name} = default,");
         }
 
         sb.Length--;

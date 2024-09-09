@@ -1,0 +1,27 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+for (var index = 2; index < Amount; index++)
+{
+    var generics = AppendGenerics(index);
+#>
+
+    public Archetype EnsureCapacity<<#= generics #>>(int amount)
+    {
+        return EnsureCapacity(in Component<<#= generics #>>.Signature, amount);
+    }
+<#
+}
+#>
+}

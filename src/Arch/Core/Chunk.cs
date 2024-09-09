@@ -55,29 +55,39 @@ public partial struct Chunk
     ///     The <see cref="Arch.Core.Entity"/>'s that are stored in this chunk.
     ///     Can be accessed during the iteration.
     /// </summary>
-    public readonly Entity[] Entities { [Pure]  get; }
+    public readonly Entity[] Entities { [Pure] get; }  // 8 Byte
 
     /// <summary>
     ///     The component arrays in which the components of the <see cref="Arch.Core.Entity"/>'s are stored.
     ///     Represent the component structure.
     ///     They can be accessed quickly using the <see cref="ComponentIdToArrayIndex"/> or one of the chunk methods.
     /// </summary>
-    public readonly Array[] Components { [Pure]  get; }
+    public readonly Array[] Components { [Pure] get; }  // 8 Byte
 
     /// <summary>
     ///     The lookup array that maps component ids to component array indexes to quickly access them.
     /// </summary>
-    public readonly int[] ComponentIdToArrayIndex { [Pure]  get; }
+    public readonly int[] ComponentIdToArrayIndex { [Pure] get; }  // 8 Byte
 
     /// <summary>
     ///     The number of occupied <see cref="Arch.Core.Entity"/> slots in this <see cref="Chunk"/>.
     /// </summary>
-    public int Size { [Pure]  get;  internal set; }
+    public int Size { [Pure] get;  internal set; }  // 4 Byte
 
     /// <summary>
     ///     The number of possible <see cref="Arch.Core.Entity"/>'s in this <see cref="Chunk"/>.
     /// </summary>
-    public int Capacity { [Pure]  get; }
+    public int Capacity { [Pure] get; }   // 4 Byte
+
+    /// <summary>
+    ///     The space that is left in this instance.
+    /// </summary>
+    public readonly int Buffer { [Pure] get => Capacity - Size; }
+
+    /// <summary>
+    ///     Checks whether this instance is full or not.
+    /// </summary>
+    public readonly bool IsFull { [Pure] get => Size >= Capacity; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
@@ -102,7 +112,7 @@ public partial struct Chunk
     /// <typeparam name="T">The generic type.</typeparam>
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>
-    public void Set<T>(int index, in T cmp)
+    public void Copy<T>(int index, in T cmp)
     {
         ref var item = ref GetFirst<T>();
         Unsafe.Add(ref item, index) = cmp;
@@ -177,7 +187,6 @@ public partial struct Chunk
     ///     This won't fire an event for <see cref="ComponentRemovedHandler"/>.
     /// </summary>
     /// <param name="index">Its index.</param>
-
     internal void Remove(int index)
     {
         // Last entity in archetype.
@@ -203,7 +212,6 @@ public partial struct Chunk
     ///     Creates and returns a new <see cref="EntityEnumerator"/> instance to iterate over all used rows representing <see cref="Arch.Core.Entity"/>'s.
     /// </summary>
     /// <returns>A new <see cref="EntityEnumerator"/> instance.</returns>
-
     public EntityEnumerator GetEnumerator()
     {
         return new EntityEnumerator(Size);
@@ -213,17 +221,15 @@ public partial struct Chunk
     ///     Cleares this <see cref="Chunk"/>, an efficient method to delete all <see cref="Arch.Core.Entity"/>s.
     ///     Does not dispose any resources nor modifies its <see cref="Capacity"/>.
     /// </summary>
-
     public void Clear()
     {
         Size = 0;
     }
 
     /// <summary>
-    ///     Converts this <see cref="Chunk"/> to a human readable string.
+    ///     Converts this <see cref="Chunk"/> to a human-readable string.
     /// </summary>
     /// <returns>A string.</returns>
-
     public override string ToString()
     {
         return $"Chunk = {{ {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
@@ -239,7 +245,6 @@ public partial struct Chunk
     /// <typeparam name="T">The componen type.</typeparam>
     /// <returns>The index in the <see cref="Components"/> array.</returns>
     [SkipLocalsInit]
-
     [Pure]
     private int Index<T>()
     {
@@ -254,7 +259,6 @@ public partial struct Chunk
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array.</returns>
     [SkipLocalsInit]
-
     [Pure]
     public T[] GetArray<T>()
     {
@@ -272,7 +276,6 @@ public partial struct Chunk
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array <see cref="Span{T}"/>.</returns>
     [SkipLocalsInit]
-
     [Pure]
     public Span<T> GetSpan<T>()
     {
@@ -286,7 +289,6 @@ public partial struct Chunk
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>A reference to the first element.</returns>
     [SkipLocalsInit]
-
     [Pure]
     public ref T GetFirst<T>()
     {
@@ -302,7 +304,7 @@ public partial struct Chunk
     /// </summary>
     /// <param name="index">The index in the array.</param>
     /// <param name="cmp">The component value.</param>
-    public void Set(int index, object cmp)
+    public void Copy(int index, object cmp)
     {
         var array = GetArray(cmp.GetType());
         array.SetValue(cmp, index);
@@ -370,6 +372,46 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
+
+    /// <summary>
+    /// Copies the entities from the source array into the instance at a specific index.
+    /// </summary>
+    /// <param name="chunk">The <see cref="Chunk"/>.</param>
+    /// <param name="source">The <see cref="Span{T}"/> of <see cref="Entity"/>s being copied.</param>
+    /// <param name="index">The start-index inside the <see cref="source"/>.</param>
+    /// <param name="destinationIndex">The destination-index inside the <see cref="Entities"/>.</param>
+    /// <param name="length">The amount of entities to copy. </param>
+    internal static void Copy(ref Span<Entity> source, int index, ref Chunk chunk, int destinationIndex, int length)
+    {
+        var entities = chunk.Entities.AsSpan().Slice(destinationIndex, length);
+        source.Slice(index,length).CopyTo(entities);
+    }
+
+    /// <summary>
+    /// Copies the components from the source array into the instance at a specific index.
+    /// </summary>
+    /// <param name="chunk">The <see cref="Chunk"/>.</param>
+    /// <param name="source">The <see cref="Span{T}"/> of <see cref="Entity"/>s being copied.</param>
+    /// <param name="index">The start-index inside the <see cref="source"/>.</param>
+    /// <param name="destinationIndex">The destination-index inside the <see cref="Entities"/>.</param>
+    /// <param name="length">The amount of entities to copy. </param>
+    internal static void Copy<T>(ref Span<T> source, int index, ref Chunk chunk, int destinationIndex, int length)
+    {
+        var components = chunk.GetSpan<T>().Slice(destinationIndex, length);
+        source.Slice(index,length).CopyTo(components);
+    }
+
+    /// <summary>
+    /// Fills the components at a given index with a certain value.
+    /// </summary>
+    /// <param name="chunk">The <see cref="Chunk"/>.</param>
+    /// <param name="destinationIndex">The destination-index inside the <see cref="Entities"/>.</param>
+    /// <param name="length">The amount of entities to copy. </param>
+    /// <param name="value">The value to fill the items with.</param>
+    internal static void Fill<T>(ref Chunk chunk, int destinationIndex, int length, in T value)
+    {
+        chunk.GetSpan<T>().Slice(destinationIndex, length).Fill(value);
+    }
 
     /// <summary>
     ///  Copies the whole <see cref="Chunk"/> (with all its entities and components) or a part from it to the another <see cref="Chunk"/>.
@@ -450,7 +492,7 @@ public partial struct Chunk
         var lastEntity = chunk.Entity(lastIndex);
 
         // Replace index entity with the last entity from the other chunk
-        Entities[index] = lastEntity;
+        Entity(index) = lastEntity;
         for (var i = 0; i < Components.Length; i++)
         {
             var sourceArray = chunk.Components[i];

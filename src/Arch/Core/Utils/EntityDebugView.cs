@@ -63,7 +63,7 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The stored <see cref="EntityInfo"/> for this <see cref="Entity"/>.
     /// </summary>
-    public EntityInfo EntityInfo => IsAlive ? World?.EntityInfo[_entity.Id] ?? new EntityInfo() : new EntityInfo();
+    public EntityData EntityInfo => IsAlive ? World?.EntityInfo[_entity.Id] ?? new EntityData() : new EntityData();
 }
 
 #endif

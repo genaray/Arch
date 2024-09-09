@@ -27,13 +27,13 @@ public sealed class ArchetypeTest
     {
         // Create archetype
         var archetype = new Archetype(_group);
-        var entities = archetype.CalculateEntitiesPerChunk(_group);
+        var entities = Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group);
 
         // Fill archetype
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity, out _);
+            archetype.Add(entity, out _, out _);
         }
 
         That(archetype.ChunkCount, Is.EqualTo(1));  // Since we filled it with n entities, it must have one single chunk.
@@ -56,12 +56,12 @@ public sealed class ArchetypeTest
     public void CreateMultipleChunk()
     {
         var archetype = new Archetype(_group);
-        var entities = archetype.CalculateEntitiesPerChunk(_group) * 2;
+        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) * 2;
 
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity, out _);
+            archetype.Add(entity, out _, out _);
         }
 
         That(archetype.ChunkCount, Is.EqualTo(2));
@@ -74,13 +74,13 @@ public sealed class ArchetypeTest
     public void Reserve()
     {
         var archetype = new Archetype(_group);
-        var entities = archetype.CalculateEntitiesPerChunk(_group) * 10;
+        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) * 10;
         archetype.Reserve(entities);
 
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity, out _);
+            archetype.Add(entity, out _, out _);
         }
 
         That(archetype.ChunkCount, Is.EqualTo(10));
@@ -94,22 +94,22 @@ public sealed class ArchetypeTest
     public void RemoveFromChunkWithReplacement()
     {
         var archetype = new Archetype(_group);
-        var entities = archetype.CalculateEntitiesPerChunk(_group) + 50;
+        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 50;
 
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity, out _);
+            archetype.Add(entity, out _, out _);
         }
 
         var slot = new Slot(0, 0);
-        archetype.Remove(ref slot, out _);
+        archetype.Remove(slot, out _);
 
         That(archetype.ChunkCount, Is.EqualTo(2));
         That(archetype.ChunkCapacity, Is.EqualTo(2));
         That(archetype.Chunks[0].Size, Is.EqualTo(entities - 50));
         That(archetype.Chunks[1].Size, Is.EqualTo(49));
-        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     /// <summary>
@@ -119,21 +119,21 @@ public sealed class ArchetypeTest
     public void RemoveChunk()
     {
         var archetype = new Archetype(_group);
-        var entities = archetype.CalculateEntitiesPerChunk(_group) + 1;
+        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 1;
 
         for (var index = 0; index < entities; index++)
         {
             var entity = new Entity(index, 0);
-            archetype.Add(entity, out _);
+            archetype.Add(entity, out _, out _);
         }
 
         var slot = new Slot(0, 0);
-        archetype.Remove(ref slot, out _);
+        archetype.Remove(slot, out _);
 
         That(archetype.ChunkCount, Is.EqualTo(1));
         That(archetype.ChunkCapacity, Is.EqualTo(2));
         That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
-        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo(archetype.CalculateEntitiesPerChunk(_group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     /// <summary>
@@ -148,16 +148,16 @@ public sealed class ArchetypeTest
         // Add two entities into different archetypes to move one to the other later.
         var entity = new Entity(1, 0);
         var otherEntity = new Entity(2, 0);
-        archetype.Add(entity, out var entityOneSlot);
-        otherArchetype.Add(otherEntity, out _);
+        archetype.Add(entity, out _, out var entityOneSlot);
+        otherArchetype.Add(otherEntity, out _, out _);
 
         archetype.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
         archetype.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
 
         // Move entity from first archetype to second, copy its components and remove it from the first.
-        otherArchetype.Add(entity, out var newSlot);
+        otherArchetype.Add(entity, out _, out var newSlot);
         Archetype.CopyComponents(archetype, ref entityOneSlot,otherArchetype, ref newSlot);
-        archetype.Remove(ref entityOneSlot, out _);
+        archetype.Remove(entityOneSlot, out _);
 
         That(archetype.Chunks[0].Size, Is.EqualTo(0));
         That(otherArchetype.Chunks[0].Size, Is.EqualTo(2));
@@ -183,7 +183,7 @@ public sealed class ArchetypeTest
         for (int index = 0; index < sourceAmount; index++)
         {
             var entity = new Entity(index, 0);
-            source.Add(entity, out var entityOneSlot);
+            source.Add(entity, out _, out var entityOneSlot);
             source.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
             source.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
         }
@@ -192,7 +192,7 @@ public sealed class ArchetypeTest
         for (int index = 0; index < destinationAmount; index++)
         {
             var entity = new Entity(index, 0);
-            destination.Add(entity, out var entityOneSlot);
+            destination.Add(entity, out _, out var entityOneSlot);
             destination.Set(ref entityOneSlot, new Transform { X = 100, Y = 100 });
             destination.Set(ref entityOneSlot, new Rotation { X = 100, Y = 100 });
         }
@@ -277,7 +277,7 @@ public sealed class ArchetypeTest
         for (int index = 0; index < sourceAmount; index++)
         {
             var entity = new Entity(index, 0);
-            source.Add(entity, out var entityOneSlot);
+            source.Add(entity,out _, out var entityOneSlot);
             source.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
             source.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
         }
@@ -286,7 +286,7 @@ public sealed class ArchetypeTest
         for (int index = 0; index < destinationAmount; index++)
         {
             var entity = new Entity(index, 0);
-            destination.Add(entity, out var entityOneSlot);
+            destination.Add(entity, out _, out var entityOneSlot);
             destination.Set(ref entityOneSlot, new Transform { X = 10, Y = 10 });
             destination.Set(ref entityOneSlot, new Rotation { X = 10, Y = 10 });
         }

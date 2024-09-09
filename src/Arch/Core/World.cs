@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using Arch.Core.Extensions;
@@ -286,7 +287,7 @@ public partial class World : IDisposable
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(in types);
-        var createdChunk = archetype.Add(entity, out var slot);
+        var createdChunk = archetype.Add(entity, out _, out var slot);
 
         // Resize map & Array to fit all potential new entities
         if (createdChunk)
@@ -324,9 +325,9 @@ public partial class World : IDisposable
 
         // Copy entity to other archetype
         ref var slot = ref EntityInfo.GetSlot(entity.Id);
-        var created = destination.Add(entity, out destinationSlot);
+        var created = destination.Add(entity, out _, out destinationSlot);
         Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
-        source.Remove(ref slot, out var movedEntity);
+        source.Remove(slot, out var movedEntity);
 
         // Update moved entity from the remove
         EntityInfo.Move(movedEntity, slot);
@@ -364,7 +365,7 @@ public partial class World : IDisposable
 
         // Remove from archetype
         var entityInfo = EntityInfo[entity.Id];
-        entityInfo.Archetype.Remove(ref entityInfo.Slot, out var movedEntityId);
+        entityInfo.Archetype.Remove(entityInfo.Slot, out var movedEntityId);
 
         // Update info of moved entity which replaced the removed entity.
         EntityInfo.Move(movedEntityId, entityInfo.Slot);
@@ -925,13 +926,152 @@ public partial class World
 
 public partial class World
 {
+
+    /// <summary>
+    ///     Returns the next <see cref="Entity"/>, either recycled from <see cref="RecycledIds"/> or newly created.
+    /// <param name="entity">The next <see cref="Entity"/> which was either recycled from an <see cref="RecycledEntity"/> or newly created.</param>
+    /// </summary>
+    /// <returns>Its version.</returns>
+    private int GetNextEntity(out Entity entity)
+    {
+        var recycle = RecycledIds.TryDequeue(out var recycledId);
+        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
+        entity = new Entity(recycled.Id, Id);
+        Size++;
+        return recycled.Version;
+    }
+
+    /// <summary>
+    ///     Ensures the capacity of a specific <see cref="Archetype"/> determined by the <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="signature">The <see cref="Signature"/>.</param>
+    /// <param name="amount">The amount of <see cref="Entity"/>s that should fit in there.</param>
+    /// <returns>The <see cref="Archetype"/> where the capacity was ensured.</returns>
+    public Archetype EnsureCapacity(in Signature signature, int amount)
+    {
+        // Ensure size of archetype
+        var archetype = GetOrCreate(signature);
+        archetype.EnsureEntityCapacity(archetype.EntityCount + amount);
+
+        // Ensure size of world
+        var requiredCapacity = Size + amount;
+        EntityInfo.EnsureCapacity(requiredCapacity);
+        Capacity = requiredCapacity;
+
+        return archetype;
+    }
+
+    /// <summary>
+    ///     Ensures the capacity of a specific <see cref="Archetype"/> determined by the <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="amount">The amount of <see cref="Entity"/>s that should fit in there.</param>
+    /// <returns>The <see cref="Archetype"/> where the capacity was ensured.</returns>
+    public Archetype EnsureCapacity<T>(int amount)
+    {
+        return EnsureCapacity(in Component<T>.Signature, amount);
+    }
+
+    /// <summary>
+    ///     Creates <see cref="Entity"/>s in the <see cref="Archetype"/> and writes the <see cref="Entity"/> and <see cref="EntityData"/> into the passed spans.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <param name="entities">The <see cref="Span{T}"/> of <see cref="Entity"/>s where the entities will be written to.</param>
+    /// <param name="entityData">The <see cref="Span{T}"/> of <see cref="EntityData"/> where the <see cref="EntityData"/>s will be written to.</param>
+    /// <param name="amount">The amount of <see cref="Entity"/> to create.</param>
+    internal void GetNextEntitiesIn(Archetype archetype, Span<Entity> entities, Span<EntityData> entityData, int amount)
+    {
+        // Rent array
+        using var slotArray = Pool<Slot>.Rent(amount);
+        var slots = slotArray.AsSpan();
+
+        // Get slots for entities and put them into the lists
+        Archetype.GetNextSlots(archetype, slots, amount);
+        for(var index = 0; index < amount; index++)
+        {
+            var version = GetNextEntity(out var entity);
+            entities[index] = entity;
+            entityData[index] = new EntityData(version, archetype, slots[index]);
+        }
+    }
+
+    /// <summary>
+    ///     Adds <see cref="Entity"/> with their <see cref="EntityData"/> to the <see cref="EntityInfo"/>.
+    /// </summary>
+    /// <param name="entities">The <see cref="Entity"/>s.</param>
+    /// <param name="entityData">The <see cref="EntityData"/>.</param>
+    /// <param name="amount">The amount.</param>
+    internal void AddEntityData(Span<Entity> entities, Span<EntityData> entityData, int amount)
+    {
+        // Transfer entity and data into the EntityInfo
+        var existingEntityData = EntityInfo.EntityData;
+        for (var index = 0; index < amount; index++)
+        {
+            var entity = entities[index];
+            ref var data = ref entityData[index];
+            existingEntityData.Add(entity.Id, in data);
+        }
+    }
+
+    // TODO: Add entity creation event
+    /// <summary>
+    ///     Creates a set of <see cref="Entity"/>s of a certain <see cref="Signature"/> with default values and writes them into a desired <see cref="createdEntities"/>.
+    /// </summary>
+    /// <param name="createdEntities">An <see cref="Span{T}"/> with enough capacity to write all created <see cref="Entity"/>s into.</param>
+    /// <param name="signature">The <see cref="Signature"/> each created entity will have.</param>
+    /// <param name="amount">The amount of <see cref="Entity"/>s to create.</param>
+    [StructuralChange]
+    public void Create(Span<Entity> createdEntities, in Signature signature, int amount)
+    {
+        var archetype = EnsureCapacity(in signature, amount);
+
+        // Rent arrays
+        using var entityDataArray = Pool<EntityData>.Rent(amount);
+        var entityData = entityDataArray.AsSpan();
+
+        // Create entities
+        GetNextEntitiesIn(archetype, createdEntities, entityData, amount);
+        archetype.AddAll(createdEntities, amount);
+
+        // Add entities to entityinfo
+        AddEntityData(createdEntities, entityData, amount);
+    }
+
+    /// <summary>
+    ///     Creates a set of <see cref="Entity"/> with the desired structure and components.
+    /// </summary>
+    /// <param name="amount">The amount of <see cref="Entity"/>s to create.</param>
+    /// <param name="cmp">The component.</param>
+    /// <typeparam name="T">The component type.</typeparam>
+    [StructuralChange]
+    public void Create<T>(int amount, in T? cmp = default)
+    {
+        var archetype = EnsureCapacity<T>(amount);
+
+        // Prepare entities, slots and data
+        using var entityArray =  Pool<Entity>.Rent(amount);
+        using var entityDataArray =  Pool<EntityData>.Rent(amount);
+        var entities = entityArray.AsSpan();
+        var entityData = entityDataArray.AsSpan();
+
+        // Create entities
+        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        archetype.AddAll(entities, amount);
+
+        // Fill entities
+        var firstSlot = entityData[0].Slot;
+        var lastSlot = entityData[amount - 1].Slot;
+        archetype.SetRange(in firstSlot, in lastSlot, cmp);
+
+        // Add entities to entityinfo
+        AddEntityData(entities, entityData, amount);
+    }
+
     /// <summary>
     ///     Sets or replaces a component for an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The instance, optional.</param>
-
     public void Set<T>(Entity entity, in T? component = default)
     {
         var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
