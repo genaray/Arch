@@ -41,7 +41,7 @@ public static class CreateExtensions
 
                 // Add to archetype & mapping
                 var archetype = GetOrCreate(signature);
-                var createdChunk = archetype.Add(entity, out var slot);
+                var createdChunk = archetype.Add(entity, out _, out var slot);
 
                 archetype.Set<{{generics}}>(ref slot, {{inParameters}});
 

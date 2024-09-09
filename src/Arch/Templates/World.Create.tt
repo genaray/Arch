@@ -38,9 +38,7 @@ public partial class World
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add(entity, out var slot);
-
-        archetype.Set<<#= generics #>>(ref slot, <#= inParameters #>);
+        var createdChunk = archetype.Add<<#= generics #>>(entity, out var slot, <#= inParameters #>);
 
         // Resize map & Array to fit all potential new entities
         if (createdChunk)
