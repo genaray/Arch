@@ -1,4 +1,4 @@
-# Arch
+![Arch](docs/arch-banner.png)
 [![Discord](https://img.shields.io/discord/1099813114876284928?style=for-the-badge&logo=discord&label=Arch)](https://discord.gg/htc8tX3NxZ)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![Nuget](https://img.shields.io/nuget/v/Arch?style=for-the-badge)](https://www.nuget.org/packages/Arch/)
@@ -52,12 +52,12 @@ public sealed class Game
 }
 ```
 > [!NOTE]
-> The example is very simple. There more features including queries without lambda or an API without generics and much more. Checkout the [Documentation](https://github.com/genaray/Arch/wiki)!
+> The example is very simple. There more features including queries without lambda or an API without generics and much more. Checkout the [Documentation](https://arch-ecs.gitbook.io/arch)!
 
 # 💡 Highlights
 
 This is all you need to know, with this little knowledge you are already able to bring your worlds to life.  
-However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://github.com/genaray/Arch/wiki)! 
+However, if you want to take a closer look at Arch's features and performance techniques, check out the [Wiki](https://arch-ecs.gitbook.io/arch)! 
 There's more to explore, for example...
 
 ## 🤝 Our promise
@@ -97,21 +97,31 @@ Care is always taken to find a healthy balance between CPU performance and ram u
 
 If you are more interested, have a look at the [benchmark](https://github.com/Doraku/Ecs.CSharp.Benchmark)! 
 
-# 📖 [Documentation](https://github.com/genaray/Arch/wiki)
+# 📖 [Documentation](https://arch-ecs.gitbook.io/arch)
 Were we able to convince you? If so, let's get started. 
 We have prepared a whole wiki to explain all the important aspects and provide examples. 
-Click here for the [documentation](https://github.com/genaray/Arch/wiki)!
+Click here for the [documentation](https://arch-ecs.gitbook.io/arch)!
 
 # 💻 Projects using Arch
 Arch is already used in some projects, for a more detailed look, take a look at the [wiki](https://github.com/genaray/Arch/wiki/Projects-using-Arch)!
 
 ## [Space Station 14](https://spacestation14.io/)
 Space Station 14 is inspired by the cult classic Space Station 13 and tells the extraordinary story of everything that can go wrong on a shift at a space station. You take on a role and complete your tasks so that the space station doesn't go to the dogs... or do the exact opposite. Prepare yourself for chaos and the finest roleplay. Best of all, SS14 is open-source and anyone can play!
+![Ingame screenshot](https://spacestation14.com/images/home/gallery-medbay.jpg)
 
 ## [Roguelite-Survivor](https://github.com/proc-gen/roguelite-survivor)
 An action-packed c# clone of the hit "vampire survivor" based on monogame and arch!
 Fight your way through hordes of different enemies, level up your character, collect permanent items and explore various maps!
 Try it out!
+![Ingame screenshot](https://user-images.githubusercontent.com/65076703/232624411-6a9e8a29-3118-41a6-a8f3-dd8d9c8f0edf.png)
 
 ## [EquilibriumEngine-CSharp](https://github.com/clibequilibrium/EquilibriumEngine-CSharp)
 Equilibrium Engine is a data-oriented C# game engine that takes advantage of ECS pattern followed by Hot-Reloading of your libraries which allows you to quickly iterate on different aspects of your projects.
+![Equilibrium Engine screenshot](https://raw.githubusercontent.com/clibequilibrium/EquilibriumEngine-CSharp/master/docs/home.png)
+
+# Contributors
+<a href="https://github.com/genaray/Arch/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=genaray/Arch" />
+</a>
+
+A huge thanks to all the supporters who did their part, especially TwistableGolf for their dedication and design of the official Arch logo and banner! 
