@@ -124,4 +124,4 @@ Equilibrium Engine is a data-oriented C# game engine that takes advantage of ECS
   <img src="https://contrib.rocks/image?repo=genaray/Arch" />
 </a>
 
-A huge thanks to all the supporters who did their part, especially TwistableGolf for their dedication and design of the official Arch logo and banner! 
+A huge thanks to all the supporters who did their part, especially [TwistableGolf](https://github.com/TwistableGolf) for their dedication and design of the official Arch logo and banner! 
