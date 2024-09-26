@@ -28,28 +28,23 @@ I bet you don't want to read tons of documentation, theory, and other boring stu
 Let's just ignore all that deep knowledge and jump in directly to get something done. 
 
 ```cs
-// Components ( ignore the formatting, this saves space )
-public struct Position{ float X, Y };
-public struct Velocity{ float Dx, Dy };
+using Arch;
 
-public sealed class Game 
-{
-    public static void Main(string[] args) 
-    {     
-        // Create a world and entities with position and velocity.
-        var world = World.Create();
-        for (var index = 0; index < 1000; index++) 
-            world.Create(new Position{ X = 0, Y = 0}, new Velocity{ Dx = 1, Dy = 1});
-        
-        // Enumerate entities with Position AND Velocity to modify them
-        var query = new QueryDescription().WithAll<Position,Velocity>();
-        world.Query(in query, (Entity entity, ref Position pos, ref Velocity vel) => {
-            pos.X += vel.Dx;
-            pos.Y += vel.Dy;
-            Console.WriteLine($"Moved: {entity.Id}"); 
-        }); 
-    }
-}
+// Components
+public record struct Position(float X, float Y);
+public record struct Velocity(float Dx, float Dy);
+
+// Create a world and an entity with position and velocity.
+using var world = World.Create();
+var adventurer = world.Create(new Position(0,0), new Velocity(1,1));
+
+// Enumerate all entities with Position & Velocity to move them
+var query = new QueryDescription().WithAll<Position,Velocity>();
+world.Query(in query, (Entity entity, ref Position pos, ref Velocity vel) => {
+    pos.X += vel.Dx;
+    pos.Y += vel.Dy;
+    Console.WriteLine($"Moved adventurer: {entity.Id}"); 
+}); 
 ```
 > [!NOTE]
 > The example is very simple. There more features including queries without lambda or an API without generics and much more. Checkout the [Documentation](https://arch-ecs.gitbook.io/arch)!
