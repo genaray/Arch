@@ -104,7 +104,7 @@ public static class SetExtensions
                     var isStart = chunkIndex == from.ChunkIndex;
                     var isEnd = chunkIndex == to.ChunkIndex;
 
-                    var upper = isStart ? from.Index : chunk.Size-1;
+                    var upper = isStart ? from.Index : chunk.Count-1;
                     var lower = isEnd ? to.Index : 0;
 
                     for (var entityIndex = upper; entityIndex >= lower; --entityIndex)

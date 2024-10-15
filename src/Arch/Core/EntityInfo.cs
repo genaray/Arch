@@ -198,7 +198,7 @@ internal class EntityInfoStorage
 
             // Only move within the range, depening on which chunk we are at.
             var isStart = chunkIndex == archetypeSlot.ChunkIndex;
-            var upper = isStart ? archetypeSlot.Index : chunk.Size-1;
+            var upper = isStart ? archetypeSlot.Index : chunk.Count-1;
 
             for(var index = 0; index <= upper; index++)
             {

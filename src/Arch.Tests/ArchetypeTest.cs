@@ -27,7 +27,7 @@ public sealed class ArchetypeTest
     {
         // Create archetype
         var archetype = new Archetype(_group);
-        var entities = Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group);
+        var entities = Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group);
 
         // Fill archetype
         for (var index = 0; index < entities; index++)
@@ -36,7 +36,38 @@ public sealed class ArchetypeTest
             archetype.Add(entity, out _, out _);
         }
 
+        That(archetype.EntityCount, Is.EqualTo(entities));
+        That(archetype.EntityCapacity, Is.EqualTo(entities));
         That(archetype.ChunkCount, Is.EqualTo(1));  // Since we filled it with n entities, it must have one single chunk.
+        That(archetype.Count, Is.EqualTo(0));  // Since we filled it with n entities, it must have one single chunk.
+        That(archetype.GetChunk(0).Count, Is.EqualTo(entities));
+    }
+
+    /// <summary>
+    ///     Tests if <see cref="Archetype"/>s and their <see cref="Chunk"/> are created correctly.
+    /// </summary>
+    [Test]
+    public void CreateAllChunk()
+    {
+        // Create archetype
+        var archetype = new Archetype(_group);
+        var count = Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group);
+        Span<Entity> entities = stackalloc Entity[count];
+
+        // Fill archetype
+        for (var index = 0; index < count; index++)
+        {
+            var entity = new Entity(index, 0);
+            entities[index] = entity;
+        }
+
+        archetype.AddAll(entities, count);
+
+        That(archetype.EntityCount, Is.EqualTo(count));
+        That(archetype.EntityCapacity, Is.EqualTo(count));
+        That(archetype.ChunkCount, Is.EqualTo(1));
+        That(archetype.Count, Is.EqualTo(0));
+        That(archetype.GetChunk(0).Count, Is.EqualTo(count));
     }
 
     /// <summary>
@@ -56,7 +87,7 @@ public sealed class ArchetypeTest
     public void CreateMultipleChunk()
     {
         var archetype = new Archetype(_group);
-        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) * 2;
+        var entities =  Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group) * 2;
 
         for (var index = 0; index < entities; index++)
         {
@@ -64,18 +95,22 @@ public sealed class ArchetypeTest
             archetype.Add(entity, out _, out _);
         }
 
+        That(archetype.EntityCount, Is.EqualTo(entities));
+        That(archetype.EntityCapacity, Is.EqualTo(entities));
         That(archetype.ChunkCount, Is.EqualTo(2));
+        That(archetype.Count, Is.EqualTo(1));
     }
 
     /// <summary>
     ///     Checks if an <see cref="Archetype"/> is able to reserve enough memory for a number of <see cref="Entity"/>s and their components.
     /// </summary>
     [Test]
-    public void Reserve()
+    public void Ensure()
     {
         var archetype = new Archetype(_group);
-        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) * 10;
-        archetype.Reserve(entities);
+        var entitiesPerChunk = Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group);
+        var entities = entitiesPerChunk * 10;
+        archetype.EnsureEntityCapacity(entities);
 
         for (var index = 0; index < entities; index++)
         {
@@ -83,33 +118,11 @@ public sealed class ArchetypeTest
             archetype.Add(entity, out _, out _);
         }
 
-        That(archetype.ChunkCount, Is.EqualTo(10));
-        That(archetype.ChunkCapacity, Is.EqualTo(10));
-    }
-
-    /// <summary>
-    ///     Checks if removing an <see cref="Entity"/> from the <see cref="Archetype"/> causes another <see cref="Entity"/> to move to that position.
-    /// </summary>
-    [Test]
-    public void RemoveFromChunkWithReplacement()
-    {
-        var archetype = new Archetype(_group);
-        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 50;
-
-        for (var index = 0; index < entities; index++)
-        {
-            var entity = new Entity(index, 0);
-            archetype.Add(entity, out _, out _);
-        }
-
-        var slot = new Slot(0, 0);
-        archetype.Remove(slot, out _);
-
-        That(archetype.ChunkCount, Is.EqualTo(2));
-        That(archetype.ChunkCapacity, Is.EqualTo(2));
-        That(archetype.Chunks[0].Size, Is.EqualTo(entities - 50));
-        That(archetype.Chunks[1].Size, Is.EqualTo(49));
-        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.EntityCount, Is.EqualTo(entities));
+        That(archetype.EntityCapacity, Is.EqualTo(entities));
+        That(archetype.ChunkCount, Is.EqualTo(archetype.EntityCount/entitiesPerChunk));
+        That(archetype.ChunkCapacity, Is.EqualTo(archetype.EntityCount/entitiesPerChunk));
+        That(archetype.Count, Is.EqualTo((archetype.EntityCount/entitiesPerChunk)-1));
     }
 
     /// <summary>
@@ -119,7 +132,7 @@ public sealed class ArchetypeTest
     public void RemoveChunk()
     {
         var archetype = new Archetype(_group);
-        var entities =  Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group) + 1;
+        var entities =  Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group) + 1;
 
         for (var index = 0; index < entities; index++)
         {
@@ -130,10 +143,37 @@ public sealed class ArchetypeTest
         var slot = new Slot(0, 0);
         archetype.Remove(slot, out _);
 
-        That(archetype.ChunkCount, Is.EqualTo(1));
+        That(archetype.Count, Is.EqualTo(0));
+        That(archetype.ChunkCount, Is.EqualTo(2));
         That(archetype.ChunkCapacity, Is.EqualTo(2));
-        That(archetype.Chunks[0].Size, Is.EqualTo(entities - 1));
-        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+        That(archetype.Chunks[0].Count, Is.EqualTo(entities - 1));
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group))); // Last entity from second chunk now replaced the removed entity and is in the first chunk
+    }
+
+    /// <summary>
+    ///     Checks if removing an <see cref="Entity"/> from the <see cref="Archetype"/> causes another <see cref="Entity"/> to move to that position.
+    /// </summary>
+    [Test]
+    public void RemoveFromChunkWithReplacement()
+    {
+        var archetype = new Archetype(_group);
+        var entities =  Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group) + 50;
+
+        for (var index = 0; index < entities; index++)
+        {
+            var entity = new Entity(index, 0);
+            archetype.Add(entity, out _, out _);
+        }
+
+        var slot = new Slot(0, 0);
+        archetype.Remove(slot, out _);
+
+        That(archetype.Count, Is.EqualTo(1));
+        That(archetype.ChunkCount, Is.EqualTo(2));
+        That(archetype.ChunkCapacity, Is.EqualTo(2));
+        That(archetype.Chunks[0].Count, Is.EqualTo(entities - 50));
+        That(archetype.Chunks[1].Count, Is.EqualTo(49));
+        That(archetype.Chunks[0].Entities[0].Id, Is.EqualTo( Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group) + 50 - 1)); // Last entity from second chunk now replaced the removed entity and is in the first chunk
     }
 
     /// <summary>
@@ -159,8 +199,8 @@ public sealed class ArchetypeTest
         Archetype.CopyComponents(archetype, ref entityOneSlot,otherArchetype, ref newSlot);
         archetype.Remove(entityOneSlot, out _);
 
-        That(archetype.Chunks[0].Size, Is.EqualTo(0));
-        That(otherArchetype.Chunks[0].Size, Is.EqualTo(2));
+        That(archetype.Chunks[0].Count, Is.EqualTo(0));
+        That(otherArchetype.Chunks[0].Count, Is.EqualTo(2));
         That(otherArchetype.Get<Transform>(ref newSlot).X, Is.EqualTo(10));
         That(otherArchetype.Get<Transform>(ref newSlot).Y, Is.EqualTo(10));
         That(otherArchetype.Get<Rotation>(ref newSlot).X, Is.EqualTo(10));
@@ -259,6 +299,19 @@ public sealed class ArchetypeTest
         That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
         That(countedSourceItems, Is.EqualTo(sourceAmount));
         That(countedDestinationItems, Is.EqualTo(destinationAmount));
+
+        var requiredChunksForSource = Archetype.GetChunkCapacityFor(source.EntitiesPerChunk, sourceAmount);
+        var requiredChunksForDestination = Archetype.GetChunkCapacityFor(destination.EntitiesPerChunk, sourceAmount+destinationAmount);
+
+        That(source.EntityCount, Is.EqualTo(0));
+        That(source.ChunkCount, Is.EqualTo(requiredChunksForSource));
+        That(source.ChunkCapacity, Is.EqualTo(requiredChunksForSource));
+        That(source.Count, Is.EqualTo(0));
+
+        That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
+        That(destination.ChunkCount, Is.EqualTo(requiredChunksForDestination));
+        That(destination.ChunkCapacity, Is.EqualTo(requiredChunksForDestination));
+        That(destination.Count, Is.EqualTo(requiredChunksForDestination - 1));  // -1 Since its the index that points towards the Chunk, not the count
     }
 
     /// <summary>
@@ -301,7 +354,54 @@ public sealed class ArchetypeTest
         Archetype.Copy(source, destination);
         source.Clear();
 
-        That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
+        var requiredChunksForSource = Archetype.GetChunkCapacityFor(source.EntitiesPerChunk, sourceAmount);
+        var requiredChunksForDestination = Archetype.GetChunkCapacityFor(destination.EntitiesPerChunk, sourceAmount + destinationAmount);
+
         That(source.Entity(ref sourceSlot), Is.EqualTo(destination.Entity(ref resultSlot)));  // Make sure entities were copied correctly.
+        That(source.EntityCount, Is.EqualTo(0));
+        That(source.ChunkCount, Is.EqualTo(requiredChunksForSource));
+        That(source.ChunkCapacity, Is.EqualTo(requiredChunksForSource));
+        That(source.Count, Is.EqualTo(0));
+
+        That(destination.EntityCount, Is.EqualTo(sourceAmount+destinationAmount));
+        That(destination.ChunkCount, Is.EqualTo(requiredChunksForDestination));
+        That(destination.ChunkCapacity, Is.EqualTo(requiredChunksForDestination));
+        That(destination.Count, Is.EqualTo(requiredChunksForDestination - 1));
+    }
+
+    /// <summary>
+    ///     Checks whether the next available slots of the archetype can be calculated correctly.
+    /// </summary>
+    [Test]
+    public void GetNextSlots()
+    {
+        var archetype = new Archetype(_group);
+        var entitiesPerChunk = Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group);
+        var entities =  entitiesPerChunk/2;
+
+        for (var index = 0; index < entities; index++)
+        {
+            var entity = new Entity(index, 0);
+            archetype.Add(entity, out _, out _);
+        }
+
+        Span<Slot> slots = stackalloc Slot[archetype.EntitiesPerChunk];
+        var created = Archetype.GetNextSlots(archetype, slots, archetype.EntitiesPerChunk);
+
+        // Create next n entities in the chunk to see if they are created correctly
+        for (var index = 0; index < created; index++)
+        {
+            var entity = new Entity(entities+index, 0);
+            archetype.Add(entity, out _, out var createdIn);
+            That(slots[index], Is.EqualTo(createdIn));
+        }
+
+        var requiredChunksForSource = Archetype.GetChunkCapacityFor(archetype.EntitiesPerChunk, entities+created);
+
+        That(archetype.EntityCount, Is.EqualTo(entities+created));
+        That(archetype.EntityCapacity, Is.EqualTo(entities+created));
+        That(archetype.ChunkCount, Is.EqualTo(requiredChunksForSource));
+        That(archetype.ChunkCapacity, Is.EqualTo(requiredChunksForSource));
+        That(archetype.Count, Is.EqualTo(requiredChunksForSource - 1));
     }
 }

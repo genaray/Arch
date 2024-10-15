@@ -25,8 +25,8 @@ public sealed class EnumeratorTest
     public void Setup()
     {
         _world = World.Create();
-        _world.Reserve(_group, 10000);
-        _world.Reserve(_otherGroup, 10000);
+        _world.EnsureCapacity(_group, 10000);
+        _world.EnsureCapacity(_otherGroup, 10000);
 
         for (var index = 0; index < 10000; index++)
         {
@@ -71,7 +71,7 @@ public sealed class EnumeratorTest
             counter++;
         }
 
-        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.CalculateEntitiesPerChunk(archetype.ChunkSizeInBytes, _group))));
+        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group))));
     }
 
     /// <summary>

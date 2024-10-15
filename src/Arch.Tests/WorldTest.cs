@@ -61,11 +61,16 @@ public sealed partial class WorldTest
     [Test]
     public void Create()
     {
-        var size = _world.Size;
-        var entity = _world.Create(_entityGroup);
+        using var world = World.Create();
 
-        That(_world.Size, Is.EqualTo(size + 1));
-        True(_world.IsAlive(entity));
+        var size = world.Size;
+        var entity = world.Create(_entityGroup);
+
+        That(entity.Id, Is.EqualTo(0));
+        That(world.Size, Is.EqualTo(size + 1));
+        That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
+        That(world.Version(entity), Is.EqualTo(1));
+        True(world.IsAlive(entity));
     }
 
     /// <summary>
@@ -102,8 +107,8 @@ public sealed partial class WorldTest
         }
 
         That(_world.Size, Is.EqualTo(0));
-        That(_world.Archetypes[0].ChunkCount, Is.EqualTo(1));
-        That(_world.Archetypes[1].ChunkCount, Is.EqualTo(1));
+        That(_world.Archetypes[0].Count, Is.EqualTo(0));
+        That(_world.Archetypes[1].Count, Is.EqualTo(0));
     }
 
     /// <summary>
@@ -112,11 +117,14 @@ public sealed partial class WorldTest
     [Test]
     public void DestroyEdgeCase()
     {
+
+        using var world = World.Create();
+
         var entitiesToChangeColor = new QueryDescription().WithAll<Transform>();
         var entities = new List<Entity>();
-        for (var i = 0; i < 1000; i++)
+        for (var i = 0; i < 10_000; i++)
         {
-            var ent = _world.Create(_entityGroup);
+            var ent = world.Create(_entityGroup);
             entities.Add(ent);
         }
 
@@ -129,10 +137,10 @@ public sealed partial class WorldTest
             }
 
             // A demonstration of bulk adding and removing components.
-            _world.Add(in entitiesToChangeColor, 1);
-            _world.Remove<int>(in entitiesToChangeColor);
+            world.Add(in entitiesToChangeColor, 1);
+            world.Remove<int>(in entitiesToChangeColor);
 
-            _world.Destroy(ent);
+            world.Destroy(ent);
         }
     }
 
@@ -229,20 +237,15 @@ public sealed partial class WorldTest
     ///     Checks if the <see cref="World"/> reserves memory for <see cref="Entity"/>s correctly.
     /// </summary>
     [Test]
-    public void Reserve()
+    public void EnsureCapacity()
     {
-        var beforeSize = _world.Size;
-        var beforeCapacity = _world.Capacity;
+        using var world = World.Create();
+        var archetype = world.EnsureCapacity(_entityGroup, 10000);
 
-        _world.Reserve(_entityGroup, 10000);
-        for (var index = 0; index < 10000; index++)
-        {
-            _world.Create(_entityGroup);
-        }
-
-        Greater(_world.Size, beforeSize);
-        That(_world.Size, Is.EqualTo(beforeSize + 10000));
-        That(_world.Capacity, Is.EqualTo(beforeCapacity + 10000));
+        That(world.Size, Is.EqualTo(0));
+        That(world.Capacity, Is.EqualTo(archetype.EntityCapacity));
+        That(archetype.EntityCount, Is.EqualTo(0));
+        That(archetype.EntityCapacity, Is.EqualTo(10240));
     }
 
     /// <summary>
@@ -262,7 +265,7 @@ public sealed partial class WorldTest
         // Destroy all but one
         var counter = 0;
         var query = new QueryDescription().WithAll<HeavyComponent>();
-        world.Query(in query, (Entity entity) =>
+        world.Query(in query, entity =>
         {
             if (counter < amount - 1)
             {
@@ -586,7 +589,7 @@ public partial class WorldTest
 
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
-        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity).Chunks[0].Count, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -640,7 +643,7 @@ public partial class WorldTest
 
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
-        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity).Chunks[0].Count, Is.EqualTo(2));
     }
 
     /// <summary>
@@ -710,7 +713,7 @@ public partial class WorldTest
 
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(_world.GetArchetype(entity).ChunkCount, Is.EqualTo(1));
-        That(_world.GetArchetype(entity).Chunks[0].Size, Is.EqualTo(2));
+        That(_world.GetArchetype(entity).Chunks[0].Count, Is.EqualTo(2));
     }
 
     /// <summary>

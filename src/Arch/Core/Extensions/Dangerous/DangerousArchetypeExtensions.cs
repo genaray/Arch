@@ -27,7 +27,7 @@ public static class DangerousArchetypeExtensions
     /// <param name="size">The size.</param>
     public static void SetSize(this Archetype archetype, int size)
     {
-        archetype.ChunkCount = size;
+        //archetype.ChunkCount = size;
     }
 
     /// <summary>
@@ -37,10 +37,11 @@ public static class DangerousArchetypeExtensions
     /// <param name="chunks">The list of <see cref="Chunk"/>s.</param>
     public static void SetChunks(this Archetype archetype, List<Chunk> chunks)
     {
+        /*
         archetype.Chunks = ArrayPool<Chunk>.Shared.Rent(chunks.Count);
         chunks.CopyTo(archetype.Chunks);
 
-        archetype.ChunkCapacity = chunks.Count;
+        archetype.ChunkCapacity = chunks.Count;*/
     }
 
     /// <summary>

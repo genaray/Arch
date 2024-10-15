@@ -232,25 +232,6 @@ public partial class World : IDisposable
     internal PooledDictionary<QueryDescription, Query> QueryCache {  get; set; }
 
     /// <summary>
-    ///     Reserves space for a certain number of <see cref="Entity"/>s of a given component structure/<see cref="Archetype"/>.
-    /// </summary>
-    /// <remarks>
-    ///     Causes a structural change.
-    /// </remarks>
-    /// <param name="signature">The component structure/<see cref="Archetype"/>.</param>
-    /// <param name="amount">The amount of <see cref="Entity"/>s to reserve space for.</param>
-    [StructuralChange]
-    public void Reserve(in Signature signature, int amount)
-    {
-        var archetype = GetOrCreate(signature);
-        archetype.Reserve(amount);
-
-        var requiredCapacity = Capacity + amount;
-        EntityInfo.EnsureCapacity(requiredCapacity);
-        Capacity = requiredCapacity;
-    }
-
-    /// <summary>
     ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
     ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
     /// </summary>
@@ -951,10 +932,11 @@ public partial class World
     {
         // Ensure size of archetype
         var archetype = GetOrCreate(signature);
+        Capacity -= archetype.EntityCapacity;     // Reduce capacity, in case the previous capacity was already included, ensures more and more till memory leak
         archetype.EnsureEntityCapacity(archetype.EntityCount + amount);
 
         // Ensure size of world
-        var requiredCapacity = Size + amount;
+        var requiredCapacity = Capacity + archetype.EntityCapacity;
         EntityInfo.EnsureCapacity(requiredCapacity);
         Capacity = requiredCapacity;
 

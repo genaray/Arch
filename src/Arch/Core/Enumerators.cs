@@ -202,7 +202,7 @@ public ref struct QueryChunkEnumerator
         unchecked
         {
             // Decrease chunk till its zero, skip empty chunks -> otherwhise entity query might fail since it tries to acess that chunk
-            if (--_index >= 0 && Current.Size > 0)
+            if (--_index >= 0 && Current.Count > 0)
             {
                 return true;
             }

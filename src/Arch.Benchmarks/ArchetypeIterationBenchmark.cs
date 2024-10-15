@@ -22,7 +22,7 @@ public class ArchetypeIterationBenchmark
         // jobScheduler = new JobScheduler();
 
         _globalArchetype = new Archetype(_group);
-        _globalArchetype.Reserve(Amount);
+        _globalArchetype.EnsureEntityCapacity(Amount);
 
         for (var index = 0; index < Amount; index++)
         {
@@ -45,7 +45,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var chunk = ref chunks[chunkIndex];
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
             var transforms = chunk.GetArray<Transform>();
             var rotations = chunk.GetArray<Rotation>();
 
@@ -69,7 +69,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var transforms = currentChunk.GetArray<Transform>();
             var rotations = currentChunk.GetArray<Rotation>();
@@ -103,7 +103,7 @@ public class ArchetypeIterationBenchmark
             for (var chunkIndex = 0; chunkIndex < end - start; chunkIndex++)
             {
                 ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var chunkSize = chunk.Size;
+                var chunkSize = chunk.Count;
 
                 var transforms = currentChunk.GetArray<Transform>();
                 var rotations = currentChunk.GetArray<Rotation>();
@@ -132,7 +132,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var chunk = ref chunks[chunkIndex];
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var entities = chunk.Entities;
             var transforms = chunk.GetArray<Transform>();
@@ -160,7 +160,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var entities = currentChunk.Entities;
             var transforms = currentChunk.GetArray<Transform>();

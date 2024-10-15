@@ -26,7 +26,7 @@ for (var index = 2; index < Amount; index++)
 
     [StructuralChange]
     public void Create<<#= generics #>>(int amount, <#= parameters #>)
-{
+    {
         var archetype = EnsureCapacity<<#= generics #>>(amount);
 
         // Prepare entities, slots and data
@@ -46,7 +46,7 @@ for (var index = 2; index < Amount; index++)
 
         // Add entities to entityinfo
         AddEntityData(entities, entityData, amount);
-}
+    }
 <#
 }
 #>

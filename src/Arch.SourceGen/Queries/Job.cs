@@ -26,7 +26,7 @@ public static class StringBuilderChunkJobExtensions
 
                 public void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
+                    var chunkSize = chunk.Count;
                     {{getFirstElement}}
 
                     foreach(var entityIndex in chunk)
@@ -106,7 +106,7 @@ public static class StringBuilderChunkJobExtensions
 
                 public void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
+                    var chunkSize = chunk.Count;
                     {{getFirstElement}}
 
                     foreach(var entityIndex in chunk)
@@ -145,7 +145,7 @@ public static class StringBuilderChunkJobExtensions
 
                 public void Execute(ref Chunk chunk)
                 {
-                    var chunkSize = chunk.Size;
+                    var chunkSize = chunk.Count;
                     ref var entityFirstElement = ref chunk.Entity(0);
                     {{getFirstElement}}
 
