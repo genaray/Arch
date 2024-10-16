@@ -216,6 +216,33 @@ public static partial class EntityExtensions
         var world = World.Worlds[entity.WorldId];
         world.Remove<T>(entity);
     }
+
+    /// <summary>
+    ///     Duplicate this entity
+    /// </summary>
+    public static Entity Duplicate(this in Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Duplicate(entity);
+    }
+
+    /// <summary>
+    ///     Duplicate this output.Length times
+    /// </summary>
+    public static void DuplicateN(this in Entity entity, Span<Entity> output)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.DuplicateN(entity, output);
+    }
+
+    /// <summary>
+    ///     Duplicate this entity n times
+    /// </summary>
+    public static void DuplicateN(this in Entity entity, int n, Span<Entity> output)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.DuplicateN(entity, n, output);
+    }
 #endif
 }
 
