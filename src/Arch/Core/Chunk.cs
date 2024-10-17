@@ -24,11 +24,11 @@ public class Chunks
 
     public Array<Chunk> Items { get; set; }
     public int Count { get; set; }
-    public int Capacity { get; set; }
+    public int Capacity { get; private set; }
 
     public void Add(in Chunk chunk)
     {
-        Debug.Assert(Count+1 <= Capacity, "Capacity exceeded.");
+        Debug.Assert(Count + 1 <= Capacity, "Capacity exceeded.");
         Items[Count++] = chunk;
     }
 

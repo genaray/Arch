@@ -384,7 +384,7 @@ public partial class World : IDisposable
             }
 
             archetype.TrimExcess();
-            Capacity += archetype.ChunkCount * archetype.EntitiesPerChunk; // Since always one chunk always exists.
+            Capacity += archetype.EntityCapacity;
         }
 
         // Traverse recycled ids and remove all that are higher than the current capacity.

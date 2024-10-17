@@ -480,7 +480,7 @@ public sealed partial class Archetype
         EnsureEntityCapacity(EntityCount + amount);
 
         var created = 0;
-        for(var index = ChunkCount; index < ChunkCapacity && created < amount; index++)
+        for(var index = Count; index < ChunkCapacity && created < amount; index++)
         {
             ref var chunk = ref GetChunk(index);
             var fillAmount = Math.Min(chunk.Buffer, amount - created);
@@ -488,10 +488,11 @@ public sealed partial class Archetype
             Chunk.Copy(ref entities, created, ref chunk, chunk.Count, fillAmount);
             chunk.Count += fillAmount;
 
-            Count = chunk.IsFull ? ChunkCount + 1 : ChunkCount;
+            Count = chunk.IsFull ? Count + 1 : Count;
             created += fillAmount;
         }
 
+        Count--;
         EntityCount += amount;
     }
 
@@ -747,6 +748,7 @@ public sealed partial class Archetype
     /// </summary>
     internal void TrimExcess()
     {
+        Chunks.Count = Count; // By setting the Count we will assure that unnecessary chunks are trimmed.
         Chunks.TrimExcess();
     }
 }
