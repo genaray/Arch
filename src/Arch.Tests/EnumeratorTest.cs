@@ -118,15 +118,17 @@ public sealed class EnumeratorTest
     [Test]
     public void QueryChunkEnumeration()
     {
-        var counter = 0;
+        var counter = _world.CountEntities(in _description);
+        var chunkCounter = 0;
+
         var query = _world.Query(in _description);
         foreach (ref var chunk in query)
         {
-            counter++;
+            counter -= chunk.Count;
+            chunkCounter++;
         }
 
-        var archetype1ChunkCount = _world.Archetypes[0].ChunkCount;
-        var archetype2ChunkCount = _world.Archetypes[1].ChunkCount;
-        That(counter, Is.EqualTo(archetype1ChunkCount + archetype2ChunkCount));
+        That(counter, Is.EqualTo(0));
+        That(chunkCounter, Is.EqualTo(_world.Archetypes[0].ChunkCount + _world.Archetypes[1].ChunkCount));
     }
 }

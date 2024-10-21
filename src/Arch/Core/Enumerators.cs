@@ -188,7 +188,7 @@ public ref struct QueryChunkEnumerator
         // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
-            _index = _archetypeEnumerator.Current.ChunkCount;
+            _index = _archetypeEnumerator.Current.Count+1;
         }
     }
 
@@ -202,7 +202,7 @@ public ref struct QueryChunkEnumerator
         unchecked
         {
             // Decrease chunk till its zero, skip empty chunks -> otherwhise entity query might fail since it tries to acess that chunk
-            if (--_index >= 0 && Current.Count > 0)
+            if (--_index >= 0)
             {
                 return true;
             }
@@ -213,7 +213,7 @@ public ref struct QueryChunkEnumerator
                 return false;
             }
 
-            _index = _archetypeEnumerator.Current.ChunkCount-1;
+            _index = _archetypeEnumerator.Current.Count;
             return true;
         }
     }
@@ -230,7 +230,7 @@ public ref struct QueryChunkEnumerator
         // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
-            _index = _archetypeEnumerator.Current.ChunkCount;
+            _index = _archetypeEnumerator.Current.Count + 1;
         }
     }
 
