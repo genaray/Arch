@@ -283,7 +283,7 @@ public sealed partial class Archetype
         Types = signature;
 
         // Calculations
-        ChunkSizeInBytes = GetByteCountFor(MinimumAmountOfEntitiesPerChunk, signature);
+        ChunkSizeInBytes = GetChunkSizeInBytesFor(MinimumAmountOfEntitiesPerChunk, signature);
         EntitiesPerChunk = GetEntityCountFor(ChunkSizeInBytes, signature);
 
         // The bitmask/set
@@ -757,15 +757,17 @@ public sealed partial class Archetype
 {
 
     /// <summary>
-    ///     Calculates how many bytes are needed to store the <see cref="entityAmount"/>.
+    ///     Calculates the size of the memory in bytes required to store the number of <see cref="entityAmount"/>.
+    ///     The <see cref="BaseSize"/> (L1 cache size) is taken into account and, if necessary, rounded up to a multiple of this to ensure maximum cache performance.
+    ///     So if the number of <see cref="entityAmount"/> exceeds the <see cref="BaseSize"/> value, a multiple of this is used.
     /// </summary>
     /// <param name="entityAmount">The amount of entities.</param>
     /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
     /// <returns>The amount of bytes required to store the <see cref="Entity"/>s.</returns>
-    public unsafe static int GetByteCountFor(int entityAmount, Span<ComponentType> types)
+    public unsafe static int GetChunkSizeInBytesFor(int entityAmount, Span<ComponentType> types)
     {
         var entityBytes = (sizeof(Entity) + types.ToByteSize()) * entityAmount;
-        return (int)Math.Ceiling((float)entityBytes / BaseSize) * BaseSize;
+        return (int)Math.Ceiling((float)entityBytes / BaseSize) * BaseSize;  // Calculates and rounds to a multiple of BaseSize to store the number of entities
     }
 
     /// <summary>

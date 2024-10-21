@@ -240,9 +240,14 @@ public sealed partial class WorldTest
     public void EnsureCapacity()
     {
         using var world = World.Create();
-        var archetype = world.EnsureCapacity(_entityGroup, 11000);
+        var amount = 11_000;
+        var archetype = world.EnsureCapacity(_entityGroup, amount);
 
-        var requiredEntityCapacity = Archetype.GetEntityCountFor(Archetype.GetByteCountFor(archetype.MinimumAmountOfEntitiesPerChunk, _entityGroup), _entityGroup);
+        // Calculation for capacity
+        var calculatedChunkSize = Archetype.GetChunkSizeInBytesFor(archetype.MinimumAmountOfEntitiesPerChunk, _entityGroup);
+        var entityCapacityPerChunk = Archetype.GetEntityCountFor(calculatedChunkSize, _entityGroup);
+        var requiredEntityCapacity = Math.Ceiling((float)amount / entityCapacityPerChunk) * entityCapacityPerChunk;
+
         That(world.Size, Is.EqualTo(0));
         That(world.Capacity, Is.EqualTo(archetype.EntityCapacity));
         That(archetype.EntityCount, Is.EqualTo(0));
