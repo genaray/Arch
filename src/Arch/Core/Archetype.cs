@@ -802,7 +802,7 @@ public sealed partial class Archetype
     internal static int GetNextSlots(Archetype archetype, Span<Slot> slots, int amount)
     {
         var next = 0;
-        for (var chunkIndex = archetype.ChunkCount-1; chunkIndex < archetype.ChunkCapacity && amount > 0; chunkIndex++)
+        for (var chunkIndex = archetype.Count; chunkIndex < archetype.ChunkCapacity && amount > 0; chunkIndex++)
         {
             ref var chunk = ref archetype.GetChunk(chunkIndex);
             var chunkSize = chunk.Count;

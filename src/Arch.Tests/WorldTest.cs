@@ -74,6 +74,62 @@ public sealed partial class WorldTest
     }
 
     /// <summary>
+    ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
+    /// </summary>
+    [Test]
+    public void CreateAll()
+    {
+        var size = 1024;
+        using var world = World.Create();
+
+        var transform = new Transform { X = size, Y = size };
+        var rotation = new Rotation{ X = size, Y = size, W = size, Z = size};
+        world.Create(size, transform , rotation);
+
+        var queryDesc = new QueryDescription().WithAll<Transform, Rotation>();
+        world.Query(queryDesc, (Entity entity, ref Transform entityTransform, ref Rotation entityRotation) =>
+        {
+            That(world.IsAlive(entity));
+            That(world.Version(entity), Is.EqualTo(1));
+            That(world.HasRange(entity, _entityGroup));
+
+            That(world.Get<Transform>(entity).X, Is.EqualTo(size));
+            That(world.Get<Rotation>(entity).X, Is.EqualTo(size));
+            That(entityTransform.X, Is.EqualTo(size));
+            That(entityRotation.X, Is.EqualTo(size));
+        });
+
+        That(world.Size, Is.EqualTo(size));
+        That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
+    /// </summary>
+    [Test]
+    public void CreateAll_By_Signature()
+    {
+        var size = 1024;
+        using var world = World.Create();
+
+        var createdEntities = (Span<Entity>)stackalloc Entity[size];
+        world.Create(createdEntities, _entityGroup, size);
+
+        var index = 0;
+        foreach (var entity in createdEntities)
+        {
+            That(entity.Id, Is.EqualTo(index));
+            That(world.IsAlive(entity));
+            That(world.Version(entity), Is.EqualTo(1));
+            That(world.HasRange(entity, _entityGroup));
+            index++;
+        }
+
+        That(world.Size, Is.EqualTo(size));
+        That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
+    }
+
+    /// <summary>
     ///     Checks if the <see cref="World"/> destroys <see cref="Entity"/> correctly.
     /// </summary>
     [Test]
