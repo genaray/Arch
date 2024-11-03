@@ -139,7 +139,7 @@ public sealed class MovementSystem : SystemBase<GameTime>
     public override void Update(in GameTime time)
     {
         // Iterates over all entities ( based on the passed QueryDescription ), accesses their Position and Velocity Components and updates them.
-        // Highperformance and inlined calls for maximum effiency.
+        // High performance and inlined calls for maximum efficiency.
         var movementJob = new Move((float)time.ElapsedGameTime.TotalMilliseconds);
         World.InlineParallelQuery<Move, Position, Velocity>(in _entitiesToMove, ref movementJob);
 
