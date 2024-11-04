@@ -97,8 +97,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendWorldHases(25)}}
                         {{new StringBuilder().AppendWorldGets(25)}}
                         {{new StringBuilder().AppendWorldSets(25)}}
-                        {{new StringBuilder().AppendWorldAdds(25)}}
-                        {{new StringBuilder().AppendWorldRemoves(25)}}
 
                         {{new StringBuilder().AppendQueryMethods(25)}}
                         {{new StringBuilder().AppendEntityQueryMethods(25)}}
@@ -111,8 +109,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendHpeParallelQuerys(25)}}
 
                         {{new StringBuilder().AppendSetWithQueryDescriptions(25)}}
-                        {{new StringBuilder().AppendAddWithQueryDescriptions(25)}}
-                        {{new StringBuilder().AppendRemoveWithQueryDescriptions(25)}}
                     }
 
                     public partial struct QueryDescription

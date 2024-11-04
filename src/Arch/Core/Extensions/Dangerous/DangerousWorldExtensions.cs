@@ -82,7 +82,7 @@ public static class DangerousWorldExtensions
 
         foreach (var archetype in archetypes)
         {
-            var hash = Component.GetHashCode(archetype.Types);
+            var hash = Component.GetHashCode(archetype.Signature);
             world.GroupToArchetype[hash] = archetype;
 
             world.Size += archetype.EntityCount;

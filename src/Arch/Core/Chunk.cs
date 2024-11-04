@@ -173,6 +173,11 @@ public partial struct Chunk
     public readonly bool IsFull { [Pure] get => Count >= Capacity; }
 
     /// <summary>
+    ///     Checks whether this instance is full or not.
+    /// </summary>
+    public readonly bool IsEmpty { [Pure] get => Count < Capacity; }
+
+    /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
     ///     This won't fire an event for <see cref="EntityCreatedHandler"/>.
     /// </summary>

@@ -139,6 +139,22 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.CreateBulk.cs</LastGenOutput>
     </None>
+    <None Update="Templates\World.RemoveWithQueryDescription.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.RemoveWithQueryDescription.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.AddWithQueryDescription.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.AddWithQueryDescription.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.Add.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Add.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.Remove.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Remove.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -155,6 +171,26 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.CreateBulk.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Add.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Add.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.RemoveWithQueryDescription.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.RemoveWithQueryDescription.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.AddWithQueryDescription.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.AddWithQueryDescription.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Remove.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Remove.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

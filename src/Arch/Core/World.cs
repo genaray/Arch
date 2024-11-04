@@ -621,7 +621,7 @@ public partial class World
     /// <param name="archetype">The <see cref="Archetype"/> to destroy.</param>
     internal void DestroyArchetype(Archetype archetype)
     {
-        var hash = Component.GetHashCode(archetype.Types);
+        var hash = Component.GetHashCode(archetype.Signature);
         Archetypes.Remove(archetype);
         GroupToArchetype.Remove(hash);
 
@@ -766,7 +766,6 @@ public partial class World
     /// </summary>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     /// <param name="value">The value of the component to set.</param>
-
     public void Set<T>(in QueryDescription queryDescription, in T? value = default)
     {
         var query = Query(in queryDescription);
@@ -796,7 +795,6 @@ public partial class World
     /// <param name="component">The value of the component to add.</param>
     [SkipLocalsInit]
     [StructuralChange]
-
     public void Add<T>(in QueryDescription queryDescription, in T? component = default)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
@@ -819,19 +817,20 @@ public partial class World
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
             {
-                newArchetype = GetOrCreate(archetype.Types.Add(typeof(T)));
+                var newSignature = Signature.Add(archetype.Signature, Component<T>.Signature);
+                newArchetype = GetOrCreate(newSignature);
             }
 
             // Get last slots before copy, for updating entityinfo later
-            var archetypeSlot = archetype.LastSlot;
-            var newArchetypeLastSlot = newArchetype.LastSlot;
+            var archetypeSlot = archetype.CurrentSlot;
+            var newArchetypeLastSlot = newArchetype.CurrentSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
             // Copy, Set and clear
             var oldCapacity = newArchetype.EntityCapacity;
             Archetype.Copy(archetype, newArchetype);
-            var lastSlot = newArchetype.LastSlot;
+            var lastSlot = newArchetype.CurrentSlot;
             newArchetype.SetRange(in lastSlot, in newArchetypeLastSlot, in component);
             archetype.Clear();
 
@@ -853,7 +852,6 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Entity"/>s will be targeted.</param>
     [SkipLocalsInit]
     [StructuralChange]
-
     public void Remove<T>(in QueryDescription queryDescription)
     {
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
@@ -876,14 +874,15 @@ public partial class World
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
             {
-                newArchetype = GetOrCreate(archetype.Types.Remove(typeof(T)));
+                var newSignature = Signature.Remove(archetype.Signature, Component<T>.Signature);
+                newArchetype = GetOrCreate(newSignature);
             }
 
             OnComponentRemoved<T>(archetype);
 
             // Get last slots before copy, for updating entityinfo later
-            var archetypeSlot = archetype.LastSlot;
-            var newArchetypeLastSlot = newArchetype.LastSlot;
+            var archetypeSlot = archetype.CurrentSlot;
+            var newArchetypeLastSlot = newArchetype.CurrentSlot;
             Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
             EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
 
@@ -1426,7 +1425,6 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The <see cref="Span{T}"/> of components.</param>
     [SkipLocalsInit]
-
     [StructuralChange]
     public void AddRange(Entity entity, Span<object> components)
     {
@@ -1453,7 +1451,8 @@ public partial class World
                 newComponents[index] = (ComponentType)components[index].GetType();
             }
 
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(newComponents));
+            var newSignature = Signature.Add(oldArchetype.Signature, newComponents);
+            newArchetype = GetOrCreate(newSignature);
         }
 
         // Move and fire events
@@ -1475,7 +1474,6 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
     [StructuralChange]
     public void AddRange(Entity entity, Span<ComponentType> components)
     {
@@ -1496,7 +1494,8 @@ public partial class World
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Add(components.ToArray()));
+            var newSignature = Signature.Add(oldArchetype.Signature, components.ToArray());
+            newArchetype = GetOrCreate(newSignature);
         }
 
         Move(entity, oldArchetype, newArchetype, out _);
@@ -1517,7 +1516,6 @@ public partial class World
     /// </remarks>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The <see cref="ComponentType"/> to remove from the <see cref="Entity"/>.</param>
-
     [StructuralChange]
     public void Remove(Entity entity, ComponentType type)
     {
@@ -1533,7 +1531,8 @@ public partial class World
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Remove(type));
+            var newSignature = Signature.Remove(oldArchetype.Signature,type);
+            newArchetype = GetOrCreate(newSignature);
         }
 
         OnComponentRemoved(entity, type);
@@ -1549,7 +1548,6 @@ public partial class World
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="Span{T}"/> of <see cref="ComponentType"/>s, that are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
     [StructuralChange]
     public void RemoveRange(Entity entity, Span<ComponentType> types)
     {
@@ -1570,7 +1568,8 @@ public partial class World
         // Get or Create new archetype
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = GetOrCreate(oldArchetype.Types.Remove(types.ToArray()));
+            var newSignature = Signature.Remove(oldArchetype.Signature, types);
+            newArchetype = GetOrCreate(newSignature);
         }
 
         // Fire events and move
@@ -1681,7 +1680,7 @@ public partial class World
     public ComponentType[] GetComponentTypes(Entity entity)
     {
         var archetype = EntityInfo.GetArchetype(entity.Id);
-        return archetype.Types;
+        return archetype.Signature;
     }
 
     /// <summary>
