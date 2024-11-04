@@ -58,7 +58,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     }
 
     /// <summary>
-    ///     Compares this <see cref="Entity"/> instace to another one for sorting and ordering.
+    ///     Compares this <see cref="Entity"/> instance to another one for sorting and ordering.
     ///     <remarks>Orders them by id. Ascending.</remarks>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
@@ -187,7 +187,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     }
 
     /// <summary>
-    ///     Compares this <see cref="Entity"/> instace to another one for sorting and ordering.
+    ///     Compares this <see cref="Entity"/> instance to another one for sorting and ordering.
     ///     <remarks>Orders them by id and world. Ascending.</remarks>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
@@ -307,7 +307,7 @@ public readonly struct EntityReference
     }
 #else
     /// <summary>
-    ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
+    ///     Checks if the referenced <see cref="Entity"/> is still valid and alive.
     /// </summary>
     /// <returns>True if its alive, otherwhise false.</returns>
 
