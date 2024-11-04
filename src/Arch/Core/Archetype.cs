@@ -278,7 +278,7 @@ public sealed partial class Archetype
     /// <param name="signature">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
     internal Archetype(Signature signature)
     {
-        Types = signature;
+        Signature = signature;
 
         // Calculations
         ChunkSizeInBytes = MinimumRequiredChunkSize(signature);
@@ -302,7 +302,12 @@ public sealed partial class Archetype
     /// <summary>
     ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     /// </summary>
-    public ComponentType[] Types {  get; }
+    public Signature Signature { get; }
+
+    /// <summary>
+    ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
+    /// </summary>
+    public ComponentType[] Types => Signature;
 
     /// <summary>
     ///     A bitset representation of the <see cref="Types"/> array for fast lookups and queries.
