@@ -641,11 +641,7 @@ public sealed partial class Archetype
     {
         Count = 0;
         EntityCount = 0;
-        for (var index = 0; index < Chunks.Count; index++)
-        {
-            ref var chunk = ref Chunks[index];
-            chunk.Clear();
-        }
+        Chunks.Clear();
     }
 
     /// <summary>

@@ -13,8 +13,16 @@ using Array = System.Array;
 namespace Arch.Core;
 
 
+/// <summary>
+///     The <see cref="Chunks"/> class
+///     represents an array of <see cref="Chunk"/>s and manages them, including being able to create and add new space for them.
+/// </summary>
 public class Chunks
 {
+    /// <summary>
+    ///     Creates a new <see cref="Chunks"/> instance.
+    /// </summary>
+    /// <param name="capacity">The inital capacity.</param>
     public Chunks(int capacity = 1)
     {
         Items = ArrayPool<Chunk>.Shared.Rent(capacity);
@@ -22,16 +30,35 @@ public class Chunks
         Capacity = capacity;
     }
 
-    public Array<Chunk> Items { get; set; }
+    /// <summary>
+    ///     All used <see cref="Chunk"/>s in an <see cref="Array{T}"/>.
+    /// </summary>
+    private Array<Chunk> Items { get; set; }
+
+    /// <summary>
+    ///     The number of allocated <see cref="Chunk"/>s in the <see cref="Items"/>.
+    /// </summary>
     public int Count { get; set; }
+
+    /// <summary>
+    ///     The total allocated capacity of <see cref="Chunk"/>s in <see cref="Items"/>.
+    /// </summary>
     public int Capacity { get; private set; }
 
+    /// <summary>
+    ///     Adds a new <see cref="Chunk"/> to this instance.
+    /// </summary>
+    /// <param name="chunk"></param>
     public void Add(in Chunk chunk)
     {
         Debug.Assert(Count + 1 <= Capacity, "Capacity exceeded.");
         Items[Count++] = chunk;
     }
 
+    /// <summary>
+    ///     Ensures capacity for this instance.
+    /// </summary>
+    /// <param name="newCapacity">The new capacity</param>
     public void EnsureCapacity(int newCapacity)
     {
         if (newCapacity < Capacity)
@@ -48,6 +75,9 @@ public class Chunks
         Capacity = newCapacity;
     }
 
+    /// <summary>
+    ///     Trims this instance and frees space not required anymore.
+    /// </summary>
     public void TrimExcess()
     {
         // This always spares one single chunk.
@@ -71,20 +101,34 @@ public class Chunks
         get => ref Items[index];
     }
 
+    /// <summary>
+    ///     Returns a <see cref="Span{T}"/> with which you can iterate over the <see cref="Items"/> content of this instance.
+    /// </summary>
+    /// <returns></returns>
     public Span<Chunk> AsSpan()
     {
         return Items.AsSpan();
     }
 
-    public void Clear()
+    /// <summary>
+    ///     Clears this instance.
+    /// </summary>
+    public void Clear(bool clearCount = false)
     {
-        Count = 0;
-        foreach (ref var chunk in Items)
+        for (var index = 0; index < Count; index++)
         {
+            ref var chunk = ref this[index];
             chunk.Clear();
         }
+
+        Count = clearCount ? 0 : Count;
     }
 
+    /// <summary>
+    ///     Converts this instance to an <see cref="Chunk"/>s array.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <returns>The underlying <see cref="Chunk"/>s array.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Chunk[](Chunks instance)
     {
