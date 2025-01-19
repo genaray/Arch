@@ -165,10 +165,7 @@ internal class SparseArray
     /// </summary>
     public void Clear()
     {
-        for (var index = 0; index < Entities.Length; index++)
-        {
-            Entities[index] = -1;
-        }
+        Array.Fill(Entities, -1, 0, Entities.Length);
         Size = 0;
     }
 }
