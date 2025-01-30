@@ -155,6 +155,10 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.Remove.cs</LastGenOutput>
     </None>
+    <None Update="Templates\World.Set.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Set.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -191,6 +195,11 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.Remove.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Set.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Set.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
