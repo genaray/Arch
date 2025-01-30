@@ -119,44 +119,6 @@ public static class SetExtensions
         return sb.AppendLine(template);
     }
 
-    public static StringBuilder AppendWorldSets(this StringBuilder sb, int amount)
-    {
-        for (var index = 1; index < amount; index++)
-        {
-            sb.AppendWorldSet(index);
-        }
-
-        return sb;
-    }
-
-    public static StringBuilder AppendWorldSet(this StringBuilder sb, int amount)
-    {
-        var generics = new StringBuilder().GenericWithoutBrackets(amount);
-        var parameters = new StringBuilder().GenericInParams(amount);
-        var insertParams = new StringBuilder().InsertGenericInParams(amount);
-
-        var events = new StringBuilder();
-        for (var index = 0; index <= amount; index++)
-        {
-            events.AppendLine($"OnComponentSet<T{index}>(entity);");
-        }
-
-        var template =
-            $$"""
-
-            public void Set<{{generics}}>(Entity entity, {{parameters}})
-            {
-                var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-                var slot = entitySlot.Slot;
-                var archetype = entitySlot.Archetype;
-                archetype.Set<{{generics}}>(ref slot, {{insertParams}});
-                {{events}}
-            }
-            """;
-
-        return sb.AppendLine(template);
-    }
-
     public static StringBuilder AppendEntitySets(this StringBuilder sb, int amount)
     {
         for (var index = 1; index < amount; index++)
