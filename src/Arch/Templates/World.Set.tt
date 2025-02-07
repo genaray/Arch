@@ -32,7 +32,7 @@ public partial class World
         var archetype = entitySlot.Archetype;
         archetype.Set<<#= generics #>>(ref slot,  <#= inParameters #>);
 
-<#= events.ToString() #>
+        <#= Indent(events, 8) #>
     }
     <#
     }

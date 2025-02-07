@@ -159,6 +159,54 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.Set.cs</LastGenOutput>
     </None>
+    <None Update="Templates\World.SetWithQueryDescription.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.SetWithQueryDescription.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.Has.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Has.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.Get.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Get.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\QueryDescription.WithAll.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryDescription.WithAll.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\QueryDescription.WithAny.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryDescription.WithAny.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\QueryDescription.WithExclusive.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryDescription.WithExclusive.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\QueryDescription.WithNone.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryDescription.WithNone.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.Index.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.Index.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.GetFirst.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.GetFirst.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.Has.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.Has.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.GetComponentRow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.GetComponentRow.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.GetEntityComponentRow.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.GetEntityComponentRow.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -200,6 +248,71 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.Set.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.SetWithQueryDescription.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.SetWithQueryDescription.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Create.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Create.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Has.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Has.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Get.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Get.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\QueryDescription.WithAll.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithAll.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\QueryDescription.WithAny.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithAny.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\QueryDescription.WithExclusive.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithExclusive.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\QueryDescription.WithNone.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithNone.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.Index.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.Index.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetFirst.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetFirst.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.Has.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.Has.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetComponentRow.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetComponentRow.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetEntityComponentRow.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetEntityComponentRow.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

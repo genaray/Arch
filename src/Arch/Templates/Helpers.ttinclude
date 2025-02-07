@@ -4,6 +4,13 @@
 
     public int Amount = 25;
 
+
+    public string Indent(StringBuilder sb, int spaces)
+    {
+        var indent = new string(' ', spaces);
+        return sb.ToString().Replace("\n", "\n" + indent);
+    }
+
     string AppendGenerics(int amount)
     {
         var sb = new StringBuilder();
@@ -92,6 +99,76 @@
         }
 
         sb.Length--;
+        return sb;
+    }
+
+    /// <summary>
+    ///     Inserts ref params in a row as parameters.
+    ///     <example>
+    ///         <code>
+    ///             ref t0Component, ref t1Component,...
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public StringBuilder InsertGenericRefParams(int amount)
+    {
+        var sb = new StringBuilder();
+        for (var localIndex = 0; localIndex < amount; localIndex++)
+        {
+            sb.Append($"ref t{localIndex}Component,");
+        }
+
+        sb.Length--;
+        return sb;
+    }
+
+    /// TODO : Probably use chunk.GetFirst<...>(); overloads instead?
+    /// <summary>
+    ///     Gets all generic first elements from an source and assigns them to a local variable.
+    ///     <example>
+    ///         <code>
+    ///             ref var t0FirstElement = ref source.GetFirst&lt;T0&gt;();
+    ///             ref var t1FirstElement = ref source.GetFirst&lt;T1&gt;();
+    ///             ...
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public static StringBuilder AppendGetFirstComponentFrom(int amount, string placeholder = "chunk.")
+    {
+        var sb = new StringBuilder();
+        for (var localIndex = 0; localIndex < amount; localIndex++)
+        {
+            sb.AppendLine($"ref var t{localIndex}FirstElement = ref {placeholder}GetFirst<T{localIndex}>();");
+        }
+        return sb;
+    }
+
+    /// <summary>
+    ///     Gets generics components from the first element and lists them under each other.
+    ///     <example>
+    ///         <code>
+    ///             ref var t0Component = ref Unsafe.Add(ref t0FirstElement, entityIndex);
+    ///             ref var t1Component = ref Unsafe.Add(ref t1FirstElement, entityIndex);
+    ///             ...
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public static StringBuilder AppendGetComponentsFromFirst(int amount)
+    {
+        var sb = new StringBuilder();
+        for (var localIndex = 0; localIndex < amount; localIndex++)
+        {
+            sb.AppendLine($"ref var t{localIndex}Component = ref Unsafe.Add(ref t{localIndex}FirstElement, entityIndex);");
+        }
+
         return sb;
     }
 #>

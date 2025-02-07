@@ -72,15 +72,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
                 {
                     public partial struct Chunk
                     {
-                        {{new StringBuilder().AppendChunkIndexes(25)}}
-                        {{new StringBuilder().AppendChunkHases(25)}}
-                        {{new StringBuilder().AppendChunkIndexGets(25)}}
-                        {{new StringBuilder().AppendChunkIndexGetRows(25)}}
                         {{new StringBuilder().AppendChunkIndexSets(25)}}
-
-                        {{new StringBuilder().AppendChunkGetArrays(25)}}
-                        {{new StringBuilder().AppendChunkGetSpans(25)}}
-                        {{new StringBuilder().AppendChunkGetFirsts(25)}}
                     }
 
                     public partial class Archetype
@@ -93,11 +85,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
 
                     public partial class World
                     {
-                        {{new StringBuilder().AppendCreates(25)}}
-                        {{new StringBuilder().AppendWorldHases(25)}}
-                        {{new StringBuilder().AppendWorldGets(25)}}
-                        {{new StringBuilder().AppendWorldSets(25)}}
-
                         {{new StringBuilder().AppendQueryMethods(25)}}
                         {{new StringBuilder().AppendEntityQueryMethods(25)}}
                         {{new StringBuilder().AppendParallelQuerys(25)}}
@@ -107,18 +94,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
                         {{new StringBuilder().AppendEntityQueryInterfaceMethods(25)}}
                         {{new StringBuilder().AppendHpParallelQuerys(25)}}
                         {{new StringBuilder().AppendHpeParallelQuerys(25)}}
-
-                        {{new StringBuilder().AppendSetWithQueryDescriptions(25)}}
                     }
-
-                    public partial struct QueryDescription
-                    {
-                        {{new StringBuilder().AppendQueryDescriptionWithAlls(25)}}
-                        {{new StringBuilder().AppendQueryDescriptionWithAnys(25)}}
-                        {{new StringBuilder().AppendQueryDescriptionWithNones(25)}}
-                        {{new StringBuilder().AppendQueryDescriptionWithExclusives(25)}}
-                    }
-
                 }
 
                 namespace Arch.Core.Extensions

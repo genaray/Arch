@@ -23,9 +23,9 @@ public partial class World
         var addEvents = new StringBuilder();
         for (var i = 0; i < index; i++)
         {
-            getIds.AppendLine($"           var id{i} = Component<T{i}>.ComponentType.Id;");
-            setIds.AppendLine($"            spanBitSet.SetBit(id{i});");
-            addEvents.AppendLine($"            OnComponentAdded<T{i}>(entity);");
+            getIds.AppendLine($"var id{i} = Component<T{i}>.ComponentType.Id;");
+            setIds.AppendLine($"spanBitSet.SetBit(id{i});");
+            addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
         }
     #>
 
@@ -36,7 +36,7 @@ public partial class World
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
 
         // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-<#= getIds.ToString() #>
+        <#= Indent(getIds, 8) #>
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -44,7 +44,7 @@ public partial class World
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-<#= setIds.ToString() #>
+        <#= Indent(setIds, 8) #>
 
         if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype)){
             var newSignature = Signature.Add(oldArchetype.Signature, Component<<#= generics #>>.Signature);
@@ -53,7 +53,7 @@ public partial class World
 
         Move(entity, oldArchetype, newArchetype, out var newSlot);
         newArchetype.Set<<#= generics #>>(ref newSlot, <#= inParameters #>);
-<#= addEvents.ToString() #>
+        <#= Indent(addEvents, 8) #>
     }
     <#
     }

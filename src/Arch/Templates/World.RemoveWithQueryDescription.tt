@@ -45,7 +45,7 @@ public partial class World
             // Create local bitset on the stack and set bits to get a new fitting bitset of the new archetype.
             var bitSet = archetype.BitSet;
             var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
-            <#= clearIds #>
+            <#= Indent(clearIds, 12) #>
 
             // Get or create new archetype.
             if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
@@ -54,7 +54,7 @@ public partial class World
                 newArchetype = GetOrCreate(newSignature);
             }
 
-            <#= removeEvents #>
+            <#= Indent(removeEvents, 12) #>
 
             // Get last slots before copy, for updating entityinfo later
             var archetypeSlot = archetype.CurrentSlot;

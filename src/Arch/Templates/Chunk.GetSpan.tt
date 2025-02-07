@@ -13,7 +13,7 @@ namespace Arch.Core;
 public partial struct Chunk
 {
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
 
@@ -38,7 +38,7 @@ public partial struct Chunk
     public void GetSpan<<#= generics #>>(<#= outs #>)
     {
         GetArray<<#= generics #>>(<#= arrays #>);
-        <#= assignComponents #>
+        <#= Indent(assignComponents, 8) #>
     }
 
 <#

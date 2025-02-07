@@ -14,7 +14,7 @@ public partial struct Chunk
 {
 
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
 
@@ -44,7 +44,7 @@ public partial struct Chunk
     {
         Index<<#= generics #>>(<#= indexes #>);
         ref var arrays = ref Components.DangerousGetReference();
-        <#= assignComponents #>
+        <#= Indent(assignComponents, 8) #>
     }
 <#
     }
