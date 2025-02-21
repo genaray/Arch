@@ -11,7 +11,7 @@ using Arch.Core.Utils;
 namespace Arch.Core;
 
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
         var parameters = AppendGenericRefParameters(index);
@@ -39,27 +39,24 @@ public ref struct EntityComponents<<#= generics #>>
 
 #if NETSTANDARD2_1 || NET6_0
     public ReadOnlyRef<Entity> Entity;
-    <#= refStructs #>
+    <#= Indent(refStructs, 4) #>
 #else
     public ref readonly Entity Entity;
-    <#= references #>
+    <#= Indent(references, 4) #>
 #endif
 
     [SkipLocalsInit]
-
     public EntityComponents(ref Entity entity, <#= parameters #>){
 
 #if NETSTANDARD2_1 || NET6_0
     Entity = new ReadOnlyRef<Entity>(in entity);
-    <#= assignRefStructs #>
+    <#= Indent(assignRefStructs, 4) #>
 #else
     Entity = ref entity;
-    <#= assignRefs #>
+    <#= Indent(assignRefs, 4) #>
 #endif
-
     }
 }
-
 <#
     }
 #>

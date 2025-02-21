@@ -9,33 +9,32 @@ using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core
+namespace Arch.Core;
+public partial struct Chunk
 {
-    public partial struct Chunk
+    <#
+    for (var index = 2; index <= Amount; index++)
     {
-        <#
-        for (var index = 2; index <= Amount; index++)
-        {
-            var generics = AppendGenerics(index);
-            var arrays = AppendGetFirstComponentFrom(index, "");
-            var refParams = InsertGenericRefParams(index);
+        var generics = AppendGenerics(index);
+        var arrays = AppendGetFirstComponentFrom(index, "");
+        var refParams = InsertGenericRefParams(index);
 
-            var gets = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                gets.AppendLine($"ref var t{i}Component = ref Unsafe.Add(ref t{i}FirstElement, index);");
-            }
-        #>
-
-        [Pure]
-        public Components<<#= generics #>> Get<<#= generics #>>(int index)
+        var gets = new StringBuilder();
+        for (var i = 0; i < index; i++)
         {
-            <#= Indent(arrays, 12) #>
-            <#= Indent(gets, 12) #>
-            return new Components<<#= generics #>>(<#= refParams #>);
+            gets.AppendLine($"ref var t{i}Component = ref Unsafe.Add(ref t{i}FirstElement, index);");
         }
-        <#
-        }
-        #>
+    #>
+
+    [Pure]
+    public Components<<#= generics #>> Get<<#= generics #>>(int index)
+    {
+        <#= Indent(arrays, 8) #>
+        <#= Indent(gets, 8) #>
+        return new Components<<#= generics #>>(<#= refParams #>);
     }
+    <#
+    }
+    #>
 }
+

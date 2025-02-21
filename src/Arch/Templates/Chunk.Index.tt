@@ -10,37 +10,36 @@ using Arch.Core;
 using Arch.Core.Utils;
 using CommunityToolkit.HighPerformance;
 
-namespace Arch.Core
+namespace Arch.Core;
+public partial struct Chunk
 {
-    public partial struct Chunk
+    <#
+    for (var index = 2; index <= Amount; index++)
     {
-        <#
-        for (var index = 2; index <= Amount; index++)
+        var generics = AppendGenerics(index);
+
+        var outs = new StringBuilder();
+        for (var i = 0; i < index; i++)
         {
-            var generics = AppendGenerics(index);
+            outs.Append($"out int t{i}Index, ");
+        }
+        outs.Length -= 2;
 
-            var outs = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                outs.Append($"out int t{i}Index, ");
-            }
-            outs.Length -= 2;
-
-            var assignIds = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                assignIds.AppendLine($"t{i}Index = Unsafe.Add(ref componentIdToArrayFirstElement, Component<T{i}>.ComponentType.Id);");
-            }
-        #>
-
-        [Pure]
-        private void Index<<#= generics #>>(<#= outs #>)
+        var assignIds = new StringBuilder();
+        for (var i = 0; i < index; i++)
         {
-            ref var componentIdToArrayFirstElement = ref ComponentIdToArrayIndex.DangerousGetReference();
-            <#= Indent(assignIds, 12) #>
+            assignIds.AppendLine($"t{i}Index = Unsafe.Add(ref componentIdToArrayFirstElement, Component<T{i}>.ComponentType.Id);");
         }
-        <#
-        }
-        #>
+    #>
+
+    [Pure]
+    private void Index<<#= generics #>>(<#= outs #>)
+    {
+        ref var componentIdToArrayFirstElement = ref ComponentIdToArrayIndex.DangerousGetReference();
+        <#= Indent(assignIds, 8) #>
     }
+    <#
+    }
+    #>
 }
+

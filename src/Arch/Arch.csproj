@@ -207,6 +207,42 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Chunk.GetEntityComponentRow.cs</LastGenOutput>
     </None>
+    <None Update="Templates\Chunk.Set.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.Set.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\ForEach.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ForEach.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\ForEachWithEntity.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ForEachWithEntity.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\IForEach.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IForEach.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\IForEachWithEntity.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IForEachWithEntity.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\ForEachJob.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ForEachJob.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\ForEachWithEntityJob.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ForEachWithEntityJob.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\IForEachJob.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IForEachJob.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\IForEachWithEntityJob.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IForEachWithEntityJob.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -313,6 +349,66 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Chunk.GetEntityComponentRow.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.Set.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.Set.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Component.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Component.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Components.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Components.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\EntityComponents.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntityComponents.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\ForEach.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ForEach.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\ForEachWithEntity.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ForEachWithEntity.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\IForEach.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IForEach.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\IForEachWithEntity.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IForEachWithEntity.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\ForEachJob.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ForEachJob.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\ForEachWithEntityJob.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ForEachWithEntityJob.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\IForEachJob.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IForEachJob.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\IForEachWithEntityJob.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IForEachWithEntityJob.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

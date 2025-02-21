@@ -8,46 +8,45 @@ using System.Diagnostics.Contracts;
 using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core
+namespace Arch.Core;
+
+public partial struct Chunk
 {
-    public partial struct Chunk
+    <#
+    for (var index = 2; index <= Amount; index++)
     {
-        <#
-        for (var index = 2; index <= Amount; index++)
+        var generics = AppendGenerics(index);
+
+        var getIds = new StringBuilder();
+        for (var i = 0; i < index; i++)
         {
-            var generics = AppendGenerics(index);
-
-            var getIds = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                getIds.AppendLine($"var t{i}ComponentId = Component<T{i}>.ComponentType.Id;");
-            }
-
-            var boundChecks = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                boundChecks.AppendLine($"if (t{i}ComponentId >= ComponentIdToArrayIndex.Length) return false;");
-            }
-
-            var ifs = new StringBuilder();
-            for (var i = 0; i < index; i++)
-            {
-                ifs.AppendLine($"if (ComponentIdToArrayIndex[t{i}ComponentId] == -1) return false;");
-            }
-        #>
-
-        [Pure]
-        public bool Has<<#= generics #>>()
-        {
-            <#= Indent(getIds, 12) #>
-            <#= Indent(boundChecks, 12) #>
-            <#= Indent(ifs, 12) #>
-
-            return true;
+            getIds.AppendLine($"var t{i}ComponentId = Component<T{i}>.ComponentType.Id;");
         }
 
-        <#
+        var boundChecks = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            boundChecks.AppendLine($"if (t{i}ComponentId >= ComponentIdToArrayIndex.Length) return false;");
         }
-        #>
+
+        var ifs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            ifs.AppendLine($"if (ComponentIdToArrayIndex[t{i}ComponentId] == -1) return false;");
+        }
+    #>
+
+    [Pure]
+    public bool Has<<#= generics #>>()
+    {
+        <#= Indent(getIds, 8) #>
+        <#= Indent(boundChecks, 8) #>
+        <#= Indent(ifs, 8) #>
+
+        return true;
     }
+
+    <#
+    }
+    #>
 }

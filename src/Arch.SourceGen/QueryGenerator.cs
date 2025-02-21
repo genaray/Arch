@@ -1,6 +1,4 @@
-﻿using Arch.SourceGen.Fundamentals;
-using ArchSourceGenerator;
-
+﻿
 namespace Arch.SourceGen;
 
 [Generator]
@@ -15,44 +13,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
 
         context.RegisterPostInitializationOutput(initializationContext =>
         {
-
-            var compileTimeStatics = new StringBuilder();
-            compileTimeStatics.AppendLine("using System;");
-            compileTimeStatics.AppendLine("using System.Threading;");
-            compileTimeStatics.AppendLine("namespace Arch.Core.Utils;");
-            compileTimeStatics.AppendComponents(25);
-
-            var delegates = new StringBuilder();
-            delegates.AppendLine("using System;");
-            delegates.AppendLine("namespace Arch.Core;");
-            delegates.AppendForEachDelegates(25);
-            delegates.AppendForEachEntityDelegates(25);
-
-            var interfaces = new StringBuilder();
-            interfaces.AppendLine("using System;");
-            interfaces.AppendLine("using System.Runtime.CompilerServices;");
-            interfaces.AppendLine("namespace Arch.Core;");
-            interfaces.AppendInterfaces(25);
-            interfaces.AppendEntityInterfaces(25);
-
-            var references = new StringBuilder();
-            references.AppendLine("using System;");
-            references.AppendLine("using System.Runtime.CompilerServices;");
-            references.AppendLine("using CommunityToolkit.HighPerformance;");
-            references.AppendLine("using Arch.Core.Utils;");
-            references.AppendLine("namespace Arch.Core;");
-            ReferencesExtensions.AppendComponents(references, 25);
-            references.AppendEntityComponents(25);
-
-            var jobs = new StringBuilder();
-            jobs.AppendLine("using System;");
-            jobs.AppendLine("using System.Runtime.CompilerServices;");
-            jobs.AppendLine("using ArrayExtensions = CommunityToolkit.HighPerformance.ArrayExtensions;");
-            jobs.AppendLine("namespace Arch.Core;");
-            jobs.AppendForEachJobs(25);
-            jobs.AppendEntityForEachJobs(25);
-            jobs.AppendIForEachJobs(25);
-            jobs.AppendIForEachWithEntityJobs(25);
 
             var accessors = new StringBuilder();
             accessors.AppendLine("using System;");
@@ -70,11 +30,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
                 $$"""
                 namespace Arch.Core
                 {
-                    public partial struct Chunk
-                    {
-                        {{new StringBuilder().AppendChunkIndexSets(25)}}
-                    }
-
                     public partial class Archetype
                     {
                         {{new StringBuilder().AppendArchetypeHases(25)}}
@@ -86,6 +41,7 @@ public sealed class QueryGenerator : IIncrementalGenerator
                     public partial class World
                     {
                         {{new StringBuilder().AppendQueryMethods(25)}}
+
                         {{new StringBuilder().AppendEntityQueryMethods(25)}}
                         {{new StringBuilder().AppendParallelQuerys(25)}}
                         {{new StringBuilder().AppendParallelEntityQuerys(25)}}
@@ -113,21 +69,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
                 }
                 """
             );
-
-            initializationContext.AddSource("CompileTimeStatics.g.cs",
-                CSharpSyntaxTree.ParseText(compileTimeStatics.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("Delegates.g.cs",
-                CSharpSyntaxTree.ParseText(delegates.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("Interfaces.g.cs",
-                CSharpSyntaxTree.ParseText(interfaces.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("References.g.cs",
-                CSharpSyntaxTree.ParseText(references.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
-
-            initializationContext.AddSource("Jobs.g.cs",
-                CSharpSyntaxTree.ParseText(jobs.ToString()).GetRoot().NormalizeWhitespace().ToFullString());
 
             initializationContext.AddSource("Accessors.g.cs",
                 CSharpSyntaxTree.ParseText(accessors.ToString()).GetRoot().NormalizeWhitespace().ToFullString());

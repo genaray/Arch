@@ -8,25 +8,24 @@ using System.Diagnostics.Contracts;
 using Arch.Core;
 using Arch.Core.Utils;
 
-namespace Arch.Core
+namespace Arch.Core;
+public partial struct QueryDescription
 {
-    public partial struct QueryDescription
+    <#
+    for (var index = 2; index <= Amount; index++) // Amount muss definiert sein
     {
-        <#
-        for (var index = 2; index <= Amount; index++) // Amount muss definiert sein
-        {
-            var generics = AppendGenerics(index);
-        #>
+        var generics = AppendGenerics(index);
+    #>
 
-        [UnscopedRef]
-        public ref QueryDescription WithNone<<#= generics #>>()
-        {
-            None = Component<<#= generics #>>.Signature;
-            Build();
-            return ref this;
-        }
-        <#
-        }
-        #>
+    [UnscopedRef]
+    public ref QueryDescription WithNone<<#= generics #>>()
+    {
+        None = Component<<#= generics #>>.Signature;
+        Build();
+        return ref this;
     }
+    <#
+    }
+    #>
 }
+
