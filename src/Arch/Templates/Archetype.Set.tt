@@ -1,0 +1,30 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class Archetype
+{
+<#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index);
+        var insertParameters = InsertGenericInParams(index);
+#>
+    internal void Set<<#= generics #>>(ref Slot slot, <#= parameters #>)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.Set<<#= generics #>>(slot.Index, <#= insertParameters #>);
+    }
+
+<#
+    }
+#>
+}

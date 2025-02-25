@@ -30,19 +30,8 @@ public sealed class QueryGenerator : IIncrementalGenerator
                 $$"""
                 namespace Arch.Core
                 {
-                    public partial class Archetype
-                    {
-                        {{new StringBuilder().AppendArchetypeHases(25)}}
-                        {{new StringBuilder().AppendArchetypeGets(25)}}
-                        {{new StringBuilder().AppendArchetypeSets(25)}}
-                        {{new StringBuilder().AppendArchetypeSetRanges(25)}}
-                    }
-
                     public partial class World
                     {
-                        {{new StringBuilder().AppendQueryMethods(25)}}
-
-                        {{new StringBuilder().AppendEntityQueryMethods(25)}}
                         {{new StringBuilder().AppendParallelQuerys(25)}}
                         {{new StringBuilder().AppendParallelEntityQuerys(25)}}
 

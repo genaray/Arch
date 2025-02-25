@@ -243,6 +243,30 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>IForEachWithEntityJob.cs</LastGenOutput>
     </None>
+    <None Update="Templates\Archetype.Has.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Archetype.Has.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Archetype.Get.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Archetype.Get.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Archetype.Set.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Archetype.Set.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Archetype.SetRange.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Archetype.SetRange.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.Query.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.Query.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.EntityQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.EntityQuery.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -409,6 +433,36 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>IForEachWithEntityJob.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Archetype.Has.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Archetype.Has.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Archetype.Get.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Archetype.Get.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Archetype.Set.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Archetype.Set.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Archetype.SetRange.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Archetype.SetRange.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Query.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Query.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.EntityQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.EntityQuery.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
