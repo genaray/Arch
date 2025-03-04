@@ -28,20 +28,6 @@ public sealed class QueryGenerator : IIncrementalGenerator
             accessors.AppendLine("using System.Buffers;");
             accessors.AppendLine(
                 $$"""
-                namespace Arch.Core
-                {
-                    public partial class World
-                    {
-                        {{new StringBuilder().AppendParallelQuerys(25)}}
-                        {{new StringBuilder().AppendParallelEntityQuerys(25)}}
-
-                        {{new StringBuilder().AppendQueryInterfaceMethods(25)}}
-                        {{new StringBuilder().AppendEntityQueryInterfaceMethods(25)}}
-                        {{new StringBuilder().AppendHpParallelQuerys(25)}}
-                        {{new StringBuilder().AppendHpeParallelQuerys(25)}}
-                    }
-                }
-
                 namespace Arch.Core.Extensions
                 {
                     public static partial class EntityExtensions

@@ -267,6 +267,38 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.EntityQuery.cs</LastGenOutput>
     </None>
+    <None Update="Templates\World.ParallelQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.ParallelQuery.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.ParallelQueryWithEntity.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.ParallelQueryWithEntity.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineQuery.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineQueryWithRef.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineQueryWithRef.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineEntityQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineEntityQuery.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineEntityQueryWithRef.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineEntityQueryWithRef.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineParallelQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineParallelQuery.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineParallelEntityQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineParallelEntityQuery.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -463,6 +495,46 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.EntityQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.ParallelQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.ParallelQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.ParallelQueryWithEntity.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.ParallelQueryWithEntity.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineQueryWithRef.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineQueryWithRef.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineEntityQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineEntityQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineEntityQueryWithRef.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineEntityQueryWithRef.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineParallelQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineParallelQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineParallelEntityQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineParallelEntityQuery.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
