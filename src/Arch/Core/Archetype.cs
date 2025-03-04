@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
@@ -297,6 +298,27 @@ public sealed partial class Archetype
 
         _addEdges = new SparseJaggedArray<Archetype>(BucketSize);
         _removeEdges = new SparseJaggedArray<Archetype>(BucketSize);
+    }
+
+    /// <summary>
+    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    /// component.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal bool TryIndex<T>(out int i)
+    {
+        var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
     }
 
     /// <summary>
