@@ -15,8 +15,6 @@ public partial class World
     for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
-        var types = AppendTypes(index);
-
         var clearIds = new StringBuilder();
         var removeEvents = new StringBuilder();
         for (var i = 0; i < index; i++)
