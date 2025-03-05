@@ -299,6 +299,26 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.InlineParallelEntityQuery.cs</LastGenOutput>
     </None>
+    <None Update="Templates\Entity.Has.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Entity.Has.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Entity.Set.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Entity.Set.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Entity.Get.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Entity.Get.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Entity.Add.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Entity.Add.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Entity.Remove.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Entity.Remove.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -535,6 +555,31 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.InlineParallelEntityQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Entity.Add.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entity.Add.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Entity.Set.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entity.Set.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Entity.Get.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entity.Get.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Entity.Has.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entity.Has.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Entity.Remove.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Entity.Remove.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
