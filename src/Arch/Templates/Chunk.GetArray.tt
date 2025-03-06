@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.Contracts;
 using CommunityToolkit.HighPerformance;
 using Arch.Core.Utils;
 
@@ -37,8 +38,6 @@ public partial struct Chunk
             assignComponents.AppendLine($"t{i}Array = Unsafe.As<T{i}[]>(Unsafe.Add(ref arrays, t{i}Index));");
 
 #>
-
-
     [Pure]
     public void GetArray<<#= generics #>>(<#= outs #>)
     {
@@ -46,6 +45,7 @@ public partial struct Chunk
         ref var arrays = ref Components.DangerousGetReference();
         <#= Indent(assignComponents, 8) #>
     }
+
 <#
     }
 #>

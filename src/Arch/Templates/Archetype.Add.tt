@@ -24,6 +24,7 @@ public partial class Archetype
         chunk.Set(slot.Index, <#= inParameters #>);
         return createdChunk;
     }
+
 <#
     }
 #>

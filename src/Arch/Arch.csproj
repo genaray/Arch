@@ -315,6 +315,14 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Entity.Remove.cs</LastGenOutput>
     </None>
+    <None Update="Templates\Chunk.GetArray.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.GetArray.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\Chunk.GetSpan.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Chunk.GetSpan.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -362,16 +370,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <DesignTime>True</DesignTime>
       <DependentUpon>World.SetWithQueryDescription.tt</DependentUpon>
     </Compile>
-    <Compile Update="Templates\World.Create.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>World.Create.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Templates\World.Has.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>World.Has.tt</DependentUpon>
-    </Compile>
     <Compile Update="Templates\World.Get.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -401,11 +399,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Chunk.Index.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Templates\Chunk.GetFirst.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Chunk.GetFirst.tt</DependentUpon>
     </Compile>
     <Compile Update="Templates\Chunk.Has.cs">
       <AutoGen>True</AutoGen>
@@ -437,11 +430,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <DesignTime>True</DesignTime>
       <DependentUpon>Components.tt</DependentUpon>
     </Compile>
-    <Compile Update="Templates\EntityComponents.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EntityComponents.tt</DependentUpon>
-    </Compile>
     <Compile Update="Templates\ForEach.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -466,11 +454,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ForEachJob.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Templates\ForEachWithEntityJob.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ForEachWithEntityJob.tt</DependentUpon>
     </Compile>
     <Compile Update="Templates\IForEachJob.cs">
       <AutoGen>True</AutoGen>
@@ -501,11 +484,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Archetype.SetRange.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Templates\World.Query.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>World.Query.tt</DependentUpon>
     </Compile>
     <Compile Update="Templates\World.EntityQuery.cs">
       <AutoGen>True</AutoGen>
@@ -576,6 +554,51 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Entity.Remove.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetArray.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetArray.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetFirst.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetFirst.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\EntityComponents.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntityComponents.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Archetype.Add.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Archetype.Add.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\Chunk.GetSpan.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Chunk.GetSpan.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\ForEachWithEntityJob.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ForEachWithEntityJob.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Has.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Has.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Create.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Create.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.Query.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.Query.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

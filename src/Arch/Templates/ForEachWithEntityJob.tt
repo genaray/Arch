@@ -26,7 +26,7 @@ public struct ForEachWithEntityJob<<#= generics #>> : IChunkJob
         {
             var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
             <#= Indent(getComponents, 12) #>
-            ForEachWithEntity(entity, <#= insertParams #>);
+            ForEach(entity, <#= insertParams #>);
         }
     }
 }
