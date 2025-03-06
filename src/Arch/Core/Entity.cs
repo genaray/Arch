@@ -90,7 +90,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are equal, otherwhise false.</returns>
+    /// <returns>True if both are equal, otherwise false.</returns>
 
     public static bool operator ==(Entity left, Entity right)
     {
@@ -102,7 +102,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are unequal, otherwhise false.</returns>
+    /// <returns>True if both are unequal, otherwise false.</returns>
 
     public static bool operator !=(Entity left, Entity right)
     {
@@ -157,7 +157,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="id">Its unique id.</param>
     /// <param name="worldId">Its <see cref="World"/> id.</param>
-
     internal Entity(int id, int worldId)
     {
         Id = id;
@@ -169,7 +168,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public bool Equals(Entity other)
     {
         return Id == other.Id && WorldId == other.WorldId;
@@ -180,7 +178,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="obj">The other <see cref="Entity"/> object.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public override bool Equals(object? obj)
     {
         return obj is Entity other && Equals(other);
@@ -192,7 +189,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>A int indicating their order.</returns>
-
     public int CompareTo(Entity other)
     {
         return WorldId != other.WorldId ? WorldId.CompareTo(other.WorldId) : Id.CompareTo(other.Id);
@@ -202,7 +198,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     ///     Calculates the hash of this <see cref="Entity"/>.
     /// </summary>
     /// <returns>Its hash.</returns>
-
     public override int GetHashCode()
     {
         unchecked
@@ -220,20 +215,18 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if equal, otherwhise false.</returns>
-
+    /// <returns>True if equal, otherwise false.</returns>
     public static bool operator ==(Entity left, Entity right)
     {
         return left.Equals(right);
     }
 
     /// <summary>
-    ///      Checks the <see cref="Entity"/> for unequality with another one.
+    ///      Checks the <see cref="Entity"/> for inequality with another one.
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if unequal, otherwhise false.</returns>
-
+    /// <returns>True if unequal, otherwise false.</returns>
     public static bool operator !=(Entity left, Entity right)
     {
         return !left.Equals(right);
@@ -299,7 +292,7 @@ public readonly struct EntityReference
     ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
     /// </summary>
     /// <param name="world">The <see cref="Entity"/> <see cref="World"/>..</param>
-    /// <returns>True if its alive, otherwhise false.</returns>
+    /// <returns>True if its alive, otherwise false.</returns>
 
     public bool IsAlive(World world)
     {
@@ -309,7 +302,7 @@ public readonly struct EntityReference
     /// <summary>
     ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
     /// </summary>
-    /// <returns>True if its alive, otherwhise false.</returns>
+    /// <returns>True if its alive, otherwise false.</returns>
 
     public bool IsAlive()
     {
@@ -363,7 +356,7 @@ public readonly struct EntityReference
     /// </summary>
     /// <param name="left">The left <see cref="EntityReference"/>.</param>
     /// <param name="right">The right <see cref="EntityReference"/>.</param>
-    /// <returns>True if equal, otherwhise false.</returns>
+    /// <returns>True if equal, otherwise false.</returns>
 
     public static bool operator ==(EntityReference left, EntityReference right)
     {
@@ -375,7 +368,7 @@ public readonly struct EntityReference
     /// </summary>
     /// <param name="left">The left <see cref="EntityReference"/>.</param>
     /// <param name="right">The right <see cref="EntityReference"/>.</param>
-    /// <returns>True if inequal, otherwhise false.</returns>
+    /// <returns>True if inequal, otherwise false.</returns>
 
     public static bool operator !=(EntityReference left, EntityReference right)
     {

@@ -43,7 +43,7 @@ public ref struct Enumerator<T>
     /// <summary>
     ///     Moves to the next item.
     /// </summary>
-    /// <returns>True if there still items, otherwhise false.</returns>
+    /// <returns>True if there still items, otherwise false.</returns>
 
     public bool MoveNext()
     {
@@ -101,7 +101,7 @@ public ref struct QueryArchetypeEnumerator
     /// <summary>
     ///     Moves to the next <see cref="Archetype"/>.
     /// </summary>
-    /// <returns>True if theres a next <see cref="Archetype"/>, otherwhise false.</returns>
+    /// <returns>True if theres a next <see cref="Archetype"/>, otherwise false.</returns>
     [SkipLocalsInit]
     public bool MoveNext()
     {
@@ -185,7 +185,7 @@ public ref struct QueryChunkEnumerator
     {
         _archetypeEnumerator = new QueryArchetypeEnumerator(archetypes);
 
-        // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
+        // Make it move once, otherwise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
             _index = _archetypeEnumerator.Current.Count+1;
@@ -195,13 +195,13 @@ public ref struct QueryChunkEnumerator
     /// <summary>
     ///     Moves to the next <see cref="Chunk"/>.
     /// </summary>
-    /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
+    /// <returns>True if theres a next <see cref="Chunk"/>, otherwise false.</returns>
     [SkipLocalsInit]
     public bool MoveNext()
     {
         unchecked
         {
-            // Decrease chunk till its zero, skip empty chunks -> otherwhise entity query might fail since it tries to acess that chunk
+            // Decrease chunk till its zero, skip empty chunks -> otherwise entity query might fail since it tries to acess that chunk
             if (--_index >= 0)
             {
                 return true;
@@ -227,7 +227,7 @@ public ref struct QueryChunkEnumerator
         _index = -1;
         _archetypeEnumerator.Reset();
 
-        // Make it move once, otherwhise we can not check directly for Current.Size which results in bad behaviour
+        // Make it move once, otherwise we can not check directly for Current.Size which results in bad behaviour
         if (_archetypeEnumerator.MoveNext())
         {
             _index = _archetypeEnumerator.Current.Count + 1;
@@ -303,7 +303,7 @@ public ref struct ChunkRangeEnumerator
     /// <summary>
     ///     Moves to the next <see cref="Chunk"/>.
     /// </summary>
-    /// <returns>True if theres a next <see cref="Chunk"/>, otherwhise false.</returns>
+    /// <returns>True if theres a next <see cref="Chunk"/>, otherwise false.</returns>
     [SkipLocalsInit]
     public bool MoveNext()
     {
@@ -384,7 +384,7 @@ public ref struct EntityEnumerator
     /// <summary>
     ///     Moves to the next <see cref="Entity"/>.
     /// </summary>
-    /// <returns>True if theres a next <see cref="Entity"/>, otherwhise false.</returns>
+    /// <returns>True if theres a next <see cref="Entity"/>, otherwise false.</returns>
     public bool MoveNext()
     {
         return unchecked(--_index >= 0);

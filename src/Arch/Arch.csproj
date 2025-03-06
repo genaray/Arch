@@ -3,7 +3,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
-    <TargetFrameworks>net8.0; net7.0; net6.0; netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net8.0; net6.0; netstandard2.1</TargetFrameworks>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -39,7 +39,7 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
 
-    <LangVersion>12</LangVersion>
+    <LangVersion>13</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Apache2.0</Copyright>
 

@@ -562,7 +562,7 @@ public sealed partial class Archetype
     ///      Checks if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with a specific component.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
-    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwhise false.</returns>
+    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwise false.</returns>
     public bool Has<T>()
     {
         var id = Component<T>.ComponentType.Id;
@@ -673,7 +673,7 @@ public sealed unsafe partial class Archetype
     ///      Checks if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with a specific component.
     /// </summary>
     /// <param name="type">The <see cref="Type"/>.</param>
-    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwhise false.</returns>
+    /// <returns>True if the <see cref="Archetype"/> stores <see cref="Arch.Core.Entity"/>'s with such a component, otherwise false.</returns>
 
     public bool Has(ComponentType type)
     {

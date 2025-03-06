@@ -85,7 +85,7 @@ public struct Signature : IEquatable<Signature>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="other">The other <see cref="Signature"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public bool Equals(Signature other)
     {
         return GetHashCode() == other.GetHashCode();
@@ -95,7 +95,7 @@ public struct Signature : IEquatable<Signature>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public override bool Equals(object? obj)
     {
         return obj is Signature other && Equals(other);
@@ -172,7 +172,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
-    /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are equal, otherwise false.</returns>
     public static bool operator ==(Signature left, Signature right)
     {
         return left.Equals(right);
@@ -183,7 +183,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
-    /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are unequal, otherwise false.</returns>
     public static bool operator !=(Signature left, Signature right)
     {
         return !left.Equals(right);
@@ -445,7 +445,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="other">The other <see cref="QueryDescription"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
 
     public bool Equals(QueryDescription other)
     {
@@ -456,7 +456,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
 
     public override bool Equals(object? obj)
     {
@@ -496,7 +496,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
-    /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are equal, otherwise false.</returns>
 
     public static bool operator ==(QueryDescription left, QueryDescription right)
     {
@@ -508,7 +508,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
-    /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are unequal, otherwise false.</returns>
 
     public static bool operator !=(QueryDescription left, QueryDescription right)
     {
