@@ -12,7 +12,7 @@ namespace Arch.Core;
 public partial class World
 {
 <#
-    for (var index = 2; index <= Amount; index++)
+    for (var index = 1; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
         var getFirstElement = AppendGetFirstComponentFrom(index);

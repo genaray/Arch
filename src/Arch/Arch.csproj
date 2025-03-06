@@ -485,11 +485,6 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <DesignTime>True</DesignTime>
       <DependentUpon>Archetype.SetRange.tt</DependentUpon>
     </Compile>
-    <Compile Update="Templates\World.EntityQuery.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>World.EntityQuery.tt</DependentUpon>
-    </Compile>
     <Compile Update="Templates\World.ParallelQuery.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -599,6 +594,11 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.Query.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.EntityQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.EntityQuery.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
