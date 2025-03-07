@@ -69,7 +69,7 @@ public sealed partial class WorldTest
         That(entity.Id, Is.EqualTo(0));
         That(world.Size, Is.EqualTo(size + 1));
         That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
-        That(world.Version(entity), Is.EqualTo(1));
+        That(entity.Version, Is.EqualTo(0));
         True(world.IsAlive(entity));
     }
 
@@ -90,7 +90,7 @@ public sealed partial class WorldTest
         world.Query(queryDesc, (Entity entity, ref Transform entityTransform, ref Rotation entityRotation) =>
         {
             That(world.IsAlive(entity));
-            That(world.Version(entity), Is.EqualTo(1));
+            That(entity.Version, Is.EqualTo(0));
             That(world.HasRange(entity, _entityGroup));
 
             That(world.Get<Transform>(entity).X, Is.EqualTo(size));
@@ -120,7 +120,7 @@ public sealed partial class WorldTest
         {
             That(entity.Id, Is.EqualTo(index));
             That(world.IsAlive(entity));
-            That(world.Version(entity), Is.EqualTo(1));
+            That(entity.Version, Is.EqualTo(0));
             That(world.HasRange(entity, _entityGroup));
             index++;
         }
@@ -215,54 +215,28 @@ public sealed partial class WorldTest
         var newEntity = localWorld.Create(_entityGroup);
 
         That(recycledEntity.Id, Is.EqualTo(entity.Id));           // Id was recycled
-        That(localWorld.Version(recycledEntity), Is.EqualTo(2));  // Version was increased
+        That(recycledEntity.Version, Is.EqualTo(1));  // Version was increased
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
     }
 
     /// <summary>
-    ///     Checks if the <see cref="World"/> references <see cref="Entity"/> with <see cref="EntityReference"/> correctly.
+    ///     Checks if the <see cref="World"/> references <see cref="Entity"/>s correctly.
     /// </summary>
     [Test]
     public void Reference()
     {
         using var localWorld = World.Create();
 
-        // Destroy & create new entity to see if it was recycled
+        // Create and copy entities
         var entity = localWorld.Create(_entityGroup);
-        var reference = localWorld.Reference(entity);
+        var entityCopy = entity;
+        var nextEntity = localWorld.Create(_entityGroup);
 
-        var otherEntity = localWorld.Create(_entityGroup);
-        var otherReference = localWorld.Reference(otherEntity);
-
-        // Check if references point to same entity
-        That(reference == otherReference, Is.EqualTo(false));
-        That(reference != otherReference, Is.EqualTo(true));
-
-
-        // Destroy entity and create a new one which will have the same ID but different version
-        localWorld.Destroy(otherEntity);
-        var recycledEntity = localWorld.Create(_entityGroup);
-        var recycledReference = localWorld.Reference(recycledEntity);
-
-        // Check if reference takes care of wrong version
-        That(recycledReference != otherReference, Is.EqualTo(true));
-#if PURE_ECS
-        That(otherReference.IsAlive(localWorld), Is.EqualTo(false));
-#else
-        That(otherReference.IsAlive(), Is.EqualTo(false));
-#endif
-
-        // Entity reference null is NOT alive.
-        EntityReference cons = new EntityReference{};
-        EntityReference refs = EntityReference.Null;
-
-#if PURE_ECS
-        That(refs.IsAlive(localWorld), Is.EqualTo(false));
-        That(cons.IsAlive(localWorld), Is.EqualTo(false));
-#else
-        That(refs.IsAlive(), Is.EqualTo(false));
-        That(cons.IsAlive(), Is.EqualTo(false));
-#endif
+        // Entity should be equal to its own and copy
+        That(entity, Is.EqualTo(entityCopy));
+        That(entity, Is.Not.EqualTo(nextEntity));
+        That(entity == entityCopy, Is.EqualTo(true));
+        That(entity == nextEntity, Is.EqualTo(false));
     }
 
     /// <summary>

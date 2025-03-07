@@ -31,12 +31,8 @@ public partial class World
     {
         var signature = Component<<#= generics #>>.Signature;
 
-        // Recycle id or increase
-        var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
-
         // Create new entity and put it to the back of the array
-        var entity = new Entity(recycled.Id, Id);
+        GetNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -50,11 +46,9 @@ public partial class World
         }
 
         // Map
-        EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot);
 
-        Size++;
         OnEntityCreated(entity);
-
         <#= Indent(addEvents, 8) #>
         return entity;
     }

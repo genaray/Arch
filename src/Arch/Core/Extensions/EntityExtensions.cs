@@ -81,33 +81,6 @@ public static partial class EntityExtensions
     }
 
     /// <summary>
-    ///     Returns the version of an <see cref="Entity"/>.
-    ///     Indicating how often it was recycled.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its version.</returns>
-
-    [Pure]
-    public static int Version(this in Entity entity)
-    {
-        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.Version(entity);
-    }
-
-    /// <summary>
-    ///     Returns a <see cref="EntityReference"/> to an <see cref="Entity"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its <see cref="EntityReference"/>.</returns>
-
-    [Pure]
-    public static EntityReference Reference(this in Entity entity)
-    {
-        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.Reference(entity);
-    }
-
-    /// <summary>
     ///     Sets or replaces a component for an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>

@@ -39,7 +39,7 @@ Merged arrays in EntityInfo for increased performance when creating and destroyi
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
 
-    <LangVersion>13</LangVersion>
+    <LangVersion>12</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Copyright>Apache2.0</Copyright>
 

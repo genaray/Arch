@@ -18,12 +18,6 @@ namespace Arch.Core;
 [SkipLocalsInit]
 public struct EntityData
 {
-
-    /// <summary>
-    ///     The version of an entity.
-    /// </summary>
-    public int Version;
-
     /// <summary>
     ///     A reference to its <see cref="Archetype"/>.
     /// </summary>
@@ -35,13 +29,12 @@ public struct EntityData
     public Slot Slot;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="EntityInfo"/> struct.
+    ///     Initializes a new instance of the <see cref="EntityData"/> struct.
     /// </summary>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    public EntityData(int version, Archetype archetype, Slot slot)
+    public EntityData(Archetype archetype, Slot slot)
     {
-        Version = version;
         Archetype = archetype;
         Slot = slot;
     }
@@ -67,7 +60,7 @@ internal class EntityInfoStorage
         var cpuL1CacheSize = 16_384;
         EntityData = new JaggedArray<EntityData>(
             cpuL1CacheSize / Unsafe.SizeOf<EntityData>(),
-            new EntityData(-1, null!, new Slot(-1,-1)),
+            new EntityData(null!, new Slot(-1,-1)),
             256
         );
     }
@@ -76,12 +69,11 @@ internal class EntityInfoStorage
     ///     Adds meta data of an <see cref="Entity"/> to the internal structure.
     /// </summary>
     /// <param name="id">The <see cref="Entity"/> id.</param>
-    /// <param name="version">Its version.</param>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    public void Add(int id, int version, Archetype archetype, Slot slot)
+    public void Add(int id, Archetype archetype, Slot slot)
     {
-        EntityData.Add(id,new EntityData(version, archetype, slot));
+        EntityData.Add(id,new EntityData(archetype, slot));
     }
 
     /// <summary>
@@ -112,29 +104,6 @@ internal class EntityInfoStorage
     public ref Slot GetSlot(int id)
     {
         return ref EntityData[id].Slot;
-    }
-
-    /// <summary>
-    ///     Returns the version of an <see cref="Entity"/> by its id.
-    /// </summary>
-    /// <param name="id">The <see cref="Entity"/>s id.</param>
-    /// <returns>Its <see cref="Slot"/>.</returns>
-    public int GetVersion(int id)
-    {
-        return EntityData[id].Version;
-    }
-
-    /// <summary>
-    ///     Trys to return the version of an <see cref="Entity"/> by its id.
-    /// </summary>
-    /// <param name="id">The <see cref="Entity"/>s id.</param>
-    /// <param name="version">The <see cref="Entity"/>s version.</param>
-    /// <returns>True if it exists, false if not.</returns>
-    public bool TryGetVersion(int id, out int version)
-    {
-        var exists = EntityData.TryGetValue(id, out EntityData data);
-        version = data.Version;
-        return exists ;
     }
 
     /// <summary>

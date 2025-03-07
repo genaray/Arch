@@ -232,6 +232,18 @@ public partial class World : IDisposable
     internal PooledDictionary<QueryDescription, Query> QueryCache {  get; set; }
 
     /// <summary>
+    ///     Returns the next <see cref="Entity"/>, either recycled from <see cref="RecycledIds"/> or newly created.
+    /// <param name="entity">The next <see cref="Entity"/> which was either recycled from an <see cref="RecycledEntity"/> or newly created.</param>
+    /// </summary>
+    private void GetNextEntity(out Entity entity)
+    {
+        var recycle = RecycledIds.TryDequeue(out var recycledId);
+        var recycled = recycle ? recycledId : new RecycledEntity(Size, 0);
+        entity = new Entity(recycled.Id, Id, recycled.Version);
+        Size++;
+    }
+
+    /// <summary>
     ///     Creates a new <see cref="Entity"/> using its given component structure/<see cref="Archetype"/>.
     ///     Might resize its target <see cref="Archetype"/> and allocate new space if its full.
     /// </summary>
@@ -259,12 +271,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public Entity Create(in Signature types)
     {
-        // Recycle id or increase
-        var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
-
         // Create new entity and put it to the back of the array
-        var entity = new Entity(recycled.Id, Id);
+        GetNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(in types);
@@ -278,8 +286,7 @@ public partial class World : IDisposable
         }
 
         // Add entity to info storage
-        EntityInfo.Add(entity.Id, recycled.Version, archetype, slot);
-        Size++;
+        EntityInfo.Add(entity.Id, archetype, slot);
         OnEntityCreated(entity);
 
 #if EVENTS
@@ -353,7 +360,7 @@ public partial class World : IDisposable
         EntityInfo.Remove(entity.Id);
 
         // Recycle id && Remove mapping
-        RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entityInfo.Version + 1)));
+        RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entity.Version + 1)));
         Size--;
     }
 
@@ -746,9 +753,7 @@ public partial class World
 
                     OnEntityDestroyed(entity);
 
-                    var version = EntityInfo.GetVersion(entity.Id);
-                    var recycledEntity = new RecycledEntity(entity.Id, unchecked(version + 1));
-
+                    var recycledEntity = new RecycledEntity(entity.Id, unchecked(entity.Version + 1));
                     RecycledIds.Enqueue(recycledEntity);
                     EntityInfo.Remove(entity.Id);
                 }
@@ -908,20 +913,6 @@ public partial class World
 {
 
     /// <summary>
-    ///     Returns the next <see cref="Entity"/>, either recycled from <see cref="RecycledIds"/> or newly created.
-    /// <param name="entity">The next <see cref="Entity"/> which was either recycled from an <see cref="RecycledEntity"/> or newly created.</param>
-    /// </summary>
-    /// <returns>Its version.</returns>
-    private int GetNextEntity(out Entity entity)
-    {
-        var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
-        entity = new Entity(recycled.Id, Id);
-        Size++;
-        return recycled.Version;
-    }
-
-    /// <summary>
     ///     Ensures the capacity of a specific <see cref="Archetype"/> determined by the <see cref="Signature"/>.
     /// </summary>
     /// <param name="signature">The <see cref="Signature"/>.</param>
@@ -969,9 +960,9 @@ public partial class World
         Archetype.GetNextSlots(archetype, slots, amount);
         for(var index = 0; index < amount; index++)
         {
-            var version = GetNextEntity(out var entity);
+            GetNextEntity(out var entity);
             entities[index] = entity;
-            entityData[index] = new EntityData(version, archetype, slots[index]);
+            entityData[index] = new EntityData(archetype, slots[index]);
         }
     }
 
@@ -1594,7 +1585,6 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it exists and is alive, otherwise false.</returns>
-
     [Pure]
     public bool IsAlive(Entity entity)
     {
@@ -1602,55 +1592,10 @@ public partial class World
     }
 
     /// <summary>
-    ///     Checks if the <see cref="EntityReference"/> is alive and valid in this <see cref="World"/>.
-    /// </summary>
-    /// <param name="entityReference">The <see cref="EntityReference"/>.</param>
-    /// <returns>True if it exists and is alive, otherwise false.</returns>
-
-    [Pure]
-    public bool IsAlive(EntityReference entityReference)
-    {
-        if (entityReference == EntityReference.Null)
-        {
-            return false;
-        }
-
-        var reference = Reference(entityReference.Entity);
-        return entityReference == reference;
-    }
-
-    /// <summary>
-    ///     Returns the version of an <see cref="Entity"/>.
-    ///     Indicating how often it was recycled.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its version.</returns>
-
-    [Pure]
-    public int Version(Entity entity)
-    {
-        return EntityInfo.GetVersion(entity.Id);
-    }
-
-    /// <summary>
-    ///     Returns a <see cref="EntityReference"/> to an <see cref="Entity"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its <see cref="EntityReference"/>.</returns>
-
-    [Pure]
-    public EntityReference Reference(Entity entity)
-    {
-        var entityInfo = EntityInfo.TryGetVersion(entity.Id, out var version);
-        return entityInfo ? new EntityReference(in entity, version) : EntityReference.Null;
-    }
-
-    /// <summary>
     ///     Returns the <see cref="Archetype"/> of an <see cref="Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="Archetype"/>.</returns>
-
     [Pure]
     public Archetype GetArchetype(Entity entity)
     {
@@ -1662,7 +1607,6 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to its <see cref="Chunk"/>.</returns>
-
     [Pure]
     public ref readonly Chunk GetChunk(Entity entity)
     {
@@ -1675,7 +1619,6 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its array of <see cref="ComponentType"/>s.</returns>
-
     [Pure]
     public ComponentType[] GetComponentTypes(Entity entity)
     {
@@ -1689,7 +1632,6 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A newly allocated array containing the entities components.</returns>
-
     [Pure]
     public object?[] GetAllComponents(Entity entity)
     {
