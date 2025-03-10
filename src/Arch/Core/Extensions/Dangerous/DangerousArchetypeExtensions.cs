@@ -13,11 +13,13 @@ public static class DangerousArchetypeExtensions
     /// <summary>
     ///     Creates a new <see cref="Archetype"/> and returns it.
     /// </summary>
+    /// <param name="baseChunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes.</param>
+    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
     /// <param name="types">The <see cref="ComponentType"/>s.</param>
     /// <returns></returns>
-    public static Archetype CreateArchetype(ComponentType[] types)
+    public static Archetype CreateArchetype(int baseChunkSizeInBytes, int minimumAmountOfEntitiesPerChunk, ComponentType[] types)
     {
-        return new Archetype(types);
+        return new Archetype(types, baseChunkSizeInBytes, minimumAmountOfEntitiesPerChunk);
     }
 
     /// <summary>

@@ -133,7 +133,7 @@ public class Archetypes : IDisposable
     ///     Creates a new <see cref="Archetype"/> instance.
     /// <param name="capacity">The capacity.</param>
     /// </summary>
-    public Archetypes(int capacity = 8)
+    public Archetypes(int capacity)
     {
         Items = new PooledList<Archetype>(capacity, ClearMode.Never);
         _hashCode = -1;
@@ -263,10 +263,6 @@ public class Archetypes : IDisposable
 /// </summary>
 public sealed partial class Archetype
 {
-    /// <summary>
-    ///     The minimum size of a regular L1 cache.
-    /// </summary>
-    internal const int BaseSize = 16_384; // 16KB Chunk size
 
     /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
@@ -278,12 +274,15 @@ public sealed partial class Archetype
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
     /// <param name="signature">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
-    internal Archetype(Signature signature)
+    /// <param name="baseChunkSizeInBytes">The minimum <see cref="Chunk"/> size in bytes.</param>
+    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of entities per <see cref="Chunk"/>.</param>
+    internal Archetype(Signature signature, int baseChunkSizeInBytes, int minimumAmountOfEntitiesPerChunk)
     {
         Signature = signature;
+        BaseSize = baseChunkSizeInBytes;
 
         // Calculations
-        ChunkSizeInBytes = GetChunkSizeInBytesFor(MinimumAmountOfEntitiesPerChunk, signature);
+        ChunkSizeInBytes = GetChunkSizeInBytesFor(baseChunkSizeInBytes, minimumAmountOfEntitiesPerChunk, signature);
         EntitiesPerChunk = GetEntityCountFor(ChunkSizeInBytes, signature);
 
         // The bitmask/set
@@ -299,16 +298,16 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     The minimum number of <see cref="Arch.Core.Entity"/>'s that should fit into a <see cref="Chunk"/> within this <see cref="Archetype"/>.
-    ///     On the basis of this, the <see cref="ChunkSizeInBytes"/> is increased.
+    ///     The base size of a <see cref="Chunk"/> within the <see cref="Chunks"/> in KB.
+    ///     All <see cref="Chunk"/>s will have a minimum of this size. The actual size is <see cref="ChunkSizeInBytes"/>.
     /// </summary>
-    public int MinimumAmountOfEntitiesPerChunk { get; } = 100;
+    public int BaseSize { get; }
 
     /// <summary>
     ///     The size of a <see cref="Chunk"/> within the <see cref="Chunks"/> in KB.
-    ///     Necessary because the <see cref="Archetype"/> adjusts the size of a <see cref="Chunk"/>.
+    ///     Necessary because the <see cref="Archetype"/> adjusts the size of a <see cref="Chunk"/> based on the minimum amount of <see cref="Entity"/> passed during construction.
     /// </summary>
-    public int ChunkSizeInBytes { get; } = BaseSize;
+    public int ChunkSizeInBytes { get; }
 
     /// <summary>
     ///     The number of entities that are stored per <see cref="Chunk"/>.
@@ -746,19 +745,19 @@ public sealed partial class Archetype
 
 public sealed partial class Archetype
 {
-
     /// <summary>
     ///     Calculates the size of the memory in bytes required to store the number of <see cref="entityAmount"/>.
-    ///     The <see cref="BaseSize"/> (L1 cache size) is taken into account and, if necessary, rounded up to a multiple of this to ensure maximum cache performance.
-    ///     So if the number of <see cref="entityAmount"/> exceeds the <see cref="BaseSize"/> value, a multiple of this is used.
+    ///     The <see cref="baseChunkSizeInKb"/> (L1 cache size) is taken into account and, if necessary, rounded up to a multiple of this to ensure maximum cache performance.
+    ///     So if the number of <see cref="entityAmount"/> exceeds the <see cref="baseChunkSizeInKb"/> value, a multiple of this is used.
     /// </summary>
+    /// <param name="baseChunkSizeInKb">The minimum <see cref="Chunk"/> size in KB. </param>
     /// <param name="entityAmount">The amount of entities.</param>
     /// <param name="types">The component structure of the <see cref="Arch.Core.Entity"/>'s.</param>
     /// <returns>The amount of bytes required to store the <see cref="Entity"/>s.</returns>
-    public unsafe static int GetChunkSizeInBytesFor(int entityAmount, Span<ComponentType> types)
+    public unsafe static int GetChunkSizeInBytesFor(int baseChunkSizeInKb, int entityAmount, Span<ComponentType> types)
     {
         var entityBytes = (sizeof(Entity) + types.ToByteSize()) * entityAmount;
-        return (int)Math.Ceiling((float)entityBytes / BaseSize) * BaseSize;  // Calculates and rounds to a multiple of BaseSize to store the number of entities
+        return (int)Math.Ceiling((float)entityBytes / baseChunkSizeInKb ) * baseChunkSizeInKb;  // Calculates and rounds to a multiple of BaseSize to store the number of entities
     }
 
     /// <summary>

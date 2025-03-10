@@ -55,13 +55,12 @@ internal class EntityInfoStorage
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
     /// </summary>
-    internal EntityInfoStorage()
+    internal EntityInfoStorage(int chunkSizeInBytes, int capacity)
     {
-        var cpuL1CacheSize = 16_384;
         EntityData = new JaggedArray<EntityData>(
-            cpuL1CacheSize / Unsafe.SizeOf<EntityData>(),
+            chunkSizeInBytes / Unsafe.SizeOf<EntityData>(),
             new EntityData(null!, new Slot(-1,-1)),
-            256
+            capacity
         );
     }
 

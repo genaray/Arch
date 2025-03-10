@@ -6,12 +6,31 @@ using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
 
+
+/// <summary>
+///     The <see cref="SignatureBuilder"/> class
+///     is used to make automatically conversion of collection expressions to <see cref="Signature"/> possible.
+/// </summary>
+public static class SignatureBuilder
+{
+    /// <summary>
+    /// Creates a <see cref="Signature"/> from a <see cref="ReadOnlySpan{T}"/> e.g. a collection expression.
+    /// </summary>
+    /// <param name="components">The <see cref="ReadOnlySpan{T}"/>, e.g. the collection expression.</param>
+    /// <returns>The created <see cref="Signature"/>.</returns>
+    public static Signature Create(ReadOnlySpan<ComponentType> components)
+    {
+        return new Signature(components);
+    }
+}
+
 /// <summary>
 ///     The <see cref="Signature"/> struct
 ///     describes a combination of different <see cref="ComponentType"/>s and caches their hash. Its basically just a list of <see cref="ComponentType"/>s.
 ///     This is then used for describing an <see cref="Entity"/> aswell as identification to find the correct <see cref="Query"/> or a suitable <see cref="Archetype"/>.
 /// </summary>
 [SkipLocalsInit]
+[CollectionBuilder(typeof(SignatureBuilder), nameof(SignatureBuilder.Create))]
 public struct Signature : IEquatable<Signature>
 {
     /// <summary>
@@ -29,7 +48,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     public Signature()
     {
-        ComponentsArray = Array.Empty<ComponentType>();
+        ComponentsArray = [];
         _hashCode = -1;
     }
 
@@ -37,7 +56,7 @@ public struct Signature : IEquatable<Signature>
     ///     Initializes a new instance of the <see cref="Signature"/> struct.
     /// </summary>
     /// <param name="components">An array of <see cref="ComponentType"/>s.</param>
-    public Signature(Span<ComponentType> components)
+    public Signature(ReadOnlySpan<ComponentType> components)
     {
         ComponentsArray = components.ToArray();
         _hashCode = -1;
@@ -62,7 +81,7 @@ public struct Signature : IEquatable<Signature>
     {
         get;
         set;
-    } = Array.Empty<ComponentType>();
+    } = [];
 
     /// <summary>
     ///     An array of <see cref="ComponentType"/>s.
@@ -345,24 +364,6 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
     /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
     public QueryDescription(Signature? all = null, Signature? any = null, Signature? none = null, Signature? exclusive = null)
-    {
-        All = all ?? All;
-        Any = any ?? Any;
-        None = none ?? None;
-        Exclusive = exclusive ?? Exclusive;
-
-        _hashCode = -1;
-        _hashCode = GetHashCode();
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
-    /// </summary>
-    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
-    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
-    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
-    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
-    public QueryDescription(ComponentType[]? all = null, ComponentType[]? any = null, ComponentType[]? none = null, ComponentType[]? exclusive = null)
     {
         All = all ?? All;
         Any = any ?? Any;
