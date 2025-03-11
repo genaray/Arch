@@ -8,7 +8,9 @@ namespace Arch.Benchmarks;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class ArchetypeIterationBenchmark
 {
-    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private readonly int _minimumChunkSize = 16_382;
+    private readonly int _minimumEntityCount = 100;
+    private readonly ComponentType[] _group = [typeof(Transform), typeof(Rotation)];
 
     [Params(10000, 100000, 1000000)] public int Amount;
 
@@ -21,7 +23,7 @@ public class ArchetypeIterationBenchmark
         _consumer = new Consumer();
         // jobScheduler = new JobScheduler();
 
-        _globalArchetype = new Archetype(_group);
+        _globalArchetype = new Archetype(_group, _minimumChunkSize, _minimumEntityCount);
         _globalArchetype.EnsureEntityCapacity(Amount);
 
         for (var index = 0; index < Amount; index++)

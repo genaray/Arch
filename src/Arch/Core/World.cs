@@ -179,11 +179,11 @@ public partial class World : IDisposable
     ///     Initializes a new instance of the <see cref="World"/> class.
     /// </summary>
     /// <param name="id">Its unique ID.</param>
-    /// <param name="chunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes.</param>
-    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
+    /// <param name="baseChunkSize">The base/minimum <see cref="Chunk"/> size in bytes.</param>
+    /// <param name="baseChunkEntityCount">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
     /// <param name="archetypeCapacity">The initial capacity for <see cref="Archetypes"/>.</param>
     /// <param name="entityCapacity">The initial capacity for <see cref="Entity"/>s.</param>
-    private World(int id, int chunkSizeInBytes, int minimumAmountOfEntitiesPerChunk, int archetypeCapacity, int entityCapacity)
+    private World(int id, int baseChunkSize, int baseChunkEntityCount, int archetypeCapacity, int entityCapacity)
     {
         Id = id;
 
@@ -192,7 +192,7 @@ public partial class World : IDisposable
 
         // Entity stuff.
         Archetypes = new Archetypes(archetypeCapacity);
-        EntityInfo = new EntityInfoStorage(chunkSizeInBytes, entityCapacity);
+        EntityInfo = new EntityInfoStorage(baseChunkSize, entityCapacity);
         RecycledIds = new PooledQueue<RecycledEntity>(entityCapacity);
 
         // Query.
@@ -203,8 +203,8 @@ public partial class World : IDisposable
         JobsCache = new List<IJob>(Environment.ProcessorCount);
 
         // Config
-        ChunkSizeInBytes = chunkSizeInBytes;
-        MinimumAmountOfEntitiesPerChunk = minimumAmountOfEntitiesPerChunk;
+        BaseChunkSize = baseChunkSize;
+        BaseChunkEntityCount = baseChunkEntityCount;
     }
 
     /// <summary>
@@ -246,13 +246,13 @@ public partial class World : IDisposable
     ///     The <see cref="Chunk"/> size of each <see cref="Archetype"/> in bytes.
     /// <remarks>For the best cache optimisation use values that are divisible by 16Kb.</remarks>
     /// </summary>
-    public int ChunkSizeInBytes { get; private set; } = 16_384;
+    public int BaseChunkSize { get; private set; } = 16_384;
 
     /// <summary>
     ///     The minimum number of <see cref="Arch.Core.Entity"/>'s that should fit into a <see cref="Chunk"/> within all <see cref="Archetype"/>s.
     ///     On the basis of this, the <see cref="Archetypes"/>s chunk size may increase.
     /// </summary>
-    public int MinimumAmountOfEntitiesPerChunk { get; private set; } = 100;
+    public int BaseChunkEntityCount { get; private set; } = 100;
 
     /// <summary>
     ///     Returns the next <see cref="Entity"/>, either recycled from <see cref="RecycledIds"/> or newly created.
@@ -261,7 +261,7 @@ public partial class World : IDisposable
     private void GetNextEntity(out Entity entity)
     {
         var recycle = RecycledIds.TryDequeue(out var recycledId);
-        var recycled = recycle ? recycledId : new RecycledEntity(Size, 0);
+        var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
         entity = new Entity(recycled.Id, Id, recycled.Version);
         Size++;
     }
@@ -609,7 +609,7 @@ public partial class World
         }
 
         // Create archetype
-        archetype = new Archetype(signature, ChunkSizeInBytes, MinimumAmountOfEntitiesPerChunk);
+        archetype = new Archetype(signature, BaseChunkSize, BaseChunkEntityCount);
 
         GroupToArchetype[hashCode] = archetype;
         Archetypes.Add(archetype);

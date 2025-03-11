@@ -55,10 +55,12 @@ internal class EntityInfoStorage
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityInfoStorage"/> class.
     /// </summary>
-    internal EntityInfoStorage(int chunkSizeInBytes, int capacity)
+    /// <param name="baseChunkSize">The minimum <see cref="Chunk"/> size in bytes, used to calculate buckets fitting in the L1 cache.</param>
+    /// <param name="capacity">The initial capacity.</param>
+    internal EntityInfoStorage(int baseChunkSize, int capacity)
     {
         EntityData = new JaggedArray<EntityData>(
-            chunkSizeInBytes / Unsafe.SizeOf<EntityData>(),
+            baseChunkSize / Unsafe.SizeOf<EntityData>(),
             new EntityData(null!, new Slot(-1,-1)),
             capacity
         );

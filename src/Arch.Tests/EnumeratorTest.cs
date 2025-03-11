@@ -71,7 +71,7 @@ public sealed class EnumeratorTest
             counter++;
         }
 
-        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.GetEntityCountFor(archetype.ChunkSizeInBytes, _group))));
+        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.GetEntityCountFor(archetype.ChunkSize, _group))));
     }
 
     /// <summary>

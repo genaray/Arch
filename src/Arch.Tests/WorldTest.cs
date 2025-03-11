@@ -69,7 +69,7 @@ public sealed partial class WorldTest
         That(entity.Id, Is.EqualTo(0));
         That(world.Size, Is.EqualTo(size + 1));
         That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
-        That(entity.Version, Is.EqualTo(0));
+        That(entity.Version, Is.EqualTo(1));
         True(world.IsAlive(entity));
     }
 
@@ -90,7 +90,7 @@ public sealed partial class WorldTest
         world.Query(queryDesc, (Entity entity, ref Transform entityTransform, ref Rotation entityRotation) =>
         {
             That(world.IsAlive(entity));
-            That(entity.Version, Is.EqualTo(0));
+            That(entity.Version, Is.EqualTo(1));
             That(world.HasRange(entity, _entityGroup));
 
             That(world.Get<Transform>(entity).X, Is.EqualTo(size));
@@ -112,15 +112,17 @@ public sealed partial class WorldTest
         var size = 1024;
         using var world = World.Create();
 
+        // Bulk create entities
         var createdEntities = (Span<Entity>)stackalloc Entity[size];
         world.Create(createdEntities, _entityGroup, size);
 
+        // Check if they are correctly setup
         var index = 0;
         foreach (var entity in createdEntities)
         {
             That(entity.Id, Is.EqualTo(index));
             That(world.IsAlive(entity));
-            That(entity.Version, Is.EqualTo(0));
+            That(entity.Version, Is.EqualTo(1));
             That(world.HasRange(entity, _entityGroup));
             index++;
         }
@@ -215,7 +217,7 @@ public sealed partial class WorldTest
         var newEntity = localWorld.Create(_entityGroup);
 
         That(recycledEntity.Id, Is.EqualTo(entity.Id));           // Id was recycled
-        That(recycledEntity.Version, Is.EqualTo(1));  // Version was increased
+        That(recycledEntity.Version, Is.EqualTo(2));  // Version was increased
         That(newEntity.Id, Is.Not.EqualTo(recycledEntity.Id));
     }
 
@@ -274,7 +276,7 @@ public sealed partial class WorldTest
         var archetype = world.EnsureCapacity(_entityGroup, amount);
 
         // Calculation for capacity
-        var calculatedChunkSize = Archetype.GetChunkSizeInBytesFor(archetype.MinimumAmountOfEntitiesPerChunk, _entityGroup);
+        var calculatedChunkSize = Archetype.GetChunkSizeInBytesFor(world.BaseChunkSize, world.BaseChunkEntityCount, _entityGroup);
         var entityCapacityPerChunk = Archetype.GetEntityCountFor(calculatedChunkSize, _entityGroup);
         var requiredEntityCapacity = Math.Ceiling((float)amount / entityCapacityPerChunk) * entityCapacityPerChunk;
 
@@ -716,6 +718,39 @@ public partial class WorldTest
 
         That(_world.Size, Is.EqualTo(size + 1));
         True(_world.IsAlive(entity));
+    }
+
+    /// <summary>
+    ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly by the generated methods.
+    /// </summary>
+    [Test]
+    public void GeneratedCreateAll()
+    {
+        var size = 1024;
+        using var world = World.Create();
+
+        // Bulk create entities
+        var createdEntities = (Span<Entity>)stackalloc Entity[size];
+        world.Create(size, new Transform{ X = 10, Y = 10 }, new Rotation { X = 10, Y = 10 });
+        world.GetEntities(new QueryDescription(), createdEntities);
+        createdEntities.Sort((entity, entity1) => entity.CompareTo(entity1)); // Sorting entities to start from lowest
+
+        // Check if they are correctly setup
+        var index = 0;
+        foreach (var entity in createdEntities)
+        {
+            That(entity.Id, Is.EqualTo(index));
+            That(world.IsAlive(entity));
+            That(entity.Version, Is.EqualTo(1));
+            That(world.HasRange(entity, _entityGroup));
+
+            That(world.Get<Transform>(entity), Is.EqualTo(new Transform{ X = 10, Y = 10 }));
+            That(world.Get<Rotation>(entity), Is.EqualTo(new Rotation{ X = 10, Y = 10 }));
+            index++;
+        }
+
+        That(world.Size, Is.EqualTo(size));
+        That(world.Capacity, Is.EqualTo(world.Archetypes[0].EntityCapacity));
     }
 
     /// <summary>

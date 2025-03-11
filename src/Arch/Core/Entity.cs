@@ -38,7 +38,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     internal Entity(int id, int worldId)
     {
         Id = id;
-        Version = 0;
+        Version = 1;
     }
 
     /// <summary>
@@ -184,7 +184,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         Id = id;
         WorldId = worldId;
-        Version = 0;
+        Version = 1;
     }
 
     /// <summary>
