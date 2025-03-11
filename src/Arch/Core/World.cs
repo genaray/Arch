@@ -258,12 +258,26 @@ public partial class World : IDisposable
     ///     Returns the next <see cref="Entity"/>, either recycled from <see cref="RecycledIds"/> or newly created.
     /// <param name="entity">The next <see cref="Entity"/> which was either recycled from an <see cref="RecycledEntity"/> or newly created.</param>
     /// </summary>
-    private void GetNextEntity(out Entity entity)
+    /// <remarks>Does not add it to the <see cref="EntityInfo"/> yet.</remarks>
+    private void GetOrCreateNextEntity(out Entity entity)
     {
         var recycle = RecycledIds.TryDequeue(out var recycledId);
         var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
         entity = new Entity(recycled.Id, Id, recycled.Version);
         Size++;
+    }
+
+    /// <summary>
+    ///     Destroys/Recycles an <see cref="Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/> to destroy/recycle.</param>
+    /// <remarks>Also removes it from the <see cref="EntityInfo"/>.</remarks>
+    private void DestroyEntity(Entity entity)
+    {
+        var recycledEntity = new RecycledEntity(entity.Id, unchecked(entity.Version + 1));
+        RecycledIds.Enqueue(recycledEntity);
+        EntityInfo.Remove(entity.Id);
+        Size--;
     }
 
     /// <summary>
@@ -295,18 +309,15 @@ public partial class World : IDisposable
     public Entity Create(in Signature types)
     {
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(in types);
-        var createdChunk = archetype.Add(entity, out _, out var slot);
+        var allocatedEntities = archetype.Add(entity, out _, out var slot);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Add entity to info storage
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -336,7 +347,7 @@ public partial class World : IDisposable
 
         // Copy entity to other archetype
         ref var slot = ref EntityInfo.GetSlot(entity.Id);
-        var created = destination.Add(entity, out _, out destinationSlot);
+        var allocatedEntities = destination.Add(entity, out _, out destinationSlot);
         Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
         source.Remove(slot, out var movedEntity);
 
@@ -345,11 +356,8 @@ public partial class World : IDisposable
         EntityInfo.Move(entity.Id, destination, destinationSlot);
 
         // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
-        if (created)
-        {
-            Capacity += destination.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
     }
 
     /// <summary>
@@ -374,17 +382,12 @@ public partial class World : IDisposable
 
         OnEntityDestroyed(entity);
 
-        // Remove from archetype
+        // Remove from archetype and move other entity to replace its slot
         var entityInfo = EntityInfo[entity.Id];
         entityInfo.Archetype.Remove(entityInfo.Slot, out var movedEntityId);
-
-        // Update info of moved entity which replaced the removed entity.
         EntityInfo.Move(movedEntityId, entityInfo.Slot);
-        EntityInfo.Remove(entity.Id);
 
-        // Recycle id && Remove mapping
-        RecycledIds.Enqueue(new RecycledEntity(entity.Id, unchecked(entity.Version + 1)));
-        Size--;
+        DestroyEntity(entity);
     }
 
     /// <summary>
@@ -757,7 +760,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            Size -= archetype.EntityCount;
+            // Size -= archetype.EntityCount; Commented since DestroyEntity already does Size--
             foreach (ref var chunk in archetype)
             {
                 ref var entityFirstElement = ref chunk.Entity(0);
@@ -775,10 +778,7 @@ public partial class World
                     #endif
 
                     OnEntityDestroyed(entity);
-
-                    var recycledEntity = new RecycledEntity(entity.Id, unchecked(entity.Version + 1));
-                    RecycledIds.Enqueue(recycledEntity);
-                    EntityInfo.Remove(entity.Id);
+                    DestroyEntity(entity);
                 }
 
                 chunk.Clear();
@@ -983,7 +983,7 @@ public partial class World
         Archetype.GetNextSlots(archetype, slots, amount);
         for(var index = 0; index < amount; index++)
         {
-            GetNextEntity(out var entity);
+            GetOrCreateNextEntity(out var entity);
             entities[index] = entity;
             entityData[index] = new EntityData(archetype, slots[index]);
         }

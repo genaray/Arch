@@ -32,18 +32,15 @@ public partial class World
         var signature = Component<<#= generics #>>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<<#= generics #>>(entity, out var slot, <#= inParameters #>);
+        var allocatedEntities = archetype.Add<<#= generics #>>(entity, out var slot, <#= inParameters #>);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);

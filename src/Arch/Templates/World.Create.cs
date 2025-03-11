@@ -1,4 +1,4 @@
-
+﻿
 
 // TODO: Move create with T0 into world.cs?
 
@@ -18,18 +18,15 @@ public partial class World
         var signature = Component<T0>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0>(entity, out var slot, in t0Component);
+        var allocatedEntities = archetype.Add<T0>(entity, out var slot, in t0Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -47,18 +44,15 @@ public partial class World
         var signature = Component<T0, T1>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1>(entity, out var slot, in t0Component,in t1Component);
+        var allocatedEntities = archetype.Add<T0, T1>(entity, out var slot, in t0Component,in t1Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -77,18 +71,15 @@ public partial class World
         var signature = Component<T0, T1, T2>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2>(entity, out var slot, in t0Component,in t1Component,in t2Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2>(entity, out var slot, in t0Component,in t1Component,in t2Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -108,18 +99,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -140,18 +128,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -173,18 +158,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -207,18 +189,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -242,18 +221,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -278,18 +254,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -315,18 +288,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -353,18 +323,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -392,18 +359,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -432,18 +396,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -473,18 +434,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -515,18 +473,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -558,18 +513,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -602,18 +554,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -647,18 +596,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -693,18 +639,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -740,18 +683,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -788,18 +728,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -837,18 +774,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -887,18 +821,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);
@@ -938,18 +869,15 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetNextEntity(out var entity);
+        GetOrCreateNextEntity(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
-        var createdChunk = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component,in t23Component);
+        var allocatedEntities = archetype.Add<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(entity, out var slot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component,in t23Component);
 
         // Resize map & Array to fit all potential new entities
-        if (createdChunk)
-        {
-            Capacity += archetype.EntitiesPerChunk;
-            EntityInfo.EnsureCapacity(Capacity);
-        }
+        Capacity += allocatedEntities;
+        EntityInfo.EnsureCapacity(Capacity);
 
         // Map
         EntityInfo.Add(entity.Id, archetype, slot);

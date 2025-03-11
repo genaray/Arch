@@ -61,7 +61,7 @@ public class Chunks
     /// <param name="newCapacity">The new capacity</param>
     public void EnsureCapacity(int newCapacity)
     {
-        if (newCapacity < Capacity)
+        if (newCapacity <= Capacity)
         {
             return;
         }

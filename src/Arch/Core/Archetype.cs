@@ -429,8 +429,8 @@ public sealed partial class Archetype
     /// <param name="entity">The <see cref="Arch.Core.Entity"/> that is added.</param>
     /// <param name="chunk">The chunk in which the <see cref="Entity"/> was created in.</param>
     /// <param name="slot">The <see cref="Slot"/> in which it was deposited.</param>
-    /// <returns>True if a new <see cref="Chunk"/> was allocated, otherwise false.</returns>
-    internal bool Add(Entity entity, out Chunk chunk, out Slot slot)  // TODO: Store chunk reference in slot?
+    /// <returns>The amount of newly allocated entities in <see cref="Chunk"/>s.</returns>
+    internal int Add(Entity entity, out Chunk chunk, out Slot slot)  // TODO: Store chunk reference in slot?
     {
         EntityCount++;
 
@@ -444,7 +444,7 @@ public sealed partial class Archetype
             slot = new Slot(currentChunk.Add(entity), count);
             chunk = currentChunk;
 
-            return false;
+            return 0;
         }
 
         // Chunk full? Use next allocated chunk
@@ -457,7 +457,7 @@ public sealed partial class Archetype
             chunk = currentChunk;
             Count = count;
 
-            return false;
+            return 0;
         }
 
         // No more free allocated chunks? Create new chunk
@@ -466,7 +466,7 @@ public sealed partial class Archetype
         chunk = newChunk;
         Count = count;
 
-        return true;
+        return EntitiesPerChunk;
     }
 
     /// <summary>
@@ -478,21 +478,27 @@ public sealed partial class Archetype
     {
         EnsureEntityCapacity(EntityCount + amount);
 
+        // Track created and the last filled chunk
         var created = 0;
+        var chunkIndex = Count;
+
+        // Fill with entities until no entity is left or chunk capacity is reached
         for(var index = Count; index < ChunkCapacity && created < amount; index++)
         {
             ref var chunk = ref GetChunk(index);
             var fillAmount = Math.Min(chunk.Buffer, amount - created);
 
+            // Copy batch of entities into the chunk
             Chunk.Copy(ref entities, created, ref chunk, chunk.Count, fillAmount);
             chunk.Count += fillAmount;
 
-            Count = chunk.IsFull ? Count + 1 : Count;
+            chunkIndex = index;
             created += fillAmount;
         }
 
-        //Count--;
+        // Set counts
         EntityCount += amount;
+        Count = chunkIndex;  // To the last filled chunk
     }
 
     /// <summary>
@@ -537,8 +543,8 @@ public sealed partial class Archetype
     /// <param name="entity">The <see cref="Arch.Core.Entity"/> that is added.</param>
     /// <param name="slot">The <see cref="Slot"/> in which it was deposited.</param>
     /// <param name="cmp">The component which will be set directly.</param>
-    /// <returns>True if a new <see cref="Chunk"/> was allocated, otherwise false.</returns>
-    internal bool Add<T>(Entity entity, out Slot slot, in T? cmp = default)
+    /// <returns>The amount of newly allocated entities if a new <see cref="Chunk"/> was created.</returns>
+    internal int Add<T>(Entity entity, out Slot slot, in T? cmp = default)
     {
         var createdChunk = Add(entity, out var chunk, out slot);
         chunk.Copy(slot.Index, in cmp);
@@ -717,7 +723,7 @@ public sealed partial class Archetype
     {
         // Calculate amount of required chunks.
         var neededChunks = (int)Math.Ceiling((float)newCapacity / EntitiesPerChunk);
-        if (ChunkCapacity-ChunkCount > neededChunks)
+        if (ChunkCount >= neededChunks)
         {
             return;
         }
