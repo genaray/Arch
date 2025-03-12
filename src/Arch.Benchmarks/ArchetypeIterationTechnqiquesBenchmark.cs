@@ -24,7 +24,7 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         _consumer = new Consumer();
 
-        _globalArchetype = new Archetype(_group);
+        _globalArchetype = new Archetype(_group, 16_382, 100);
         _globalArchetype.EnsureEntityCapacity(Amount);
 
         for (var index = 0; index < Amount; index++)
