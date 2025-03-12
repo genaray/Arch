@@ -1,0 +1,53 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index, "ComponentValue");
+        var getFirsts = AppendGetFirstComponentFrom(index);
+        var getComponents = AppendGetComponentsFromFirst(index);
+
+        var assignValues = new StringBuilder();
+        var assignValuesEvents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            assignValues.AppendLine($"t{i}Component = t{i}ComponentValue;");
+            assignValuesEvents.AppendLine($"OnComponentSet<T{i}>(entity);");
+        }
+    #>
+
+    [SkipLocalsInit]
+    public void Set<<#= generics #>>(in QueryDescription queryDescription, <#= parameters #>)
+    {
+        var query = Query(in queryDescription);
+        foreach (ref var chunk in query)
+        {
+            <#= Indent(getFirsts, 12) #>
+            foreach (var entityIndex in chunk)
+            {
+                <#= Indent(getComponents, 16) #>
+                <#= Indent(assignValues, 16) #>
+        #if EVENTS
+                var entity = chunk.Entity(entityIndex);
+                <#= Indent(assignValuesEvents, 16) #>
+        #endif
+            }
+        }
+    }
+    <#
+    }
+    #>
+}
+

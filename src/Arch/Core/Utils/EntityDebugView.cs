@@ -38,7 +38,7 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The version of this <see cref="Entity"/>.
     /// </summary>
-    public int Version => IsAlive ? World.Worlds[_entity.WorldId].Version(_entity) : -1;
+    public int Version => IsAlive ? _entity.Version : -1;
 
     /// <summary>
     ///     The <see cref="Entity"/>s components.

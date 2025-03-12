@@ -1,0 +1,75 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var clearIds = new StringBuilder();
+        var removeEvents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            clearIds.AppendLine($"spanBitSet.ClearBit(Component<T{i}>.ComponentType.Id);");
+            removeEvents.AppendLine($"OnComponentRemoved<T{i}>(archetype);");
+        }
+    #>
+
+    [SkipLocalsInit]
+    [StructuralChange]
+    public void Remove<<#= generics #>>(in QueryDescription queryDescription)
+    {
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+
+        var query = Query(in queryDescription);
+        foreach (var archetype in query.GetArchetypeIterator())
+        {
+            // Archetype without T shouldnt be skipped to prevent undefined behaviour.
+            if(archetype.EntityCount <= 0 || !archetype.Has<<#= generics #>>())
+            {
+                continue;
+            }
+
+            // Create local bitset on the stack and set bits to get a new fitting bitset of the new archetype.
+            var bitSet = archetype.BitSet;
+            var spanBitSet = new SpanBitSet(bitSet.AsSpan(stack));
+            <#= Indent(clearIds, 12) #>
+
+            // Get or create new archetype.
+            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            {
+                var newSignature = Signature.Remove(archetype.Signature, Component<<#= generics #>>.Signature);
+                newArchetype = GetOrCreate(newSignature);
+            }
+
+            <#= Indent(removeEvents, 12) #>
+
+            // Get last slots before copy, for updating entityinfo later
+            var archetypeSlot = archetype.CurrentSlot;
+            var newArchetypeLastSlot = newArchetype.CurrentSlot;
+            Slot.Shift(ref newArchetypeLastSlot, newArchetype.EntitiesPerChunk);
+            EntityInfo.Shift(archetype, archetypeSlot, newArchetype, newArchetypeLastSlot);
+
+            var oldCapacity = newArchetype.EntityCapacity;
+            Archetype.Copy(archetype, newArchetype);
+            archetype.Clear();
+
+            Capacity += newArchetype.EntityCapacity - oldCapacity;
+        }
+
+        EntityInfo.EnsureCapacity(Capacity);
+    }
+    <#
+    }
+    #>
+}

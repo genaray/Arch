@@ -91,7 +91,7 @@ internal class StructuralSparseArray
     ///     Checks if an component exists at the index.
     /// </summary>
     /// <param name="index">The index in the array.</param>
-    /// <returns>True if an component exists there, otherwhise false.</returns>
+    /// <returns>True if an component exists there, otherwise false.</returns>
 
     public bool Contains(int index)
     {
@@ -283,7 +283,7 @@ internal class StructuralSparseSet
     ///     Checks if an component exists at the index.
     /// </summary>
     /// <param name="index">The index in the array.</param>
-    /// <returns>True if an component exists there, otherwhise false.</returns>
+    /// <returns>True if an component exists there, otherwise false.</returns>
 
     public bool Contains<T>(int index)
     {

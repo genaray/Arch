@@ -13,11 +13,13 @@ public static class DangerousArchetypeExtensions
     /// <summary>
     ///     Creates a new <see cref="Archetype"/> and returns it.
     /// </summary>
+    /// <param name="baseChunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes.</param>
+    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
     /// <param name="types">The <see cref="ComponentType"/>s.</param>
     /// <returns></returns>
-    public static Archetype CreateArchetype(ComponentType[] types)
+    public static Archetype CreateArchetype(int baseChunkSizeInBytes, int minimumAmountOfEntitiesPerChunk, ComponentType[] types)
     {
-        return new Archetype(types);
+        return new Archetype(types, baseChunkSizeInBytes, minimumAmountOfEntitiesPerChunk);
     }
 
     /// <summary>
@@ -27,7 +29,7 @@ public static class DangerousArchetypeExtensions
     /// <param name="size">The size.</param>
     public static void SetSize(this Archetype archetype, int size)
     {
-        archetype.ChunkCount = size;
+        //archetype.ChunkCount = size;
     }
 
     /// <summary>
@@ -37,10 +39,11 @@ public static class DangerousArchetypeExtensions
     /// <param name="chunks">The list of <see cref="Chunk"/>s.</param>
     public static void SetChunks(this Archetype archetype, List<Chunk> chunks)
     {
+        /*
         archetype.Chunks = ArrayPool<Chunk>.Shared.Rent(chunks.Count);
         chunks.CopyTo(archetype.Chunks);
 
-        archetype.ChunkCapacity = chunks.Count;
+        archetype.ChunkCapacity = chunks.Count;*/
     }
 
     /// <summary>

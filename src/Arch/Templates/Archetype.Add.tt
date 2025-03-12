@@ -18,12 +18,13 @@ public partial class Archetype
         var parameters = AppendGenericInDefaultParams(index);
         var inParameters = InsertGenericInParams(index);
 #>
-    internal bool Add<<#= generics #>>(Entity entity, out Slot slot, <#= parameters #>)
+    internal int Add<<#= generics #>>(Entity entity, out Slot slot, <#= parameters #>)
     {
         var createdChunk = Add(entity, out var chunk, out slot);
         chunk.Set(slot.Index, <#= inParameters #>);
         return createdChunk;
     }
+
 <#
     }
 #>

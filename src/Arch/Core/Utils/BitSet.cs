@@ -92,7 +92,7 @@ public sealed class BitSet
     ///     Checks whether a bit is set at the index.
     /// </summary>
     /// <param name="index">The index.</param>
-    /// <returns>True if it is, otherwhise false</returns>
+    /// <returns>True if it is, otherwise false</returns>
     public bool IsSet(int index)
     {
         var b = index >> IndexSize;
@@ -486,7 +486,7 @@ public readonly ref struct SpanBitSet
     ///     Checks whether a bit is set at the index.
     /// </summary>
     /// <param name="index">The index.</param>
-    /// <returns>True if it is, otherwhise false</returns>
+    /// <returns>True if it is, otherwise false</returns>
 
     public bool IsSet(int index)
     {

@@ -1,0 +1,61 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index);
+        var inParameters = InsertGenericInParams(index);
+
+        var getIds = new StringBuilder();
+        var setIds = new StringBuilder();
+        var addEvents = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            getIds.AppendLine($"var id{i} = Component<T{i}>.ComponentType.Id;");
+            setIds.AppendLine($"spanBitSet.SetBit(id{i});");
+            addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
+        }
+    #>
+
+    [SkipLocalsInit]
+    [StructuralChange]
+    public void Add<<#= generics #>>(Entity entity, <#= parameters #>)
+    {
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+
+        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
+        <#= Indent(getIds, 8) #>
+
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        oldArchetype.BitSet.AsSpan(stack);
+
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+        <#= Indent(setIds, 8) #>
+
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype)){
+            var newSignature = Signature.Add(oldArchetype.Signature, Component<<#= generics #>>.Signature);
+            newArchetype = GetOrCreate(newSignature);
+        }
+
+        Move(entity, oldArchetype, newArchetype, out var newSlot);
+        newArchetype.Set<<#= generics #>>(ref newSlot, <#= inParameters #>);
+        <#= Indent(addEvents, 8) #>
+    }
+    <#
+    }
+    #>
+}

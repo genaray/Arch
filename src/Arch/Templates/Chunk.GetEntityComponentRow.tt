@@ -1,0 +1,41 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
+using Arch.Core;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial struct Chunk
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var getArrays = AppendGetFirstComponentFrom(index, "");
+        var refParams = InsertGenericRefParams(index);
+
+        var gets = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            gets.AppendLine($"ref var t{i}Component = ref Unsafe.Add(ref t{i}FirstElement, index);");
+        }
+    #>
+
+    [Pure]
+    public EntityComponents<<#= generics #>> GetRow<<#= generics #>>(int index)
+    {
+        <#= Indent(getArrays, 8) #>
+        ref var entity = ref Entity(index);
+        <#= Indent(gets, 8) #>
+        return new EntityComponents<<#= generics #>>(ref entity, <#= refParams #>);
+    }
+    <#
+    }
+    #>
+}
+

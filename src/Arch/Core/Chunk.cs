@@ -1,12 +1,140 @@
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Drawing;
 using Arch.Core.Events;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
+using Arch.LowLevel;
+using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
+using Array = System.Array;
 
 namespace Arch.Core;
+
+
+/// <summary>
+///     The <see cref="Chunks"/> class
+///     represents an array of <see cref="Chunk"/>s and manages them, including being able to create and add new space for them.
+/// </summary>
+public class Chunks
+{
+    /// <summary>
+    ///     Creates a new <see cref="Chunks"/> instance.
+    /// </summary>
+    /// <param name="capacity">The inital capacity.</param>
+    public Chunks(int capacity = 1)
+    {
+        Items = ArrayPool<Chunk>.Shared.Rent(capacity);
+        Count = 0;
+        Capacity = capacity;
+    }
+
+    /// <summary>
+    ///     All used <see cref="Chunk"/>s in an <see cref="Array{T}"/>.
+    /// </summary>
+    private Array<Chunk> Items { get; set; }
+
+    /// <summary>
+    ///     The number of allocated <see cref="Chunk"/>s in the <see cref="Items"/>.
+    /// </summary>
+    public int Count { get; set; }
+
+    /// <summary>
+    ///     The total allocated capacity of <see cref="Chunk"/>s in <see cref="Items"/>.
+    /// </summary>
+    public int Capacity { get; private set; }
+
+    /// <summary>
+    ///     Adds a new <see cref="Chunk"/> to this instance.
+    /// </summary>
+    /// <param name="chunk"></param>
+    public void Add(in Chunk chunk)
+    {
+        Debug.Assert(Count + 1 <= Capacity, "Capacity exceeded.");
+        Items[Count++] = chunk;
+    }
+
+    /// <summary>
+    ///     Ensures capacity for this instance.
+    /// </summary>
+    /// <param name="newCapacity">The new capacity</param>
+    public void EnsureCapacity(int newCapacity)
+    {
+        if (newCapacity <= Capacity)
+        {
+            return;
+        }
+
+        var sourceArray = Items;
+        var destinationArray = (Array<Chunk>)ArrayPool<Chunk>.Shared.Rent(newCapacity);
+        Arch.LowLevel.Array.Copy(ref sourceArray, 0, ref destinationArray, 0, Capacity );
+        ArrayPool<Chunk>.Shared.Return(sourceArray, true);
+
+        Items = destinationArray;
+        Capacity = newCapacity;
+    }
+
+    /// <summary>
+    ///     Trims this instance and frees space not required anymore.
+    /// </summary>
+    public void TrimExcess()
+    {
+        // This always spares one single chunk.
+        var minimalSize = Count > 0 ? Count : 1;
+
+        // Decrease chunk size
+        var newChunks = ArrayPool<Chunk>.Shared.Rent(minimalSize);
+        Array.Copy(Items, newChunks, minimalSize);
+        ArrayPool<Chunk>.Shared.Return(Items, true);
+
+        Items = newChunks;
+        Capacity = minimalSize;
+    }
+
+    /// <summary>
+    ///     Gets or sets the item at the given index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    public ref Chunk this[int index]
+    {
+        get => ref Items[index];
+    }
+
+    /// <summary>
+    ///     Returns a <see cref="Span{T}"/> with which you can iterate over the <see cref="Items"/> content of this instance.
+    /// </summary>
+    /// <returns></returns>
+    public Span<Chunk> AsSpan()
+    {
+        return Items.AsSpan();
+    }
+
+    /// <summary>
+    ///     Clears this instance.
+    /// </summary>
+    public void Clear(bool clearCount = false)
+    {
+        for (var index = 0; index < Count; index++)
+        {
+            ref var chunk = ref this[index];
+            chunk.Clear();
+        }
+
+        Count = clearCount ? 0 : Count;
+    }
+
+    /// <summary>
+    ///     Converts this instance to an <see cref="Chunk"/>s array.
+    /// </summary>
+    /// <param name="instance">The instance.</param>
+    /// <returns>The underlying <see cref="Chunk"/>s array.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Chunk[](Chunks instance)
+    {
+        return instance.Items;
+    }
+}
 
 /// <summary>
 ///     The <see cref="Chunk"/> struct represents a contiguous block of memory in which various components are stored in Structure of Arrays.
@@ -23,8 +151,7 @@ public partial struct Chunk
     /// </summary>
     /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
     /// <param name="types">The respective component structure of all entities in this <see cref="Chunk"/>.</param>
-    internal Chunk(int capacity, Span<ComponentType> types)
-        : this(capacity, types.ToLookupArray(), types) { }
+    internal Chunk(int capacity, Span<ComponentType> types) : this(capacity, types.ToLookupArray(), types) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Chunk"/> struct
@@ -35,7 +162,7 @@ public partial struct Chunk
     internal Chunk(int capacity, int[] componentIdToArrayIndex, Span<ComponentType> types)
     {
         // Calculate capacity and init arrays.
-        Size = 0;
+        Count = 0;
         Capacity = capacity;
 
         Entities = new Entity[Capacity];
@@ -72,7 +199,7 @@ public partial struct Chunk
     /// <summary>
     ///     The number of occupied <see cref="Arch.Core.Entity"/> slots in this <see cref="Chunk"/>.
     /// </summary>
-    public int Size { [Pure] get;  internal set; }  // 4 Byte
+    public int Count { [Pure] get;  internal set; }  // 4 Byte
 
     /// <summary>
     ///     The number of possible <see cref="Arch.Core.Entity"/>'s in this <see cref="Chunk"/>.
@@ -82,12 +209,17 @@ public partial struct Chunk
     /// <summary>
     ///     The space that is left in this instance.
     /// </summary>
-    public readonly int Buffer { [Pure] get => Capacity - Size; }
+    public readonly int Buffer { [Pure] get => Capacity - Count; }
 
     /// <summary>
     ///     Checks whether this instance is full or not.
     /// </summary>
-    public readonly bool IsFull { [Pure] get => Size >= Capacity; }
+    public readonly bool IsFull { [Pure] get => Count >= Capacity; }
+
+    /// <summary>
+    ///     Checks whether this instance is full or not.
+    /// </summary>
+    public readonly bool IsEmpty { [Pure] get => Count < Capacity; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
@@ -98,9 +230,9 @@ public partial struct Chunk
     internal int Add(Entity entity)
     {
         // Stack variable faster than accessing 3 times the Size field.
-        var size = Size;
+        var size = Count;
         Entity(size) = entity;
-        Size = size + 1;
+        Count = size + 1;
 
         return size;
     }
@@ -190,7 +322,7 @@ public partial struct Chunk
     internal void Remove(int index)
     {
         // Last entity in archetype.
-        var lastIndex = Size - 1;
+        var lastIndex = Count - 1;
 
         // Copy last entity to replace the removed one.
         ref var entities = ref Entities.DangerousGetReference();
@@ -205,7 +337,7 @@ public partial struct Chunk
         }
 
         // Update the mapping.
-        Size = lastIndex;
+        Count = lastIndex;
     }
 
     /// <summary>
@@ -214,7 +346,7 @@ public partial struct Chunk
     /// <returns>A new <see cref="EntityEnumerator"/> instance.</returns>
     public EntityEnumerator GetEnumerator()
     {
-        return new EntityEnumerator(Size);
+        return new EntityEnumerator(Count);
     }
 
     /// <summary>
@@ -223,7 +355,7 @@ public partial struct Chunk
     /// </summary>
     public void Clear()
     {
-        Size = 0;
+        Count = 0;
     }
 
     /// <summary>
@@ -232,7 +364,7 @@ public partial struct Chunk
     /// <returns>A string.</returns>
     public override string ToString()
     {
-        return $"Chunk = {{ {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
+        return $"Chunk = {{ {nameof(Capacity)} = {Capacity}, {nameof(Count)} = {Count} }}";
     }
 }
 
@@ -488,7 +620,7 @@ public partial struct Chunk
     internal int Transfer(int index, ref Chunk chunk)
     {
         // Get last entity
-        var lastIndex = chunk.Size - 1;
+        var lastIndex = chunk.Count - 1;
         var lastEntity = chunk.Entity(lastIndex);
 
         // Replace index entity with the last entity from the other chunk
@@ -500,7 +632,7 @@ public partial struct Chunk
             Array.Copy(sourceArray, lastIndex, desArray, index, 1);
         }
 
-        chunk.Size--;
+        chunk.Count--;
         return lastEntity.Id;
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.Contracts;
 using CommunityToolkit.HighPerformance;
 using Arch.Core.Utils;
 
@@ -14,23 +15,21 @@ public partial struct Chunk
 {
 
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
 
         var arrays = new StringBuilder();
-        for (var i = 0; i <= index; i++)
+        for (var i = 0; i < index; i++)
             arrays.Append($"out var t{i}Array,");
         arrays.Length--;
 
         var insertParams = new StringBuilder();
-        for (var i = 0; i <= index; i++)
+        for (var i = 0; i < index; i++)
             insertParams.Append($"ref t{i}Array.DangerousGetReference(),");
         insertParams.Length--;
 
 #>
-
-
     [Pure]
     public Components<<#= generics #>> GetFirst<<#= generics #>>()
     {

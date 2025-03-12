@@ -1,0 +1,56 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+// TODO: Generated code is slightly outdated, migrate?
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class Archetype
+{
+<#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index, "ComponentValue");
+        var getFirstElements = AppendGetFirstComponentFrom(index);
+        var getComponents = AppendGetComponentsFromFirst(index);
+        var assignComponents = new StringBuilder();
+
+        for (var i = 0; i < index; i++)
+        {
+            assignComponents.AppendLine($"t{i}Component = t{i}ComponentValue;");
+        }
+#>
+    internal void SetRange<<#= generics #>>(in Slot from, in Slot to, <#= parameters #>)
+    {
+        // Set the added component, start from the last slot and move down
+        for (var chunkIndex = from.ChunkIndex; chunkIndex >= to.ChunkIndex; --chunkIndex)
+        {
+            ref var chunk = ref GetChunk(chunkIndex);
+            <#= Indent(getFirstElements, 12) #>
+
+            // Only move within the range, depending on which chunk we are at.
+            var isStart = chunkIndex == from.ChunkIndex;
+            var isEnd = chunkIndex == to.ChunkIndex;
+
+            var upper = isStart ? from.Index : chunk.Count - 1;
+            var lower = isEnd ? to.Index : 0;
+
+            for (var entityIndex = upper; entityIndex >= lower; --entityIndex)
+            {
+                <#= Indent(getComponents, 16) #>
+                <#= Indent(assignComponents, 16) #>
+            }
+        }
+    }
+
+<#
+    }
+#>
+}

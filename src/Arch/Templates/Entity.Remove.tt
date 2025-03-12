@@ -1,0 +1,29 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public static partial class EntityExtensions
+{
+#if !PURE_ECS
+<#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+#>
+    public static void Remove<<#= generics #>>(this Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        world.Remove<<#= generics #>>(entity);
+    }
+
+<#
+    }
+#>
+#endif
+}

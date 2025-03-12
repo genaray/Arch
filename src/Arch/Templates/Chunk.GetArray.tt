@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.Contracts;
 using CommunityToolkit.HighPerformance;
 using Arch.Core.Utils;
 
@@ -14,7 +15,7 @@ public partial struct Chunk
 {
 
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
 
@@ -37,15 +38,14 @@ public partial struct Chunk
             assignComponents.AppendLine($"t{i}Array = Unsafe.As<T{i}[]>(Unsafe.Add(ref arrays, t{i}Index));");
 
 #>
-
-
     [Pure]
     public void GetArray<<#= generics #>>(<#= outs #>)
     {
         Index<<#= generics #>>(<#= indexes #>);
         ref var arrays = ref Components.DangerousGetReference();
-        <#= assignComponents #>
+        <#= Indent(assignComponents, 8) #>
     }
+
 <#
     }
 #>

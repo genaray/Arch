@@ -71,40 +71,13 @@ public static partial class EntityExtensions
     ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>True if it exists and is alive, otherwhise false.</returns>
+    /// <returns>True if it exists and is alive, otherwise false.</returns>
 
     [Pure]
     public static bool IsAlive(this in Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         return world.IsAlive(entity);
-    }
-
-    /// <summary>
-    ///     Returns the version of an <see cref="Entity"/>.
-    ///     Indicating how often it was recycled.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its version.</returns>
-
-    [Pure]
-    public static int Version(this in Entity entity)
-    {
-        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.Version(entity);
-    }
-
-    /// <summary>
-    ///     Returns a <see cref="EntityReference"/> to an <see cref="Entity"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>Its <see cref="EntityReference"/>.</returns>
-
-    [Pure]
-    public static EntityReference Reference(this in Entity entity)
-    {
-        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.Reference(entity);
     }
 
     /// <summary>
@@ -125,7 +98,7 @@ public static partial class EntityExtensions
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
 
     [Pure]
     public static bool Has<T>(this in Entity entity)
@@ -155,7 +128,7 @@ public static partial class EntityExtensions
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The found component.</param>
-    /// <returns>True if it exists, otherwhise false.</returns>
+    /// <returns>True if it exists, otherwise false.</returns>
 
     [Pure]
     public static bool TryGet<T>(this in Entity entity, out T? component)
@@ -254,7 +227,7 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
 
     [Pure]
     public static bool Has(this in Entity entity, ComponentType type)
@@ -268,7 +241,7 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
-    /// <returns>True if it has the desired component, otherwhise false.</returns>
+    /// <returns>True if it has the desired component, otherwise false.</returns>
 
     [Pure]
     public static bool HasRange(this in Entity entity, Span<ComponentType> types)
@@ -328,7 +301,7 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <param name="component">The found component.</param>
-    /// <returns>True if it exists, otherwhise false.</returns>
+    /// <returns>True if it exists, otherwise false.</returns>
 
     [Pure]
     public static bool TryGet(this in Entity entity, ComponentType type, out object? component)
