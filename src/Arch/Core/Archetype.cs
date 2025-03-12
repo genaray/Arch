@@ -797,6 +797,7 @@ public sealed partial class Archetype
     /// <returns>The amount of <see cref="Slot"/>s that fit into the <see cref="Archetype"/></returns>
     internal static int GetNextSlots(Archetype archetype, Span<Slot> slots, int amount)
     {
+        // Loop over chunks and calculate next n slots.
         var next = 0;
         for (var chunkIndex = archetype.Count; chunkIndex < archetype.ChunkCapacity && amount > 0; chunkIndex++)
         {
@@ -804,6 +805,7 @@ public sealed partial class Archetype
             var chunkSize = chunk.Count;
             var fillLimit = Math.Min(chunk.Capacity - chunkSize, amount);
 
+            // Put n empty slots into the slots span
             for (var index = chunkSize; index < chunkSize+fillLimit; index++)
             {
                 slots[next++] = new Slot(index, chunkIndex);
@@ -821,54 +823,43 @@ public sealed partial class Archetype
     /// </summary>
     /// <param name="source">The source <see cref="Archetype"/>.</param>
     /// <param name="destination">The destination <see cref="Archetype"/>.</param>
-
     internal static void Copy(Archetype source, Archetype destination)
     {
         // Make sure other archetype can fit additional entities from this archetype.
         destination.EnsureEntityCapacity(destination.EntityCount + source.EntityCount);
 
-        // Copy chunks into destination chunks
-        var sourceChunkIndex = 0;
-        var destinationChunkIndex = destination.Count;
-        while (sourceChunkIndex < source.ChunkCount)
+        // Iterate each source chunk to copy them
+        for (var sourceChunkIndex = 0; sourceChunkIndex <= source.Count; sourceChunkIndex++)
         {
             ref var sourceChunk = ref source.GetChunk(sourceChunkIndex);
-            var index = 0;
-            while (sourceChunk.Count > 0 && destinationChunkIndex < destination.ChunkCapacity)  // Making sure that we dont go out of bounds
+
+            var amountCopied = 0;
+            var chunkIndex = 0;
+
+            // Loop over destination chunk and fill them with the source chunk till either the source chunk is empty or theres no more capacity
+            for (int destinationChunkIndex = destination.Count; destinationChunkIndex < destination.ChunkCapacity && sourceChunk.Count > 0; destinationChunkIndex++)
             {
+                // Determine amount that can be copied into destination
                 ref var destinationChunk = ref destination.GetChunk(destinationChunkIndex);
+                var remainingCapacity = destinationChunk.Buffer;
+                var amountToCopy = Math.Min(sourceChunk.Count, remainingCapacity);
 
-                // Check how many entities fit into the destination chunk and choose the minimum as a copy length to prevent out of range exceptions.
-                var destinationRemainingCapacity = destinationChunk.Buffer;
-                var length = Math.Min(sourceChunk.Count, destinationRemainingCapacity);
+                Chunk.Copy(ref sourceChunk, amountCopied, ref destinationChunk, destinationChunk.Count, amountToCopy);
 
-                // Copy source array into destination chunk.
-                Chunk.Copy(ref sourceChunk, index, ref destinationChunk, destinationChunk.Count, length);
-
-                sourceChunk.Count -= length;
-                destinationChunk.Count += length;
-                index += length;
-
-                // Current source chunk still has remaining capacity, destination is full, resume with next destination chunk.
-                if (destinationChunk.Count == destinationChunk.Capacity)
-                {
-                    destinationChunkIndex++;
-                }
+                // Apply copied amount to track the progress
+                sourceChunk.Count -= amountToCopy;
+                destinationChunk.Count += amountToCopy;
+                amountCopied += amountToCopy;
+                chunkIndex = destinationChunkIndex;  // Track the last destination chunk we filled, important
             }
 
-            sourceChunkIndex++;
+            destination.Count = chunkIndex;
         }
 
-        // Set new chunk count and if the lastchunk was set to 0 by the copy algorithm, reduce it by one to point to a valid chunk
-        destination.Count = destinationChunkIndex;
-        if (destination.CurrentChunk.Count == 0)
-        {
-            destination.Count--;
-        }
-
-        // Increase entities by destination since those were copied, set source to zero since its now empty.
+        // Update entity counts
         destination.EntityCount += source.EntityCount;
         source.EntityCount = 0;
+        source.Count = 0;
     }
 
     /// <summary>
