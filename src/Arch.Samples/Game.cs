@@ -81,6 +81,7 @@ public sealed class Game : Microsoft.Xna.Framework.Game
         _drawSystem = new DrawSystem(_world, _spriteBatch);
 
         // Spawn in entities with position, velocity and sprite
+        _world.EnsureCapacity<Position, Velocity, Sprite>(150_000);  // Optional but makes creation faster
         for (var index = 0; index < 150_000; index++)
         {
             _world.Create(
