@@ -81,7 +81,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// <returns>A int indicating their order.</returns>
     public int CompareTo(Entity other)
     {
-        return (WorldId.CompareTo(other.Version) << 8) | Id.CompareTo(other.Id);
+        return (Version.CompareTo(other.Version) << 8) | Id.CompareTo(other.Id);
     }
 
     /// <summary>
