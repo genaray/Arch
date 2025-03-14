@@ -99,7 +99,7 @@ public partial class World
     public static World Create(int chunkSizeInBytes = 16_384, int minimumAmountOfEntitiesPerChunk = 100, int archetypeCapacity = 2, int entityCapacity = 64)
     {
 #if PURE_ECS
-        return new World(-1);
+        return new World(-1, chunkSizeInBytes, minimumAmountOfEntitiesPerChunk, archetypeCapacity, entityCapacity);
 #else
         lock (Worlds)
         {
