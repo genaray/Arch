@@ -374,7 +374,7 @@ public partial class World : IDisposable
         #if EVENTS
         // Raise the OnComponentRemoved event for each component on the entity.
         var arch = GetArchetype(entity);
-        foreach (var compType in arch.Signature.Components)
+        foreach (var compType in arch.Signature)
         {
             OnComponentRemoved(entity, compType);
         }
@@ -771,7 +771,7 @@ public partial class World
                     #if EVENTS
                     // Raise the OnComponentRemoved event for each component on the entity.
                     var arch = GetArchetype(entity);
-                    foreach (var compType in arch.Signature.Components)
+                    foreach (var compType in arch.Signature)
                     {
                         OnComponentRemoved(entity, compType);
                     }
