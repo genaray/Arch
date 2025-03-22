@@ -127,11 +127,25 @@ public sealed class Game : Microsoft.Xna.Framework.Game
             // Set variables
             foreach (var entity in entities)
             {
+                _world.Set(entity,
+                    new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
+                    new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) },
+                    new Sprite { Texture2D = _texture2D, Color = _random.NextColor() }
+                );
+
+#if DEBUG_PUREECS || RELEASE_PUREECS
+                _world.Set(entity,
+                    new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
+                    new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) },
+                    new Sprite { Texture2D = _texture2D, Color = _random.NextColor() }
+                );
+#else
                 entity.Set(
                     new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
                     new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) },
                     new Sprite { Texture2D = _texture2D, Color = _random.NextColor() }
                 );
+#endif
             }
         }
 
@@ -149,7 +163,11 @@ public sealed class Game : Microsoft.Xna.Framework.Game
                 var randomIndex = _random.Next(0, entities.Length);
                 var randomEntity = entities[randomIndex];
 
-                if(randomEntity.IsAlive())
+#if DEBUG_PUREECS || RELEASE_PUREECS
+                if (_world.IsAlive(randomEntity))
+#else
+                if (randomEntity.IsAlive())
+#endif
                 {
                     _world.Destroy(randomEntity);
                 }
