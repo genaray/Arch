@@ -1,0 +1,31 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public static partial class EntityExtensions
+{
+#if !PURE_ECS
+<#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+#>
+    [Pure]
+    public static Components<<#= generics #>> Get<<#= generics #>>(this Entity entity)
+    {
+        var world = World.Worlds[entity.WorldId];
+        return world.Get<<#= generics #>>(entity);
+    }
+
+<#
+    }
+#>
+#endif
+}

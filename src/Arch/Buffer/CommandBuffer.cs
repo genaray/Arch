@@ -315,7 +315,7 @@ public sealed partial class CommandBuffer : IDisposable
             var entity = Resolve(wrappedEntity.Entity);
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            AddRange(world, entity, _addTypes);
+            AddRange(world, entity, _addTypes.Span);
             _addTypes.Clear();
         }
 
@@ -442,8 +442,7 @@ public sealed partial class CommandBuffer
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
-    internal static void AddRange(World world, Entity entity, IList<ComponentType> components)
+    internal static void AddRange(World world, Entity entity, Span<ComponentType> components)
     {
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
 
@@ -454,7 +453,7 @@ public sealed partial class CommandBuffer
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
 
-        for (var index = 0; index < components.Count; index++)
+        for (var index = 0; index < components.Length; index++)
         {
             var type = components[index];
             spanBitSet.SetBit(type.Id);
@@ -462,7 +461,8 @@ public sealed partial class CommandBuffer
 
         if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = world.GetOrCreate(oldArchetype.Types.Add(components));
+            var newSignature = Signature.Add(oldArchetype.Signature, components);
+            newArchetype = world.GetOrCreate(newSignature);
         }
 
         world.Move(entity, oldArchetype, newArchetype, out _);

@@ -1,0 +1,28 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+    #>
+
+    [Pure]
+    public bool Has<<#= generics #>>(Entity entity)
+    {
+        var archetype = EntityInfo.GetArchetype(entity.Id);
+        return archetype.Has<<#= generics #>>();
+    }
+    <#
+    }
+    #>
+}

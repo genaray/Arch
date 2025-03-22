@@ -27,6 +27,6 @@ public static class DangerousChunkExtensions
     /// <param name="size">Its new size.</param>
     public static void SetSize(this ref Chunk chunk, int size)
     {
-        chunk.Size = size;
+        chunk.Count = size;
     }
 }

@@ -8,17 +8,18 @@ public static class DangerousEntityExtensions
 {
     /// <summary>
     ///     Creates an <see cref="Entity"/> struct and returns it.
-    ///     Does not create an <see cref="Entity"/> in the world, just the plain struct. 
+    ///     Does not create an <see cref="Entity"/> in the world, just the plain struct.
     /// </summary>
     /// <param name="id">Its id.</param>
     /// <param name="world">Its world id.</param>
+    /// <param name="version">Its version.</param>
     /// <returns>The new <see cref="Entity"/>.</returns>
-    public static Entity CreateEntityStruct(int id, int world)
+    public static Entity CreateEntityStruct(int id, int world, int version)
     {
 #if PURE_ECS
-        return new Entity(id, 0);
+        return new Entity(id, 0, version);
 #else
-        return new Entity(id, world);
+        return new Entity(id, world, version);
 #endif
     }
 }

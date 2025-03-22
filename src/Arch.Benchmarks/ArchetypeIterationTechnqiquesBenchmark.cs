@@ -24,13 +24,13 @@ public class ArchetypeIterationTechniquesBenchmark
     {
         _consumer = new Consumer();
 
-        _globalArchetype = new Archetype(_group);
-        _globalArchetype.Reserve(Amount);
+        _globalArchetype = new Archetype(_group, 16_382, 100);
+        _globalArchetype.EnsureEntityCapacity(Amount);
 
         for (var index = 0; index < Amount; index++)
         {
             var entity = new Entity(index, 0);
-            _globalArchetype.Add(entity, out var slot);
+            _globalArchetype.Add(entity, out _, out var slot);
 
             var t = new Transform();
             var r = new Rotation();
@@ -51,7 +51,7 @@ public class ArchetypeIterationTechniquesBenchmark
             var transforms = chunk.GetArray<Transform>();
             var rotations = chunk.GetArray<Rotation>();
 
-            for (var index = 0; index < chunk.Size; index++)
+            for (var index = 0; index < chunk.Count; index++)
             {
                 ref var transform = ref transforms[index];
                 ref var rotation = ref rotations[index];
@@ -76,7 +76,7 @@ public class ArchetypeIterationTechniquesBenchmark
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
 
-            for (var index = 0; index < currentChunk.Size; index++)
+            for (var index = 0; index < currentChunk.Count; index++)
             {
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);
                 ref var currentRotation = ref Unsafe.Add(ref rotation, index);
@@ -98,7 +98,7 @@ public class ArchetypeIterationTechniquesBenchmark
             var transforms = chunk.GetSpan<Transform>();
             var rotations = chunk.GetSpan<Rotation>();
 
-            for (var index = 0; index < chunk.Size; index++)
+            for (var index = 0; index < chunk.Count; index++)
             {
                 ref var transform = ref transforms[index];
                 ref var rotation = ref rotations[index];
@@ -123,7 +123,7 @@ public class ArchetypeIterationTechniquesBenchmark
             ref var transform = ref transforms[0];
             ref var rotation = ref rotations[0];
 
-            for (var index = 0; index < currentChunk.Size; index++)
+            for (var index = 0; index < currentChunk.Count; index++)
             {
                 ref var currentTransform = ref Unsafe.Add(ref transform, index);
                 ref var currentRotation = ref Unsafe.Add(ref rotation, index);
@@ -142,7 +142,7 @@ public class ArchetypeIterationTechniquesBenchmark
         for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = currentChunk.Size;
+            var chunkSize = currentChunk.Count;
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(currentChunk.Entities);
 
             for (var entityIndex = chunkSize - 1; entityIndex >= 0; --entityIndex)
@@ -160,7 +160,7 @@ public class ArchetypeIterationTechniquesBenchmark
         for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = currentChunk.Size;
+            var chunkSize = currentChunk.Count;
             ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(currentChunk.Entities, chunkSize - 1);
 
             for (var entityIndex = 0; entityIndex < chunkSize; ++entityIndex)
@@ -178,7 +178,7 @@ public class ArchetypeIterationTechniquesBenchmark
         for (var chunkIndex = 0; chunkIndex < _globalArchetype.ChunkCount; chunkIndex++)
         {
             ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = currentChunk.Size;
+            var chunkSize = currentChunk.Count;
 
             ref var entityFirstElement = ref ArrayExtensions.DangerousGetReference(currentChunk.Entities);
             ref var entityLastElement = ref ArrayExtensions.DangerousGetReferenceAt(currentChunk.Entities, chunkSize - 1);

@@ -1,0 +1,34 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+
+namespace Arch.Core;
+public partial struct Chunk
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index);
+        var arrays = AppendGetFirstComponentFrom(index, "");
+        var sets = new StringBuilder();
+
+        for (var i = 0; i < index; i++)
+        {
+            sets.AppendLine($"Unsafe.Add(ref t{i}FirstElement, index) = t{i}Component;");
+        }
+    #>
+
+    public void Set<<#= generics #>>(int index, <#= parameters #>)
+    {
+        <#= Indent(arrays, 8) #>
+        <#= Indent(sets, 8) #>
+    }
+    <#
+    }
+    #>
+}

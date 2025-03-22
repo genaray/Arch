@@ -5,6 +5,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.Contracts;
 using CommunityToolkit.HighPerformance;
 using Arch.Core.Utils;
 
@@ -13,32 +14,30 @@ namespace Arch.Core;
 public partial struct Chunk
 {
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
 
         var outs = new StringBuilder();
-        for (var i = 0; i <= index; i++)
+        for (var i = 0; i < index; i++)
             outs.Append($"out Span<T{i}> t{i}Span,");
         outs.Length--;
 
         var arrays = new StringBuilder();
-        for (var i = 0; i <= index; i++)
+        for (var i = 0; i < index; i++)
             arrays.Append($"out var t{i}Array,");
         arrays.Length--;
 
         var assignComponents = new StringBuilder();
-        for (var i = 0; i <= index; i++)
+        for (var i = 0; i < index; i++)
             assignComponents.AppendLine($"t{i}Span = new Span<T{i}>(t{i}Array);");
 
 #>
-
-
     [Pure]
     public void GetSpan<<#= generics #>>(<#= outs #>)
     {
         GetArray<<#= generics #>>(<#= arrays #>);
-        <#= assignComponents #>
+        <#= Indent(assignComponents, 8) #>
     }
 
 <#
