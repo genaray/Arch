@@ -81,7 +81,9 @@ public partial class World
     /// <summary>
     ///     Tracks how many <see cref="World"/>s exists.
     /// </summary>
-    public static int WorldSize {  get;  private set; }
+    public static int WorldSize => Interlocked.CompareExchange(ref worldSizeUnsafe, 0, 0);
+
+    private static int worldSizeUnsafe;
 
     /// <summary>
     ///     The shared static <see cref="JobScheduler"/> used for Multithreading.
@@ -118,7 +120,7 @@ public partial class World
             }
 
             Worlds[recycledId] = world;
-            WorldSize++;
+            Interlocked.Increment(ref worldSizeUnsafe);
             return world;
         }
 #endif
@@ -135,7 +137,7 @@ public partial class World
         {
             Worlds[world.Id] = null!;
             RecycledWorldIds.Enqueue(world.Id);
-            WorldSize--;
+            Interlocked.Decrement(ref worldSizeUnsafe);
         }
 #endif
 
