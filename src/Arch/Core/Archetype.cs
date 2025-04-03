@@ -307,7 +307,24 @@ public sealed partial class Archetype
     internal bool TryIndex<T>(out int i)
     {
         var id = Component<T>.ComponentType.Id;
-        Debug.Assert(id != -1, $"Index is out of bounds, component {typeof(T)} with id {id} does not exist in this chunk.");
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal bool TryIndex(ComponentType type, out int i)
+    {
+        var id = type.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
 
         if (id >= _componentIdToArrayIndex.Length)
         {

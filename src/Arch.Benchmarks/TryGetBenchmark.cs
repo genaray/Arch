@@ -5,9 +5,10 @@ namespace Arch.Benchmarks;
 
 [HtmlExporter]
 [MemoryDiagnoser]
-[HardwareCounters(HardwareCounter.CacheMisses)]
 public class TryGetBenchmark
 {
+    [Params(10000, 100000, 1000000)] public int Amount;
+
     private static World _world;
     private static List<Entity> _entities;
 
@@ -18,15 +19,15 @@ public class TryGetBenchmark
     {
         _world = World.Create();
 
-        _entities = new List<Entity>(1_000_000);
-        for (var index = 0; index < 1_000_000; index++)
+        _entities = new List<Entity>(Amount);
+        for (var index = 0; index < Amount; index++)
         {
             _entities.Add(_world.Create(new Transform(), new Velocity()));
         }
     }
 
     [Benchmark]
-    public void TryGetGenericRef()
+    public void TryGetGenericRefSuccess()
     {
         for (var index = 0; index < _entities.Count; index++)
         {
@@ -41,7 +42,22 @@ public class TryGetBenchmark
     }
 
     [Benchmark]
-    public void TryGetGeneric()
+    public void TryGetGenericRefFail()
+    {
+        for (var index = 0; index < _entities.Count; index++)
+        {
+            var entity = _entities[index];
+            var pos = _world.TryGetRef<Position2D>(entity, out var exists);
+
+            if (!exists)
+            {
+                _consumer.Consume(pos);
+            }
+        }
+    }
+
+    [Benchmark]
+    public void TryGetGenericSuccess()
     {
         for (var index = 0; index < _entities.Count; index++)
         {
@@ -55,15 +71,47 @@ public class TryGetBenchmark
     }
 
     [Benchmark]
-    public void TryGet()
+    public void TryGetGenericFail()
     {
         for (var index = 0; index < _entities.Count; index++)
         {
             var entity = _entities[index];
 
-            if (_world.TryGet(entity, Component.GetComponentType(typeof(Transform)), out var xform))
+            if (!_world.TryGet<Position2D>(entity, out var pos))
+            {
+                _consumer.Consume(pos);
+            }
+        }
+    }
+
+    [Benchmark]
+    public void TryGetSuccess()
+    {
+        var xformType = Component.GetComponentType(typeof(Transform));
+
+        for (var index = 0; index < _entities.Count; index++)
+        {
+            var entity = _entities[index];
+
+            if (_world.TryGet(entity, xformType, out var xform))
             {
                 _consumer.Consume(xform);
+            }
+        }
+    }
+
+    [Benchmark]
+    public void TryGetFail()
+    {
+        var xformType = Component.GetComponentType(typeof(Position2D));
+
+        for (var index = 0; index < _entities.Count; index++)
+        {
+            var entity = _entities[index];
+
+            if (!_world.TryGet(entity, xformType, out var pos))
+            {
+                _consumer.Consume(pos);
             }
         }
     }

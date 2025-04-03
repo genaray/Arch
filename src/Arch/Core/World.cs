@@ -1121,7 +1121,7 @@ public partial class World
     [Pure]
     public bool TryGet<T>(Entity entity, out T? component)
     {
-        ref var slot = ref EntityInfo.EntitySlots[entity.Id];
+        ref var slot = ref EntityInfo.EntityData[entity.Id];
 
         if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
@@ -1130,7 +1130,7 @@ public partial class World
         }
 
         ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
-        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this chunk.");
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this archetype.");
         var array = Unsafe.As<T[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
         component = array[slot.Slot.Index];
         return true;
@@ -1147,7 +1147,7 @@ public partial class World
     [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        ref var slot = ref EntityInfo.EntitySlots[entity.Id];
+        ref var slot = ref EntityInfo.EntityData[entity.Id];
 
         if (!(exists = slot.Archetype.Has<T>()))
         {
@@ -1398,14 +1398,18 @@ public partial class World
     [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object? component)
     {
-        component = default;
-        if (!Has(entity, type))
+        ref var slot = ref EntityInfo.EntityData[entity.Id];
+
+        if (!slot.Archetype.TryIndex(type, out int compIndex))
         {
+            component = default;
             return false;
         }
 
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        component = entitySlot.Archetype.Get(ref entitySlot.Slot, type);
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {type} with id {compIndex} does not exist in this archetype.");
+        var array = Unsafe.As<object[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
+        component = array[slot.Slot.Index];
         return true;
     }
 
