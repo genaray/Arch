@@ -1149,12 +1149,17 @@ public partial class World
     {
         ref var slot = ref EntityInfo.EntityData[entity.Id];
 
-        if (!(exists = slot.Archetype.Has<T>()))
+        if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
+            exists = false;
             return ref Unsafe.NullRef<T>();
         }
 
-        return ref slot.Archetype.Get<T>(ref slot.Slot);
+        exists = true;
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this archetype.");
+        var array = Unsafe.As<T[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
+        return ref array[slot.Slot.Index];
     }
 
     /// <summary>

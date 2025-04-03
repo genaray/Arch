@@ -47,12 +47,8 @@ public class TryGetBenchmark
         for (var index = 0; index < _entities.Count; index++)
         {
             var entity = _entities[index];
-            var pos = _world.TryGetRef<Position2D>(entity, out var exists);
-
-            if (!exists)
-            {
-                _consumer.Consume(pos);
-            }
+            _world.TryGetRef<Position2D>(entity, out var exists);
+            _consumer.Consume(exists);
         }
     }
 
