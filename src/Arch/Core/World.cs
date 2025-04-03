@@ -5,6 +5,7 @@ using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
 using Schedulers;
 using Component = Arch.Core.Utils.Component;
 
@@ -1120,18 +1121,18 @@ public partial class World
     [Pure]
     public bool TryGet<T>(Entity entity, out T? component)
     {
-        component = default;
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
 
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        var slot = entitySlot.Slot;
-        var archetype = entitySlot.Archetype;
-
-        if (!archetype.Has<T>())
+        if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
+            component = default;
             return false;
         }
 
-        component = archetype.Get<T>(ref slot);
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this archetype.");
+        var array = Unsafe.As<T[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
+        component = array[slot.Slot.Index];
         return true;
     }
 
@@ -1146,16 +1147,19 @@ public partial class World
     [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        var slot = entitySlot.Slot;
-        var archetype = entitySlot.Archetype;
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
 
-        if (!(exists = archetype.Has<T>()))
+        if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
+            exists = false;
             return ref Unsafe.NullRef<T>();
         }
 
-        return ref archetype.Get<T>(ref slot);
+        exists = true;
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {typeof(T)} with id {compIndex} does not exist in this archetype.");
+        var array = Unsafe.As<T[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
+        return ref array[slot.Slot.Index];
     }
 
     /// <summary>
@@ -1399,14 +1403,18 @@ public partial class World
     [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object? component)
     {
-        component = default;
-        if (!Has(entity, type))
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
+
+        if (!slot.Archetype.TryIndex(type, out int compIndex))
         {
+            component = default;
             return false;
         }
 
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
-        component = entitySlot.Archetype.Get(ref entitySlot.Slot, type);
+        ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
+        Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {type} with id {compIndex} does not exist in this archetype.");
+        var array = Unsafe.As<object[]>(chunk.Components.DangerousGetReferenceAt(compIndex));
+        component = array[slot.Slot.Index];
         return true;
     }
 

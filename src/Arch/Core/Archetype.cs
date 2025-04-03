@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
@@ -298,6 +299,45 @@ public sealed partial class Archetype
     }
 
     /// <summary>
+    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    /// component.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal bool TryIndex<T>(out int i)
+    {
+        var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Pure]
+    internal bool TryIndex(ComponentType type, out int i)
+    {
+        var id = type.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    /// <summary>
+    ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     ///     The base size of a <see cref="Chunk"/> within the <see cref="Chunks"/> in KB.
     ///     All <see cref="Chunk"/>s will have a minimum of this size. The actual size is <see cref="ChunkSize"/>.
     /// </summary>
