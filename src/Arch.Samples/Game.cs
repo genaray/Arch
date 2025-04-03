@@ -1,6 +1,8 @@
 using Arch.Core;
 using Arch.Core.Extensions;
+using Arch.Core.Extensions.Dangerous;
 using Arch.Core.Utils;
+using CommunityToolkit.HighPerformance;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -98,11 +100,75 @@ public sealed class Game : Microsoft.Xna.Framework.Game
             Exit();
         }
 
-        if (Keyboard.GetState().IsKeyDown(Keys.Delete))
+        // Continue entity movement by adding velocity to all
+        if (Keyboard.GetState().IsKeyDown(Keys.I))
+        {
+            // Query for velocity entities and remove their velocity to make them stop moving.
+            var queryDesc = new QueryDescription().WithNone<Velocity>();
+            _world.Add(in queryDesc, new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) });
+        }
+
+        // Pause entity movement by removing velocity from all
+        if (Keyboard.GetState().IsKeyDown(Keys.O))
         {
             // Query for velocity entities and remove their velocity to make them stop moving.
             var queryDesc = new QueryDescription().WithAll<Velocity>();
             _world.Remove<Velocity>(in queryDesc);
+        }
+
+        // Add a random amount of new entities
+        if (Keyboard.GetState().IsKeyDown(Keys.K))
+        {
+            // Bulk create entities
+            var amount = Random.Shared.Next(0, 500);
+            Span<Entity> entities = stackalloc Entity[amount];
+            _world.Create(entities,[typeof(Position), typeof(Velocity), typeof(Sprite)], amount);
+
+            // Set variables
+            foreach (var entity in entities)
+            { 
+
+#if DEBUG_PUREECS || RELEASE_PUREECS
+                _world.Set(entity,
+                    new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
+                    new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) },
+                    new Sprite { Texture2D = _texture2D, Color = _random.NextColor() }
+                );
+#else
+                entity.Set(
+                    new Position { Vec2 = _random.NextVector2(GraphicsDevice.Viewport.Bounds) },
+                    new Velocity { Vec2 = _random.NextVector2(-0.25f, 0.25f) },
+                    new Sprite { Texture2D = _texture2D, Color = _random.NextColor() }
+                );
+#endif
+            }
+        }
+
+        // Remove a random amount of new entities
+        if (Keyboard.GetState().IsKeyDown(Keys.L))
+        {
+            // Find all entities
+            var entities = new Entity[_world.Size];
+            _world.GetEntities(new QueryDescription(), entities.AsSpan());
+
+            // Delete random entities
+            var amount = Random.Shared.Next(0, Math.Min(500, entities.Length));
+            for (var index = 0; index < amount; index++)
+            {
+                var randomIndex = _random.Next(0, entities.Length);
+                var randomEntity = entities[randomIndex];
+
+#if DEBUG_PUREECS || RELEASE_PUREECS
+                if (_world.IsAlive(randomEntity))
+#else
+                if (randomEntity.IsAlive())
+#endif
+                {
+                    _world.Destroy(randomEntity);
+                }
+
+                entities[randomIndex] = Entity.Null;
+            }
         }
 
         _movementSystem.Update(in gameTime);
@@ -115,6 +181,7 @@ public sealed class Game : Microsoft.Xna.Framework.Game
         _graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
         _drawSystem.Update(in gameTime);
         Console.WriteLine($"FPS : {1 / gameTime.ElapsedGameTime.TotalSeconds}");
+        Console.WriteLine($"WORLD: {_world.Size}/{_world.Capacity}");
         base.Draw(gameTime);
     }
 

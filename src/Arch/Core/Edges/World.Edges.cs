@@ -13,7 +13,6 @@ public partial class World
     /// <param name="type">The new <see cref="ComponentType"/> that additionally forms a new <see cref="Archetype"/> with the old components of the old archetype.</param>
     /// <param name="oldArchetype">The old <see cref="Archetype"/>.</param>
     /// <returns>The cached or newly created <see cref="Archetype"/> with that additional component.</returns>
-
     private Archetype GetOrCreateArchetypeByAddEdge(in ComponentType type, Archetype oldArchetype)
     {
         Archetype archetype;
@@ -21,7 +20,8 @@ public partial class World
 
         if (!oldArchetype.HasAddEdge(edgeIndex))
         {
-            archetype = GetOrCreate(oldArchetype.Types.Add(type));
+            var newSignature = Signature.Add(oldArchetype.Signature, type);
+            archetype = GetOrCreate(newSignature);
             oldArchetype.AddAddEdge(edgeIndex, archetype);
         }
         else
@@ -39,7 +39,6 @@ public partial class World
     /// <param name="type">The new <see cref="ComponentType"/> that additionally forms a new <see cref="Archetype"/> with the old components of the old archetype.</param>
     /// <param name="oldArchetype">The old <see cref="Archetype"/>.</param>
     /// <returns>The cached or newly created <see cref="Archetype"/> with that additional component.</returns>
-
     private Archetype GetOrCreateArchetypeByRemoveEdge(in ComponentType type, Archetype oldArchetype)
     {
         Archetype archetype;
@@ -47,7 +46,8 @@ public partial class World
 
         if (!oldArchetype.HasRemoveEdge(edgeIndex))
         {
-            archetype = GetOrCreate(oldArchetype.Types.Remove(type));
+            var newSignature = Signature.Remove(oldArchetype.Signature, type);
+            archetype = GetOrCreate(newSignature);
             oldArchetype.AddRemoveEdge(edgeIndex, archetype);
         }
         else

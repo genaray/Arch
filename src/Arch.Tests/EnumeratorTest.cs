@@ -6,6 +6,8 @@ using static NUnit.Framework.Assert;
 
 namespace Arch.Tests;
 
+// TODO: Add tests for query cache
+
 /// <summary>
 ///     The <see cref="EnumeratorTest"/>
 ///     checks if the enumerators inside the common classes work correctly.
@@ -23,8 +25,8 @@ public sealed class EnumeratorTest
     public void Setup()
     {
         _world = World.Create();
-        _world.Reserve(_group, 10000);
-        _world.Reserve(_otherGroup, 10000);
+        _world.EnsureCapacity(_group, 10000);
+        _world.EnsureCapacity(_otherGroup, 10000);
 
         for (var index = 0; index < 10000; index++)
         {
@@ -69,7 +71,7 @@ public sealed class EnumeratorTest
             counter++;
         }
 
-        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / archetype.CalculateEntitiesPerChunk(_group))));
+        That(counter, Is.EqualTo((int)Math.Ceiling((float)10000 / Archetype.GetEntityCountFor(archetype.ChunkSize, _group))));
     }
 
     /// <summary>
@@ -116,15 +118,17 @@ public sealed class EnumeratorTest
     [Test]
     public void QueryChunkEnumeration()
     {
-        var counter = 0;
+        var counter = _world.CountEntities(in _description);
+        var chunkCounter = 0;
+
         var query = _world.Query(in _description);
         foreach (ref var chunk in query)
         {
-            counter++;
+            counter -= chunk.Count;
+            chunkCounter++;
         }
 
-        var archetype1ChunkCount = _world.Archetypes[0].ChunkCount;
-        var archetype2ChunkCount = _world.Archetypes[1].ChunkCount;
-        That(counter, Is.EqualTo(archetype1ChunkCount + archetype2ChunkCount));
+        That(counter, Is.EqualTo(0));
+        That(chunkCounter, Is.EqualTo(_world.Archetypes[0].ChunkCount + _world.Archetypes[1].ChunkCount));
     }
 }

@@ -1,0 +1,38 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+//TODO: Improve source generation by extracting the stringbuilder stuff to own methods
+
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class Archetype
+{
+<#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var getIds = new StringBuilder();
+        var isSet = new StringBuilder();
+
+        for (var i = 0; i < index; i++)
+        {
+            getIds.AppendLine($"var t{i}ComponentId = Component<T{i}>.ComponentType.Id;");
+            isSet.Append($"BitSet.IsSet(t{i}ComponentId)");
+            if (i < index) isSet.Append(" && ");
+        }
+
+        isSet.Length -= 3;
+#>
+    public bool Has<<#= generics #>>()
+    {
+        <#= Indent(getIds, 8) #>
+        return <#= isSet.ToString() #>;
+    }
+
+<#
+    }
+#>
+}

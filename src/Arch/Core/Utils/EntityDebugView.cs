@@ -38,7 +38,7 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The version of this <see cref="Entity"/>.
     /// </summary>
-    public int Version => IsAlive ? World.Worlds[_entity.WorldId].Version(_entity) : -1;
+    public int Version => IsAlive ? _entity.Version : -1;
 
     /// <summary>
     ///     The <see cref="Entity"/>s components.
@@ -63,7 +63,7 @@ internal sealed class EntityDebugView
     /// <summary>
     ///     The stored <see cref="EntityInfo"/> for this <see cref="Entity"/>.
     /// </summary>
-    public EntityInfo EntityInfo => IsAlive ? World?.EntityInfo[_entity.Id] ?? new EntityInfo() : new EntityInfo();
+    public EntityData EntityInfo => IsAlive ? World?.EntityInfo[_entity.Id] ?? new EntityData() : new EntityData();
 }
 
 #endif

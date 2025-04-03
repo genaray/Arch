@@ -1,0 +1,21 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+
+namespace Arch.Core;
+<#
+for (var index = 1; index <= Amount; index++)
+{
+    var generics = AppendGenerics(index);
+    var parameters = AppendGenericRefParameters(index);
+#>
+public delegate void ForEach<<#= generics #>>(<#= parameters.ToString() #>);
+<#
+}
+#>
+
+

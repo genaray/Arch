@@ -1,0 +1,52 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var removes = new StringBuilder();
+        var events = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            removes.AppendLine($"            spanBitSet.ClearBit(Component<T{i}>.ComponentType.Id);");
+            events.AppendLine($"            OnComponentRemoved<T{i}>(entity);");
+        }
+    #>
+
+    [SkipLocalsInit]
+    [StructuralChange]
+    public void Remove<<#= generics #>>(Entity entity)
+    {
+        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+
+        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
+        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
+        oldArchetype.BitSet.AsSpan(stack);
+
+        // Create a span bitset, doing it local saves us headache and gargabe
+        var spanBitSet = new SpanBitSet(stack);
+<#= removes.ToString() #>
+
+        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype)){
+            var newSignature = Signature.Remove(oldArchetype.Signature, Component<<#= generics #>>.Signature);
+            newArchetype = GetOrCreate(newSignature);
+        }
+
+<#= events.ToString() #>
+        Move(entity, oldArchetype, newArchetype, out _);
+    }
+    <#
+    }
+    #>
+}

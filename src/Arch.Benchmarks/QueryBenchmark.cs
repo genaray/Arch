@@ -21,7 +21,7 @@ public class QueryBenchmark
     public void Setup()
     {
         _world = World.Create();
-        _world.Reserve(_group, Amount);
+        _world.EnsureCapacity(_group, Amount);
 
         for (var index = 0; index < Amount; index++)
         {

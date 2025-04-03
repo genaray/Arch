@@ -8,7 +8,9 @@ namespace Arch.Benchmarks;
 [HardwareCounters(HardwareCounter.CacheMisses)]
 public class ArchetypeIterationBenchmark
 {
-    private readonly ComponentType[] _group = { typeof(Transform), typeof(Rotation) };
+    private readonly int _minimumChunkSize = 16_382;
+    private readonly int _minimumEntityCount = 100;
+    private readonly ComponentType[] _group = [typeof(Transform), typeof(Rotation)];
 
     [Params(10000, 100000, 1000000)] public int Amount;
 
@@ -21,13 +23,13 @@ public class ArchetypeIterationBenchmark
         _consumer = new Consumer();
         // jobScheduler = new JobScheduler();
 
-        _globalArchetype = new Archetype(_group);
-        _globalArchetype.Reserve(Amount);
+        _globalArchetype = new Archetype(_group, _minimumChunkSize, _minimumEntityCount);
+        _globalArchetype.EnsureEntityCapacity(Amount);
 
         for (var index = 0; index < Amount; index++)
         {
             var entity = new Entity(index, 0);
-            _globalArchetype.Add(entity, out var slot);
+            _globalArchetype.Add(entity, out _, out var slot);
 
             var t = new Transform();
             var r = new Rotation();
@@ -45,7 +47,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var chunk = ref chunks[chunkIndex];
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
             var transforms = chunk.GetArray<Transform>();
             var rotations = chunk.GetArray<Rotation>();
 
@@ -69,7 +71,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var transforms = currentChunk.GetArray<Transform>();
             var rotations = currentChunk.GetArray<Rotation>();
@@ -103,7 +105,7 @@ public class ArchetypeIterationBenchmark
             for (var chunkIndex = 0; chunkIndex < end - start; chunkIndex++)
             {
                 ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-                var chunkSize = chunk.Size;
+                var chunkSize = chunk.Count;
 
                 var transforms = currentChunk.GetArray<Transform>();
                 var rotations = currentChunk.GetArray<Rotation>();
@@ -132,7 +134,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var chunk = ref chunks[chunkIndex];
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var entities = chunk.Entities;
             var transforms = chunk.GetArray<Transform>();
@@ -160,7 +162,7 @@ public class ArchetypeIterationBenchmark
         for (var chunkIndex = 0; chunkIndex < size; chunkIndex++)
         {
             ref readonly var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            var chunkSize = chunk.Size;
+            var chunkSize = chunk.Count;
 
             var entities = currentChunk.Entities;
             var transforms = currentChunk.GetArray<Transform>();

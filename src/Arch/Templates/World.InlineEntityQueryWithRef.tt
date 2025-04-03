@@ -1,0 +1,40 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+// TODO: Move query with T0 into world.cs?
+
+namespace Arch.Core;
+public partial class World
+{
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var getFirstElement = AppendGetFirstComponentFrom(index);
+        var getComponents = AppendGetComponentsFromFirst(index);
+        var insertParams = InsertGenericRefParams(index);
+#>
+    public void InlineEntityQuery<T, <#= generics #>>(in QueryDescription description) where T : struct, IForEachWithEntity<<#= generics #>>
+    {
+        var t = new T();
+
+        var query = Query(in description);
+        foreach (ref var chunk in query)
+        {
+            ref var entityFirstElement = ref chunk.Entity(0);
+            <#= Indent(getFirstElement, 12) #>
+            foreach (var entityIndex in chunk)
+            {
+                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
+                <#= Indent(getComponents, 16) #>
+                t.Update(entity, <#= insertParams #>);
+            }
+        }
+    }
+
+<#
+    }
+#>
+}

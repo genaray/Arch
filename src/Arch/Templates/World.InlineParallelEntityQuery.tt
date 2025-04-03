@@ -1,0 +1,26 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+// TODO: Move query with T0 into world.cs?
+
+namespace Arch.Core;
+public partial class World
+{
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+#>
+    public void InlineParallelEntityQuery<T,<#= generics #>>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<<#= generics #>>
+    {
+        var innerJob = new IForEachWithEntityJob<T,<#= generics #>>();
+        innerJob.ForEach = iForEach;
+
+        InlineParallelChunkQuery(in description, innerJob);
+    }
+<#
+    }
+#>
+}

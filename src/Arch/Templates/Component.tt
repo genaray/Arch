@@ -10,7 +10,7 @@ using System.Threading;
 namespace Arch.Core.Utils;
 
 <#
-    for (var index = 1; index < Amount; index++)
+    for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
         var types = AppendTypes(index);

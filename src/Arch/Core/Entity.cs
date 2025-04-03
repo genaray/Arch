@@ -20,19 +20,37 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     public readonly int Id = -1;
 
     /// <summary>
+    ///     The version of an entity.
+    /// </summary>
+    public readonly int Version;
+
+    /// <summary>
     ///     A null entity, used for comparison.
     /// </summary>
-    public static readonly Entity Null = new(-1, 0);
+    public static readonly Entity Null = new(-1, 0, -1);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Entity"/> struct.
     /// </summary>
     /// <param name="id">Its unique id.</param>
     /// <param name="worldId">Its world id, not used for this entity since its pure ecs.</param>
-
+    /// <param name="version">Its version.</param>
     internal Entity(int id, int worldId)
     {
         Id = id;
+        Version = 1;
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Entity"/> struct.
+    /// </summary>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="worldId">Its world id, not used for this entity since its pure ecs.</param>
+    /// <param name="version">Its version.</param>
+    internal Entity(int id, int worldId, int version)
+    {
+        Id = id;
+        Version = version;
     }
 
     /// <summary>
@@ -40,10 +58,9 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public bool Equals(Entity other)
     {
-        return Id == other.Id;
+        return ((Id ^ other.Id) | (Version ^ other.Version)) == 0;
     }
 
     /// <summary>
@@ -51,7 +68,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="obj">The other <see cref="Entity"/> object.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public override bool Equals(object? obj)
     {
         return obj is Entity other && Equals(other);
@@ -63,10 +79,9 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>A int indicating their order.</returns>
-
     public int CompareTo(Entity other)
     {
-        return Id.CompareTo(other.Id);
+        return (Version.CompareTo(other.Version) << 8) | Id.CompareTo(other.Id);
     }
 
     /// <summary>
@@ -81,6 +96,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
             // Overflow is fine, just wrap
             var hash = 17;
             hash = hash * 23 + Id;
+            hash = hash * 23 + Version;
             return hash;
         }
     }
@@ -90,7 +106,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are equal, otherwhise false.</returns>
+    /// <returns>True if both are equal, otherwise false.</returns>
 
     public static bool operator ==(Entity left, Entity right)
     {
@@ -102,7 +118,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if both are unequal, otherwhise false.</returns>
+    /// <returns>True if both are unequal, otherwise false.</returns>
 
     public static bool operator !=(Entity left, Entity right)
     {
@@ -129,7 +145,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
 public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
 {
     /// <summary>
-    ///      Its Id, unique in its <see cref="World"/>.
+    ///      It's Id, unique in its <see cref="World"/>.
     /// </summary>
     public readonly int Id;
 
@@ -139,9 +155,14 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     public readonly int WorldId;
 
     /// <summary>
+    ///     The version of an entity.
+    /// </summary>
+    public readonly int Version;
+
+    /// <summary>
     ///     A null <see cref="Entity"/> used for comparison.
     /// </summary>
-    public readonly static Entity Null = new(-1, 0);
+    public readonly static Entity Null = new(-1, 0, -1);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Entity"/> struct with default values.
@@ -150,6 +171,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         Id = -1;
         WorldId = 0;
+        Version = -1;
     }
 
     /// <summary>
@@ -157,11 +179,25 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="id">Its unique id.</param>
     /// <param name="worldId">Its <see cref="World"/> id.</param>
-
+    /// <param name="version">Its version.</param>
     internal Entity(int id, int worldId)
     {
         Id = id;
         WorldId = worldId;
+        Version = 1;
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Entity"/> struct.
+    /// </summary>
+    /// <param name="id">Its unique id.</param>
+    /// <param name="worldId">Its <see cref="World"/> id.</param>
+    /// <param name="version">Its version.</param>
+    internal Entity(int id, int worldId, int version)
+    {
+        Id = id;
+        WorldId = worldId;
+        Version = version;
     }
 
     /// <summary>
@@ -169,10 +205,9 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public bool Equals(Entity other)
     {
-        return Id == other.Id && WorldId == other.WorldId;
+        return ((Id ^ other.Id) | (WorldId ^ other.WorldId) | (Version ^ other.Version)) == 0;
     }
 
     /// <summary>
@@ -180,7 +215,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="obj">The other <see cref="Entity"/> object.</param>
     /// <returns>True if equal, false if not.</returns>
-
     public override bool Equals(object? obj)
     {
         return obj is Entity other && Equals(other);
@@ -192,17 +226,15 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="other">The other <see cref="Entity"/>.</param>
     /// <returns>A int indicating their order.</returns>
-
     public int CompareTo(Entity other)
     {
-        return WorldId != other.WorldId ? WorldId.CompareTo(other.WorldId) : Id.CompareTo(other.Id);
+        return (WorldId.CompareTo(other.WorldId) << 16) | (Version.CompareTo(other.Version) << 8) | Id.CompareTo(other.Id);
     }
 
     /// <summary>
     ///     Calculates the hash of this <see cref="Entity"/>.
     /// </summary>
     /// <returns>Its hash.</returns>
-
     public override int GetHashCode()
     {
         unchecked
@@ -211,6 +243,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
             var hash = 17;
             hash = (hash * 23) + Id;
             hash = (hash * 23) + WorldId;
+            hash = (hash * 23) + Version;
             return hash;
         }
     }
@@ -220,20 +253,18 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if equal, otherwhise false.</returns>
-
+    /// <returns>True if equal, otherwise false.</returns>
     public static bool operator ==(Entity left, Entity right)
     {
         return left.Equals(right);
     }
 
     /// <summary>
-    ///      Checks the <see cref="Entity"/> for unequality with another one.
+    ///      Checks the <see cref="Entity"/> for inequality with another one.
     /// </summary>
     /// <param name="left">The left <see cref="Entity"/>.</param>
     /// <param name="right">The right <see cref="Entity"/>.</param>
-    /// <returns>True if unequal, otherwhise false.</returns>
-
+    /// <returns>True if unequal, otherwise false.</returns>
     public static bool operator !=(Entity left, Entity right)
     {
         return !left.Equals(right);
@@ -245,163 +276,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
     /// <returns>Its string.</returns>
     public override string ToString()
     {
-        return $"Entity = {{ {nameof(Id)} = {Id}, {nameof(WorldId)} = {WorldId} }}";
+        return $"Entity = {{ {nameof(Id)} = {Id}, {nameof(WorldId)} = {WorldId}, {nameof(Version)} = {Version} }}";
     }
 }
 #endif
-
-/// <summary>
-///     The <see cref="EntityReference"/> struct
-///     represents a reference to an <see cref="Entity"/> and its Version.
-/// </summary>
-[SkipLocalsInit]
-public readonly struct EntityReference
-{
-
-    /// <summary>
-    ///     The referenced <see cref="Entity"/>.
-    /// </summary>
-    public readonly Entity Entity;
-
-    /// <summary>
-    ///     Its version.
-    /// </summary>
-    public readonly int Version;
-
-    /// <summary>
-    ///     A null reference.
-    /// </summary>
-    public static readonly EntityReference Null = new(Entity.Null, -1);
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="EntityReference"/> struct.
-    /// </summary>
-    /// <param name="entity">The referenced <see cref="Entity"/>.</param>
-    /// <param name="version">Its version.</param>
-    internal EntityReference(in Entity entity, in int version)
-    {
-        Entity = entity;
-        Version = version;
-    }
-
-    /// <summary>
-    ///     Initializes a new null instance of the <see cref="EntityReference"/> struct.
-    /// </summary>
-    public EntityReference()
-    {
-        Entity = Entity.Null;
-        Version = -1;
-    }
-
-#if PURE_ECS
-
-    /// <summary>
-    ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
-    /// </summary>
-    /// <param name="world">The <see cref="Entity"/> <see cref="World"/>..</param>
-    /// <returns>True if its alive, otherwhise false.</returns>
-
-    public bool IsAlive(World world)
-    {
-        return world.IsAlive(this);
-    }
-#else
-    /// <summary>
-    ///     Checks if the referenced <see cref="Entity"/> is still valid and alife.
-    /// </summary>
-    /// <returns>True if its alive, otherwhise false.</returns>
-
-    public bool IsAlive()
-    {
-        if (this == Null)
-        {
-            return false;
-        }
-
-        var reference = Entity.Reference();
-        return this == reference;
-    }
-#endif
-
-    /// <summary>
-    ///     Checks the <see cref="EntityReference"/> for equality with another one.
-    /// </summary>
-    /// <param name="other">The other <see cref="EntityReference"/>.</param>
-    /// <returns>True if equal, false if not.</returns>
-
-    public bool Equals(EntityReference other)
-    {
-        return Entity.Equals(other.Entity) && Version == other.Version;
-    }
-
-    /// <summary>
-    ///     Checks the <see cref="EntityReference"/> for equality with another <see cref="object"/>.
-    /// </summary>
-    /// <param name="obj">The other <see cref="EntityReference"/> object.</param>
-    /// <returns>True if equal, false if not.</returns>
-
-    public override bool Equals(object? obj)
-    {
-        return obj is EntityReference other && Equals(other);
-    }
-
-    /// <summary>
-    ///     Calculates the hash of this <see cref="Entity"/>.
-    /// </summary>
-    /// <returns>Its hash.</returns>
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            return (Entity.GetHashCode() * 397) ^ Version;
-        }
-    }
-
-    /// <summary>
-    ///      Checks the <see cref="EntityReference"/> for equality with another one.
-    /// </summary>
-    /// <param name="left">The left <see cref="EntityReference"/>.</param>
-    /// <param name="right">The right <see cref="EntityReference"/>.</param>
-    /// <returns>True if equal, otherwhise false.</returns>
-
-    public static bool operator ==(EntityReference left, EntityReference right)
-    {
-        return left.Equals(right);
-    }
-
-    /// <summary>
-    ///      Checks the <see cref="EntityReference"/> for inequality with another one.
-    /// </summary>
-    /// <param name="left">The left <see cref="EntityReference"/>.</param>
-    /// <param name="right">The right <see cref="EntityReference"/>.</param>
-    /// <returns>True if inequal, otherwhise false.</returns>
-
-    public static bool operator !=(EntityReference left, EntityReference right)
-    {
-        return !left.Equals(right);
-    }
-
-    /// <summary>
-    ///     Implicitly converts an <see cref="EntityReference"/> into the
-    ///     <see cref="Entity"/> that it is referencing.
-    /// </summary>
-    /// <param name="reference">The <see cref="EntityReference"/> to convert.</param>
-    /// <returns>
-    ///     The <see cref="Entity"/> referenced by this <see cref="EntityReference"/>.
-    /// </returns>
-
-    public static implicit operator Entity(EntityReference reference)
-    {
-        return reference.Entity;
-    }
-
-    /// <summary>
-    ///     Converts this <see cref="EntityReference"/> to a string.
-    /// </summary>
-    /// <returns>Its string.</returns>
-    public override string ToString()
-    {
-        return $"EntityReference = {{ {nameof(Entity)} = {Entity}, {nameof(Version)} = {Version} }}";
-    }
-}

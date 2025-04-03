@@ -46,6 +46,7 @@ jobs:
           3.1.x
           6.0.x
           7.0.x
+          8.0.x
 
     - name: Build
       run: ./scripts/Build.sh
@@ -54,7 +55,7 @@ jobs:
       run: ./scripts/Test.sh
 
     - name: Upload dotnet test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dotnet-results
         path: TestResults
