@@ -1121,7 +1121,7 @@ public partial class World
     [Pure]
     public bool TryGet<T>(Entity entity, out T? component)
     {
-        ref var slot = ref EntityInfo.EntityData[entity.Id];
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
 
         if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
@@ -1147,7 +1147,7 @@ public partial class World
     [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        ref var slot = ref EntityInfo.EntityData[entity.Id];
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
 
         if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
@@ -1403,7 +1403,7 @@ public partial class World
     [Pure]
     public bool TryGet(Entity entity, ComponentType type, out object? component)
     {
-        ref var slot = ref EntityInfo.EntityData[entity.Id];
+        var slot = EntityInfo.GetEntitySlot(entity.Id);
 
         if (!slot.Archetype.TryIndex(type, out int compIndex))
         {
