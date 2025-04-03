@@ -654,8 +654,29 @@ public partial class WorldTest
     {
         var entity = _world.Create(new Transform());
 
-        That(_world.TryGet(entity, out Transform xform), Is.EqualTo(true));
-        That(_world.TryGet(entity, out Rotation rot), Is.EqualTo(false));
+        That(_world.TryGet(entity, out Transform _), Is.EqualTo(true));
+        That(_world.TryGet(entity, out Rotation _), Is.EqualTo(false));
+    }
+
+    [Test]
+    public void TryGetRefSuccess()
+    {
+        var entity = _world.Create(new Transform());
+
+        var aRef = _world.TryGetRef<Transform>(entity, out var exists);
+
+        That(exists, Is.EqualTo(true));
+        That(aRef, Is.Not.EqualTo(null));
+    }
+
+    [Test]
+    public void TryGetRefFail()
+    {
+        var entity = _world.Create(new Transform());
+
+        _world.TryGetRef<Rotation>(entity, out var exists);
+
+        That(exists, Is.EqualTo(false));
     }
 }
 
