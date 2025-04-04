@@ -90,6 +90,8 @@ public partial class World
     /// </summary>
     public static JobScheduler? SharedJobScheduler { get; set; }
 
+    private bool _isDisposed;
+
     /// <summary>
     ///     Creates a <see cref="World"/> instance.
     /// </summary>
@@ -132,31 +134,7 @@ public partial class World
     /// <param name="world">The <see cref="World"/> to destroy.</param>
     public static void Destroy(World world)
     {
-#if !PURE_ECS
-        lock (Worlds)
-        {
-            Worlds[world.Id] = null!;
-            RecycledWorldIds.Enqueue(world.Id);
-            Interlocked.Decrement(ref worldSizeUnsafe);
-        }
-#endif
-
-        world.Capacity = 0;
-        world.Size = 0;
-
-        // Dispose
-        world.JobHandles.Dispose();
-        world.GroupToArchetype.Dispose();
-        world.RecycledIds.Dispose();
-        world.QueryCache.Dispose();
-
-        // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
-        for (var index = 0; index < world.Archetypes.Count; index++)
-        {
-            world.Archetypes[index] = null!;
-        }
-
-        world.Archetypes.Dispose();
+        world.Dispose();
     }
 }
 
@@ -571,11 +549,59 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Dispose()
     {
-        Destroy(this);
-        // In case the user (or us) decides to override and provide a finalizer, prevents them from having
-        // to re-implement Dispose() to avoid calling it twice.
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
+
+    // Protected implementation of Dispose pattern.
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                // Dispose managed state.
+            }
+
+            // Dispose unmanaged resource.
+
+            var world = this;
+#if !PURE_ECS
+            lock (Worlds)
+            {
+                Worlds[world.Id] = null!;
+                RecycledWorldIds.Enqueue(world.Id);
+                Interlocked.Decrement(ref worldSizeUnsafe);
+            }
+#endif
+
+            world.Capacity = 0;
+            world.Size = 0;
+
+            // Dispose
+            world.JobHandles.Dispose();
+            world.GroupToArchetype.Dispose();
+            world.RecycledIds.Dispose();
+            world.QueryCache.Dispose();
+
+            // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
+            for (var index = 0; index < world.Archetypes.Count; index++)
+            {
+                world.Archetypes[index] = null!;
+            }
+
+            world.Archetypes.Dispose();
+
+        }
+    }
+
+    // It fails the WorldRecycle test.
+    //~World()
+    //{
+    //    Dispose(false);
+    //}
 
     /// <summary>
     ///     Converts this <see cref="World"/> to a human-readable <c>string</c>.

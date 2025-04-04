@@ -56,6 +56,25 @@ public sealed partial class WorldTest
     }
 
     /// <summary>
+    ///     Check the dispose pattern.
+    /// </summary>
+    [Test]
+    public void WorldDestroyTwice()
+    {
+        using var worldA = World.Create(); // World A has ID 0 and size 0
+        worldA.Create(); // worldA is now size 1
+        World.Destroy(worldA); // world A is size 0
+
+        using var worldB = World.Create(); // World B has ID 0 and size 0
+        var e0 = worldB.Create(0); // world B now has size 1
+        World.Destroy(worldA); // World B still appears to have size 1
+        var e1 = worldB.Create(0); // World B has size 2
+
+        e0.Get<int>(); // This causes a null reference exception
+        e1.Get<int>(); // This also causes a null reference exception
+    }
+
+    /// <summary>
     ///     Checks if the <see cref="World"/> creates <see cref="Entity"/> correctly.
     /// </summary>
     [Test]
