@@ -561,12 +561,13 @@ public partial struct Chunk
     /// </summary>
     /// <param name="source">The source <see cref="Chunk"/>.</param>
     /// <param name="index">The start index in the source <see cref="Chunk"/>.</param>
+    /// <param name="sourceSignature">The <see cref="Signature"/> from the source archetype.</param>
     /// <param name="destination">The destination <see cref="Chunk"/>.</param>
     /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
     /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
     internal static void Copy(
         ref Chunk source, int index, ref Signature sourceSignature,
-        ref Chunk destination, int destinationIndex, ref Signature destinationSignature,
+        ref Chunk destination, int destinationIndex,
         int length)
     {
         // Arrays
@@ -575,7 +576,7 @@ public partial struct Chunk
         // Copy entities array
         Array.Copy(entities, index, destination.Entities, destinationIndex, length);
 
-        CopyComponents(ref source, index, ref sourceSignature, ref destination, destinationIndex, ref destinationSignature, length);
+        CopyComponents(ref source, index, ref sourceSignature, ref destination, destinationIndex, length);
     }
 
     /// <summary>
@@ -583,12 +584,13 @@ public partial struct Chunk
     /// </summary>
     /// <param name="source">The source <see cref="Chunk"/>.</param>
     /// <param name="index">The start index in the source <see cref="Chunk"/>.</param>
+    /// <param name="sourceSignature">The <see cref="Signature"/> from the source archetype.</param>
     /// <param name="destination">The destination <see cref="Chunk"/>.</param>
     /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
     /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
     internal static void CopyComponents(
         ref Chunk source, int index, ref Signature sourceSignature,
-        ref Chunk destination, int destinationIndex, ref Signature destinationSignature,
+        ref Chunk destination, int destinationIndex,
         int length)
     {
         // Arrays
