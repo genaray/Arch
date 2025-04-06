@@ -471,6 +471,18 @@ public partial struct Chunk
     }
 
     /// <summary>
+    ///     Checks if a component is included in this <see cref="Chunk"/>.
+    /// </summary>
+    /// <param name="t">The type.</param>
+    /// <returns>True if included, false otherwise.</returns>
+    [Pure]
+    public bool Has(ComponentType t)
+    {
+        var id = t.Id;
+        return Has(id);
+    }
+
+    /// <summary>
     ///     Returns a component from an index within the <see cref="Chunk"/>.
     /// </summary>
     /// <param name="type">The type.</param>
