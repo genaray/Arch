@@ -318,6 +318,10 @@ public sealed partial class Archetype
         return i != -1;
     }
 
+    /// <summary>
+    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    /// component.
+    /// </summary>
     [Pure]
     internal bool TryIndex(ComponentType type, out int i)
     {

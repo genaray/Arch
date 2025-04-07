@@ -9,7 +9,6 @@ public class Benchmark
 {
     private static void Main(string[] args)
     {
-
         // NOTE: Can this be replaced with ManualConfig.CreateEmpty()?
 #pragma warning disable HAA0101 // Array allocation for params parameter
         var config = new ManualConfig()
