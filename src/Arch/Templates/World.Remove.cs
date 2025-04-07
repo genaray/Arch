@@ -8,12 +8,13 @@ using Arch.Core.Utils;
 namespace Arch.Core;
 public partial class World
 {
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -33,14 +34,15 @@ public partial class World
             OnComponentRemoved<T0>(entity);
             OnComponentRemoved<T1>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -62,14 +64,15 @@ public partial class World
             OnComponentRemoved<T1>(entity);
             OnComponentRemoved<T2>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -93,14 +96,15 @@ public partial class World
             OnComponentRemoved<T2>(entity);
             OnComponentRemoved<T3>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -126,14 +130,15 @@ public partial class World
             OnComponentRemoved<T3>(entity);
             OnComponentRemoved<T4>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -161,14 +166,15 @@ public partial class World
             OnComponentRemoved<T4>(entity);
             OnComponentRemoved<T5>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -198,14 +204,15 @@ public partial class World
             OnComponentRemoved<T5>(entity);
             OnComponentRemoved<T6>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -237,14 +244,15 @@ public partial class World
             OnComponentRemoved<T6>(entity);
             OnComponentRemoved<T7>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -278,14 +286,15 @@ public partial class World
             OnComponentRemoved<T7>(entity);
             OnComponentRemoved<T8>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -321,14 +330,15 @@ public partial class World
             OnComponentRemoved<T8>(entity);
             OnComponentRemoved<T9>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -366,14 +376,15 @@ public partial class World
             OnComponentRemoved<T9>(entity);
             OnComponentRemoved<T10>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -413,14 +424,15 @@ public partial class World
             OnComponentRemoved<T10>(entity);
             OnComponentRemoved<T11>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -462,14 +474,15 @@ public partial class World
             OnComponentRemoved<T11>(entity);
             OnComponentRemoved<T12>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -513,14 +526,15 @@ public partial class World
             OnComponentRemoved<T12>(entity);
             OnComponentRemoved<T13>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -566,14 +580,15 @@ public partial class World
             OnComponentRemoved<T13>(entity);
             OnComponentRemoved<T14>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -621,14 +636,15 @@ public partial class World
             OnComponentRemoved<T14>(entity);
             OnComponentRemoved<T15>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -678,14 +694,15 @@ public partial class World
             OnComponentRemoved<T15>(entity);
             OnComponentRemoved<T16>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -737,14 +754,15 @@ public partial class World
             OnComponentRemoved<T16>(entity);
             OnComponentRemoved<T17>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -798,14 +816,15 @@ public partial class World
             OnComponentRemoved<T17>(entity);
             OnComponentRemoved<T18>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -861,14 +880,15 @@ public partial class World
             OnComponentRemoved<T18>(entity);
             OnComponentRemoved<T19>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -926,14 +946,15 @@ public partial class World
             OnComponentRemoved<T19>(entity);
             OnComponentRemoved<T20>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -993,14 +1014,15 @@ public partial class World
             OnComponentRemoved<T20>(entity);
             OnComponentRemoved<T21>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -1062,14 +1084,15 @@ public partial class World
             OnComponentRemoved<T21>(entity);
             OnComponentRemoved<T22>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -1133,14 +1156,15 @@ public partial class World
             OnComponentRemoved<T22>(entity);
             OnComponentRemoved<T23>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
-    
+
     [SkipLocalsInit]
     [StructuralChange]
     public void Remove<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -1206,6 +1230,6 @@ public partial class World
             OnComponentRemoved<T23>(entity);
             OnComponentRemoved<T24>(entity);
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
     }
