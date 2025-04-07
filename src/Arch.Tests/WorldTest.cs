@@ -664,6 +664,39 @@ public partial class WorldTest
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
+
+    /// <summary>
+    ///     Checks if generic TryGet works on entities.
+    /// </summary>
+    [Test]
+    public void TryGet()
+    {
+        var entity = _world.Create(new Transform());
+
+        That(_world.TryGet(entity, out Transform _), Is.EqualTo(true));
+        That(_world.TryGet(entity, out Rotation _), Is.EqualTo(false));
+    }
+
+    [Test]
+    public void TryGetRefSuccess()
+    {
+        var entity = _world.Create(new Transform());
+
+        var aRef = _world.TryGetRef<Transform>(entity, out var exists);
+
+        That(exists, Is.EqualTo(true));
+        That(aRef, Is.Not.EqualTo(null));
+    }
+
+    [Test]
+    public void TryGetRefFail()
+    {
+        var entity = _world.Create(new Transform());
+
+        _world.TryGetRef<Rotation>(entity, out var exists);
+
+        That(exists, Is.EqualTo(false));
+    }
 }
 
 
@@ -717,6 +750,18 @@ public partial class WorldTest
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
+    }
+
+    /// <summary>
+    ///     Checks if generic TryGet works on entities.
+    /// </summary>
+    [Test]
+    public void TryGet_NonGeneric()
+    {
+        var entity = _world.Create(new Transform());
+
+        That(_world.TryGet(entity, Component<Transform>.ComponentType, out var xform), Is.EqualTo(true));
+        That(_world.TryGet(entity, Component<Rotation>.ComponentType, out var rot), Is.EqualTo(false));
     }
 }
 

@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
@@ -298,6 +299,43 @@ public sealed partial class Archetype
     }
 
     /// <summary>
+    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    /// component.
+    /// </summary>
+    [Pure]
+    internal bool TryIndex<T>(out int i)
+    {
+        var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    [Pure]
+    internal bool TryIndex(ComponentType type, out int i)
+    {
+        var id = type.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    /// <summary>
+    ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     ///     The base size of a <see cref="Chunk"/> within the <see cref="Chunks"/> in KB.
     ///     All <see cref="Chunk"/>s will have a minimum of this size. The actual size is <see cref="ChunkSize"/>.
     /// </summary>
@@ -827,6 +865,7 @@ public sealed partial class Archetype
     {
         // Make sure other archetype can fit additional entities from this archetype.
         destination.EnsureEntityCapacity(destination.EntityCount + source.EntityCount);
+        var sourceSignature = source.Signature;
 
         // Iterate each source chunk to copy them
         for (var sourceChunkIndex = 0; sourceChunkIndex <= source.Count; sourceChunkIndex++)
@@ -844,7 +883,7 @@ public sealed partial class Archetype
                 var remainingCapacity = destinationChunk.Buffer;
                 var amountToCopy = Math.Min(sourceChunk.Count, remainingCapacity);
 
-                Chunk.Copy(ref sourceChunk, amountCopied, ref destinationChunk, destinationChunk.Count, amountToCopy);
+                Chunk.Copy(ref sourceChunk, amountCopied, ref sourceSignature, ref destinationChunk, destinationChunk.Count, amountToCopy);
 
                 // Apply copied amount to track the progress
                 sourceChunk.Count -= amountToCopy;
@@ -872,9 +911,11 @@ public sealed partial class Archetype
 
     internal static void CopyComponents(Archetype from, ref Slot fromSlot, Archetype to, ref Slot toSlot)
     {
+        var sourceSignature = from.Signature;
+
         // Copy items from old to new chunk
         ref var oldChunk = ref from.GetChunk(fromSlot.ChunkIndex);
         ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
-        Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref newChunk, toSlot.Index, 1);
+        Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref sourceSignature, ref newChunk, toSlot.Index, 1);
     }
 }
