@@ -91,6 +91,8 @@ public partial class World
     /// </summary>
     public static JobScheduler? SharedJobScheduler { get; set; }
 
+    private bool _isDisposed;
+
     /// <summary>
     ///     Creates a <see cref="World"/> instance.
     /// </summary>
@@ -133,31 +135,7 @@ public partial class World
     /// <param name="world">The <see cref="World"/> to destroy.</param>
     public static void Destroy(World world)
     {
-#if !PURE_ECS
-        lock (Worlds)
-        {
-            Worlds[world.Id] = null!;
-            RecycledWorldIds.Enqueue(world.Id);
-            Interlocked.Decrement(ref worldSizeUnsafe);
-        }
-#endif
-
-        world.Capacity = 0;
-        world.Size = 0;
-
-        // Dispose
-        world.JobHandles.Dispose();
-        world.GroupToArchetype.Dispose();
-        world.RecycledIds.Dispose();
-        world.QueryCache.Dispose();
-
-        // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
-        for (var index = 0; index < world.Archetypes.Count; index++)
-        {
-            world.Archetypes[index] = null!;
-        }
-
-        world.Archetypes.Dispose();
+        world.Dispose();
     }
 }
 
@@ -340,23 +318,29 @@ public partial class World : IDisposable
     ///     Moves an <see cref="Entity"/> from one <see cref="Archetype"/> <see cref="Slot"/> to another.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="data">The <see cref="EntityData"/> of the supplied entity.</param>
     /// <param name="source">Its <see cref="Archetype"/>.</param>
     /// <param name="destination">The new <see cref="Archetype"/>.</param>
     /// <param name="destinationSlot">The new <see cref="Slot"/> in which the moved <see cref="Entity"/> will land.</param>
-    internal void Move(Entity entity, Archetype source, Archetype destination, out Slot destinationSlot)
+    internal void Move(Entity entity, ref EntityData data, Archetype source, Archetype destination, out Slot destinationSlot)
     {
+        // Entity should match the supplied EntityData.
+        Debug.Assert(entity == data.Archetype.Entity(ref data.Slot));
+
         // A common mistake, happening in many cases.
         Debug.Assert(source != destination, "From-Archetype is the same as the To-Archetype. Entities cannot move within the same archetype using this function. Probably an attempt was made to attach already existing components to the entity or to remove non-existing ones.");
 
         // Copy entity to other archetype
-        ref var slot = ref EntityInfo.GetSlot(entity.Id);
+        var slot = data.Slot;
         var allocatedEntities = destination.Add(entity, out _, out destinationSlot);
         Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
         source.Remove(slot, out var movedEntity);
 
         // Update moved entity from the remove
         EntityInfo.Move(movedEntity, slot);
-        EntityInfo.Move(entity.Id, destination, destinationSlot);
+
+        data.Archetype = destination;
+        data.Slot = destinationSlot;
 
         // Calculate the entity difference between the moved archetypes to allocate more space accordingly.
         Capacity += allocatedEntities;
@@ -572,11 +556,59 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Dispose()
     {
-        Destroy(this);
-        // In case the user (or us) decides to override and provide a finalizer, prevents them from having
-        // to re-implement Dispose() to avoid calling it twice.
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
+
+    // Protected implementation of Dispose pattern.
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                // Dispose managed state.
+            }
+
+            // Dispose unmanaged resource.
+
+            var world = this;
+#if !PURE_ECS
+            lock (Worlds)
+            {
+                Worlds[world.Id] = null!;
+                RecycledWorldIds.Enqueue(world.Id);
+                Interlocked.Decrement(ref worldSizeUnsafe);
+            }
+#endif
+
+            world.Capacity = 0;
+            world.Size = 0;
+
+            // Dispose
+            world.JobHandles.Dispose();
+            world.GroupToArchetype.Dispose();
+            world.RecycledIds.Dispose();
+            world.QueryCache.Dispose();
+
+            // Set archetypes to null to free them manually since Archetypes are set to ClearMode.Never to fix #65
+            for (var index = 0; index < world.Archetypes.Count; index++)
+            {
+                world.Archetypes[index] = null!;
+            }
+
+            world.Archetypes.Dispose();
+
+        }
+    }
+
+    // It fails the WorldRecycle test.
+    //~World()
+    //{
+    //    Dispose(false);
+    //}
 
     /// <summary>
     ///     Converts this <see cref="World"/> to a human-readable <c>string</c>.
@@ -1201,11 +1233,12 @@ public partial class World
     [StructuralChange]
     internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
         var type = Component<T>.ComponentType;
         newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
 
-        Move(entity, oldArchetype, newArchetype, out slot);
+        Move(entity, ref data, oldArchetype, newArchetype, out slot);
     }
 
     /// <summary>
@@ -1257,12 +1290,14 @@ public partial class World
     [StructuralChange]
     public void Remove<T>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
+
         var type = Component<T>.ComponentType;
         var newArchetype = GetOrCreateArchetypeByRemoveEdge(in type, oldArchetype);
 
         OnComponentRemoved<T>(entity);
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
 }
 
@@ -1431,11 +1466,13 @@ public partial class World
     [StructuralChange]
     public void Add(Entity entity, in object cmp)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+
+        var oldArchetype = data.Archetype;
         var type = (ComponentType)cmp.GetType();
         var newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
 
-        Move(entity, oldArchetype, newArchetype, out var slot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var slot);
         newArchetype.Set(ref slot, cmp);
         OnComponentAdded(entity, type);
     }
@@ -1452,7 +1489,8 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<object> components)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -1480,7 +1518,7 @@ public partial class World
         }
 
         // Move and fire events
-        Move(entity, oldArchetype, newArchetype, out var slot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var slot);
         foreach (var cmp in components)
         {
             newArchetype.Set(ref slot, cmp);
@@ -1501,7 +1539,8 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<ComponentType> components)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -1522,7 +1561,7 @@ public partial class World
             newArchetype = GetOrCreate(newSignature);
         }
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
 
 #if EVENTS
         for (var i = 0; i < components.Length; i++)
@@ -1543,7 +1582,8 @@ public partial class World
     [StructuralChange]
     public void Remove(Entity entity, ComponentType type)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -1560,7 +1600,7 @@ public partial class World
         }
 
         OnComponentRemoved(entity, type);
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
 
     /// <summary>
@@ -1575,7 +1615,8 @@ public partial class World
     [StructuralChange]
     public void RemoveRange(Entity entity, Span<ComponentType> types)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
@@ -1602,7 +1643,7 @@ public partial class World
             OnComponentRemoved(entity, type);
         }
 
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
 }
 
