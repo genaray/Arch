@@ -19,7 +19,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="Archetype"/>.</returns>
-
     [Pure]
     public static Archetype GetArchetype(this in Entity entity)
     {
@@ -32,7 +31,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A reference to its <see cref="Chunk"/>.</returns>
-
     [Pure]
     public static ref readonly Chunk GetChunk(this in Entity entity)
     {
@@ -45,9 +43,8 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>Its <see cref="ComponentType"/>'s array.</returns>
-
     [Pure]
-    public static ComponentType[] GetComponentTypes(this in Entity entity)
+    public static Signature GetComponentTypes(this in Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         return world.GetSignature(entity);
@@ -59,7 +56,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>A newly allocated array containing the entities components.</returns>
-
     [Pure]
     public static object?[] GetAllComponents(this in Entity entity)
     {
@@ -72,7 +68,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <returns>True if it exists and is alive, otherwise false.</returns>
-
     [Pure]
     public static bool IsAlive(this in Entity entity)
     {
@@ -81,12 +76,24 @@ public static partial class EntityExtensions
     }
 
     /// <summary>
+    ///     Checks if the <see cref="Entity"/> is alive in this <see cref="World"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="exists">If the entity and its <see cref="EntityData"/> exists.</param>
+    /// <returns>True if it exists and is alive, otherwise false.</returns>
+    [Pure]
+    public static ref EntityData IsAlive(this in Entity entity, out bool exists)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        return ref world.IsAlive(entity, out exists);
+    }
+
+    /// <summary>
     ///     Sets or replaces a component for an <see cref="Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The instance, optional.</param>
-
     public static void Set<T>(this in Entity entity, in T? component = default)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -203,7 +210,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="cmp">The component.</param>
-
     public static void Set(this in Entity entity, object cmp)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -215,7 +221,6 @@ public static partial class EntityExtensions
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The components <see cref="IList{T}"/>.</param>
-
     public static void SetRange(this in Entity entity, Span<object> components)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -228,7 +233,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwise false.</returns>
-
     [Pure]
     public static bool Has(this in Entity entity, ComponentType type)
     {
@@ -242,7 +246,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>True if it has the desired component, otherwise false.</returns>
-
     [Pure]
     public static bool HasRange(this in Entity entity, Span<ComponentType> types)
     {
@@ -256,7 +259,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
-
     [Pure]
     public static object? Get(this in Entity entity, ComponentType type)
     {
@@ -270,7 +272,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <returns>A reference to the component.</returns>
-
     [Pure]
     public static object?[] GetRange(this in Entity entity, Span<ComponentType> types)
     {
@@ -286,7 +287,6 @@ public static partial class EntityExtensions
     /// <param name="types">The component <see cref="ComponentType"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> where the components are put it.</param>
     /// <returns>A reference to the component.</returns>
-
     [Pure]
     public static void GetRange(this in Entity entity, Span<ComponentType> types, Span<object?> components)
     {
@@ -302,7 +302,6 @@ public static partial class EntityExtensions
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
     /// <param name="component">The found component.</param>
     /// <returns>True if it exists, otherwise false.</returns>
-
     [Pure]
     public static bool TryGet(this in Entity entity, ComponentType type, out object? component)
     {
@@ -316,7 +315,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="cmp">The component.</param>
     [SkipLocalsInit]
-
     public static void Add(this in Entity entity, in object cmp)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -329,7 +327,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">The component <see cref="IList{T}"/>.</param>
     [SkipLocalsInit]
-
     public static void AddRange(this in Entity entity, Span<object> components)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -342,7 +339,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
     public static void AddRange(this in Entity entity, Span<ComponentType> components)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
@@ -355,7 +351,6 @@ public static partial class EntityExtensions
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="types">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are removed from the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
     public static void RemoveRange(this in Entity entity, Span<ComponentType> types)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
