@@ -330,7 +330,7 @@ public sealed partial class CommandBuffer : IDisposable
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
 
             // Get entity chunk
-            var entityInfo = world.EntityInfo[entity.Id];
+            var entityInfo = world.EntityInfo.GetEntityData(entity.Id);
             var archetype = entityInfo.Archetype;
             ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
             var chunkIndex = entityInfo.Slot.Index;

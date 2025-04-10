@@ -5,6 +5,44 @@ using Schedulers;
 namespace Arch.Core;
 
 /// <summary>
+///     The <see cref="JobMeta{T}"/> class registers each job during compiletime to ensure static access to some information, which is more efficient.
+/// </summary>
+/// <typeparam name="T">The job struct generic type..</typeparam>
+/// /// <remarks>
+///     A <see cref="JobMeta{T}"/> is created once during its first use.
+///     Subsequent uses access statically stored information.
+/// </remarks>
+public static class JobMeta<T> where T : class, new()
+{
+    /// <summary>
+    ///     Creates a compiletime static instance of this job.
+    /// </summary>
+    static JobMeta()
+    {
+        Id = JobMeta.Id++;
+        Policy = new DefaultObjectPolicy<T>();
+        Pool = new DefaultObjectPool<T>(Policy);
+    }
+
+    /// <summary>
+    ///     The unique Id of the job.
+    /// </summary>
+    public static readonly int Id;
+
+    /// <summary>
+    ///     The pool policy of the registered job.
+    ///     Used for <see cref="Pool"/>.
+    /// </summary>
+    public static readonly DefaultObjectPolicy<T> Policy;
+
+    /// <summary>
+    ///     The pool of the job.
+    ///     So that during multithreading new jobs are not permanently associated, which is better for efficiency.
+    /// </summary>
+    public static readonly DefaultObjectPool<T> Pool;
+}
+
+/// <summary>
 ///     The <see cref="DefaultObjectPolicy{T}"/> class is a pool policy that creates and returns any generic object in the same way.
 /// </summary>
 /// <typeparam name="T">The generic type.</typeparam>

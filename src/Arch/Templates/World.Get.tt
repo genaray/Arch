@@ -21,7 +21,7 @@ namespace Arch.Core
         [Pure]
         public Components<<#= generics #>> Get<<#= generics #>>(Entity entity)
         {
-            var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+            ref var entitySlot = ref EntityInfo.GetEntityData(entity.Id);
             var slot = entitySlot.Slot;
             var archetype = entitySlot.Archetype;
             return archetype.Get<<#= generics #>>(ref slot);

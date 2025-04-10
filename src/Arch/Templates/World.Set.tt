@@ -21,13 +21,13 @@ public partial class World
         var events = new StringBuilder();
         for (var i = 0; i < index; i++)
         {
-            events.AppendLine($"        OnComponentSet<T{i}>(entity);");
+            events.AppendLine($"OnComponentSet<T{i}>(entity);");
         }
     #>
 
     public void Set<<#= generics #>>(Entity entity, <#= parameters #>)
     {
-        var entitySlot = EntityInfo.GetEntitySlot(entity.Id);
+        ref var entitySlot = ref EntityInfo.GetEntityData(entity.Id);
         var slot = entitySlot.Slot;
         var archetype = entitySlot.Archetype;
         archetype.Set<<#= generics #>>(ref slot,  <#= inParameters #>);

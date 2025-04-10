@@ -18,7 +18,7 @@ public partial class World
         var signature = Component<T0>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -29,7 +29,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -44,7 +44,7 @@ public partial class World
         var signature = Component<T0, T1>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -55,7 +55,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -71,7 +71,7 @@ public partial class World
         var signature = Component<T0, T1, T2>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -82,7 +82,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -99,7 +99,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -110,7 +110,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -128,7 +128,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -139,7 +139,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -158,7 +158,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -169,7 +169,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -189,7 +189,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -200,7 +200,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -221,7 +221,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -232,7 +232,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -254,7 +254,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -265,7 +265,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -288,7 +288,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -299,7 +299,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -323,7 +323,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -334,7 +334,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -359,7 +359,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -370,7 +370,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -396,7 +396,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -407,7 +407,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -434,7 +434,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -445,7 +445,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -473,7 +473,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -484,7 +484,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -513,7 +513,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -524,7 +524,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -554,7 +554,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -565,7 +565,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -596,7 +596,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -607,7 +607,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -639,7 +639,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -650,7 +650,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -683,7 +683,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -694,7 +694,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -728,7 +728,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -739,7 +739,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -774,7 +774,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -785,7 +785,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -821,7 +821,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -832,7 +832,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);
@@ -869,7 +869,7 @@ public partial class World
         var signature = Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature;
 
         // Create new entity and put it to the back of the array
-        GetOrCreateNextEntity(out var entity);
+        GetOrCreateEntityInternal(out var entity);
 
         // Add to archetype & mapping
         var archetype = GetOrCreate(signature);
@@ -880,7 +880,7 @@ public partial class World
         EntityInfo.EnsureCapacity(Capacity);
 
         // Map
-        EntityInfo.Add(entity.Id, archetype, slot);
+        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
 
         OnEntityCreated(entity);
         OnComponentAdded<T0>(entity);

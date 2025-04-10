@@ -337,7 +337,7 @@ public sealed partial class WorldTest
         var archetype = world.Archetypes[0];
         That(world.Size, Is.EqualTo(1));
         That(world.Capacity, Is.EqualTo(archetype.EntitiesPerChunk));
-        That(archetype.ChunkCount, Is.EqualTo(0));
+        That(archetype.ChunkCount, Is.EqualTo(1));
         That(archetype.ChunkCapacity, Is.EqualTo(1));
 
         // Recycled ids must be trimmed too so that the newest created entity is not out of bounds!

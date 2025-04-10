@@ -8,6 +8,7 @@ using Arch.LowLevel.Jagged;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Array = System.Array;
+using System.Runtime.InteropServices;
 
 namespace Arch.Core;
 
@@ -44,7 +45,6 @@ public record struct Slot
     /// <param name="first">The first <see cref="Slot"/>.</param>
     /// <param name="second">The second <see cref="Slot"/>.</param>
     /// <returns>The result <see cref="Slot"/>.</returns>
-
     public static Slot operator +(Slot first, Slot second)
     {
         return new Slot(first.Index + second.Index, first.ChunkIndex + second.ChunkIndex);
@@ -55,7 +55,6 @@ public record struct Slot
     /// </summary>
     /// <param name="slot">The <see cref="Slot"/>.</param>
     /// <returns>The <see cref="Slot"/> with index increased by one..</returns>
-
     public static Slot operator ++(Slot slot)
     {
         slot.Index++;
@@ -66,7 +65,6 @@ public record struct Slot
     ///     Validates the <see cref="Slot"/>, moves the <see cref="Slot"/> if it is outside a <see cref="Chunk.Capacity"/> to match it.
     /// </summary>
     /// <returns></returns>
-
     public void Wrap(int capacity)
     {
         // Result outside valid chunk, wrap into next one
@@ -90,7 +88,6 @@ public record struct Slot
     /// <param name="source">The <see cref="Slot"/> to shift by one.</param>
     /// <param name="sourceCapacity">The capacity of the chunk the slot is in.</param>
     /// <returns></returns>
-
     public static Slot Shift(ref Slot source, int sourceCapacity)
     {
         source.Index++;
@@ -106,7 +103,6 @@ public record struct Slot
     /// <param name="destination">The destination <see cref="Slot"/>, a reference point at which the copy or shift operation starts.</param>
     /// <param name="sourceCapacity">The source <see cref="Chunk.Capacity"/>.</param>
     /// <param name="destinationCapacity">The destination <see cref="Chunk.Capacity"/></param>
-
     public static Slot Shift(in Slot source, int sourceCapacity, in Slot destination, int destinationCapacity)
     {
         var freeSpot = destination;
@@ -136,14 +132,14 @@ public class Archetypes : IDisposable
     /// </summary>
     public Archetypes(int capacity)
     {
-        Items = new PooledList<Archetype>(capacity, ClearMode.Never);
+        Items = new NetStandardList<Archetype>(capacity);
         _hashCode = -1;
     }
 
     /// <summary>
     ///     The <see cref="PooledList{T}"/> that contains all <see cref="Archetype"/>s.
     /// </summary>
-    public PooledList<Archetype> Items {  get; }
+    public NetStandardList<Archetype> Items {  get; }
 
     /// <summary>
     ///     The count of this instance.
@@ -184,7 +180,7 @@ public class Archetypes : IDisposable
     /// <returns>The <see cref="Span{T}"/>.</returns>
     public Span<Archetype> AsSpan()
     {
-        return Items.Span;
+        return Items.AsSpan();
     }
 
     /// <summary>
@@ -253,7 +249,7 @@ public class Archetypes : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Items.Dispose();
+        Items.Clear();
     }
 }
 
@@ -264,7 +260,6 @@ public class Archetypes : IDisposable
 /// </summary>
 public sealed partial class Archetype
 {
-
     /// <summary>
     ///     A lookup array that maps the component id to an index within the component array of a <see cref="Chunk"/> to quickly find the correct array for the component type.
     ///     Is being stored here since all <see cref="Chunks"/> share the same instance to reduce allocations.
@@ -296,46 +291,6 @@ public sealed partial class Archetype
 
         _addEdges = new SparseJaggedArray<Archetype>(BucketSize);
         _removeEdges = new SparseJaggedArray<Archetype>(BucketSize);
-    }
-
-    /// <summary>
-    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
-    /// component.
-    /// </summary>
-    [Pure]
-    internal bool TryIndex<T>(out int i)
-    {
-        var id = Component<T>.ComponentType.Id;
-        Debug.Assert(id != -1, $"Supplied component index is invalid");
-
-        if (id >= _componentIdToArrayIndex.Length)
-        {
-            i = -1;
-            return false;
-        }
-
-        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
-        return i != -1;
-    }
-
-    /// <summary>
-    /// Try get the index of a component within this archetype. Returns false if the archetype does not have this
-    /// component.
-    /// </summary>
-    [Pure]
-    internal bool TryIndex(ComponentType type, out int i)
-    {
-        var id = type.Id;
-        Debug.Assert(id != -1, $"Supplied component index is invalid");
-
-        if (id >= _componentIdToArrayIndex.Length)
-        {
-            i = -1;
-            return false;
-        }
-
-        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
-        return i != -1;
     }
 
     /// <summary>
@@ -617,6 +572,52 @@ public sealed partial class Archetype
     }
 
     /// <summary>
+    ///     Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    ///     component.
+    /// </summary>
+    /// <param name="i">The index.</param>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>True if it was successfully.</returns>
+    [Pure]
+    internal bool TryIndex<T>(out int i)
+    {
+        var id = Component<T>.ComponentType.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    /// <summary>
+    ///     Try get the index of a component within this archetype. Returns false if the archetype does not have this
+    ///     component.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/>.</param>
+    /// <param name="i">The index.</param>
+    /// <returns>True if it was successfully.</returns>
+    [Pure]
+    internal bool TryIndex(ComponentType type, out int i)
+    {
+        var id = type.Id;
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= _componentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = _componentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
+    }
+
+    /// <summary>
     ///     Returns a reference of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
@@ -786,7 +787,7 @@ public sealed partial class Archetype
     /// </summary>
     internal void TrimExcess()
     {
-        Chunks.Count = Count; // By setting the Count we will assure that unnecessary chunks are trimmed.
+        Chunks.Count = Count + 1; // By setting the Count we will assure that unnecessary chunks are trimmed.
         Chunks.TrimExcess();
     }
 }

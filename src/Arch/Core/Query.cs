@@ -160,9 +160,9 @@ public struct Signature : IEquatable<Signature>
     public static Signature Add(Signature first, Signature second)
     {
         // Copy signatures into new array
-        using var set = new PooledSet<ComponentType>(first.Count + second.Count);
-        set.UnionWith(first);
-        set.UnionWith(second);
+        var set = new HashSet<ComponentType>(first.Count + second.Count);
+        set.UnionWith(first.ComponentsArray);
+        set.UnionWith(second.ComponentsArray);
 
         var result = new Signature(set.ToArray());
         return result;
@@ -178,9 +178,9 @@ public struct Signature : IEquatable<Signature>
     public static Signature Remove(Signature first, Signature second)
     {
         // Copy signatures into new array
-        using var set = new PooledSet<ComponentType>(first.Count + second.Count);
-        set.UnionWith(first);
-        set.ExceptWith(second);
+        var set = new HashSet<ComponentType>(first.Count + second.Count);
+        set.UnionWith(first.ComponentsArray);
+        set.ExceptWith(second.ComponentsArray);
 
         var result = new Signature(set.ToArray());
         return result;
@@ -526,7 +526,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 public partial class Query : IEquatable<Query>
 {
     private readonly Archetypes _allArchetypes;
-    private readonly PooledList<Archetype> _matchingArchetypes;
+    private readonly NetStandardList<Archetype> _matchingArchetypes;
     private int _allArchetypesHashCode;
 
     private readonly QueryDescription _queryDescription;
@@ -545,7 +545,7 @@ public partial class Query : IEquatable<Query>
     internal Query(Archetypes allArchetypes, QueryDescription description)
     {
         _allArchetypes = allArchetypes;
-        _matchingArchetypes = new PooledList<Archetype>();
+        _matchingArchetypes = new NetStandardList<Archetype>();
         _allArchetypesHashCode = -1;
 
         Debug.Assert(
@@ -616,7 +616,7 @@ public partial class Query : IEquatable<Query>
     public QueryArchetypeIterator GetArchetypeIterator()
     {
         Match();
-        return new QueryArchetypeIterator(_matchingArchetypes.Span);
+        return new QueryArchetypeIterator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>
@@ -626,7 +626,7 @@ public partial class Query : IEquatable<Query>
     public QueryChunkIterator GetChunkIterator()
     {
         Match();
-        return new QueryChunkIterator(_matchingArchetypes.Span);
+        return new QueryChunkIterator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>
@@ -636,7 +636,7 @@ public partial class Query : IEquatable<Query>
     public QueryChunkEnumerator GetEnumerator()
     {
         Match();
-        return new QueryChunkEnumerator(_matchingArchetypes.Span);
+        return new QueryChunkEnumerator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>

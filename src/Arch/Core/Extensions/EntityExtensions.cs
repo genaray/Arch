@@ -50,7 +50,7 @@ public static partial class EntityExtensions
     public static ComponentType[] GetComponentTypes(this in Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.GetComponentTypes(entity);
+        return world.GetSignature(entity);
     }
 
     /// <summary>

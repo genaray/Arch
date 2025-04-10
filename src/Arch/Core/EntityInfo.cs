@@ -24,16 +24,54 @@ public struct EntityData
     public Archetype Archetype;
 
     /// <summary>
-    ///     A reference to its <see cref="Slot"/>.
+    ///     Its <see cref="Slot"/>.
     /// </summary>
     public Slot Slot;
+
+    /// <summary>
+    ///     Its version.
+    /// </summary>
+    public int Version;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityData"/> struct.
     /// </summary>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    public EntityData(Archetype archetype, Slot slot)
+    /// <param name="version">Its version.</param>
+    public EntityData(Archetype archetype, Slot slot, int version)
+    {
+        Archetype = archetype;
+        Slot = slot;
+        Version = version;
+    }
+
+    /// <summary>
+    ///     Returns a reference to the component of the given type.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>A reference.</returns>
+    public ref T Get<T>()
+    {
+        return ref Archetype.GetChunk(Slot.ChunkIndex).Get<T>(Slot.Index);
+    }
+
+    /// <summary>
+    ///     Sets a component of the given type.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>A reference.</returns>
+    public void Set<T>(in T value)
+    {
+        Archetype.GetChunk(Slot.ChunkIndex).Copy<T>(Slot.Index, in value);
+    }
+
+    /// <summary>
+    ///     Moves an <see cref="Entity"/> to a new <see cref="Archetype"/> and a new <see cref="Slot"/>, updates that reference.
+    /// </summary>
+    /// <param name="archetype">Its new <see cref="Archetype"/>.</param>
+    /// <param name="slot">Its new <see cref="Slot"/>.</param>
+    internal void Move(Archetype archetype, Slot slot)
     {
         Archetype = archetype;
         Slot = slot;
@@ -61,30 +99,21 @@ internal class EntityInfoStorage
     {
         EntityData = new JaggedArray<EntityData>(
             baseChunkSize / Unsafe.SizeOf<EntityData>(),
-            new EntityData(null!, new Slot(-1,-1)),
+            new EntityData(null!, new Slot(-1,-1), 0),
             capacity
         );
     }
 
     /// <summary>
-    ///     Adds meta data of an <see cref="Entity"/> to the internal structure.
+    ///     Adds metadata of an <see cref="Entity"/> to the internal structure.
     /// </summary>
     /// <param name="id">The <see cref="Entity"/> id.</param>
     /// <param name="archetype">Its <see cref="Archetype"/>.</param>
     /// <param name="slot">Its <see cref="Slot"/>.</param>
-    public void Add(int id, Archetype archetype, Slot slot)
+    /// <param name="version">Its version.</param>
+    public void Add(int id, Archetype archetype, Slot slot, int version)
     {
-        EntityData.Add(id,new EntityData(archetype, slot));
-    }
-
-    /// <summary>
-    ///     Checks whether an <see cref="Entity"/>s data exists in this <see cref="EntityInfoStorage"/> by its id.
-    /// </summary>
-    /// <param name="id">The <see cref="Entity"/>s id.</param>
-    /// <returns>True if its data exists in here, false if not.</returns>
-    public bool Has(int id)
-    {
-        return EntityData.TryGetValue(id, out EntityData _);
+        EntityData.Add(id,new EntityData(archetype, slot, version));
     }
 
     /// <summary>
@@ -108,13 +137,44 @@ internal class EntityInfoStorage
     }
 
     /// <summary>
+    ///     Returns the version of an <see cref="Entity"/> by its id.
+    /// </summary>
+    /// <param name="id">The <see cref="Entity"/>s id.</param>
+    /// <returns>Its version.</returns>
+    public int GetVersion(int id)
+    {
+        return EntityData[id].Version;
+    }
+
+    /// <summary>
     ///     Returns the <see cref="Core.EntityData"/> of an <see cref="Entity"/> by its id.
     /// </summary>
     /// <param name="id">The <see cref="Entity"/>s id.</param>
     /// <returns>Its <see cref="Core.EntityData"/>.</returns>
-    public EntityData GetEntitySlot(int id)
+    public ref EntityData GetEntityData(int id)
     {
-        return EntityData[id];
+        return ref EntityData[id];
+    }
+
+    /// <summary>
+    ///     Returns the <see cref="Core.EntityData"/> of an <see cref="Entity"/> by its id.
+    /// </summary>
+    /// <param name="id">The <see cref="Entity"/>s id.</param>
+    /// <param name="exists">If it exists or not</param>
+    /// <returns>Its <see cref="Core.EntityData"/>.</returns>
+    public ref EntityData TryGetEntityData(int id, out bool exists)
+    {
+        return ref EntityData.TryGetValue(id, out exists);
+    }
+
+    /// <summary>
+    ///     Checks whether an <see cref="Entity"/>s data exists in this <see cref="EntityInfoStorage"/> by its id.
+    /// </summary>
+    /// <param name="id">The <see cref="Entity"/>s id.</param>
+    /// <returns>True if its data exists in here, false if not.</returns>
+    public bool Has(int id)
+    {
+        return EntityData.TryGetValue(id, out EntityData _);
     }
 
     /// <summary>
@@ -145,8 +205,7 @@ internal class EntityInfoStorage
     public void Move(int id, Archetype archetype, Slot slot)
     {
         ref var data = ref EntityData[id];
-        data.Archetype = archetype;
-        data.Slot = slot;
+        data.Move(archetype, slot);
     }
 
     /// <summary>
@@ -211,18 +270,6 @@ internal class EntityInfoStorage
     public void Clear()
     {
         EntityData.Clear();
-    }
-
-    /// <summary>
-    ///     Returns a <see cref="EntityData"/> at an given index.
-    /// </summary>
-    /// <param name="id">The index.</param>
-    internal ref EntityData this[int id]
-    {
-        get
-        {
-            return ref EntityData[id];
-        }
     }
 }
 

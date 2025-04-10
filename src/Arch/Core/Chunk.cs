@@ -250,35 +250,6 @@ public partial struct Chunk
         Unsafe.Add(ref item, index) = cmp;
     }
 
-    [Pure]
-    internal bool TryIndex<T>(out int i)
-    {
-        var id = Component<T>.ComponentType.Id;
-        return TryIndex(id, out i);
-    }
-
-    [Pure]
-    internal bool TryIndex(int id, out int i)
-    {
-        Debug.Assert(id != -1, $"Supplied component index is invalid");
-
-        if (id >= ComponentIdToArrayIndex.Length)
-        {
-            i = -1;
-            return false;
-        }
-
-        i = ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
-        return i != -1;
-    }
-
-    [Pure]
-    public bool Has(int id)
-    {
-        var idToArrayIndex = ComponentIdToArrayIndex;
-        return id < idToArrayIndex.Length && idToArrayIndex.DangerousGetReferenceAt(id) != -1;
-    }
-
     /// <summary>
     ///     Checks if a component is included in this <see cref="Chunk"/>.
     /// </summary>
@@ -400,6 +371,20 @@ public partial struct Chunk
 {
 
     /// <summary>
+    ///     Try get the index of a component within this <see cref="Chunk"/>. Returns false if the <see cref="Chunk"/> does not have this
+    ///     component.
+    /// </summary>
+    /// <param name="i">The index.</param>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>True if it was successfully.</returns>
+    [Pure]
+    internal bool TryIndex<T>(out int i)
+    {
+        var id = Component<T>.ComponentType.Id;
+        return TryIndex(id, out i);
+    }
+
+    /// <summary>
     ///     Returns the component array index of a component.
     /// </summary>
     /// <typeparam name="T">The componen type.</typeparam>
@@ -473,6 +458,18 @@ public partial struct Chunk
     /// <summary>
     ///     Checks if a component is included in this <see cref="Chunk"/>.
     /// </summary>
+    /// <param name="id">The <see cref="ComponentType"/> id.</param>
+    /// <returns>True if included, false otherwise.</returns>
+    [Pure]
+    public bool Has(int id)
+    {
+        var idToArrayIndex = ComponentIdToArrayIndex;
+        return id < idToArrayIndex.Length && idToArrayIndex.DangerousGetReferenceAt(id) != -1;
+    }
+
+    /// <summary>
+    ///     Checks if a component is included in this <see cref="Chunk"/>.
+    /// </summary>
     /// <param name="t">The type.</param>
     /// <returns>True if included, false otherwise.</returns>
     [Pure]
@@ -493,6 +490,28 @@ public partial struct Chunk
     {
         var array = GetArray(type);
         return array.GetValue(index);
+    }
+
+    /// <summary>
+    ///     Try get the index of a component within this <see cref="Chunk"/>. Returns false if the <see cref="Chunk"/> does not have this
+    ///     component.
+    /// </summary>
+    /// <param name="id">The <see cref="ComponentType"/> Id.</param>
+    /// <param name="i">The index.</param>
+    /// <returns>True if it was successfully.</returns>
+    [Pure]
+    internal bool TryIndex(int id, out int i)
+    {
+        Debug.Assert(id != -1, $"Supplied component index is invalid");
+
+        if (id >= ComponentIdToArrayIndex.Length)
+        {
+            i = -1;
+            return false;
+        }
+
+        i = ComponentIdToArrayIndex.DangerousGetReferenceAt(id);
+        return i != -1;
     }
 
     /// <summary>
@@ -600,11 +619,8 @@ public partial struct Chunk
     /// <param name="destination">The destination <see cref="Chunk"/>.</param>
     /// <param name="destinationIndex">The start index in the destination <see cref="Chunk"/>.</param>
     /// <param name="length">The length indicating the amount of <see cref="Entity"/>s being copied.</param>
-    internal static void CopyComponents(
-        ref Chunk source, int index, ref Signature sourceSignature,
-        ref Chunk destination, int destinationIndex,
-        int length)
-    {
+    internal static void CopyComponents(ref Chunk source, int index, ref Signature sourceSignature, ref Chunk destination, int destinationIndex, int length) {
+
         // Arrays
         var sourceComponents = source.Components;
 

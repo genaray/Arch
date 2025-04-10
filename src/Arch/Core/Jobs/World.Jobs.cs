@@ -1,5 +1,7 @@
 using Arch.Core.Utils;
+using Arch.LowLevel;
 using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
 using Schedulers;
 
 // ReSharper disable once CheckNamespace
@@ -13,7 +15,7 @@ public partial class World
     /// <summary>
     ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
     /// </summary>
-    private PooledList<JobHandle> JobHandles { get; }
+    private NetStandardList<JobHandle> JobHandles { get; }
 
     /// <summary>
     ///     A cache used for the parallel queries to prevent list allocations.
@@ -118,7 +120,7 @@ public partial class World
             }
 
             // Schedule, flush, wait, return.
-            var handle = SharedJobScheduler.CombineDependencies(JobHandles.Span);
+            var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
             SharedJobScheduler.Flush();
             handle.Complete();
 
@@ -174,7 +176,7 @@ public partial class World
         }
 
         // Schedule, flush, wait, return.
-        var handle = SharedJobScheduler.CombineDependencies(JobHandles.Span);
+        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
         SharedJobScheduler.Flush();
         JobHandles.Clear();
 
