@@ -70,8 +70,8 @@ public sealed partial class WorldTest
         World.Destroy(worldA); // World B still appears to have size 1
         var e1 = worldB.Create(0); // World B has size 2
 
-        e0.Get<int>(); // This causes a null reference exception
-        e1.Get<int>(); // This also causes a null reference exception
+        worldB.Get<int>(e0); // This causes a null reference exception
+        worldB.Get<int>(e1); // This also causes a null reference exception
     }
 
     /// <summary>
