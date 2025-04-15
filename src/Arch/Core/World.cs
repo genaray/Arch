@@ -986,13 +986,14 @@ public partial class World
 public partial class World
 {
     /// <summary>
-    ///     Creates <see cref="Entity"/>s in the <see cref="Archetype"/> and writes the <see cref="Entity"/> and <see cref="EntityData"/> into the passed spans.
+    ///     Creates <see cref="Entity"/>s with <see cref="EntityData"/> in the given  <see cref="Archetype"/> without them already being added to the  <see cref="Archetype"/>.
+    ///     They effectively point to slots in the  <see cref="Archetype"/>, but are not yet part of it.
     /// </summary>
     /// <param name="archetype">The <see cref="Archetype"/>.</param>
     /// <param name="entities">The <see cref="Span{T}"/> of <see cref="Entity"/>s where the entities will be written to.</param>
     /// <param name="entityData">The <see cref="Span{T}"/> of <see cref="EntityData"/> where the <see cref="EntityData"/>s will be written to.</param>
     /// <param name="amount">The amount of <see cref="Entity"/> to create.</param>
-    internal void GetNextEntitiesIn(Archetype archetype, Span<Entity> entities, Span<EntityData> entityData, int amount)
+    internal void GetOrCreateEntitiesInternal(Archetype archetype, Span<Entity> entities, Span<EntityData> entityData, int amount)
     {
         // Rent array
         using var slotArray = Pool<Slot>.Rent(amount);
@@ -1043,7 +1044,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, createdEntities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, createdEntities, entityData, amount);
         archetype.AddAll(createdEntities, amount);
 
         // Add entities to entityinfo
@@ -1068,7 +1069,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -1524,7 +1525,6 @@ public partial class World
 
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
-
         for (var index = 0; index < components.Length; index++)
         {
             var type = components[index];

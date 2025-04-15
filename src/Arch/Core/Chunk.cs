@@ -606,7 +606,6 @@ public partial struct Chunk
 
         // Copy entities array
         Array.Copy(entities, index, destination.Entities, destinationIndex, length);
-
         CopyComponents(ref source, index, ref sourceSignature, ref destination, destinationIndex, length);
     }
 

@@ -1,4 +1,4 @@
-
+﻿
 
 using System;
 using System.Runtime.CompilerServices;
@@ -22,7 +22,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -47,7 +47,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -72,7 +72,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -97,7 +97,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -122,7 +122,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -147,7 +147,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -172,7 +172,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -197,7 +197,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -222,7 +222,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -247,7 +247,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -272,7 +272,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -297,7 +297,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -322,7 +322,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -347,7 +347,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -372,7 +372,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -397,7 +397,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -422,7 +422,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -447,7 +447,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -472,7 +472,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -497,7 +497,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -522,7 +522,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -547,7 +547,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
@@ -572,7 +572,7 @@ public partial class World
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities

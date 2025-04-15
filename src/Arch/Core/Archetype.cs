@@ -860,6 +860,7 @@ public sealed partial class Archetype
         return next;
     }
 
+    // TODO: Copy should only copy, add transfer methods and those should modify the destination and source state.
     /// <summary>
     ///     Copies all <see cref="Chunks"/> from one <see cref="Archetype"/> to another.
     ///     Deterministic, the content of the first <see cref="Archetype"/> will be copied to the other <see cref="Archetype"/>, attached to its last partial <see cref="Chunk"/>.
@@ -907,19 +908,52 @@ public sealed partial class Archetype
     }
 
     /// <summary>
+    ///     Copies all components from an <see cref="Archetype"/> to another archetype <see cref="Archetype"/> .
+    /// </summary>
+    /// <param name="source">The <see cref="Archetype"/> from which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="sourceIndex">The <see cref="Chunk"/>-Index in the <see cref="source"/> where we start to copy.</param>
+    /// <param name="destination">The <see cref="Archetype"/> into which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="destinationIndex">The <see cref="Chunk"/>-Index in the <see cref="destination"/> where start to inser the copy.</param>
+    internal static void CopyComponents(Archetype source, int sourceIndex, Archetype destination, int destinationIndex, int length)
+    {
+        // Iterate each source chunk to copy them
+        var sourceSignature = source.Signature;
+        for (var sourceChunkIndex = sourceIndex; sourceChunkIndex <= length; sourceChunkIndex++)
+        {
+            ref var sourceChunk = ref source.GetChunk(sourceChunkIndex);
+
+            var amountLeft = sourceChunk.Count;
+            var amountCopied = 0;
+
+            // Loop over destination chunk and fill them with the source chunk till either the source chunk is empty or theres no more capacity
+            for (int destinationChunkIndex = destinationIndex; destinationChunkIndex < destination.ChunkCapacity && amountLeft > 0; destinationChunkIndex++)
+            {
+                // Determine amount that can be copied into destination
+                ref var destinationChunk = ref destination.GetChunk(destinationChunkIndex);
+                var amountToCopy = Math.Min(amountLeft, destinationChunk.Buffer);
+
+                Chunk.CopyComponents(ref sourceChunk, amountCopied, ref sourceSignature, ref destinationChunk, destinationChunk.Count, amountToCopy);
+
+                // Apply copied amount to track the progress
+                amountLeft -= amountToCopy;
+                amountCopied += amountToCopy;
+            }
+        }
+    }
+
+    /// <summary>
     ///     Copies an <see cref="Arch.Core.Entity"/> and all its components from a <see cref="Slot"/> within this <see cref="Archetype"/> to a <see cref="Slot"/> within another <see cref="Archetype"/> .
     /// </summary>
-    /// <param name="from">The <see cref="Archetype"/> from which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="source">The <see cref="Archetype"/> from which the <see cref="Arch.Core.Entity"/> should move.</param>
     /// <param name="to">The <see cref="Archetype"/> into which the <see cref="Arch.Core.Entity"/> should move.</param>
     /// <param name="fromSlot">The <see cref="Slot"/> that targets the <see cref="Arch.Core.Entity"/> that should move.</param>
     /// <param name="toSlot">The <see cref="Slot"/> to which the <see cref="Arch.Core.Entity"/> should move.</param>
-
-    internal static void CopyComponents(Archetype from, ref Slot fromSlot, Archetype to, ref Slot toSlot)
+    internal static void CopyComponents(Archetype source, ref Slot fromSlot, Archetype to, ref Slot toSlot)
     {
-        var sourceSignature = from.Signature;
+        var sourceSignature = source.Signature;
 
         // Copy items from old to new chunk
-        ref var oldChunk = ref from.GetChunk(fromSlot.ChunkIndex);
+        ref var oldChunk = ref source.GetChunk(fromSlot.ChunkIndex);
         ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
         Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref sourceSignature, ref newChunk, toSlot.Index, 1);
     }

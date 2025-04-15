@@ -47,6 +47,22 @@ public struct EntityData
     }
 
     /// <summary>
+    ///     Returns the <see cref="Entity"/> associated with this instance.
+    /// </summary>
+    public readonly Entity Entity
+    {
+        get => Archetype.GetChunk(Slot.ChunkIndex).Entity(Slot.Index);
+    }
+
+    /// <summary>
+    ///     Returns the <see cref="Chunk"/> associated with this instance.
+    /// </summary>
+    public readonly ref Chunk Chunk
+    {
+        get => ref Archetype.GetChunk(Slot.ChunkIndex);
+    }
+
+    /// <summary>
     ///     Returns a reference to the component of the given type.
     /// </summary>
     /// <typeparam name="T">The type.</typeparam>

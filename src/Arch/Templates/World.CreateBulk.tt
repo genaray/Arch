@@ -36,7 +36,7 @@ for (var index = 2; index < Amount; index++)
         var entityData = entityDataArray.AsSpan();
 
         // Create entities
-        GetNextEntitiesIn(archetype, entities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
         archetype.AddAll(entities, amount);
 
         // Fill entities
