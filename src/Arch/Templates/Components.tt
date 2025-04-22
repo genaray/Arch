@@ -25,15 +25,15 @@ namespace Arch.Core;
         for (var i = 0; i < index; i++)
             references.AppendLine($"public ref T{i} t{i};");
 
-        var assignRefStructs = new StringBuilder("\n");
+        var assignRefStructs = new StringBuilder();
         for (var i = 0; i < index; i++)
             assignRefStructs.AppendLine($"t{i} = new Ref<T{i}>(ref t{i}Component);");
 
-        var assignRefs = new StringBuilder("\n");
+        var assignRefs = new StringBuilder();
         for (var i = 0; i < index; i++)
             assignRefs.AppendLine($"t{i} = ref t{i}Component;");
 
-        var deconstructions = new StringBuilder("\n");
+        var deconstructions = new StringBuilder();
         for (var i = 0; i < index; i++)
             deconstructions.AppendLine($"t{i}Component = t{i};");
 #>
