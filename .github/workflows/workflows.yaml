@@ -25,6 +25,8 @@ on:
         default: 'no'
       
 jobs:
+
+  # Building & Testing
   build:
     name: Build Arch
     runs-on: ubuntu-latest
@@ -46,7 +48,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      
+
+    # Setting up .net
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
       with:
@@ -61,8 +64,9 @@ jobs:
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}" --logger "trx;LogFileName=TestResults/test-results.trx"
 
+    # Upload test results
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
       with:
@@ -71,6 +75,22 @@ jobs:
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
 
+    # Copy build dlls to folder
+    - name: Export DLLs for Unity
+      run: |
+        mkdir -p ./dlls/${{ matrix.define }}
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.dll ./dlls/${{ matrix.define }}/
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.xml ./dlls/${{ matrix.define }}/ || true
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.pdb ./dlls/${{ matrix.define }}/ || true
+
+    # Upload build dlls 
+    - name: Upload Unity DLLs as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dlls-${{ matrix.define }}
+        path: ./dlls/${{ matrix.define }}
+
+  # Packing nugets
   pack:
     name: Pack NuGet
     needs: build
@@ -83,16 +103,19 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-  
+
+      # Setting up .net
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
             8.0.x
-
+            
+      # Restoring dependencies 
       - name: Restore dependencies
         run: dotnet restore
-  
+
+      # Packing
       - name: Pack with DefineConstants=${{ matrix.define }}
         run: |
           dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
@@ -103,12 +126,14 @@ jobs:
             -p:PackageId=$(if $(matrix.define) == 'Default' 'Arch' else 'Arch-${{ matrix.define }}') \
             -o ./nupkg-${{ matrix.define }}
 
+      # Uploading artifacts
       - name: Upload NuGet packages (nupkg + snupkg)
         uses: actions/upload-artifact@v3
         with:
           name: nuget-${{ matrix.define }}
           path: ./nupkg-${{ matrix.define }}/*.*nupkg
 
+  # Deployment to nuget
   deploy:
     name: Deploy NuGet & Release
     needs: pack
@@ -120,13 +145,18 @@ jobs:
         define: [Default, Events, PureECS]  
     
     steps:
-      - name: Download Artifacts
+
+      # Downloading nuget & dlls
+      - name: Download Artifacts (NuGet + DLLs)
         uses: actions/download-artifact@v4
         with:
-          path: ./nupkg
-          pattern: nuget-*
+          path: ./artifacts
+          pattern: |
+            nuget-*
+            dlls-*
           merge-multiple: true
 
+      # Pushing to nuget the nupkg & snupkg for symbols
       - name: Push to NuGet
         run: |
            dotnet nuget push "./nupkg-${{ matrix.define }}/*.nupkg" \
@@ -139,22 +169,22 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate   
 
-      - name: Create GitHub Release
+      # Creating a github release. 
+      - name: Create GitHub Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
+        if: matrix.define == 'Default' && !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') # Create release once only. 
         with:
           tag_name: v${{ github.event.inputs.version }}
           name: v${{ github.event.inputs.version }}
           body: ${{ github.event.inputs.release_notes }}
+          files: |
+            ./artifacts/**/*.nupkg
+            ./artifacts/**/*.snupkg
+            ./artifacts/**/*.dll
+            ./artifacts/**/*.xml
+            ./artifacts/**/*.pdb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload .nupkg to GitHub Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') }}
-        with:
-          tag_name: v${{ github.event.inputs.version }}
-          files: |
-             ./nupkg/*.nupkg
-             ./nupkg/*.snupkg
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
