@@ -51,19 +51,17 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          3.1.x
-          6.0.x
           8.0.x
 
     # Build the project with defines
     - name: Build project
       run: |
-        dotnet build --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
+        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
@@ -90,8 +88,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
-            3.1.x
-            6.0.x
             8.0.x
 
       - name: Restore dependencies
@@ -99,11 +95,12 @@ jobs:
   
       - name: Pack with DefineConstants=${{ matrix.define }}
         run: |
-          dotnet pack --no-build --configuration Release \
+          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
             -p:DefineConstants="${{ matrix.define }}" \
+            -p:PackageId=$(if $(matrix.define) == 'Default' 'Arch' else 'Arch-${{ matrix.define }}') \
             -o ./nupkg-${{ matrix.define }}
 
       - name: Upload NuGet packages (nupkg + snupkg)
@@ -117,24 +114,30 @@ jobs:
     needs: pack
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        define: [Default, Events, PureECS]  
+    
     steps:
-      - name: Download Artifact
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: nupkg
           path: ./nupkg
+          pattern: nuget-*
+          merge-multiple: true
 
       - name: Push to NuGet
         run: |
-           dotnet nuget push "./nupkg/*.nupkg" \
+           dotnet nuget push "./nupkg-${{ matrix.define }}/*.nupkg" \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
-          
-           dotnet nuget push "./nupkg/*.snupkg" \
+           
+           dotnet nuget push "./nupkg-${{ matrix.define }}/*.snupkg" \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+            --skip-duplicate   
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
