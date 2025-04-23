@@ -12,12 +12,17 @@ on:
       - '**/*.gitignore'
       - '**/*.gitattributes'
   workflow_dispatch:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.3)'
+        required: true
+      release_notes:
+        description: 'Release Notes'
+        required: false
+      deploy_to_nuget:
+        description: 'Publish to nuget? (yes/no)'
+        required: true
+        default: 'no'
       
 jobs:
   build:
@@ -45,7 +50,6 @@ jobs:
         dotnet-version: |
           3.1.x
           6.0.x
-          7.0.x
           8.0.x
 
     - name: Build
@@ -61,3 +65,75 @@ jobs:
         path: TestResults
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
+
+ pack:
+  name: Pack NuGet
+  needs: build
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          3.1.x
+          6.0.x
+          8.0.x
+
+    - name: Pack NuGet package
+      run: |
+        dotnet pack --no-build --configuration Release \
+          --include-symbols --include-source \
+          -p:PackageVersion=${{ github.event.inputs.version }} \
+          -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
+          -o ./nupkg
+
+    - name: Upload all NuGet packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-artifacts
+        path: ./nupkg/*
+
+deploy:
+    name: Deploy NuGet & Release
+    needs: pack
+    if: ${{ github.event.inputs.deploy_to_nuget == 'yes' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nupkg
+          path: ./nupkg
+
+      - name: Push to NuGet
+        run: |
+           dotnet nuget push "./nupkg/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+          
+          dotnet nuget push "./nupkg/*.snupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.release_notes }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload .nupkg to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+         files: |
+          ./nupkg/*.nupkg
+          ./nupkg/*.snupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
