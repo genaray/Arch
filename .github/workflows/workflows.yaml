@@ -118,12 +118,17 @@ jobs:
       # Packing
       - name: Pack with DefineConstants=${{ matrix.define }}
         run: |
+          PACKAGE_ID="Arch"
+          if [ "${{ matrix.define }}" != "Default" ]; then
+            PACKAGE_ID="Arch-${{ matrix.define }}"
+          fi
+      
           dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
             -p:DefineConstants="${{ matrix.define }}" \
-            -p:PackageId=$(if $(matrix.define) == 'Default' 'Arch' else 'Arch-${{ matrix.define }}') \
+            -p:PackageId=$PACKAGE_ID \
             -o ./nupkg-${{ matrix.define }}
 
       # Uploading artifacts
