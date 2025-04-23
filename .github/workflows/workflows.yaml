@@ -123,7 +123,7 @@ jobs:
             PACKAGE_ID="Arch-${{ matrix.define }}"
           fi
       
-          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
+          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release --framework net8.0 \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
