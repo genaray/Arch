@@ -128,7 +128,7 @@ jobs:
 
       # Uploading artifacts
       - name: Upload NuGet packages (nupkg + snupkg)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-${{ matrix.define }}
           path: ./nupkg-${{ matrix.define }}/*.*nupkg
