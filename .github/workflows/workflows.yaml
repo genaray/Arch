@@ -41,7 +41,6 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
-        target_framework: [netcoreapp3.1, net6.0, net8.0]
         define: [Default, Events, PureECS]  
       fail-fast: false
 
@@ -59,12 +58,12 @@ jobs:
     # Build the project with defines
     - name: Build project
       run: |
-        dotnet build --configuration ${{ matrix.configuration }} --framework ${{ matrix.target_framework }} -p:DefineConstants="${{ matrix.define }}"
+        dotnet build --configuration ${{ matrix.configuration }} -p:DefineConstants="${{ matrix.define }}"
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test --configuration ${{ matrix.configuration }} --framework ${{ matrix.target_framework }} -p:DefineConstants="${{ matrix.define }}"
+        dotnet test --configuration ${{ matrix.configuration }} -p:DefineConstants="${{ matrix.define }}"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
