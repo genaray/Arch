@@ -79,9 +79,9 @@ jobs:
     - name: Export DLLs for Unity
       run: |
         mkdir -p ./dlls/${{ matrix.define }}
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.dll ./dlls/${{ matrix.define }}/
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.xml ./dlls/${{ matrix.define }}/ || true
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.pdb ./dlls/${{ matrix.define }}/ || true
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.dll ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.xml ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/ || true
+        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.pdb ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/ || true
 
     # Upload build dlls 
     - name: Upload Unity DLLs as artifact
