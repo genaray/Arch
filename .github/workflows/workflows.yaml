@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     # Setting up .net
     - name: Setup .NET SDK
@@ -102,7 +102,7 @@ jobs:
         define: [Default, Events, PureECS]  
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Setting up .net
       - name: Setup .NET SDK
