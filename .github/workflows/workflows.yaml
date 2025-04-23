@@ -69,6 +69,7 @@ jobs:
   pack:
     name: Pack NuGet
     needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -80,6 +81,9 @@ jobs:
             3.1.x
             6.0.x
             8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
   
       - name: Pack NuGet package
         run: |
@@ -98,7 +102,7 @@ jobs:
   deploy:
     name: Deploy NuGet & Release
     needs: pack
-    if: ${{ github.event.inputs.deploy_to_nuget == 'yes' }}
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact
@@ -130,6 +134,7 @@ jobs:
 
       - name: Upload .nupkg to GitHub Release
         uses: softprops/action-gh-release@v1
+        if: ${{ !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') }}
         with:
           tag_name: v${{ github.event.inputs.version }}
           files: |
