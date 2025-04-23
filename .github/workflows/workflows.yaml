@@ -64,14 +64,14 @@ jobs:
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}" --logger "trx;LogFileName=TestResults/test-results.trx"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}" --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.configuration }}-${{ matrix.define }}
-        path: TestResults/test-results.trx
+        path: TestResults/**/*.trx
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
 
