@@ -39,6 +39,10 @@ jobs:
       TERM: xterm
 
     strategy:
+      matrix:
+        configuration: [Debug, Release]
+        target_framework: [netcoreapp3.1, net6.0, net8.0]
+        define: [Default, Events, PureECS]  
       fail-fast: false
 
     steps:
@@ -52,11 +56,15 @@ jobs:
           6.0.x
           8.0.x
 
-    - name: Build
-      run: ./scripts/Build.sh
+    # Build the project with defines
+    - name: Build project
+      run: |
+        dotnet build --configuration ${{ matrix.configuration }} --framework ${{ matrix.target_framework }} -p:DefineConstants="${{ matrix.define }}"
 
-    - name: Test
-      run: ./scripts/Test.sh
+    # Run tests
+    - name: Run tests
+      run: |
+        dotnet test --configuration ${{ matrix.configuration }} --framework ${{ matrix.target_framework }} -p:DefineConstants="${{ matrix.define }}"
 
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
@@ -71,6 +79,11 @@ jobs:
     needs: build
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        define: [Default, Events, PureECS]  
+    
     steps:
       - uses: actions/checkout@v3
   
@@ -85,19 +98,20 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
   
-      - name: Pack NuGet package
+      - name: Pack with DefineConstants=${{ matrix.define }}
         run: |
           dotnet pack --no-build --configuration Release \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
-            -o ./nupkg
-  
-      - name: Upload all NuGet packages
-        uses: actions/upload-artifact@v4
+            -p:DefineConstants="${{ matrix.define }}" \
+            -o ./nupkg-${{ matrix.define }}
+
+      - name: Upload NuGet packages (nupkg + snupkg)
+        uses: actions/upload-artifact@v3
         with:
-          name: nuget-artifacts
-          path: ./nupkg/*
+          name: nuget-${{ matrix.define }}
+          path: ./nupkg-${{ matrix.define }}/*.*nupkg
 
   deploy:
     name: Deploy NuGet & Release
