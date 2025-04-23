@@ -87,8 +87,8 @@ jobs:
     - name: Upload Unity DLLs as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: dlls-${{ matrix.define }}
-        path: ./dlls/${{ matrix.define }}
+        name: dlls-${{ matrix.configuration }}-${{ matrix.define }}
+        path: ./dlls/${{ matrix.configuration }}-${{ matrix.define }}
 
   # Packing nugets
   pack:
