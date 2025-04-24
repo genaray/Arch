@@ -56,30 +56,24 @@ jobs:
         dotnet-version: |
           8.0.x
 
+    # Create config (Release-Events, Debug, ...)
+    - name: Create CONFIG for build
+      run: |
+        if [ "${{ matrix.define }}" = "Default" ]; then
+          echo "CONFIG=${{ matrix.configuration }}" >> $GITHUB_ENV
+        else
+          echo "CONFIG=${{ matrix.configuration }}-${{ matrix.define }}" >> $GITHUB_ENV
+        fi
+
     # Build the project with defines
     - name: Build project
       run: |
-      
-        # Create the config name
-        CONFIG="${{ matrix.configuration }}"
-        if [ "${{ matrix.define }}" != "Default" ]; then
-          CONFIG="${CONFIG}-${{ matrix.define }}"
-        fi
-    
-        echo "Building with Configuration=${CONFIG}"
-        dotnet build src/Arch/Arch.csproj --configuration "$CONFIG"
+        dotnet build src/Arch/Arch.csproj --configuration $CONFIG
 
     # Run tests
     - name: Run tests
       run: |
-
-        # Create the config name
-        CONFIG="${{ matrix.configuration }}"
-        if [ "${{ matrix.define }}" != "Default" ]; then
-          CONFIG="${CONFIG}-${{ matrix.define }}"
-        fi
-        
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration "$CONFIG" --logger trx --results-directory "TestResults"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration $CONFIG --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
@@ -94,9 +88,9 @@ jobs:
     - name: Upload build output for Unity & NuGet
       uses: actions/upload-artifact@v4
       with:
-        name: build-output-${{ matrix.configuration }}-${{ matrix.define }}
+        name: build-output-${{ env.CONFIG }}
         path: |
-          src/Arch/bin/${{ matrix.configuration }}/
+          src/Arch/bin/${{ env.CONFIG }}/
 
   # Packing nugets
   pack:
@@ -119,12 +113,21 @@ jobs:
           dotnet-version: |
             8.0.x
 
+      # Create config (Release-Events, Debug, ...)
+      - name: Create CONFIG for build
+        run: |
+          if [ "${{ matrix.define }}" = "Default" ]; then
+            echo "CONFIG=Release" >> $GITHUB_ENV
+          else
+            echo "CONFIG=Release-${{ matrix.define }}" >> $GITHUB_ENV
+          fi
+
       # Download build output from build stage
       - name: Download build output
         uses: actions/download-artifact@v4
         with:
-          name: build-output-Release-${{ matrix.define }}
-          path: src/Arch/bin/Release/
+          name: build-output-${{ env.CONFIG }}
+          path: src/Arch/bin/${{ env.CONFIG }}/
 
       # Restore 
       - name: Restore dependencies
