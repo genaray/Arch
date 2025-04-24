@@ -129,6 +129,10 @@ jobs:
           name: build-output-${{ env.CONFIG }}
           path: src/Arch/bin/${{ env.CONFIG }}/
 
+      # Copy readme to project (otherwhise its not found by pack) 
+      - name: Copy README.md into project folder
+        run: cp README.md src/Arch/README.md
+
       # Restore 
       - name: Restore dependencies
         run: dotnet restore src/Arch/Arch.csproj
@@ -146,7 +150,7 @@ jobs:
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
             -p:PackageId=$PACKAGE_ID \
-            -p:PackageReadmeFile=../../README.md \
+            -p:PackageReadmeFile=README.md \
             -o ./nupkg-${{ matrix.define }}
 
       # Uploading artifacts
