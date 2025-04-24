@@ -113,7 +113,7 @@ jobs:
 
       # Restore 
       - name: Restore dependencies
-        run: dotnet restore src/Arch/Arch.csproj --framework net8.0
+        run: dotnet restore src/Arch/Arch.csproj
       
       # Packing
       - name: Pack with DefineConstants=${{ matrix.define }}
