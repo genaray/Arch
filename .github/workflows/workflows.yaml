@@ -59,12 +59,27 @@ jobs:
     # Build the project with defines
     - name: Build project
       run: |
-        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} -p:DefineConstants='$(DefineConstants);${{ matrix.define }}'
+      
+        # Create the config name
+        CONFIG="${{ matrix.configuration }}"
+        if [ "${{ matrix.define }}" != "Default" ]; then
+          CONFIG="${CONFIG}-${{ matrix.define }}"
+        fi
+    
+        echo "Building with Configuration=${CONFIG}"
+        dotnet build src/Arch/Arch.csproj --configuration "$CONFIG"
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants='$(DefineConstants);${{ matrix.define }}' --logger trx --results-directory "TestResults"
+
+        # Create the config name
+        CONFIG="${{ matrix.configuration }}"
+        if [ "${{ matrix.define }}" != "Default" ]; then
+          CONFIG="${CONFIG}-${{ matrix.define }}"
+        fi
+        
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration "$CONFIG" --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
