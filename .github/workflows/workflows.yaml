@@ -110,6 +110,10 @@ jobs:
         with:
           name: build-output-Release-${{ matrix.define }}
           path: src/Arch/bin/Release/net8.0/
+
+      # Restore 
+      - name: Restore dependencies
+        run: dotnet restore src/Arch/Arch.csproj --framework net8.0
       
       # Packing
       - name: Pack with DefineConstants=${{ matrix.define }}
