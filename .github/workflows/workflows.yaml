@@ -75,28 +75,13 @@ jobs:
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
 
-    # Upload build output
-    - name: Upload build output for NuGet
-      if: matrix.configuration == 'Release'
+    # Upload build output for dlls and nuget
+    - name: Upload build output for Unity & NuGet
       uses: actions/upload-artifact@v4
       with:
-        name: build-output-${{ matrix.define }}
-        path: src/Arch/bin/Release/net8.0/
-
-    # Copy build dlls to folder
-    - name: Export DLLs for Unity
-      run: |
-        mkdir -p ./dlls/${{ matrix.configuration }}-${{ matrix.define }}
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.dll ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.xml ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/ || true
-        cp src/Arch/bin/${{ matrix.configuration }}/net8.0/Arch.pdb ./dlls/${{ matrix.configuration }}-${{ matrix.define }}/ || true
-
-    # Upload build dlls 
-    - name: Upload Unity DLLs as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: dlls-${{ matrix.configuration }}-${{ matrix.define }}
-        path: ./dlls/${{ matrix.configuration }}-${{ matrix.define }}
+        name: build-output-${{ matrix.configuration }}-${{ matrix.define }}
+        path: |
+          src/Arch/bin/${{ matrix.configuration }}/net8.0/
 
   # Packing nugets
   pack:
@@ -123,7 +108,7 @@ jobs:
       - name: Download build output
         uses: actions/download-artifact@v4
         with:
-          name: build-output-${{ matrix.define }}
+          name: build-output-Release-${{ matrix.define }}
           path: src/Arch/bin/Release/net8.0/
       
       # Packing
