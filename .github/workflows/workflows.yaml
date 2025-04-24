@@ -202,6 +202,14 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate   
 
+      # Upload to github pkgs
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "./nupkg-${{ matrix.define }}/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "https://nuget.pkg.github.com/genaray/index.json" \
+            --skip-duplicate
+
       # Creating a github release. 
       - name: Create GitHub Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
