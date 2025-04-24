@@ -59,12 +59,12 @@ jobs:
     # Build the project with defines
     - name: Build project
       run: |
-        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} -p:DefineConstants="$(DefineConstants);${{ matrix.define }}"
+        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} -p:DefineConstants='$(DefineConstants);${{ matrix.define }}'
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="$(DefineConstants);${{ matrix.define }}" --logger trx --results-directory "TestResults"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants='$(DefineConstants);${{ matrix.define }}' --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
