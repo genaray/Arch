@@ -133,6 +133,11 @@ jobs:
       - name: Copy README.md into project folder
         run: cp README.md src/Arch/README.md
 
+      # Patch csproj temporary to include the package readme
+      - name: Patch .csproj for README.md
+        run: |
+          echo '  <ItemGroup><None Include="README.md" Pack="true" PackagePath="" /></ItemGroup>' >> src/Arch/Arch.csproj
+
       # Restore 
       - name: Restore dependencies
         run: dotnet restore src/Arch/Arch.csproj
