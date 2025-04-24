@@ -141,11 +141,10 @@ jobs:
             PACKAGE_ID="Arch-${{ matrix.define }}"
           fi
       
-          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
+          dotnet pack src/Arch/Arch.csproj --no-build --configuration $CONFIG \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
-            -p:DefineConstants="${{ matrix.define }}" \
             -p:PackageId=$PACKAGE_ID \
             -o ./nupkg-${{ matrix.define }}
 
