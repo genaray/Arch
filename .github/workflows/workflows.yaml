@@ -75,6 +75,14 @@ jobs:
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
 
+    # Upload build output
+    - name: Upload build output for NuGet
+      if: matrix.configuration == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-${{ matrix.define }}
+        path: src/Arch/bin/Release/net8.0/
+
     # Copy build dlls to folder
     - name: Export DLLs for Unity
       run: |
@@ -110,11 +118,14 @@ jobs:
         with:
           dotnet-version: |
             8.0.x
-            
-      # Restoring dependencies 
-      - name: Restore dependencies
-        run: dotnet restore
 
+      # Download build output from build stage
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output-${{ matrix.define }}
+          path: src/Arch/bin/Release/net8.0/
+      
       # Packing
       - name: Pack with DefineConstants=${{ matrix.define }}
         run: |
@@ -123,7 +134,7 @@ jobs:
             PACKAGE_ID="Arch-${{ matrix.define }}"
           fi
       
-          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release --framework net8.0 \
+          dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
