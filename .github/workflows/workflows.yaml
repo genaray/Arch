@@ -146,7 +146,7 @@ jobs:
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
             -p:PackageId=$PACKAGE_ID \
-            -p:PackageReadmeFile=README.md \
+            -p:PackageReadmeFile=../../README.md \
             -o ./nupkg-${{ matrix.define }}
 
       # Uploading artifacts
