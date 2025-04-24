@@ -146,6 +146,7 @@ jobs:
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
             -p:PackageId=$PACKAGE_ID \
+            -p:PackageReadmeFile=README.md \
             -o ./nupkg-${{ matrix.define }}
 
       # Uploading artifacts
@@ -168,14 +169,12 @@ jobs:
     
     steps:
 
-      # Downloading nuget & dlls
-      - name: Download Artifacts (NuGet + DLLs)
+      # Downloading nugets
+      - name: Download NuGet packages for ${{ matrix.define }}
         uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
-          pattern: |
-            nuget-*
-            dlls-*
+          name: nuget-${{ matrix.define }}
+          path: ./nupkg-${{ matrix.define }}
           merge-multiple: true
 
       # Pushing to nuget the nupkg & snupkg for symbols
@@ -194,17 +193,14 @@ jobs:
       # Creating a github release. 
       - name: Create GitHub Release & Upload Artifacts
         uses: softprops/action-gh-release@v1
-        if: matrix.define == 'Default' && !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') # Create release once only. 
+        if: matrix.define == 'Default' && !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') # Create release once only and skip if its an alpha or beta. 
         with:
           tag_name: v${{ github.event.inputs.version }}
           name: v${{ github.event.inputs.version }}
           body: ${{ github.event.inputs.release_notes }}
           files: |
-            ./artifacts/**/*.nupkg
-            ./artifacts/**/*.snupkg
-            ./artifacts/**/*.dll
-            ./artifacts/**/*.xml
-            ./artifacts/**/*.pdb
+            ./nupkg-Default/*.nupkg
+            ./nupkg-Default/*.snupkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
