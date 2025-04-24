@@ -59,12 +59,12 @@ jobs:
     # Build the project with defines
     - name: Build project
       run: |
-        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}"
+        dotnet build src/Arch/Arch.csproj --configuration ${{ matrix.configuration }} -p:DefineConstants="${{ matrix.define }}"
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} --framework net8.0 -p:DefineConstants="${{ matrix.define }}" --logger trx --results-directory "TestResults"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration ${{ matrix.configuration }} -p:DefineConstants="${{ matrix.define }}" --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
@@ -81,7 +81,7 @@ jobs:
       with:
         name: build-output-${{ matrix.configuration }}-${{ matrix.define }}
         path: |
-          src/Arch/bin/${{ matrix.configuration }}/net8.0/
+          src/Arch/bin/${{ matrix.configuration }}/
 
   # Packing nugets
   pack:
@@ -109,7 +109,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output-Release-${{ matrix.define }}
-          path: src/Arch/bin/Release/net8.0/
+          path: src/Arch/bin/Release/
 
       # Restore 
       - name: Restore dependencies
@@ -124,7 +124,6 @@ jobs:
           fi
       
           dotnet pack src/Arch/Arch.csproj --no-build --configuration Release \
-            -p:TargetFramework=net8.0 \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
             -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
