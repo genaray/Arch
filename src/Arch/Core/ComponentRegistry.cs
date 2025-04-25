@@ -408,7 +408,6 @@ public static class Component
     /// </summary>
     /// <param name="obj">The <see cref="ComponentType"/> array.</param>
     /// <returns>A unique hashcode for the contained elements, regardless of their order.</returns>
-
     public static int GetHashCode(Span<ComponentType> obj)
     {
           // Search for the highest id to determine how much uints we need for the stack.
@@ -440,7 +439,6 @@ public static class Component
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/>.</param>
     /// <returns>A unique hashcode for the contained elements.</returns>
-
     public static int GetHashCode(Span<uint> span)
     {
         var hashCode = new HashCode();

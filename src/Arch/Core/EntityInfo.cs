@@ -100,7 +100,7 @@ public struct EntityData : IEquatable<EntityData>
     /// <returns>True or false.</returns>
     public bool Equals(EntityData other)
     {
-        return Version == other.Version && Archetype.Equals(other.Archetype) && Slot.Equals(other.Slot);
+        return Version == other.Version && Archetype != null && Archetype.Equals(other.Archetype) && Slot.Equals(other.Slot);
     }
 
     /// <summary>
