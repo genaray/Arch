@@ -16,7 +16,7 @@ namespace Arch.Core;
 ///     stores information about an <see cref="Entity"/> to quickly access its data and location.
 /// </summary>
 [SkipLocalsInit]
-public struct EntityData
+public struct EntityData : IEquatable<EntityData>
 {
     /// <summary>
     ///     A reference to its <see cref="Archetype"/>.
@@ -31,7 +31,7 @@ public struct EntityData
     /// <summary>
     ///     Its version.
     /// </summary>
-    public int Version;
+    public readonly int Version;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EntityData"/> struct.
@@ -91,6 +91,41 @@ public struct EntityData
     {
         Archetype = archetype;
         Slot = slot;
+    }
+
+    /// <summary>
+    ///     Returns true if its equal to the passed instance.
+    /// </summary>
+    /// <param name="other">The other instance.</param>
+    /// <returns>True or false.</returns>
+    public bool Equals(EntityData other)
+    {
+        return Version == other.Version && Archetype.Equals(other.Archetype) && Slot.Equals(other.Slot);
+    }
+
+    /// <summary>
+    ///     Returns true if its equal to the passed instance.
+    /// </summary>
+    /// <param name="obj">The other instance.</param>
+    /// <returns>True or false.</returns>
+    public override bool Equals(object? obj)
+    {
+        return obj is EntityData other && Equals(other);
+    }
+
+    /// <summary>
+    ///     Returns the hashcode of this instance.
+    /// </summary>
+    /// <returns>The hashcode.</returns>
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = Archetype.GetHashCode();
+            hashCode = (hashCode * 397) ^ Slot.GetHashCode();
+            hashCode = (hashCode * 397) ^ Version;
+            return hashCode;
+        }
     }
 }
 

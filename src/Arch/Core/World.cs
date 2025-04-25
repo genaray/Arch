@@ -1639,8 +1639,13 @@ public partial class World
     [Pure]
     public bool IsAlive(Entity entity)
     {
+        if (entity.Version <= 0)
+        {
+            return false;
+        }
+
         ref var entityData = ref EntityInfo.TryGetEntityData(entity.Id, out var entityDataExists);
-        return entity.Version > 0 && entityDataExists && entityData.Version == entity.Version;
+        return entityDataExists && entityData.Version == entity.Version;
     }
 
     /// <summary>
@@ -1652,8 +1657,14 @@ public partial class World
     [Pure]
     public ref EntityData IsAlive(Entity entity, out bool exists)
     {
+        if (entity.Version <= 0)
+        {
+            exists = false;
+            return ref Unsafe.NullRef<EntityData>();
+        }
+
         ref var entityData = ref EntityInfo.TryGetEntityData(entity.Id, out var entityDataExists);
-        exists = entity.Version > 0 && entityDataExists && entityData.Version == entity.Version;
+        exists = entityDataExists && entityData.Version == entity.Version;
         return ref entityData;
     }
 
