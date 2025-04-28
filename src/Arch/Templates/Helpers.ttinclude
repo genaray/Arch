@@ -69,6 +69,29 @@
     }
 
     /// <summary>
+    ///     Lists out params in a row as parameters.
+    ///     <example>
+    ///         <code>
+    ///             out T0 t0Component, out T1 t1Component,...
+    ///         </code>
+    ///     </example>
+    /// </summary>
+    /// <param name="sb"></param>
+    /// <param name="amount"></param>
+    /// <returns></returns>
+    public StringBuilder AppendGenericOutParams(int amount, string name = "Component")
+    {
+        var sb = new StringBuilder();
+        for (var localIndex = 0; localIndex < amount; localIndex++)
+        {
+            sb.Append($"out T{localIndex}? t{localIndex}{name}, ");
+        }
+
+        sb.Length -= 2;
+        return sb;
+    }
+
+    /// <summary>
     ///     Inserts ref params in a row as parameters.
     ///     <example>
     ///         <code>

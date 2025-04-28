@@ -14,7 +14,8 @@ namespace Arch.Core;
     for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
-        var parameters = AppendGenericRefParameters(index);
+        var ctorParams = AppendGenericRefParameters(index);
+        var dtorParams = AppendGenericOutParams(index);
 
         var refStructs = new StringBuilder();
         for (var i = 0; i < index; i++)
@@ -31,12 +32,15 @@ namespace Arch.Core;
         var assignRefs = new StringBuilder();
         for (var i = 0; i < index; i++)
             assignRefs.AppendLine($"t{i} = ref t{i}Component;");
+
+        var deconstructions = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            deconstructions.AppendLine($"t{i}Component = t{i};");
 #>
 
 [SkipLocalsInit]
 public ref struct Components<<#= generics #>>
 {
-
 #if NETSTANDARD2_1 || NET6_0
     <#= Indent(refStructs, 4) #>
 #else
@@ -44,16 +48,21 @@ public ref struct Components<<#= generics #>>
 #endif
 
     [SkipLocalsInit]
-    public Components(<#= parameters #>){
-
+    public Components(<#= ctorParams #>)
+    {
 #if NETSTANDARD2_1 || NET6_0
-    <#= Indent(assignRefStructs, 4) #>
+        <#= Indent(assignRefStructs, 8) #>
 #else
-    <#= Indent(assignRefs, 4) #>
+        <#= Indent(assignRefs, 8) #>
 #endif
     }
-}
 
+    [SkipLocalsInit]
+    public readonly void Deconstruct(<#= dtorParams #>)
+    {
+        <#= Indent(deconstructions, 8) #>
+    }
+}
 <#
     }
 #>
