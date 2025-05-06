@@ -103,7 +103,7 @@ internal class StructuralSparseArray
     /// </summary>
     public void Clear()
     {
-        Array.Fill(Entities, -1, 0, Size);
+        Array.Fill(Entities, -1);
         Size = 0;
     }
 }
