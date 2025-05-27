@@ -156,7 +156,7 @@ jobs:
           dotnet pack src/Arch/Arch.csproj --no-build --configuration $CONFIG \
             --include-symbols --include-source \
             -p:PackageVersion=${{ github.event.inputs.version }} \
-            -p:PackageReleaseNotes="${{ github.event.inputs.release_notes }}" \
+            "-p:PackageReleaseNotes=${{ github.event.inputs.release_notes }}" \
             -p:PackageId=$PACKAGE_ID \
             -p:PackageReadmeFile=README.md \
             -o ./nupkg-${{ matrix.define }}
