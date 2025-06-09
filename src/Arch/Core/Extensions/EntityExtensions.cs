@@ -124,6 +124,11 @@ public static partial class EntityExtensions
     [Pure]
     public static ref T Get<T>(this in Entity entity)
     {
+        if (!entity.Has<T>())
+        {
+            throw new InvalidOperationException($"Entity {entity} does not have a component of type {typeof(T).Name}.");
+        }
+
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         return ref world.Get<T>(entity);
     }
@@ -182,6 +187,11 @@ public static partial class EntityExtensions
 
     public static void Add<T>(this in Entity entity, in T? component = default)
     {
+        if(entity.Has<T>())
+        {
+            throw new InvalidOperationException($"Entity {entity} already has a component of type {typeof(T).Name}.");
+        }
+
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         world.Add(entity, component);
     }
