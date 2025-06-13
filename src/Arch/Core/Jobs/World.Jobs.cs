@@ -3,6 +3,7 @@ using Arch.LowLevel;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Schedulers;
+using Schedulers.Utils;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -11,12 +12,6 @@ namespace Arch.Core;
 
 public partial class World
 {
-
-    /// <summary>
-    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
-    /// </summary>
-    private NetStandardList<JobHandle> JobHandles { get; }
-
     /// <summary>
     ///     A cache used for the parallel queries to prevent list allocations.
     /// </summary>
@@ -106,6 +101,7 @@ public partial class World
         {
             var archetypeSize = archetype.ChunkCount;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+            var handle = SharedJobScheduler.Schedule();
             foreach (var range in part)
             {
                 var job = pool.Get();
@@ -114,15 +110,14 @@ public partial class World
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
 
-                var jobHandle = SharedJobScheduler.Schedule(job);
+                var jobHandle = SharedJobScheduler.Schedule(job, handle);
+                SharedJobScheduler.Flush(jobHandle);
                 JobsCache.Add(job);
-                JobHandles.Add(jobHandle);
             }
 
             // Schedule, flush, wait, return.
-            var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-            SharedJobScheduler.Flush();
-            handle.Complete();
+            SharedJobScheduler.Flush(handle);
+            SharedJobScheduler.Wait(handle);
 
             for (var index = 0; index < JobsCache.Count; index++)
             {
@@ -130,7 +125,6 @@ public partial class World
                 pool.Return(job);
             }
 
-            JobHandles.Clear();
             JobsCache.Clear();
         }
     }
@@ -156,6 +150,7 @@ public partial class World
 
         // Cast pool in an unsafe fast way and run the query.
         var query = Query(in queryDescription);
+        var handle = SharedJobScheduler.Schedule();
         foreach (var archetype in query.GetArchetypeIterator())
         {
             var archetypeSize = archetype.ChunkCount;
@@ -170,16 +165,14 @@ public partial class World
                     Instance = innerJob
                 };
 
-                var jobHandle = SharedJobScheduler.Schedule(job);
-                JobHandles.Add(jobHandle);
+                var jobHandle = SharedJobScheduler.Schedule(job, handle);
+                SharedJobScheduler.Flush(jobHandle);
             }
         }
 
-        // Schedule, flush, wait, return.
-        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-        SharedJobScheduler.Flush();
-        JobHandles.Clear();
-
+        // flush, wait, return.
+        SharedJobScheduler.Flush(handle);
+        SharedJobScheduler.Wait(handle);
         return handle;
     }
 }
