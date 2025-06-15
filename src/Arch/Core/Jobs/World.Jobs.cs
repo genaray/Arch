@@ -155,6 +155,7 @@ public partial class World
                 jobCopy.SetChunk(chunk);
                 var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, SharedJobScheduler, 1, true);
                 job.GetHandle().SetParent(parentHandle);
+                job.CheckAndSplit();
                 SharedJobScheduler.Flush(job.GetHandle());
             }
 
