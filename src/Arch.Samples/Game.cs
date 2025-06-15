@@ -66,15 +66,7 @@ public sealed class Game : Microsoft.Xna.Framework.Game
 
         // Create world & Job Scheduler
         _world = World.Create();
-        _jobScheduler = new(
-                new JobScheduler.Config
-                {
-                    ThreadPrefixName = "Arch.Samples",
-                    ThreadCount = 0,
-                    MaxExpectedConcurrentJobs = 64,
-                    StrictAllocationMode = false,
-                }
-        );
+        _jobScheduler = new();
         World.SharedJobScheduler = _jobScheduler;
 
         // Create systems
@@ -126,7 +118,7 @@ public sealed class Game : Microsoft.Xna.Framework.Game
 
             // Set variables
             foreach (var entity in entities)
-            { 
+            {
 
 #if DEBUG_PUREECS || RELEASE_PUREECS
                 _world.Set(entity,

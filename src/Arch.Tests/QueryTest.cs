@@ -20,12 +20,7 @@ public sealed partial class QueryTest
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler(new JobScheduler.Config {
-                ThreadPrefixName = "Arch.Samples",
-                ThreadCount = 0,
-                MaxExpectedConcurrentJobs = 64,
-                StrictAllocationMode = false,
-        });
+        _jobScheduler = new();
 
         World.SharedJobScheduler = _jobScheduler;
     }
