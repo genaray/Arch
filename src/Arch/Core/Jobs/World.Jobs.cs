@@ -101,7 +101,7 @@ public partial class World
         {
             var archetypeSize = archetype.ChunkCount;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-            var handle = SharedJobScheduler.Schedule();
+            var parentHandle = SharedJobScheduler.Schedule();
             foreach (var range in part)
             {
                 var job = pool.Get();
@@ -110,14 +110,14 @@ public partial class World
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
 
-                var jobHandle = SharedJobScheduler.Schedule(job, handle);
+                var jobHandle = SharedJobScheduler.Schedule(job, parentHandle);
                 SharedJobScheduler.Flush(jobHandle);
                 JobsCache.Add(job);
             }
 
             // Schedule, flush, wait, return.
-            SharedJobScheduler.Flush(handle);
-            SharedJobScheduler.Wait(handle);
+            SharedJobScheduler.Flush(parentHandle);
+            SharedJobScheduler.Wait(parentHandle);
 
             for (var index = 0; index < JobsCache.Count; index++)
             {
@@ -126,6 +126,41 @@ public partial class World
             }
 
             JobsCache.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Similar to InlineParallelChunkQuery but instead runs the <see cref="IParallelChunkJobProducer"/> on each chunk in parallel.
+    /// This makes it possible to run parallel on chunks that are few, but contain lots of entities.
+    /// </summary>
+    public void AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IParallelChunkJobProducer
+    {
+        // Job scheduler needs to be initialized.
+        if (SharedJobScheduler is null)
+        {
+            throw new($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
+        }
+
+        // Cast pool in an unsafe fast way and run the query.
+        var query = Query(in queryDescription);
+        foreach (var archetype in query.GetArchetypeIterator())
+        {
+            var parentHandle = SharedJobScheduler.Schedule();
+            // We dont actually care about partitioning here anyways as we run the job on each chunk individually,
+            // so might as well just remove it, todo
+            for (int i = 0; i < archetype.Chunks.Count; i++)
+            {
+                ref var chunk = ref archetype.Chunks[i];
+                var jobCopy = innerJob;
+                jobCopy.SetChunk(chunk);
+                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, SharedJobScheduler, 1, true);
+                job.GetHandle().SetParent(parentHandle);
+                SharedJobScheduler.Flush(job.GetHandle());
+            }
+
+            // Schedule, flush, wait, return.
+            SharedJobScheduler.Flush(parentHandle);
+            SharedJobScheduler.Wait(parentHandle);
         }
     }
 
