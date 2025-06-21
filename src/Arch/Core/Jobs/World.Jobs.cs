@@ -132,8 +132,12 @@ public partial class World
     /// <summary>
     /// Similar to InlineParallelChunkQuery but instead runs the <see cref="IParallelChunkJobProducer"/> on each chunk in parallel.
     /// This makes it possible to run parallel on chunks that are few, but contain lots of entities.
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
+    /// <param name="parent">The parent <see cref="JobHandle"/> to set as parent for the job.</param>
+    /// <returns>A <see cref="JobHandle"/> that can be used to wait for this job to finish.</returns>
     /// </summary>
-    public JobHandle AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IParallelChunkJobProducer
+    public JobHandle AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob, JobHandle parent) where T : struct, IParallelChunkJobProducer
     {
         // Job scheduler needs to be initialized.
         if (SharedJobScheduler is null)
@@ -143,7 +147,7 @@ public partial class World
 
         // Cast pool in an unsafe fast way and run the query.
         var query = Query(in queryDescription);
-        var parentHandle = SharedJobScheduler.Schedule();
+        var currentParentHandle = SharedJobScheduler.Schedule(parent);
         foreach (var archetype in query.GetArchetypeIterator())
         {
             for (int i = 0; i < archetype.Chunks.Count; i++)
@@ -151,15 +155,14 @@ public partial class World
                 ref var chunk = ref archetype.Chunks[i];
                 var jobCopy = innerJob;
                 jobCopy.SetChunk(chunk);
-                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, SharedJobScheduler, 1, true);
-                job.GetHandle().SetParent(parentHandle);
+                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, 1, true);
+                job.GetHandle().SetParent(currentParentHandle);
                 job.CheckAndSplit();
                 SharedJobScheduler.Flush(job.GetHandle());
             }
         }
-
-        SharedJobScheduler.Flush(parentHandle);
-        return parentHandle;
+        SharedJobScheduler.Flush(currentParentHandle);
+        return currentParentHandle;
     }
 
     /// <summary>
