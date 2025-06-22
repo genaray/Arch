@@ -137,7 +137,7 @@ public partial class World
     /// <param name="parent">The parent <see cref="JobHandle"/> to set as parent for the job.</param>
     /// <returns>A <see cref="JobHandle"/> that can be used to wait for this job to finish.</returns>
     /// </summary>
-    public JobHandle AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob, JobHandle parent) where T : struct, IParallelChunkJobProducer
+    public JobHandle AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob, JobHandle parent, JobHandle source) where T : struct, IParallelChunkJobProducer
     {
         // Job scheduler needs to be initialized.
         if (SharedJobScheduler is null)
@@ -155,7 +155,7 @@ public partial class World
                 ref var chunk = ref archetype.Chunks[i];
                 var jobCopy = innerJob;
                 jobCopy.SetChunk(chunk);
-                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, 1, true);
+                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, 1, true, source: source);
                 job.GetHandle().SetParent(currentParentHandle);
                 job.CheckAndSplit();
                 SharedJobScheduler.Flush(job.GetHandle());
