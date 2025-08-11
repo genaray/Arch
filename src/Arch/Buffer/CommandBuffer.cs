@@ -283,6 +283,7 @@ public sealed partial class CommandBuffer : IDisposable
     public void Playback(World world, bool dispose = true)
     {
         // Create recorded entities.
+        int createCount = Creates.Count;
         foreach (var cmd in Creates)
         {
             var entity = world.Create(cmd.Types);
@@ -290,7 +291,8 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back additions.
-        for (var index = 0; index < Adds.Count; index++)
+        int addCount = Adds.Count;
+        for (var index = 0; index < addCount; index++)
         {
             var wrappedEntity = Adds.Entities[index];
             for (var i = 0; i < Adds.UsedSize; i++)
@@ -320,7 +322,8 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back sets.
-        for (var index = 0; index < Sets.Count; index++)
+        int setCount = Sets.Count;
+        for (var index = 0; index < setCount; index++)
         {
             // Get wrapped entity
             var wrappedEntity = Sets.Entities[index];
@@ -364,7 +367,8 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back removals.
-        for (var index = 0; index < Removes.Count; index++)
+        int removeCount = Removes.Count;
+        for (var index = 0; index < removeCount; index++)
         {
             var wrappedEntity = Removes.Entities[index];
             for (var i = 0; i < Removes.UsedSize; i++)
@@ -392,6 +396,7 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back destructions.
+        int destroyCount = Destroys.Count;
         foreach (var cmd in Destroys)
         {
             world.Destroy(Entities[cmd]);
@@ -406,11 +411,26 @@ public sealed partial class CommandBuffer : IDisposable
         Size = 0;
         Entities.Clear();
         BufferedEntityInfo.Clear();
-        Creates.Clear();
-        Sets.Clear();
-        Adds.Clear();
-        Removes.Clear();
-        Destroys.Clear();
+        if (createCount > 0)
+        {
+            Creates.Clear();
+        }
+        if (setCount > 0)
+        {
+            Sets.Clear();
+        }
+        if (addCount > 0)
+        {
+            Adds.Clear();
+        }
+        if (removeCount > 0)
+        {
+            Removes.Clear();
+        }
+        if (destroyCount > 0)
+        {
+            Destroys.Clear();
+        }
         _addTypes.Clear();
         _removeTypes.Clear();
     }
