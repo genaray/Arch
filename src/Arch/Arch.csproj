@@ -14,7 +14,7 @@
 
     <PackageId>Arch</PackageId>
     <Title>Arch</Title>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Authors>genaray</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>A high performance c# net.7 and net.8 archetype based ECS ( Entity component system ).</Description>
