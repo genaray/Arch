@@ -93,7 +93,6 @@
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -590,6 +589,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>World.CreateBulk.tt</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ZeroAllocJobScheduler\JobScheduler\Schedulers.csproj" />
   </ItemGroup>
 
 </Project>

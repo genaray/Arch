@@ -3,6 +3,7 @@ using Arch.LowLevel;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Schedulers;
+using Schedulers.Utils;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -11,12 +12,6 @@ namespace Arch.Core;
 
 public partial class World
 {
-
-    /// <summary>
-    ///     A list of <see cref="JobHandle"/> which are pooled to avoid allocs.
-    /// </summary>
-    private NetStandardList<JobHandle> JobHandles { get; }
-
     /// <summary>
     ///     A cache used for the parallel queries to prevent list allocations.
     /// </summary>
@@ -106,6 +101,7 @@ public partial class World
         {
             var archetypeSize = archetype.ChunkCount;
             var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
+            var parentHandle = SharedJobScheduler.Schedule();
             foreach (var range in part)
             {
                 var job = pool.Get();
@@ -114,15 +110,14 @@ public partial class World
                 job.Chunks = archetype.Chunks;
                 job.Instance = innerJob;
 
-                var jobHandle = SharedJobScheduler.Schedule(job);
+                var jobHandle = SharedJobScheduler.Schedule(job, parentHandle);
+                SharedJobScheduler.Flush(jobHandle);
                 JobsCache.Add(job);
-                JobHandles.Add(jobHandle);
             }
 
             // Schedule, flush, wait, return.
-            var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-            SharedJobScheduler.Flush();
-            handle.Complete();
+            SharedJobScheduler.Flush(parentHandle);
+            SharedJobScheduler.Wait(parentHandle);
 
             for (var index = 0; index < JobsCache.Count; index++)
             {
@@ -130,9 +125,52 @@ public partial class World
                 pool.Return(job);
             }
 
-            JobHandles.Clear();
             JobsCache.Clear();
         }
+    }
+
+    /// <summary>
+    /// Similar to InlineParallelChunkQuery but instead runs the <see cref="IParallelChunkJobProducer"/> on each chunk in parallel.
+    /// This makes it possible to run parallel on chunks that are few, but contain lots of entities.
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked.</param>
+    /// <param name="parent">The parent <see cref="JobHandle"/> to set as parent for the job.</param>
+    /// <returns>A <see cref="JobHandle"/> that can be used to wait for this job to finish.</returns>
+    /// </summary>
+    public JobHandle AdvancedInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob, JobHandle parent, JobHandle source) where T : struct, IParallelChunkJobProducer
+    {
+        // Job scheduler needs to be initialized.
+        if (SharedJobScheduler is null)
+        {
+            throw new($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
+        }
+
+        // Cast pool in an unsafe fast way and run the query.
+        var query = Query(in queryDescription);
+        var currentParentHandle = SharedJobScheduler.Schedule(parent);
+        foreach (var archetype in query.GetArchetypeIterator())
+        {
+            // If more chunks than threads then run each chunk as a separate job. Don't granularize any further, as it will cause too much overhead.
+            var isManyChunks = archetype.Chunks.Count > Environment.ProcessorCount;
+            for (int i = 0; i < archetype.Chunks.Count; i++)
+            {
+                ref var chunk = ref archetype.Chunks[i];
+                // Sometimes chunks might be empty because they had entities removed for some reason. In that case just do nothing.
+                if (chunk.Count == 0)
+                {
+                    continue;
+                }
+
+                var jobCopy = innerJob;
+                jobCopy.SetChunk(chunk);
+                var job = new ParallelJobProducer<T>(0, chunk.Count, jobCopy, 1, true, source, isManyChunks);
+                job.GetHandle().SetParent(currentParentHandle);
+                SharedJobScheduler.Flush(job.GetHandle());
+            }
+        }
+
+        SharedJobScheduler.Flush(currentParentHandle);
+        return currentParentHandle;
     }
 
     /// <summary>
@@ -156,6 +194,7 @@ public partial class World
 
         // Cast pool in an unsafe fast way and run the query.
         var query = Query(in queryDescription);
+        var handle = SharedJobScheduler.Schedule();
         foreach (var archetype in query.GetArchetypeIterator())
         {
             var archetypeSize = archetype.ChunkCount;
@@ -170,16 +209,14 @@ public partial class World
                     Instance = innerJob
                 };
 
-                var jobHandle = SharedJobScheduler.Schedule(job);
-                JobHandles.Add(jobHandle);
+                var jobHandle = SharedJobScheduler.Schedule(job, handle);
+                SharedJobScheduler.Flush(jobHandle);
             }
         }
 
-        // Schedule, flush, wait, return.
-        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-        SharedJobScheduler.Flush();
-        JobHandles.Clear();
-
+        // flush, wait, return.
+        SharedJobScheduler.Flush(handle);
+        SharedJobScheduler.Wait(handle);
         return handle;
     }
 }
