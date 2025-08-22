@@ -41,29 +41,29 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;</DefineConstants>
+    <DefineConstants>TRACE;DIRTY_FLAGS;</DefineConstants>
     <Optimize>false</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug-PureECS'">
-    <DefineConstants>TRACE;PURE_ECS;</DefineConstants>
+    <DefineConstants>TRACE;PURE_ECS;DIRTY_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug-Events'">
-    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+    <DefineConstants>TRACE;EVENTS;DIRTY_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DIRTY_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release-Events'">
-    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+    <DefineConstants>TRACE;EVENTS;DIRTY_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release-PureECS'">
-    <DefineConstants>TRACE;PURE_ECS</DefineConstants>
+    <DefineConstants>TRACE;PURE_ECS;DIRTY_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

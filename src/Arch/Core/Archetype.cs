@@ -436,7 +436,7 @@ public sealed partial class Archetype
         ref var currentChunk = ref GetChunk(count);
 
         // Fill chunk
-        if (currentChunk.IsEmpty)
+        if (!currentChunk.IsFull)
         {
             slot = new Slot(currentChunk.Add(entity), count);
             chunk = currentChunk;

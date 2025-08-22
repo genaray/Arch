@@ -24,7 +24,7 @@ public sealed class BitSet
 
     public static int RequiredLength(int id)
     {
-#if NET7_0
+#if NET7_0_OR_GREATER
         return (id >> 5) + int.Sign(id & BitSize);
 #else
         return (int)Math.Ceiling((float)id / BitSize);
@@ -36,17 +36,15 @@ public sealed class BitSet
     /// </summary>
     private uint[] _bits;
 
-    /// TODO: Update on ClearBit, however clearbit is only used in tests so its fine for now.
     /// <summary>
     ///     The highest bit set.
     /// </summary>
     private int _highestBit;
 
-    /// TODO: Update on ClearBit, probably remove <see cref="_highestBit"/> in favor?
     /// <summary>
     ///     The maximum <see cref="_bits"/>-index current in use.
     /// </summary>
-    private int _max;
+    private int _max; // TODO: probably remove <see cref="_highestBit"/> in favor?
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="BitSet" /> class.
@@ -54,6 +52,21 @@ public sealed class BitSet
     public BitSet()
     {
         _bits = new uint[_padding];
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="BitSet" /> class with the required capacity.
+    /// </summary>
+    /// <param name="capacity">The initial capacity.</param>
+    public BitSet(int capacity)
+    {
+        // Calculate the number of uint blocks needed for 'capacity' bits
+        // Each block holds BitSize + 1 bits (usually 32)
+        int requiredBlocks = (capacity + BitSize) / (BitSize + 1);
+
+        // Round up to nearest multiple of _padding
+        int size = (requiredBlocks + _padding - 1) / _padding * _padding;
+        _bits = new uint[size];
     }
 
     /// <summary>
@@ -105,6 +118,15 @@ public sealed class BitSet
     }
 
     /// <summary>
+    /// Checks whether any bit is set.
+    /// </summary>
+    /// <returns>True if it is, otherwise false</returns>
+    public bool IsAnyBitSet()
+    {
+        return _highestBit >= 0;
+    }
+
+    /// <summary>
     ///     Sets a bit at the given index.
     ///     Resizes its internal array if necessary.
     /// </summary>
@@ -136,6 +158,47 @@ public sealed class BitSet
         }
 
         _bits[b] &= ~(1u << (index & BitSize));
+
+        // Update _highestBit and _max only if we cleared the previous highest bit
+        if (index != _highestBit)
+        {
+            return;
+        }
+
+        for (int i = _bits.Length - 1; i >= 0; i--)
+        {
+            uint val = _bits[i];
+            if (val != 0)
+            {
+
+#if NET7_0_OR_GREATER
+
+                // Compute highest set bit using LeadingZeroCount
+                int highestInBlock = BitSize - BitOperations.LeadingZeroCount(val) + 1;
+                _highestBit = (i << IndexSize) + (highestInBlock - 1);
+                _max = (_highestBit / (BitSize + 1)) + 1;
+                return;
+
+#else
+                    // Find the highest set bit in this block
+                    int bitPos = BitSize; // usually 31
+                    while (bitPos >= 0)
+                    {
+                        if ((val & (1u << bitPos)) != 0)
+                        {
+                            _highestBit = (i << IndexSize) + bitPos;
+                            _max = (_highestBit / (BitSize + 1)) + 1;
+                            return;
+                        }
+                        bitPos--;
+                    }
+#endif
+            }
+        }
+
+        // No bits left
+        _highestBit = -1;
+        _max = 0;
     }
 
     /// <summary>
@@ -159,6 +222,8 @@ public sealed class BitSet
     public void ClearAll()
     {
         Array.Clear(_bits, 0, _bits.Length);
+        _highestBit = -1;
+        _max = 0;
     }
 
     /// <summary>

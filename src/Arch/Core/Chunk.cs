@@ -1,12 +1,9 @@
 using System.Buffers;
 using System.Diagnostics.Contracts;
-using System.Drawing;
 using Arch.Core.Events;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Arch.LowLevel;
-using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Array = System.Array;
 
@@ -175,6 +172,15 @@ public partial struct Chunk
             var type = types[index];
             Components[index] = ArrayRegistry.GetArray(type, Capacity);
         }
+
+#if DIRTY_FLAGS
+        DirtyFlags = new BitSet[types.Length];
+
+        for (var i = 0; i < types.Length; i++)
+        {
+            DirtyFlags[i] = new BitSet(Capacity);
+        }
+#endif
     }
 
 
@@ -215,11 +221,6 @@ public partial struct Chunk
     ///     Checks whether this instance is full or not.
     /// </summary>
     public readonly bool IsFull { [Pure] get => Count >= Capacity; }
-
-    /// <summary>
-    ///     Checks whether this instance is full or not.
-    /// </summary>
-    public readonly bool IsEmpty { [Pure] get => Count < Capacity; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
@@ -666,3 +667,103 @@ public partial struct Chunk
         return lastEntity.Id;
     }
 }
+
+#if DIRTY_FLAGS
+
+public partial struct Chunk
+{
+    public readonly BitSet[] DirtyFlags { [Pure] get; }
+
+    /// <summary>
+    /// Checks whether any component in this chunk has been marked dirty.
+    /// </summary>
+    /// <returns>True if it has, otherwise false</returns>
+    public bool IsDirty()
+    {
+        for (int i = 0; i < Components.Length; i++)
+        {
+            if (DirtyFlags.DangerousGetReferenceAt(i).IsAnyBitSet())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks whether any component of the given type has been marked dirty.
+    /// </summary>
+    /// <param name="type">The component type to check</param>
+    /// <returns>True if it has, otherwise false</returns>
+    public bool IsDirty(ComponentType type)
+    {
+        var compIndex = Index(type);
+        return DirtyFlags.DangerousGetReferenceAt(compIndex).IsAnyBitSet();
+    }
+
+    /// <summary>
+    /// Checks whether the component at the given index has been marked dirty.
+    /// </summary>
+    /// <returns>True if it has, otherwise false</returns>
+    public bool IsDirty(int index, ComponentType type)
+    {
+        var compIndex = Index(type);
+        return DirtyFlags.DangerousGetReferenceAt(compIndex).IsSet(index);
+    }
+
+    /// <summary>
+    /// Set the dirty flags of the specified component type for all indices in this chunk.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    public void SetDirty(ComponentType type)
+    {
+        var index = Index(type);
+        DirtyFlags.DangerousGetReferenceAt(index).SetAll();
+    }
+
+    /// <summary>
+    /// Set the dirty flags of the specified component type for all indices in this chunk.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <param name="index">The index.</param>
+    public void SetDirty(int index, ComponentType type)
+    {
+        var compIndex = Index(type);
+        DirtyFlags.DangerousGetReferenceAt(compIndex).SetBit(index);
+    }
+
+    /// <summary>
+    /// Clears all dirty flags in this chunk.
+    /// </summary>
+    public void ClearDirty()
+    {
+        foreach (var flags in DirtyFlags)
+        {
+            flags.ClearAll();
+        }
+    }
+
+    /// <summary>
+    /// Clears all dirty flags for the specified component type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    public void ClearDirty(ComponentType type)
+    {
+        var index = Index(type);
+        DirtyFlags.DangerousGetReferenceAt(index).ClearAll();
+    }
+
+    /// <summary>
+    /// Clears the dirty flag for the specified component type at the specified index.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <param name="index">The index.</param>
+    public void ClearDirty(int index, ComponentType type)
+    {
+        var compIndex = Index(type);
+        DirtyFlags.DangerousGetReferenceAt(compIndex).ClearBit(index);
+    }
+}
+
+#endif
