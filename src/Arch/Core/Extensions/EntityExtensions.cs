@@ -359,3 +359,46 @@ public static partial class EntityExtensions
 
 #endif
 }
+
+public static partial class EntityExtensions
+{
+
+#if DIRTY_FLAGS && !PURE_ECS
+
+    /// <inheritdoc cref="World.SetDirty&lt;T&gt;(Entity)"/>
+    public static void SetDirty<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.SetDirty<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.SetDirty(Entity, ComponentType)"/>
+    public static void SetDirty(this Entity entity, ComponentType componentType)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.SetDirty(entity, componentType);
+    }
+
+    /// <inheritdoc cref="World.ClearDirty&lt;T&gt;(Entity)"/>
+    public static void ClearDirty<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearDirty<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.ClearDirty(Entity, ComponentType)"/>
+    public static void ClearDirty(this Entity entity, ComponentType componentType)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearDirty(entity, componentType);
+    }
+
+    /// <inheritdoc cref="World.ClearDirty(Entity)"/>
+    public static void ClearDirty(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearDirty(entity);
+    }
+
+#endif
+}

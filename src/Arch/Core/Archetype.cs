@@ -958,3 +958,68 @@ public sealed partial class Archetype
         Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref sourceSignature, ref newChunk, toSlot.Index, 1);
     }
 }
+
+
+#if DIRTY_FLAGS
+
+public sealed partial class Archetype
+{
+    /// <summary>
+    /// Flags the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> as dirty.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked dirty.</param>
+    /// <param name="componentType">The component type.</param>
+    internal void SetDirty(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.SetDirty(slot.Index, componentType);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be cleared.</param>
+    /// <param name="componentType">The component type.</param>
+    internal void ClearDirty(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.ClearDirty(slot.Index, componentType);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag for all components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The slot.</param>
+    internal void ClearDirty(ref Slot slot)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.ClearDirty(slot.Index);
+    }
+
+    /// <summary>
+    /// Clears all the dirty flags in this Archetype.
+    /// </summary>
+    internal void ClearAllDirty()
+    {
+        for (var i = 0; i < Chunks.Count; i++)
+        {
+            ref var chunk = ref Chunks[i];
+            chunk.ClearAllDirty();
+        }
+    }
+
+    /// <summary>
+    /// Clears all the dirty flags for the specified component type in this Archetype.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    internal void ClearDirty(ComponentType type)
+    {
+        for (var i = 0; i < Chunks.Count; i++)
+        {
+            ref var chunk = ref Chunks[i];
+            chunk.ClearAllDirty(type);
+        }
+    }
+}
+
+#endif

@@ -1745,3 +1745,66 @@ public partial class World
 }
 
 #endregion
+
+#if DIRTY_FLAGS
+
+public partial class World
+{
+    /// <summary>
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as dirty.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void SetDirty<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.SetDirty(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as dirty.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public void SetDirty(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.SetDirty(ref entityData.Slot, type);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void ClearDirty<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearDirty(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public void ClearDirty(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearDirty(ref entityData.Slot, type);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag for all components of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void ClearDirty(Entity entity)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearDirty(ref entityData.Slot);
+    }
+}
+
+#endif

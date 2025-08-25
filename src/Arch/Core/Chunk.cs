@@ -675,37 +675,22 @@ public partial struct Chunk
     public readonly BitSet[] DirtyFlags { [Pure] get; }
 
     /// <summary>
-    /// Checks whether any component in this chunk has been marked dirty.
+    /// Checks whether any component of the given type has been flagged dirty.
     /// </summary>
-    /// <returns>True if it has, otherwise false</returns>
-    public bool IsDirty()
-    {
-        for (int i = 0; i < Components.Length; i++)
-        {
-            if (DirtyFlags.DangerousGetReferenceAt(i).IsAnyBitSet())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Checks whether any component of the given type has been marked dirty.
-    /// </summary>
-    /// <param name="type">The component type to check</param>
-    /// <returns>True if it has, otherwise false</returns>
-    public bool IsDirty(ComponentType type)
+    /// <param name="type">The component type.</param>
+    /// <returns>True if the component is dirty, false otherwise.</returns>
+    public bool IsAnyDirty(ComponentType type)
     {
         var compIndex = Index(type);
         return DirtyFlags.DangerousGetReferenceAt(compIndex).IsAnyBitSet();
     }
 
     /// <summary>
-    /// Checks whether the component at the given index has been marked dirty.
+    /// Checks whether the component at the given index has been flagged dirty.
     /// </summary>
-    /// <returns>True if it has, otherwise false</returns>
+    /// <param name="index">The index.</param>
+    /// <param name="type">The component type.</param>
+    /// <returns>True if the component is dirty, false otherwise.</returns>
     public bool IsDirty(int index, ComponentType type)
     {
         var compIndex = Index(type);
@@ -713,42 +698,45 @@ public partial struct Chunk
     }
 
     /// <summary>
-    /// Set the dirty flags of the specified component type for all indices in this chunk.
+    /// Flags the specified component type as dirty, for all indices in this chunk.
     /// </summary>
     /// <param name="type">The type.</param>
-    public void SetDirty(ComponentType type)
+    public void SetAllDirty(ComponentType type)
     {
+        // TODO add a single per-component flag to avoid setting and clearing all the bits
         var index = Index(type);
         DirtyFlags.DangerousGetReferenceAt(index).SetAll();
     }
 
     /// <summary>
-    /// Set the dirty flags of the specified component type for all indices in this chunk.
+    /// Flags the component at the given index as dirty.
     /// </summary>
-    /// <param name="type">The type.</param>
     /// <param name="index">The index.</param>
+    /// <param name="type">The component type.</param>
     public void SetDirty(int index, ComponentType type)
     {
+        // TODO add a single per-component flag to avoid setting and clearing all the bits
         var compIndex = Index(type);
         DirtyFlags.DangerousGetReferenceAt(compIndex).SetBit(index);
     }
 
     /// <summary>
-    /// Clears all dirty flags in this chunk.
+    /// Clears all the dirty flags in this Chunk.
     /// </summary>
-    public void ClearDirty()
+    public void ClearAllDirty()
     {
-        foreach (var flags in DirtyFlags)
+        for (var i = 0; i < DirtyFlags.Length; i++)
         {
+            var flags = DirtyFlags.DangerousGetReferenceAt(i);
             flags.ClearAll();
         }
     }
 
     /// <summary>
-    /// Clears all dirty flags for the specified component type.
+    /// Clears all the dirty flags for the specified component type in this Chunk.
     /// </summary>
     /// <param name="type">The type.</param>
-    public void ClearDirty(ComponentType type)
+    public void ClearAllDirty(ComponentType type)
     {
         var index = Index(type);
         DirtyFlags.DangerousGetReferenceAt(index).ClearAll();
@@ -763,6 +751,19 @@ public partial struct Chunk
     {
         var compIndex = Index(type);
         DirtyFlags.DangerousGetReferenceAt(compIndex).ClearBit(index);
+    }
+
+    /// <summary>
+    /// Clears the dirty flag for all components at the specified index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    public void ClearDirty(int index)
+    {
+        for (var i = 0; i < DirtyFlags.Length; i++)
+        {
+            var flags = DirtyFlags.DangerousGetReferenceAt(i);
+            flags.ClearBit(index);
+        }
     }
 }
 
