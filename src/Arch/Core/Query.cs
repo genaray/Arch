@@ -487,6 +487,9 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
             hash = (hash * 23) + Any.GetHashCode();
             hash = (hash * 23) + None.GetHashCode();
             hash = (hash * 23) + Exclusive.GetHashCode();
+#if DIRTY_FLAGS
+            hash = (hash * 23) + Dirty.GetHashCode();
+#endif
             _hashCode = hash;
             return hash;
         }
@@ -561,6 +564,7 @@ public partial class Query : IEquatable<Query>
         _any = description.Any;
         _none = description.None;
         _exclusive = description.Exclusive;
+        _dirty = description.Dirty;
 
         // Handle exclusive.
         if (description.Exclusive.Count != 0)
@@ -578,7 +582,10 @@ public partial class Query : IEquatable<Query>
     /// <returns>True if it matches, otherwise false.</returns>
     public bool Matches(BitSet bitset)
     {
-        return _isExclusive ? _exclusive.Exclusive(bitset) : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
+        return _isExclusive
+            ? _exclusive.Exclusive(bitset)
+            : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
+        ;
     }
 
     /// <summary>
@@ -667,10 +674,13 @@ public partial class Query : IEquatable<Query>
     {
         unchecked
         {
-            var hashCode = _any is not null ? _any.GetHashCode() : 0;
-            hashCode = (hashCode * 397) ^ (_all is not null ? _all.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (_none is not null ? _none.GetHashCode() : 0);
+            var hashCode = _any?.GetHashCode() ?? 0;
+            hashCode = (hashCode * 397) ^ (_all?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (_none?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ (_exclusive?.GetHashCode() ?? 0);
+#if DIRTY_FLAGS
+            hashCode = (hashCode * 397) ^ (_dirty?.GetHashCode() ?? 0);
+#endif
             hashCode = (hashCode * 397) ^ _queryDescription.GetHashCode();
 
             return hashCode;
@@ -699,3 +709,57 @@ public partial class Query : IEquatable<Query>
         return !left.Equals(right);
     }
 }
+
+
+// Dirty flags support
+#if DIRTY_FLAGS
+
+public partial struct QueryDescription
+{
+    /// <summary>
+    ///  A <see cref="Signature"/> of all components that an <see cref="Entity"/> should have and which should be flagged as dirty.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
+    /// </summary>
+    public Signature Dirty { get; private set; } = Signature.Null;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
+    /// </summary>
+    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
+    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
+    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="dirty">All components that an <see cref="Entity"/> should have and which should be flagged as dirty.</param>
+
+    public QueryDescription(Signature? all = null, Signature? any = null, Signature? none = null, Signature? exclusive = null, Signature? dirty = null)
+    {
+        All = all ?? All;
+        Any = any ?? Any;
+        None = none ?? None;
+        Exclusive = exclusive ?? Exclusive;
+        Dirty = dirty ?? Dirty;
+
+        _hashCode = -1;
+        _hashCode = GetHashCode();
+    }
+
+    /// <summary>
+    ///  All components that an <see cref="Entity"/> should have and which should be flagged as dirty.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithDirty<T>()
+    {
+        Exclusive = Component<T>.Signature;
+        Build();
+        return ref this;
+    }
+}
+
+public partial class Query
+{
+    private readonly BitSet _dirty;
+}
+
+#endif

@@ -1,0 +1,33 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+using Arch.Core;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial struct QueryDescription
+{
+#if DIRTY_FLAGS
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+    #>
+
+    [UnscopedRef]
+    public ref QueryDescription WithDirty<<#= generics #>>()
+    {
+        All = Component<<#= generics #>>.Signature;
+        Build();
+        return ref this;
+    }
+    <#
+    }
+    #>
+#endif
+}
+

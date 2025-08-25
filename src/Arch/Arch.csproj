@@ -590,6 +590,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>World.CreateBulk.tt</DependentUpon>
     </Compile>
+    <Compile Update="Templates\QueryDescription.WithDirty.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithDirty.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>
