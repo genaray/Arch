@@ -1750,6 +1750,30 @@ public partial class World
 
 public partial class World
 {
+
+    /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged dirty.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public bool IsDirty<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        return  entityData.Archetype.IsDirty(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged dirty.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public bool IsDirty(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        return entityData.Archetype.IsDirty(ref entityData.Slot, type);
+    }
+
     /// <summary>
     /// Flags the component of type an <see cref="Arch.Core.Entity"/> as dirty.
     /// </summary>

@@ -365,6 +365,20 @@ public static partial class EntityExtensions
 
 #if DIRTY_FLAGS && !PURE_ECS
 
+    /// <inheritdoc cref="World.IsDirty&lt;T&gt;(Entity)"/>
+    public static bool IsDirty<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        return world.IsDirty<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.IsDirty(Entity, ComponentType)"/>
+    public static bool IsDirty(this Entity entity, ComponentType type)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        return world.IsDirty(entity, type);
+    }
+
     /// <inheritdoc cref="World.SetDirty&lt;T&gt;(Entity)"/>
     public static void SetDirty<T>(this Entity entity)
     {

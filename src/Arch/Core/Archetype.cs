@@ -965,6 +965,18 @@ public sealed partial class Archetype
 public sealed partial class Archetype
 {
     /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> has been flagged dirty.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be checked.</param>
+    /// <param name="componentType">The component type.</param>
+    /// <returns>True if the component is dirty, false otherwise.</returns>
+    public bool IsDirty(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        return chunk.IsDirty(slot.Index, componentType);
+    }
+
+    /// <summary>
     /// Flags the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> as dirty.
     /// </summary>
     /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked dirty.</param>
