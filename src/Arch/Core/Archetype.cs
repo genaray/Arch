@@ -867,7 +867,8 @@ public sealed partial class Archetype
     /// </summary>
     /// <param name="source">The source <see cref="Archetype"/>.</param>
     /// <param name="destination">The destination <see cref="Archetype"/>.</param>
-    internal static void Copy(Archetype source, Archetype destination)
+    /// <param name="clearSource">Whether to clear the source Archetype and Chunk counts.</param>
+    internal static void Copy(Archetype source, Archetype destination, bool clearSource = true)
     {
         // Make sure other archetype can fit additional entities from this archetype.
         destination.EnsureEntityCapacity(destination.EntityCount + source.EntityCount);
@@ -880,19 +881,25 @@ public sealed partial class Archetype
 
             var amountCopied = 0;
             var chunkIndex = 0;
+            var amountLeft = sourceChunk.Count;
 
             // Loop over destination chunk and fill them with the source chunk till either the source chunk is empty or theres no more capacity
-            for (int destinationChunkIndex = destination.Count; destinationChunkIndex < destination.ChunkCapacity && sourceChunk.Count > 0; destinationChunkIndex++)
+            for (int destinationChunkIndex = destination.Count; destinationChunkIndex < destination.ChunkCapacity && amountLeft > 0; destinationChunkIndex++)
             {
                 // Determine amount that can be copied into destination
                 ref var destinationChunk = ref destination.GetChunk(destinationChunkIndex);
                 var remainingCapacity = destinationChunk.Buffer;
-                var amountToCopy = Math.Min(sourceChunk.Count, remainingCapacity);
+                var amountToCopy = Math.Min(amountLeft, remainingCapacity);
 
                 Chunk.Copy(ref sourceChunk, amountCopied, ref sourceSignature, ref destinationChunk, destinationChunk.Count, amountToCopy);
 
                 // Apply copied amount to track the progress
-                sourceChunk.Count -= amountToCopy;
+                amountLeft -= amountToCopy;
+                if (clearSource)
+                {
+                    sourceChunk.Count -= amountToCopy;
+                }
+                
                 destinationChunk.Count += amountToCopy;
                 amountCopied += amountToCopy;
                 chunkIndex = destinationChunkIndex;  // Track the last destination chunk we filled, important
@@ -903,8 +910,11 @@ public sealed partial class Archetype
 
         // Update entity counts
         destination.EntityCount += source.EntityCount;
-        source.EntityCount = 0;
-        source.Count = 0;
+        if (clearSource)
+        {
+            source.EntityCount = 0;
+            source.Count = 0;
+        }
     }
 
     /// <summary>

@@ -866,4 +866,69 @@ public partial class WorldTest
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
     }
+    
+    /// <summary>
+    ///     Checks if the <see cref="World"/> is copied correctly over a new instance.
+    /// </summary>
+    [Test]
+    public void Copy()
+    {
+        using var source = World.Create();
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Transform());
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Rotation());
+        source.Create(new Transform());
+
+        var copy = source.Copy();
+
+        That(copy.Size, Is.EqualTo(source.Size));
+        That(copy.Capacity, Is.EqualTo(source.Capacity));
+        That(copy.Archetypes.Count, Is.EqualTo(source.Archetypes.Count));
+        //same amount of entities per archetype
+        for (var index = 0; index < copy.Archetypes.Items.Count; index++)
+        {
+            var copyArchetype = copy.Archetypes.Items[index];
+            var sourceArchetypeExists = source.TryGetArchetype(copyArchetype.Signature, out var sourceArchetype);
+            That(sourceArchetypeExists, Is.True);
+            That(sourceArchetype, Is.Not.Null);
+            That(copyArchetype.Count, Is.EqualTo(sourceArchetype.Count));
+            That(copyArchetype.EntityCount, Is.EqualTo(sourceArchetype.EntityCount));
+        }
+    }
+    
+    /// <summary>
+    ///     Checks if the <see cref="World"/> is copied correctly over a new instance, skipping empty archetypes.
+    /// </summary>
+    [Test]
+    public void CopySkipping()
+    {
+        using var source = World.Create();
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Transform());
+        source.Create(new Transform(), new Rotation());
+        source.Create(new Transform());
+        source.Create(new Transform());
+        //this will cause one archetype to be empty and ignored in the copy
+        source.Destroy(source.Create(new Rotation()));
+
+        var copy = source.Copy();
+
+        That(copy.Size, Is.EqualTo(source.Size));
+        //LessThan because one archetype got skipped
+        That(copy.Capacity, Is.LessThan(source.Capacity));
+        That(copy.Archetypes.Count, Is.LessThan(source.Archetypes.Count));
+        //same amount of entities per archetype
+        for (var index = 0; index < copy.Archetypes.Items.Count; index++)
+        {
+            var copyArchetype = copy.Archetypes.Items[index];
+            var sourceArchetypeExists = source.TryGetArchetype(copyArchetype.Signature, out var sourceArchetype);
+            That(sourceArchetypeExists, Is.True);
+            That(sourceArchetype, Is.Not.Null);
+            That(copyArchetype.Count, Is.EqualTo(sourceArchetype.Count));
+            That(copyArchetype.EntityCount, Is.EqualTo(sourceArchetype.EntityCount));
+        }
+    }
 }

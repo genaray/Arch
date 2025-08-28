@@ -245,7 +245,6 @@ public sealed class ArchetypeTest
 
         // Copy from one chunk into other.
         Archetype.Copy(source, destination);
-        source.Clear();
 
         var sourceCounter = sourceAmount;
         var destinationCounter = destinationAmount;
@@ -358,7 +357,6 @@ public sealed class ArchetypeTest
 
         // Copy from one chunk into other.
         Archetype.Copy(source, destination);
-        source.Clear();
 
         var requiredChunksForSource = Archetype.GetChunkCapacityFor(source.EntitiesPerChunk, sourceAmount);
         var requiredChunksForDestination = Archetype.GetChunkCapacityFor(destination.EntitiesPerChunk, sourceAmount + destinationAmount);
