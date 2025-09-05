@@ -5,7 +5,24 @@ using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
-using Arch.Core;
+
+
+/// <summary>
+///     The <see cref="SignatureBuilder"/> class
+///     is used to make automatically conversion of collection expressions to <see cref="Signature"/> possible.
+/// </summary>
+public static class SignatureBuilder
+{
+    /// <summary>
+    /// Creates a <see cref="Signature"/> from a <see cref="ReadOnlySpan{T}"/> e.g. a collection expression.
+    /// </summary>
+    /// <param name="components">The <see cref="ReadOnlySpan{T}"/>, e.g. the collection expression.</param>
+    /// <returns>The created <see cref="Signature"/>.</returns>
+    public static Signature Create(ReadOnlySpan<ComponentType> components)
+    {
+        return new Signature(components);
+    }
+}
 
 /// <summary>
 ///     The <see cref="Signature"/> struct
@@ -13,6 +30,7 @@ using Arch.Core;
 ///     This is then used for describing an <see cref="Entity"/> aswell as identification to find the correct <see cref="Query"/> or a suitable <see cref="Archetype"/>.
 /// </summary>
 [SkipLocalsInit]
+[CollectionBuilder(typeof(SignatureBuilder), nameof(SignatureBuilder.Create))]
 public struct Signature : IEquatable<Signature>
 {
     /// <summary>
@@ -30,8 +48,19 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     public Signature()
     {
-        ComponentsArray = Array.Empty<ComponentType>();
+        ComponentsArray = [];
         _hashCode = -1;
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Signature"/> struct.
+    /// </summary>
+    /// <param name="components">An array of <see cref="ComponentType"/>s.</param>
+    public Signature(ReadOnlySpan<ComponentType> components)
+    {
+        ComponentsArray = components.ToArray();
+        _hashCode = -1;
+        _hashCode = GetHashCode();
     }
 
     /// <summary>
@@ -50,17 +79,15 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     internal ComponentType[] ComponentsArray
     {
-
         get;
         set;
-    } = Array.Empty<ComponentType>();
+    } = [];
 
     /// <summary>
     ///     An array of <see cref="ComponentType"/>s.
     /// </summary>
     public Span<ComponentType> Components
     {
-
         get => MemoryMarshal.CreateSpan(ref ComponentsArray.DangerousGetReferenceAt(0), Count);
     }
 
@@ -69,16 +96,15 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     public int Count
     {
-
         get => ComponentsArray.Length;
     }
+
 
     /// <summary>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="other">The other <see cref="Signature"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public bool Equals(Signature other)
     {
         return GetHashCode() == other.GetHashCode();
@@ -88,8 +114,7 @@ public struct Signature : IEquatable<Signature>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
-
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public override bool Equals(object? obj)
     {
         return obj is Signature other && Equals(other);
@@ -99,7 +124,6 @@ public struct Signature : IEquatable<Signature>
     ///     Calculates the hash.
     /// </summary>
     /// <returns>The hash.</returns>
-
     public override int GetHashCode()
     {
         // Cache hashcode since the calculation is expensive.
@@ -121,10 +145,45 @@ public struct Signature : IEquatable<Signature>
     ///     Creates an <see cref="Enumerator{T}"/> which iterates over all <see cref="Components"/> in this <see cref="Signature"/>.
     /// </summary>
     /// <returns>An <see cref="Enumerator{T}"/>.</returns>
-
     public Enumerator<ComponentType> GetEnumerator()
     {
         return new Enumerator<ComponentType>(Components);
+    }
+
+    // TODO: Add method that accepts single ComponentType to prevent allocation of signature/array?
+    /// <summary>
+    ///     Put the two together and return them as a new one. Removes duplicates.
+    /// </summary>
+    /// <param name="first">The first <see cref="Signature"/>.</param>
+    /// <param name="second">The second <see cref="Signature"/>.</param>
+    /// <returns>A new <see cref="Signature"/>.</returns>
+    public static Signature Add(Signature first, Signature second)
+    {
+        // Copy signatures into new array
+        var set = new HashSet<ComponentType>(first.Count + second.Count);
+        set.UnionWith(first.ComponentsArray);
+        set.UnionWith(second.ComponentsArray);
+
+        var result = new Signature(set.ToArray());
+        return result;
+    }
+
+    // TODO: Add method that accepts single ComponentType to prevent allocation of signature/array?
+    /// <summary>
+    ///     Put the two together and return them as a new one. Removes duplicates.
+    /// </summary>
+    /// <param name="first">The first <see cref="Signature"/>.</param>
+    /// <param name="second">The second <see cref="Signature"/>.</param>
+    /// <returns>A new <see cref="Signature"/>.</returns>
+    public static Signature Remove(Signature first, Signature second)
+    {
+        // Copy signatures into new array
+        var set = new HashSet<ComponentType>(first.Count + second.Count);
+        set.UnionWith(first.ComponentsArray);
+        set.ExceptWith(second.ComponentsArray);
+
+        var result = new Signature(set.ToArray());
+        return result;
     }
 
     /// <summary>
@@ -132,8 +191,7 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
-    /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
-
+    /// <returns>True if their internal arrays are equal, otherwise false.</returns>
     public static bool operator ==(Signature left, Signature right)
     {
         return left.Equals(right);
@@ -144,11 +202,43 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="left">The left <see cref="Signature"/>.</param>
     /// <param name="right">The right <see cref="Signature"/>.</param>
-    /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
-
+    /// <returns>True if their internal arrays are unequal, otherwise false.</returns>
     public static bool operator !=(Signature left, Signature right)
     {
         return !left.Equals(right);
+    }
+
+    // TODO: Use + & - everywhere instead of add/remove?
+    /// <summary>
+    ///     Adds both <see cref="Signature"/>s and creates a new <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="a">The first <see cref="Signature"/>.</param>
+    /// <param name="b">The second <see cref="Signature"/>.</param>
+    /// <returns>A new <see cref="Signature"/> combining both.</returns>
+    public static Signature operator +(Signature a, Signature b)
+    {
+        return Add(a, b);
+    }
+
+    /// <summary>
+    ///     Subtracts the <see cref="b"/> <see cref="Signature"/>s from the <see cref="a"/> <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="a">The first <see cref="Signature"/>.</param>
+    /// <param name="b">The second <see cref="Signature"/>.</param>
+    /// <returns>A new <see cref="Signature"/> combining both.</returns>
+    public static Signature operator -(Signature a, Signature b)
+    {
+        return Remove(a, b);
+    }
+
+    /// <summary>
+    ///     Converts a <see cref="ComponentType"/> into a <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="component">The passed <see cref="ComponentType"/>.</param>
+    /// <returns>A new <see cref="Signature"/>.</returns>
+    public static implicit operator Signature(ComponentType component)
+    {
+        return new Signature(component);
     }
 
     /// <summary>
@@ -156,8 +246,17 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="components">The passed <see cref="ComponentType"/>s.</param>
     /// <returns>A new <see cref="Signature"/>.</returns>
-
     public static implicit operator Signature(ComponentType[] components)
+    {
+        return new Signature(components);
+    }
+
+    /// <summary>
+    ///     Converts a <see cref="ComponentType"/> array into a <see cref="Signature"/>.
+    /// </summary>
+    /// <param name="components">The passed <see cref="ComponentType"/>s.</param>
+    /// <returns>A new <see cref="Signature"/>.</returns>
+    public static implicit operator Signature(Span<ComponentType> components)
     {
         return new Signature(components);
     }
@@ -167,7 +266,6 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>The <see cref="ComponentType"/>s array.</returns>
-
     public static implicit operator ComponentType[](Signature signature)
     {
         return signature.ComponentsArray;
@@ -178,7 +276,6 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>The <see cref="ComponentType"/>s array.</returns>
-
     public static implicit operator Span<ComponentType>(Signature signature)
     {
         return signature.Components;
@@ -189,7 +286,6 @@ public struct Signature : IEquatable<Signature>
     /// </summary>
     /// <param name="signature">The passed <see cref="Signature"/>.</param>
     /// <returns>A new <see cref="BitSet"/>s.</returns>
-
     public static implicit operator BitSet(Signature signature)
     {
         if (signature.Count == 0)
@@ -202,8 +298,13 @@ public struct Signature : IEquatable<Signature>
 
         return bitSet;
     }
-}
 
+    public override string ToString()
+    {
+        var types =  string.Join(",", ComponentsArray.Select(p => p.Type.Name).ToArray());
+        return $"Signature {{ {nameof(ComponentsArray)} = {{ {types} }}, {nameof(Count)} = {Count}, {nameof(_hashCode)} = {_hashCode} }}";
+    }
+}
 
 /// <summary>
 ///     The <see cref="QueryDescription"/> struct
@@ -263,24 +364,6 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
     /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
     public QueryDescription(Signature? all = null, Signature? any = null, Signature? none = null, Signature? exclusive = null)
-    {
-        All = all ?? All;
-        Any = any ?? Any;
-        None = none ?? None;
-        Exclusive = exclusive ?? Exclusive;
-
-        _hashCode = -1;
-        _hashCode = GetHashCode();
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
-    /// </summary>
-    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
-    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
-    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
-    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
-    public QueryDescription(ComponentType[]? all = null, ComponentType[]? any = null, ComponentType[]? none = null, ComponentType[]? exclusive = null)
     {
         All = all ?? All;
         Any = any ?? Any;
@@ -363,7 +446,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="other">The other <see cref="QueryDescription"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
 
     public bool Equals(QueryDescription other)
     {
@@ -374,7 +457,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     ///     Checks for indifference, if the internal arrays have equal elements true is returned. Otherwise false.
     /// </summary>
     /// <param name="obj">The other <see cref="object"/> to compare with.</param>
-    /// <returns>True if elements of the arrays are equal, otherwhise false.</returns>
+    /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
 
     public override bool Equals(object? obj)
     {
@@ -414,7 +497,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
-    /// <returns>True if their internal arrays are equal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are equal, otherwise false.</returns>
 
     public static bool operator ==(QueryDescription left, QueryDescription right)
     {
@@ -426,7 +509,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
     /// </summary>
     /// <param name="left">The left <see cref="QueryDescription"/>.</param>
     /// <param name="right">The right <see cref="QueryDescription"/>.</param>
-    /// <returns>True if their internal arrays are unequal, otherwhise false.</returns>
+    /// <returns>True if their internal arrays are unequal, otherwise false.</returns>
 
     public static bool operator !=(QueryDescription left, QueryDescription right)
     {
@@ -443,7 +526,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 public partial class Query : IEquatable<Query>
 {
     private readonly Archetypes _allArchetypes;
-    private readonly PooledList<Archetype> _matchingArchetypes;
+    private readonly NetStandardList<Archetype> _matchingArchetypes;
     private int _allArchetypesHashCode;
 
     private readonly QueryDescription _queryDescription;
@@ -462,7 +545,7 @@ public partial class Query : IEquatable<Query>
     internal Query(Archetypes allArchetypes, QueryDescription description)
     {
         _allArchetypes = allArchetypes;
-        _matchingArchetypes = new PooledList<Archetype>();
+        _matchingArchetypes = new NetStandardList<Archetype>();
         _allArchetypesHashCode = -1;
 
         Debug.Assert(
@@ -533,7 +616,7 @@ public partial class Query : IEquatable<Query>
     public QueryArchetypeIterator GetArchetypeIterator()
     {
         Match();
-        return new QueryArchetypeIterator(_matchingArchetypes.Span);
+        return new QueryArchetypeIterator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>
@@ -543,7 +626,7 @@ public partial class Query : IEquatable<Query>
     public QueryChunkIterator GetChunkIterator()
     {
         Match();
-        return new QueryChunkIterator(_matchingArchetypes.Span);
+        return new QueryChunkIterator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>
@@ -553,7 +636,7 @@ public partial class Query : IEquatable<Query>
     public QueryChunkEnumerator GetEnumerator()
     {
         Match();
-        return new QueryChunkEnumerator(_matchingArchetypes.Span);
+        return new QueryChunkEnumerator(_matchingArchetypes.AsSpan());
     }
 
     /// <summary>

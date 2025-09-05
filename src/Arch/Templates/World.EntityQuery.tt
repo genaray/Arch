@@ -1,0 +1,41 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var getFirstElement = AppendGetFirstComponentFrom(index);
+        var getComponents = AppendGetComponentsFromFirst(index);
+        var insertParams = InsertGenericRefParams(index);
+#>
+    public void Query<<#= generics #>>(in QueryDescription description, ForEachWithEntity<<#= generics #>> forEach)
+    {
+        var query = Query(in description);
+        foreach (ref var chunk in query)
+        {
+            ref var entityFirstElement = ref chunk.Entity(0);
+            <#= Indent(getFirstElement, 12) #>
+            foreach(var entityIndex in chunk)
+            {
+                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
+                <#= Indent(getComponents, 16) #>
+                forEach(entity, <#= insertParams #>);
+            }
+        }
+    }
+
+<#
+    }
+#>
+}

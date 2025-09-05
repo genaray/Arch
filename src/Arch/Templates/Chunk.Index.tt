@@ -1,0 +1,45 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
+using Arch.Core;
+using Arch.Core.Utils;
+using CommunityToolkit.HighPerformance;
+
+namespace Arch.Core;
+public partial struct Chunk
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+
+        var outs = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            outs.Append($"out int t{i}Index, ");
+        }
+        outs.Length -= 2;
+
+        var assignIds = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            assignIds.AppendLine($"t{i}Index = Unsafe.Add(ref componentIdToArrayFirstElement, Component<T{i}>.ComponentType.Id);");
+        }
+    #>
+
+    [Pure]
+    private void Index<<#= generics #>>(<#= outs #>)
+    {
+        ref var componentIdToArrayFirstElement = ref ComponentIdToArrayIndex.DangerousGetReference();
+        <#= Indent(assignIds, 8) #>
+    }
+    <#
+    }
+    #>
+}
+

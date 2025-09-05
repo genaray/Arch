@@ -1,0 +1,36 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+
+namespace Arch.Core;
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var getFirstElement = AppendGetFirstComponentFrom(index);
+        var getComponents = AppendGetComponentsFromFirst(index);
+        var insertParams = InsertGenericRefParams(index);
+#>
+public struct ForEachWithEntityJob<<#= generics #>> : IChunkJob
+{
+    public ForEachWithEntity<<#= generics #>> ForEach;
+
+    public void Execute(ref Chunk chunk)
+    {
+        ref var entityFirstElement = ref chunk.Entity(0);
+        <#= Indent(getFirstElement, 8) #>
+        foreach(var entityIndex in chunk)
+        {
+            var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
+            <#= Indent(getComponents, 12) #>
+            ForEach(entity, <#= insertParams #>);
+        }
+    }
+}
+
+<#
+    }
+#>

@@ -12,11 +12,11 @@ A high-performance C# based Archetype & Chunks [Entity Component System](https:/
 - 🤏 **_BARE MINIMUM_** >  Not bloated, it's small and only provides the essentials for you! 
 - ☕️ **_SIMPLE_** >  Promotes a clean, minimal, and self-explanatory API that is simple by design. Check out the [Wiki](https://github.com/genaray/Arch/wiki)!
 - 💪 _**MAINTAINED**_ > It's actively being worked on, maintained, and comes along several [Extensions](https://github.com/genaray/Arch.Extended)! 
-- 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 7, and therefore you may use it with Unity or Godot!
+- 🚢 _**SUPPORT**_ > Supports .NetStandard 2.1, .Net Core 6 and 8, and therefore you may use it with Unity or Godot!
 
 Download the [package](https://github.com/genaray/Arch/packages/1697222), get started today and join the [Discord](https://discord.gg/htc8tX3NxZ)!
 ```console
-dotnet add PROJECT package Arch --version 1.3.0-alpha
+dotnet add PROJECT package Arch --version 2.1.0-beta
 ```
 
 # ⏩ Quickstart
@@ -62,7 +62,7 @@ There's more to explore, for example...
 - [x] Grateful for every contribution 
 
 ## 🚀 Features
-- [x] Archetypes with 64KB large chunks for your massive worlds
+- [x] Archetypes with 16KB large chunks for your massive worlds
 - [x] Incredibly small Entity size
 - [x] Optional `Pure-ECS` for maximum performance and efficiency
 - [x] Bulk/Batch Entity operations 

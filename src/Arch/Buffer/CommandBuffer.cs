@@ -283,6 +283,7 @@ public sealed partial class CommandBuffer : IDisposable
     public void Playback(World world, bool dispose = true)
     {
         // Create recorded entities.
+        int createCount = Creates.Count;
         foreach (var cmd in Creates)
         {
             var entity = world.Create(cmd.Types);
@@ -290,7 +291,8 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back additions.
-        for (var index = 0; index < Adds.Count; index++)
+        int addCount = Adds.Count;
+        for (var index = 0; index < addCount; index++)
         {
             var wrappedEntity = Adds.Entities[index];
             for (var i = 0; i < Adds.UsedSize; i++)
@@ -315,12 +317,13 @@ public sealed partial class CommandBuffer : IDisposable
             var entity = Resolve(wrappedEntity.Entity);
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            AddRange(world, entity, _addTypes);
+            AddRange(world, entity, _addTypes.Span);
             _addTypes.Clear();
         }
 
         // Play back sets.
-        for (var index = 0; index < Sets.Count; index++)
+        int setCount = Sets.Count;
+        for (var index = 0; index < setCount; index++)
         {
             // Get wrapped entity
             var wrappedEntity = Sets.Entities[index];
@@ -330,7 +333,7 @@ public sealed partial class CommandBuffer : IDisposable
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
 
             // Get entity chunk
-            var entityInfo = world.EntityInfo[entity.Id];
+            var entityInfo = world.EntityInfo.GetEntityData(entity.Id);
             var archetype = entityInfo.Archetype;
             ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
             var chunkIndex = entityInfo.Slot.Index;
@@ -364,7 +367,8 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back removals.
-        for (var index = 0; index < Removes.Count; index++)
+        int removeCount = Removes.Count;
+        for (var index = 0; index < removeCount; index++)
         {
             var wrappedEntity = Removes.Entities[index];
             for (var i = 0; i < Removes.UsedSize; i++)
@@ -392,6 +396,7 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         // Play back destructions.
+        int destroyCount = Destroys.Count;
         foreach (var cmd in Destroys)
         {
             world.Destroy(Entities[cmd]);
@@ -406,11 +411,26 @@ public sealed partial class CommandBuffer : IDisposable
         Size = 0;
         Entities.Clear();
         BufferedEntityInfo.Clear();
-        Creates.Clear();
-        Sets.Clear();
-        Adds.Clear();
-        Removes.Clear();
-        Destroys.Clear();
+        if (createCount > 0)
+        {
+            Creates.Clear();
+        }
+        if (setCount > 0)
+        {
+            Sets.Clear();
+        }
+        if (addCount > 0)
+        {
+            Adds.Clear();
+        }
+        if (removeCount > 0)
+        {
+            Removes.Clear();
+        }
+        if (destroyCount > 0)
+        {
+            Destroys.Clear();
+        }
         _addTypes.Clear();
         _removeTypes.Clear();
     }
@@ -436,16 +456,16 @@ public sealed partial class CommandBuffer : IDisposable
 public sealed partial class CommandBuffer
 {
     /// <summary>
-    ///     Adds an list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Adds a list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
     /// </summary>
     /// <param name="world">The world to operate on.</param>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
     [SkipLocalsInit]
-
-    internal static void AddRange(World world, Entity entity, IList<ComponentType> components)
+    internal static void AddRange(World world, Entity entity, Span<ComponentType> components)
     {
-        var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref world.EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
@@ -454,7 +474,7 @@ public sealed partial class CommandBuffer
         // Create a span bitset, doing it local saves us headache and gargabe
         var spanBitSet = new SpanBitSet(stack);
 
-        for (var index = 0; index < components.Count; index++)
+        for (var index = 0; index < components.Length; index++)
         {
             var type = components[index];
             spanBitSet.SetBit(type.Id);
@@ -462,9 +482,10 @@ public sealed partial class CommandBuffer
 
         if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
         {
-            newArchetype = world.GetOrCreate(oldArchetype.Types.Add(components));
+            var newSignature = Signature.Add(oldArchetype.Signature, components);
+            newArchetype = world.GetOrCreate(newSignature);
         }
 
-        world.Move(entity, oldArchetype, newArchetype, out _);
+        world.Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
 }

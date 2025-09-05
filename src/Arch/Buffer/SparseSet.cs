@@ -113,7 +113,7 @@ internal class SparseArray
     ///     Checks if an component exists at the index.
     /// </summary>
     /// <param name="index">The index in the array.</param>
-    /// <returns>True if an component exists there, otherwhise false.</returns>
+    /// <returns>True if an component exists there, otherwise false.</returns>
 
     public bool Contains(int index)
     {
@@ -165,10 +165,7 @@ internal class SparseArray
     /// </summary>
     public void Clear()
     {
-        for (var index = 0; index < Entities.Length; index++)
-        {
-            Entities[index] = -1;
-        }
+        Array.Fill(Entities, -1, 0, Entities.Length);
         Size = 0;
     }
 }
@@ -357,7 +354,7 @@ internal class SparseSet
     ///     Checks if an component exists at the index.
     /// </summary>
     /// <param name="index">The index in the array.</param>
-    /// <returns>True if an component exists there, otherwhise false.</returns>
+    /// <returns>True if an component exists there, otherwise false.</returns>
 
     public bool Contains<T>(int index)
     {

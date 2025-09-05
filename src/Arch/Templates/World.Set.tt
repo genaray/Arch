@@ -1,0 +1,41 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.HighPerformance;
+using Arch.Core.Utils;
+
+namespace Arch.Core;
+public partial class World
+{
+    <#
+    for (var index = 2; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+        var parameters = AppendGenericInDefaultParams(index);
+        var inParameters = InsertGenericInParams(index);
+
+        var events = new StringBuilder();
+        for (var i = 0; i < index; i++)
+        {
+            events.AppendLine($"OnComponentSet<T{i}>(entity);");
+        }
+    #>
+
+    public void Set<<#= generics #>>(Entity entity, <#= parameters #>)
+    {
+        ref var entitySlot = ref EntityInfo.GetEntityData(entity.Id);
+        var slot = entitySlot.Slot;
+        var archetype = entitySlot.Archetype;
+        archetype.Set<<#= generics #>>(ref slot,  <#= inParameters #>);
+
+        <#= Indent(events, 8) #>
+    }
+    <#
+    }
+    #>
+}
+

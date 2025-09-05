@@ -12,14 +12,21 @@ on:
       - '**/*.gitignore'
       - '**/*.gitattributes'
   workflow_dispatch:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.3)'
+        required: true
+      release_notes:
+        description: 'Release Notes'
+        required: false
+      deploy_to_nuget:
+        description: 'Publish to nuget? (yes/no)'
+        required: true
+        default: 'no'
       
 jobs:
+
+  # Building & Testing
   build:
     name: Build Arch
     runs-on: ubuntu-latest
@@ -34,29 +41,188 @@ jobs:
       TERM: xterm
 
     strategy:
+      matrix:
+        configuration: [Debug, Release]
+        define: [Default, Events, PureECS]  
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
-      
+    - uses: actions/checkout@v4
+
+    # Setting up .net
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: |
-          3.1.x
-          6.0.x
-          7.0.x
+          8.0.x
 
-    - name: Build
-      run: ./scripts/Build.sh
+    # Create config (Release-Events, Debug, ...)
+    - name: Create CONFIG for build
+      run: |
+        if [ "${{ matrix.define }}" = "Default" ]; then
+          echo "CONFIG=${{ matrix.configuration }}" >> $GITHUB_ENV
+        else
+          echo "CONFIG=${{ matrix.configuration }}-${{ matrix.define }}" >> $GITHUB_ENV
+        fi
 
-    - name: Test
-      run: ./scripts/Test.sh
+    # Build the project with defines
+    - name: Build project
+      run: |
+        dotnet build src/Arch/Arch.csproj --configuration $CONFIG
 
+    # Run tests
+    - name: Run tests
+      run: |
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration $CONFIG --logger trx --results-directory "TestResults"
+
+    # Upload test results
     - name: Upload dotnet test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: dotnet-results
-        path: TestResults
+        name: test-results-${{ matrix.configuration }}-${{ matrix.define }}
+        path: TestResults/**/*.trx
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
+
+    # Upload build output for dlls and nuget
+    - name: Upload build output for Unity & NuGet
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-${{ env.CONFIG }}
+        path: |
+          src/Arch/bin/${{ env.CONFIG }}/
+
+  # Packing nugets
+  pack:
+    name: Pack NuGet
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        define: [Default, Events, PureECS]  
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setting up .net
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            8.0.x
+
+      # Create config (Release-Events, Debug, ...)
+      - name: Create CONFIG for build
+        run: |
+          if [ "${{ matrix.define }}" = "Default" ]; then
+            echo "CONFIG=Release" >> $GITHUB_ENV
+          else
+            echo "CONFIG=Release-${{ matrix.define }}" >> $GITHUB_ENV
+          fi
+
+      # Download build output from build stage
+      - name: Download build output
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output-${{ env.CONFIG }}
+          path: src/Arch/bin/${{ env.CONFIG }}/
+
+      # Copy readme to project (otherwhise its not found by pack) 
+      - name: Copy README.md into project folder
+        run: cp README.md src/Arch/README.md
+
+      # Patch csproj temporary to include the package readme
+      - name: Patch .csproj for README.md
+        run: |
+          sed -i '/<\/Project>/i \
+          <ItemGroup>\n\
+            <None Include="README.md" Pack="true" PackagePath=\"\" />\n\
+          </ItemGroup>' src/Arch/Arch.csproj
+
+      # Restore 
+      - name: Restore dependencies
+        run: dotnet restore src/Arch/Arch.csproj
+      
+      # Packing
+      - name: Pack with DefineConstants=${{ matrix.define }}
+        run: |
+          PACKAGE_ID="Arch"
+          if [ "${{ matrix.define }}" != "Default" ]; then
+            PACKAGE_ID="Arch-${{ matrix.define }}"
+          fi
+      
+          dotnet pack src/Arch/Arch.csproj --no-build --configuration $CONFIG \
+            --include-symbols --include-source \
+            -p:PackageVersion=${{ github.event.inputs.version }} \
+            "-p:PackageReleaseNotes=${{ github.event.inputs.release_notes }}" \
+            -p:PackageId=$PACKAGE_ID \
+            -p:PackageReadmeFile=README.md \
+            -o ./nupkg-${{ matrix.define }}
+
+      # Uploading artifacts
+      - name: Upload NuGet packages (nupkg + snupkg)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-${{ matrix.define }}
+          path: ./nupkg-${{ matrix.define }}/*.*nupkg
+
+  # Deployment to nuget
+  deploy:
+    name: Deploy NuGet & Release
+    needs: pack
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_to_nuget == 'yes'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        define: [Default, Events, PureECS]  
+    
+    steps:
+
+      # Downloading nugets
+      - name: Download NuGet packages for ${{ matrix.define }}
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-${{ matrix.define }}
+          path: ./nupkg-${{ matrix.define }}
+          merge-multiple: true
+
+      # Pushing to nuget the nupkg & snupkg for symbols
+      - name: Push to NuGet
+        run: |
+           dotnet nuget push "./nupkg-${{ matrix.define }}/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+           
+           dotnet nuget push "./nupkg-${{ matrix.define }}/*.snupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate   
+
+      # Upload to github pkgs
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "./nupkg-${{ matrix.define }}/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "https://nuget.pkg.github.com/genaray/index.json" \
+            --skip-duplicate
+
+      # Creating a github release. 
+      - name: Create GitHub Release & Upload Artifacts
+        uses: softprops/action-gh-release@v1
+        if: matrix.define == 'Default' && !contains(github.event.inputs.version, 'alpha') && !contains(github.event.inputs.version, 'beta') # Create release once only and skip if its an alpha or beta. 
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.release_notes }}
+          files: |
+            ./nupkg-Default/*.nupkg
+            ./nupkg-Default/*.snupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
