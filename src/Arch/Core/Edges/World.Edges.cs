@@ -16,7 +16,7 @@ public partial class World
     private Archetype GetOrCreateArchetypeByAddEdge(in ComponentType type, Archetype oldArchetype)
     {
         Archetype archetype;
-        var edgeIndex = type.Id - 1;
+        var edgeIndex = type.Id;
 
         if (!oldArchetype.HasAddEdge(edgeIndex))
         {
@@ -42,7 +42,7 @@ public partial class World
     private Archetype GetOrCreateArchetypeByRemoveEdge(in ComponentType type, Archetype oldArchetype)
     {
         Archetype archetype;
-        var edgeIndex = type.Id - 1;
+        var edgeIndex = type.Id;
 
         if (!oldArchetype.HasRemoveEdge(edgeIndex))
         {

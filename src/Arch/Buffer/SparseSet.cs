@@ -1,5 +1,5 @@
 using Arch.Core;
-using Arch.Core.Utils;
+using Arch.Core.Extensions.Internal;
 
 namespace Arch.Buffer;
 
@@ -88,9 +88,8 @@ internal class SparseArray
             if (index >= Capacity)
             {
                 // Calculate new array size that fits the passed index
-                var amountOfMultiplications = (int)Math.Ceiling(Math.Log((index+1) / (float)Capacity, 2.0f));
-                var newLength = (int)Math.Pow(2, amountOfMultiplications) * Capacity;
-                newLength = Math.Max(Capacity, newLength+1);
+                var newCapacity = MathExtensions.NextPowerOfTwo(index + 1);
+                var newLength = Math.Max(Capacity, newCapacity); // keep existing capacity if already larger
 
                 // Resize entities array
                 Array.Resize(ref Entities, newLength);
