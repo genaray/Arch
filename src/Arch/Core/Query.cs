@@ -356,6 +356,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         _hashCode = -1;
     }
 
+#if !DIRTY_FLAGS
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
     /// </summary>
@@ -373,6 +375,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         _hashCode = -1;
         _hashCode = GetHashCode();
     }
+
+#endif
 
     /// <summary>
     ///     Builds this instance by calculating a new <see cref="_hashCode"/>.

@@ -3,6 +3,8 @@
 <#@ import namespace="System.Text" #>
 <#@ include file="Helpers.ttinclude" #>
 
+#if DIRTY_FLAGS
+
 using System;
 using System.Diagnostics.Contracts;
 using Arch.Core;
@@ -11,7 +13,6 @@ using Arch.Core.Utils;
 namespace Arch.Core;
 public partial struct QueryDescription
 {
-#if DIRTY_FLAGS
     <#
     for (var index = 2; index <= Amount; index++)
     {
@@ -28,6 +29,7 @@ public partial struct QueryDescription
     <#
     }
     #>
-#endif
 }
+
+#endif
 
