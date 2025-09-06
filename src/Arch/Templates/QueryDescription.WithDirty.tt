@@ -3,7 +3,7 @@
 <#@ import namespace="System.Text" #>
 <#@ include file="Helpers.ttinclude" #>
 
-#if DIRTY_FLAGS
+#if CHANGED_FLAGS
 
 using System;
 using System.Diagnostics.Contracts;
@@ -20,7 +20,7 @@ public partial struct QueryDescription
     #>
 
     [UnscopedRef]
-    public ref QueryDescription WithDirty<<#= generics #>>()
+    public ref QueryDescription WithChanged<<#= generics #>>()
     {
         All = Component<<#= generics #>>.Signature;
         Build();

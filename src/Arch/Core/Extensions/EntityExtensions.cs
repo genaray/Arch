@@ -363,55 +363,55 @@ public static partial class EntityExtensions
 public static partial class EntityExtensions
 {
 
-#if DIRTY_FLAGS && !PURE_ECS
+#if CHANGED_FLAGS && !PURE_ECS
 
-    /// <inheritdoc cref="World.IsDirty&lt;T&gt;(Entity)"/>
-    public static bool IsDirty<T>(this Entity entity)
+    /// <inheritdoc cref="World.IsChanged&lt;T&gt;(Entity)"/>
+    public static bool IsChanged<T>(this Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.IsDirty<T>(entity);
+        return world.IsChanged<T>(entity);
     }
 
-    /// <inheritdoc cref="World.IsDirty(Entity, ComponentType)"/>
-    public static bool IsDirty(this Entity entity, ComponentType type)
+    /// <inheritdoc cref="World.IsChanged(Entity, ComponentType)"/>
+    public static bool IsChanged(this Entity entity, ComponentType type)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        return world.IsDirty(entity, type);
+        return world.IsChanged(entity, type);
     }
 
-    /// <inheritdoc cref="World.SetDirty&lt;T&gt;(Entity)"/>
-    public static void SetDirty<T>(this Entity entity)
+    /// <inheritdoc cref="World.SetChanged&lt;T&gt;(Entity)"/>
+    public static void SetChanged<T>(this Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.SetDirty<T>(entity);
+        world.SetChanged<T>(entity);
     }
 
-    /// <inheritdoc cref="World.SetDirty(Entity, ComponentType)"/>
-    public static void SetDirty(this Entity entity, ComponentType componentType)
+    /// <inheritdoc cref="World.SetChanged(Entity, ComponentType)"/>
+    public static void SetChanged(this Entity entity, ComponentType componentType)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.SetDirty(entity, componentType);
+        world.SetChanged(entity, componentType);
     }
 
-    /// <inheritdoc cref="World.ClearDirty&lt;T&gt;(Entity)"/>
-    public static void ClearDirty<T>(this Entity entity)
+    /// <inheritdoc cref="World.ClearChanged&lt;T&gt;(Entity)"/>
+    public static void ClearChanged<T>(this Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.ClearDirty<T>(entity);
+        world.ClearChanged<T>(entity);
     }
 
-    /// <inheritdoc cref="World.ClearDirty(Entity, ComponentType)"/>
-    public static void ClearDirty(this Entity entity, ComponentType componentType)
+    /// <inheritdoc cref="World.ClearChanged(Entity, ComponentType)"/>
+    public static void ClearChanged(this Entity entity, ComponentType componentType)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.ClearDirty(entity, componentType);
+        world.ClearChanged(entity, componentType);
     }
 
-    /// <inheritdoc cref="World.ClearDirty(Entity)"/>
-    public static void ClearDirty(this Entity entity)
+    /// <inheritdoc cref="World.ClearChanged(Entity)"/>
+    public static void ClearChanged(this Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.ClearDirty(entity);
+        world.ClearChanged(entity);
     }
 
 #endif

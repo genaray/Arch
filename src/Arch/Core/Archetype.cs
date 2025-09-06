@@ -960,76 +960,76 @@ public sealed partial class Archetype
 }
 
 
-#if DIRTY_FLAGS
+#if CHANGED_FLAGS
 
 public sealed partial class Archetype
 {
     /// <summary>
-    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> has been flagged dirty.
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> has been flagged changed.
     /// </summary>
     /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be checked.</param>
     /// <param name="componentType">The component type.</param>
-    /// <returns>True if the component is dirty, false otherwise.</returns>
-    public bool IsDirty(ref Slot slot, ComponentType componentType)
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    public bool IsChanged(ref Slot slot, ComponentType componentType)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        return chunk.IsDirty(slot.Index, componentType);
+        return chunk.IsChanged(slot.Index, componentType);
     }
 
     /// <summary>
-    /// Flags the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> as dirty.
+    /// Flags the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> as changed.
     /// </summary>
-    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked dirty.</param>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked changed.</param>
     /// <param name="componentType">The component type.</param>
-    internal void SetDirty(ref Slot slot, ComponentType componentType)
+    internal void SetChanged(ref Slot slot, ComponentType componentType)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        chunk.SetDirty(slot.Index, componentType);
+        chunk.SetChanged(slot.Index, componentType);
     }
 
     /// <summary>
-    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be cleared.</param>
     /// <param name="componentType">The component type.</param>
-    internal void ClearDirty(ref Slot slot, ComponentType componentType)
+    internal void ClearChanged(ref Slot slot, ComponentType componentType)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        chunk.ClearDirty(slot.Index, componentType);
+        chunk.ClearChanged(slot.Index, componentType);
     }
 
     /// <summary>
-    /// Clears the dirty flag for all components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// Clears the changed flag for all components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
     /// </summary>
     /// <param name="slot">The slot.</param>
-    internal void ClearDirty(ref Slot slot)
+    internal void ClearChanged(ref Slot slot)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        chunk.ClearDirty(slot.Index);
+        chunk.ClearChanged(slot.Index);
     }
 
     /// <summary>
-    /// Clears all the dirty flags in this Archetype.
+    /// Clears all the changed flags in this Archetype.
     /// </summary>
-    internal void ClearAllDirty()
+    internal void ClearAllChanged()
     {
         for (var i = 0; i < Chunks.Count; i++)
         {
             ref var chunk = ref Chunks[i];
-            chunk.ClearAllDirty();
+            chunk.ClearAllChanged();
         }
     }
 
     /// <summary>
-    /// Clears all the dirty flags for the specified component type in this Archetype.
+    /// Clears all the changed flags for the specified component type in this Archetype.
     /// </summary>
     /// <param name="type">The type.</param>
-    internal void ClearDirty(ComponentType type)
+    internal void ClearChanged(ComponentType type)
     {
         for (var i = 0; i < Chunks.Count; i++)
         {
             ref var chunk = ref Chunks[i];
-            chunk.ClearAllDirty(type);
+            chunk.ClearAllChanged(type);
         }
     }
 }

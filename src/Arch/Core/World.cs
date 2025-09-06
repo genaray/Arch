@@ -1746,88 +1746,88 @@ public partial class World
 
 #endregion
 
-#if DIRTY_FLAGS
+#if CHANGED_FLAGS
 
 public partial class World
 {
 
     /// <summary>
-    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged dirty.
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged changed.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    public bool IsDirty<T>(Entity entity)
+    public bool IsChanged<T>(Entity entity)
     {
         var componentType = Component<T>.ComponentType;
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        return  entityData.Archetype.IsDirty(ref entityData.Slot, componentType);
+        return  entityData.Archetype.IsChanged(ref entityData.Slot, componentType);
     }
 
     /// <summary>
-    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged dirty.
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged changed.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    public bool IsDirty(Entity entity, ComponentType type)
+    public bool IsChanged(Entity entity, ComponentType type)
     {
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        return entityData.Archetype.IsDirty(ref entityData.Slot, type);
+        return entityData.Archetype.IsChanged(ref entityData.Slot, type);
     }
 
     /// <summary>
-    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as dirty.
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as changed.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    public void SetDirty<T>(Entity entity)
+    public void SetChanged<T>(Entity entity)
     {
         var componentType = Component<T>.ComponentType;
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.SetDirty(ref entityData.Slot, componentType);
+        entityData.Archetype.SetChanged(ref entityData.Slot, componentType);
     }
 
     /// <summary>
-    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as dirty.
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as changed.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    public void SetDirty(Entity entity, ComponentType type)
+    public void SetChanged(Entity entity, ComponentType type)
     {
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.SetDirty(ref entityData.Slot, type);
+        entityData.Archetype.SetChanged(ref entityData.Slot, type);
     }
 
     /// <summary>
-    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/>.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    public void ClearDirty<T>(Entity entity)
+    public void ClearChanged<T>(Entity entity)
     {
         var componentType = Component<T>.ComponentType;
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.ClearDirty(ref entityData.Slot, componentType);
+        entityData.Archetype.ClearChanged(ref entityData.Slot, componentType);
     }
 
     /// <summary>
-    /// Clears the dirty flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    public void ClearDirty(Entity entity, ComponentType type)
+    public void ClearChanged(Entity entity, ComponentType type)
     {
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.ClearDirty(ref entityData.Slot, type);
+        entityData.Archetype.ClearChanged(ref entityData.Slot, type);
     }
 
     /// <summary>
-    /// Clears the dirty flag for all components of an <see cref="Arch.Core.Entity"/>.
+    /// Clears the changed flag for all components of an <see cref="Arch.Core.Entity"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    public void ClearDirty(Entity entity)
+    public void ClearChanged(Entity entity)
     {
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.ClearDirty(ref entityData.Slot);
+        entityData.Archetype.ClearChanged(ref entityData.Slot);
     }
 }
 

@@ -173,12 +173,13 @@ public partial struct Chunk
             Components[index] = ArrayRegistry.GetArray(type, Capacity);
         }
 
-#if DIRTY_FLAGS
-        DirtyFlags = new BitSet[types.Length];
+#if CHANGED_FLAGS
+        AnyChangedFlags = new BitSet(types.Length);
+        ChangedFlags = new BitSet[types.Length];
 
         for (var i = 0; i < types.Length; i++)
         {
-            DirtyFlags[i] = new BitSet(Capacity);
+            ChangedFlags[i] = new BitSet(Capacity);
         }
 #endif
     }
@@ -668,100 +669,92 @@ public partial struct Chunk
     }
 }
 
-#if DIRTY_FLAGS
+#if CHANGED_FLAGS
 
 public partial struct Chunk
 {
-    public readonly BitSet[] DirtyFlags { [Pure] get; }
+    //Shortcut to avoid checking per-entity flags in the chunk iterator
+    public readonly BitSet AnyChangedFlags;
+    public readonly BitSet[] ChangedFlags;
 
-    /// <summary>
-    /// Checks whether any component of the given type has been flagged dirty.
+    /// Checks whether any component of the given type has been flagged changed.
     /// </summary>
     /// <param name="type">The component type.</param>
-    /// <returns>True if the component is dirty, false otherwise.</returns>
-    public bool IsAnyDirty(ComponentType type)
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    public bool IsAnyChanged(ComponentType type)
     {
         var compIndex = Index(type);
-        return DirtyFlags.DangerousGetReferenceAt(compIndex).IsAnyBitSet();
+        return AnyChangedFlags.IsSet(compIndex);
     }
 
     /// <summary>
-    /// Checks whether the component at the given index has been flagged dirty.
+    /// Checks whether the component at the given index has been flagged changed.
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="type">The component type.</param>
-    /// <returns>True if the component is dirty, false otherwise.</returns>
-    public bool IsDirty(int index, ComponentType type)
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    public bool IsChanged(int index, ComponentType type)
     {
         var compIndex = Index(type);
-        return DirtyFlags.DangerousGetReferenceAt(compIndex).IsSet(index);
+        return ChangedFlags.DangerousGetReferenceAt(compIndex).IsSet(index);
     }
 
     /// <summary>
-    /// Flags the specified component type as dirty, for all indices in this chunk.
-    /// </summary>
-    /// <param name="type">The type.</param>
-    public void SetAllDirty(ComponentType type)
-    {
-        // TODO add a single per-component flag to avoid setting and clearing all the bits
-        var index = Index(type);
-        DirtyFlags.DangerousGetReferenceAt(index).SetAll();
-    }
-
-    /// <summary>
-    /// Flags the component at the given index as dirty.
+    /// Flags the component at the given index as changed.
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="type">The component type.</param>
-    public void SetDirty(int index, ComponentType type)
+    public void SetChanged(int index, ComponentType type)
     {
-        // TODO add a single per-component flag to avoid setting and clearing all the bits
         var compIndex = Index(type);
-        DirtyFlags.DangerousGetReferenceAt(compIndex).SetBit(index);
+        AnyChangedFlags.SetBit(compIndex);
+        ChangedFlags.DangerousGetReferenceAt(compIndex).SetBit(index);
     }
 
     /// <summary>
-    /// Clears all the dirty flags in this Chunk.
+    /// Clears all the changed flags in this Chunk.
     /// </summary>
-    public void ClearAllDirty()
+    public void ClearAllChanged()
     {
-        for (var i = 0; i < DirtyFlags.Length; i++)
+        AnyChangedFlags.ClearAll();
+        for (var i = 0; i < ChangedFlags.Length; i++)
         {
-            var flags = DirtyFlags.DangerousGetReferenceAt(i);
+            var flags = ChangedFlags.DangerousGetReferenceAt(i);
             flags.ClearAll();
         }
     }
 
     /// <summary>
-    /// Clears all the dirty flags for the specified component type in this Chunk.
+    /// Clears all the changed flags for the specified component type in this Chunk.
     /// </summary>
     /// <param name="type">The type.</param>
-    public void ClearAllDirty(ComponentType type)
-    {
-        var index = Index(type);
-        DirtyFlags.DangerousGetReferenceAt(index).ClearAll();
-    }
-
-    /// <summary>
-    /// Clears the dirty flag for the specified component type at the specified index.
-    /// </summary>
-    /// <param name="type">The type.</param>
-    /// <param name="index">The index.</param>
-    public void ClearDirty(int index, ComponentType type)
+    public void ClearAllChanged(ComponentType type)
     {
         var compIndex = Index(type);
-        DirtyFlags.DangerousGetReferenceAt(compIndex).ClearBit(index);
+        AnyChangedFlags.ClearBit(compIndex);
+        ChangedFlags.DangerousGetReferenceAt(compIndex).ClearAll();
     }
 
     /// <summary>
-    /// Clears the dirty flag for all components at the specified index.
+    /// Clears the changed flag for the specified component type at the specified index.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <param name="index">The index.</param>
+    public void ClearChanged(int index, ComponentType type)
+    {
+        var compIndex = Index(type);
+        ChangedFlags.DangerousGetReferenceAt(compIndex).ClearBit(index);
+    }
+
+    /// <summary>
+    /// Clears the changed flag for all components at the specified index.
     /// </summary>
     /// <param name="index">The index.</param>
-    public void ClearDirty(int index)
+    public void ClearChanged(int index)
     {
-        for (var i = 0; i < DirtyFlags.Length; i++)
+        for (var i = 0; i < ChangedFlags.Length; i++)
         {
-            var flags = DirtyFlags.DangerousGetReferenceAt(i);
+            var flags = ChangedFlags.DangerousGetReferenceAt(i);
             flags.ClearBit(index);
         }
     }
