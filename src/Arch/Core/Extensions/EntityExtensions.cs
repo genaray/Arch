@@ -379,18 +379,18 @@ public static partial class EntityExtensions
         return world.IsChanged(entity, type);
     }
 
-    /// <inheritdoc cref="World.SetChanged&lt;T&gt;(Entity)"/>
-    public static void SetChanged<T>(this Entity entity)
+    /// <inheritdoc cref="World.Markchanged&lt;T&gt;(Entity)"/>
+    public static void Markchanged<T>(this Entity entity)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.SetChanged<T>(entity);
+        world.Markchanged<T>(entity);
     }
 
-    /// <inheritdoc cref="World.SetChanged(Entity, ComponentType)"/>
-    public static void SetChanged(this Entity entity, ComponentType componentType)
+    /// <inheritdoc cref="World.Markchanged(Entity, ComponentType)"/>
+    public static void Markchanged(this Entity entity, ComponentType componentType)
     {
         var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
-        world.SetChanged(entity, componentType);
+        world.Markchanged(entity, componentType);
     }
 
     /// <inheritdoc cref="World.ClearChanged&lt;T&gt;(Entity)"/>

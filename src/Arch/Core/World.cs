@@ -1779,11 +1779,11 @@ public partial class World
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-    public void SetChanged<T>(Entity entity)
+    public void MarkChanged<T>(Entity entity)
     {
         var componentType = Component<T>.ComponentType;
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.SetChanged(ref entityData.Slot, componentType);
+        entityData.Archetype.MarkChanged(ref entityData.Slot, componentType);
     }
 
     /// <summary>
@@ -1791,10 +1791,10 @@ public partial class World
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="type">The component <see cref="ComponentType"/>.</param>
-    public void SetChanged(Entity entity, ComponentType type)
+    public void MarkChanged(Entity entity, ComponentType type)
     {
         var entityData = EntityInfo.GetEntityData(entity.Id);
-        entityData.Archetype.SetChanged(ref entityData.Slot, type);
+        entityData.Archetype.MarkChanged(ref entityData.Slot, type);
     }
 
     /// <summary>

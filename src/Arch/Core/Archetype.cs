@@ -981,10 +981,10 @@ public sealed partial class Archetype
     /// </summary>
     /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked changed.</param>
     /// <param name="componentType">The component type.</param>
-    internal void SetChanged(ref Slot slot, ComponentType componentType)
+    internal void MarkChanged(ref Slot slot, ComponentType componentType)
     {
         ref var chunk = ref GetChunk(slot.ChunkIndex);
-        chunk.SetChanged(slot.Index, componentType);
+        chunk.MarkChanged(slot.Index, componentType);
     }
 
     /// <summary>

@@ -704,7 +704,7 @@ public partial struct Chunk
     /// </summary>
     /// <param name="index">The index.</param>
     /// <param name="type">The component type.</param>
-    public void SetChanged(int index, ComponentType type)
+    public void MarkChanged(int index, ComponentType type)
     {
         var compIndex = Index(type);
         AnyChangedFlags.SetBit(compIndex);
