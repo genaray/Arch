@@ -184,6 +184,16 @@ public sealed class BitSet
     [SkipLocalsInit]
     public bool All(BitSet other)
     {
+        if (Length == 0)
+        {
+            return true;
+        }
+
+        if (other.Length == 0)
+        {
+            return false;
+        }
+
         var min = Math.Min(Math.Min(Length, other.Length), _max);
         if (!Vector.IsHardwareAccelerated || min < _padding)
         {
@@ -245,6 +255,11 @@ public sealed class BitSet
     /// <returns>True if they match, false if not.</returns>
     public bool Any(BitSet other)
     {
+        if (Length == 0 || other.Length == 0)
+        {
+            return false;
+        }
+
         var min = Math.Min(Math.Min(Length, other.Length), _max);
         if (!Vector.IsHardwareAccelerated || min < _padding)
         {
@@ -306,6 +321,11 @@ public sealed class BitSet
     /// <returns>True if none match, false if not.</returns>
     public bool None(BitSet other)
     {
+        if (Length == 0 || other.Length == 0)
+        {
+            return true;
+        }
+
         var min = Math.Min(Math.Min(Length, other.Length), _max);
         if (!Vector.IsHardwareAccelerated || min < _padding)
         {
@@ -348,8 +368,17 @@ public sealed class BitSet
     /// <returns>True if they match, false if not.</returns>
     public bool Exclusive(BitSet other)
     {
-        var min = Math.Min(Math.Min(Length, other.Length), _max);
+        if (Length == 0 && other.Length == 0)
+        {
+            return true;
+        }
 
+        if (Length == 0 || other.Length == 0)
+        {
+            return false;
+        }
+
+        var min = Math.Min(Math.Min(Length, other.Length), _max);
         if (!Vector.IsHardwareAccelerated || min < _padding)
         {
             var bits = _bits.AsSpan();
