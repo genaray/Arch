@@ -176,7 +176,7 @@ public partial struct Chunk
 #if CHANGED_FLAGS
         _changedFlags = new BitSet[Capacity + 1]; // Last index contains the "any" bitset
         var typeCapacity = ComponentTypeExtensions.GetMaxValue(types);
-        for (var i = 0; i < Capacity; i++)
+        for (var i = 0; i <= Capacity; i++)
         {
             _changedFlags[i] = new BitSet(typeCapacity);
         }
@@ -679,6 +679,7 @@ public partial struct Chunk
     /// </summary>
     /// <param name="type">The component type.</param>
     /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
     public bool IsAnyChanged(ComponentType type)
     {
         return _changedFlags.DangerousGetReferenceAt(Capacity).IsSet(type.Id);
@@ -689,9 +690,11 @@ public partial struct Chunk
     /// </summary>
     /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
     /// <returns>True if any of the components have changed, false otherwise.</returns>
+    [Pure]
     public bool IsAnyChanged(BitSet types)
     {
-        return _changedFlags.DangerousGetReferenceAt(Capacity).Any(types);
+        var changed = _changedFlags.DangerousGetReferenceAt(Capacity);
+        return types.Any(changed);
     }
 
     /// <summary>
@@ -700,6 +703,7 @@ public partial struct Chunk
     /// <param name="index">The index.</param>
     /// <param name="type">The component type.</param>
     /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
     public bool IsChanged(int index, ComponentType type)
     {
         return _changedFlags.DangerousGetReferenceAt(index).IsSet(type.Id);
@@ -711,9 +715,11 @@ public partial struct Chunk
     /// <param name="index">The index.</param>
     /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
     /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
     public bool IsChanged(int index, BitSet types)
     {
-        return _changedFlags.DangerousGetReferenceAt(index).Any(types);
+        var changed = _changedFlags.DangerousGetReferenceAt(index);
+        return types.Any(changed);
     }
 
     /// <summary>

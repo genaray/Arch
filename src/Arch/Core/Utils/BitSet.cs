@@ -255,7 +255,12 @@ public sealed class BitSet
     /// <returns>True if they match, false if not.</returns>
     public bool Any(BitSet other)
     {
-        if (Length == 0 || other.Length == 0)
+        if (Length == 0)
+        {
+            return true;
+        }
+
+        if (other.Length == 0)
         {
             return false;
         }

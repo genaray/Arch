@@ -1,7 +1,5 @@
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
-using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
@@ -542,6 +540,11 @@ public partial class Query : IEquatable<Query>
     private readonly BitSet _none;
     private readonly BitSet _exclusive;
 
+#if CHANGED_FLAGS
+    public readonly bool HasChangedFilter;
+    public readonly BitSet Changed;
+#endif
+
     private readonly bool _isExclusive;
 
     /// <summary>
@@ -565,10 +568,25 @@ public partial class Query : IEquatable<Query>
 
         // Convert to `BitSet`s.
         _all = description.All;
-        _any = description.Any;
         _none = description.None;
         _exclusive = description.Exclusive;
-        _changed = description.Changed;
+
+#if CHANGED_FLAGS
+        if (description.Changed.Count > 0)
+        {
+            Changed = description.Changed;
+            _any = Signature.Add(description.Any, description.Changed);
+            HasChangedFilter = true;
+        }
+        else
+        {
+            Changed = new BitSet();
+            _any = description.Any;
+            HasChangedFilter = false;
+        }
+#else
+        _any = description.Any;
+#endif
 
         // Handle exclusive.
         if (description.Exclusive.Count != 0)
@@ -589,7 +607,6 @@ public partial class Query : IEquatable<Query>
         return _isExclusive
             ? _exclusive.Exclusive(bitset)
             : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
-        ;
     }
 
     /// <summary>
@@ -610,8 +627,7 @@ public partial class Query : IEquatable<Query>
         _matchingArchetypes.Clear();
         foreach (var archetype in allArchetypes)
         {
-            var matches = Matches(archetype.BitSet);
-            if (matches)
+            if (Matches(archetype.BitSet))
             {
                 _matchingArchetypes.Add(archetype);
             }
@@ -650,6 +666,18 @@ public partial class Query : IEquatable<Query>
         return new QueryChunkEnumerator(_matchingArchetypes.AsSpan());
     }
 
+    public QueryEntityEnumerator GetEntityEnumerator()
+    {
+        Match();
+        return new QueryEntityEnumerator(this);
+    }
+
+    public QueryComponentEnumerator<T> GetComponentEnumerator<T>()
+    {
+        Match();
+        return new QueryComponentEnumerator<T>(this);
+    }
+
     /// <summary>
     ///     Checks this <see cref="Query"/> for equality with another.
     /// </summary>
@@ -657,7 +685,14 @@ public partial class Query : IEquatable<Query>
     /// <returns>True if they are equal, false if not.</returns>
     public bool Equals(Query other)
     {
-        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && Equals(_exclusive, other._exclusive) && _queryDescription.Equals(other._queryDescription);
+        return Equals(_any, other._any) &&
+               Equals(_all, other._all) &&
+               Equals(_none, other._none) &&
+#if CHANGED_FLAGS
+               Equals(Changed, other.Changed) &&
+#endif
+               Equals(_exclusive, other._exclusive) &&
+               _queryDescription.Equals(other._queryDescription);
     }
 
     /// <summary>
@@ -683,7 +718,7 @@ public partial class Query : IEquatable<Query>
             hashCode = (hashCode * 397) ^ (_none?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ (_exclusive?.GetHashCode() ?? 0);
 #if CHANGED_FLAGS
-            hashCode = (hashCode * 397) ^ (_changed?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (Changed?.GetHashCode() ?? 0);
 #endif
             hashCode = (hashCode * 397) ^ _queryDescription.GetHashCode();
 
@@ -741,7 +776,12 @@ public partial struct QueryDescription
         Any = any ?? Any;
         None = none ?? None;
         Exclusive = exclusive ?? Exclusive;
-        Changed = changed ?? Changed;
+
+        if (changed != null)
+        {
+            Changed = changed.Value;
+            Any = Signature.Add(Any, Changed);
+        }
 
         _hashCode = -1;
         _hashCode = GetHashCode();
@@ -755,15 +795,10 @@ public partial struct QueryDescription
     [UnscopedRef]
     public ref QueryDescription WithChanged<T>()
     {
-        Exclusive = Component<T>.Signature;
+        Changed = Component<T>.Signature;
         Build();
         return ref this;
     }
-}
-
-public partial class Query
-{
-    private readonly BitSet _changed;
 }
 
 #endif
