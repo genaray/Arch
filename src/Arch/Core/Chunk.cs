@@ -174,12 +174,11 @@ public partial struct Chunk
         }
 
 #if CHANGED_FLAGS
-        AnyChangedFlags = new BitSet(types.Length);
-        ChangedFlags = new BitSet[types.Length];
-
-        for (var i = 0; i < types.Length; i++)
+        _changedFlags = new BitSet[Capacity + 1]; // Last index contains the "any" bitset
+        var typeCapacity = ComponentTypeExtensions.GetMaxValue(types);
+        for (var i = 0; i < Capacity; i++)
         {
-            ChangedFlags[i] = new BitSet(Capacity);
+            _changedFlags[i] = new BitSet(typeCapacity);
         }
 #endif
     }
@@ -673,18 +672,26 @@ public partial struct Chunk
 
 public partial struct Chunk
 {
-    //Shortcut to avoid checking per-entity flags in the chunk iterator
-    public readonly BitSet AnyChangedFlags;
-    public readonly BitSet[] ChangedFlags;
+    private readonly BitSet[] _changedFlags;
 
+    /// <summary>
     /// Checks whether any component of the given type has been flagged changed.
     /// </summary>
     /// <param name="type">The component type.</param>
     /// <returns>True if the component is changed, false otherwise.</returns>
     public bool IsAnyChanged(ComponentType type)
     {
-        var compIndex = Index(type);
-        return AnyChangedFlags.IsSet(compIndex);
+        return _changedFlags.DangerousGetReferenceAt(Capacity).IsSet(type.Id);
+    }
+
+    /// <summary>
+    /// Checks whether any component of the given types has been flagged changed.
+    /// </summary>
+    /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
+    /// <returns>True if any of the components have changed, false otherwise.</returns>
+    public bool IsAnyChanged(BitSet types)
+    {
+        return _changedFlags.DangerousGetReferenceAt(Capacity).Any(types);
     }
 
     /// <summary>
@@ -695,8 +702,18 @@ public partial struct Chunk
     /// <returns>True if the component is changed, false otherwise.</returns>
     public bool IsChanged(int index, ComponentType type)
     {
-        var compIndex = Index(type);
-        return ChangedFlags.DangerousGetReferenceAt(compIndex).IsSet(index);
+        return _changedFlags.DangerousGetReferenceAt(index).IsSet(type.Id);
+    }
+
+    /// <summary>
+    /// Checks whether any of the components at the given index has been flagged changed.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    public bool IsChanged(int index, BitSet types)
+    {
+        return _changedFlags.DangerousGetReferenceAt(index).Any(types);
     }
 
     /// <summary>
@@ -706,9 +723,8 @@ public partial struct Chunk
     /// <param name="type">The component type.</param>
     public void MarkChanged(int index, ComponentType type)
     {
-        var compIndex = Index(type);
-        AnyChangedFlags.SetBit(compIndex);
-        ChangedFlags.DangerousGetReferenceAt(compIndex).SetBit(index);
+        _changedFlags.DangerousGetReferenceAt(index).SetBit(type.Id);
+        _changedFlags.DangerousGetReferenceAt(Capacity).SetBit(type.Id);
     }
 
     /// <summary>
@@ -716,23 +732,11 @@ public partial struct Chunk
     /// </summary>
     public void ClearAllChanged()
     {
-        AnyChangedFlags.ClearAll();
-        for (var i = 0; i < ChangedFlags.Length; i++)
+        for (var i = 0; i < _changedFlags.Length; i++)
         {
-            var flags = ChangedFlags.DangerousGetReferenceAt(i);
+            var flags = _changedFlags.DangerousGetReferenceAt(i);
             flags.ClearAll();
         }
-    }
-
-    /// <summary>
-    /// Clears all the changed flags for the specified component type in this Chunk.
-    /// </summary>
-    /// <param name="type">The type.</param>
-    public void ClearAllChanged(ComponentType type)
-    {
-        var compIndex = Index(type);
-        AnyChangedFlags.ClearBit(compIndex);
-        ChangedFlags.DangerousGetReferenceAt(compIndex).ClearAll();
     }
 
     /// <summary>
@@ -742,8 +746,7 @@ public partial struct Chunk
     /// <param name="index">The index.</param>
     public void ClearChanged(int index, ComponentType type)
     {
-        var compIndex = Index(type);
-        ChangedFlags.DangerousGetReferenceAt(compIndex).ClearBit(index);
+        _changedFlags.DangerousGetReferenceAt(index).ClearBit(type.Id);
     }
 
     /// <summary>
@@ -752,11 +755,7 @@ public partial struct Chunk
     /// <param name="index">The index.</param>
     public void ClearChanged(int index)
     {
-        for (var i = 0; i < ChangedFlags.Length; i++)
-        {
-            var flags = ChangedFlags.DangerousGetReferenceAt(i);
-            flags.ClearBit(index);
-        }
+        _changedFlags.DangerousGetReferenceAt(index).ClearAll();
     }
 }
 

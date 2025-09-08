@@ -53,7 +53,7 @@ public sealed class BitSet
     /// </summary>
     public BitSet()
     {
-        _bits = new uint[_padding];
+        _bits = [];
     }
 
     /// <summary>
