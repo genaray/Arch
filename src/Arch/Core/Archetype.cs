@@ -1,14 +1,9 @@
-using System.Buffers;
 using System.Diagnostics.Contracts;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
-using Arch.LowLevel;
 using Arch.LowLevel.Jagged;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
-using Array = System.Array;
-using System.Runtime.InteropServices;
 
 namespace Arch.Core;
 
@@ -339,10 +334,7 @@ public sealed partial class Archetype
     ///     The number of <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
     /// </summary>
     public int ChunkCount {
-        get
-        {
-            return Chunks.Count;
-        }
+        get => Chunks.Count;
     }
 
     /// <summary>
@@ -350,10 +342,7 @@ public sealed partial class Archetype
     ///     The total capacity.
     /// </summary>
     public int ChunkCapacity {
-        get
-        {
-            return Chunks.Capacity;
-        }
+        get => Chunks.Capacity;
     }
 
     /// <summary>
@@ -1017,19 +1006,6 @@ public sealed partial class Archetype
         {
             ref var chunk = ref Chunks[i];
             chunk.ClearAllChanged();
-        }
-    }
-
-    /// <summary>
-    /// Clears all the changed flags for the specified component type in this Archetype.
-    /// </summary>
-    /// <param name="type">The type.</param>
-    internal void ClearChanged(ComponentType type)
-    {
-        for (var i = 0; i < Chunks.Count; i++)
-        {
-            ref var chunk = ref Chunks[i];
-            chunk.ClearAllChanged(type);
         }
     }
 }
