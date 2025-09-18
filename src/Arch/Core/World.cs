@@ -1744,4 +1744,31 @@ public partial class World
     }
 }
 
+public partial class World
+{
+    /// <summary>
+    /// Creates a deep copy of the world, copying archetypes and chunks.
+    /// </summary>
+    /// <returns>A newly created World with all data copied from the original.</returns>
+    public World Copy()
+    {
+        var copy = Create();
+        var archetypes = Archetypes.Items;
+        for (var index= 0; index < archetypes.Count; index++)
+        {
+            var archetype = archetypes[index];
+            if (archetype.EntityCount <= 0)
+            {
+                continue;
+            }
+            
+            var newArchetype = copy.GetOrCreate(archetype.Signature);
+            Archetype.Copy(archetype, newArchetype, false);
+            copy.Size += newArchetype.EntityCount;
+        }
+        
+        return copy;
+    }
+}
+
 #endregion
