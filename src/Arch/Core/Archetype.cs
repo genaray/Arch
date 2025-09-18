@@ -1,14 +1,9 @@
-using System.Buffers;
 using System.Diagnostics.Contracts;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
-using Arch.LowLevel;
 using Arch.LowLevel.Jagged;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
-using Array = System.Array;
-using System.Runtime.InteropServices;
 
 namespace Arch.Core;
 
@@ -339,10 +334,7 @@ public sealed partial class Archetype
     ///     The number of <see cref="Chunk"/>'s within the <see cref="Chunks"/> array.
     /// </summary>
     public int ChunkCount {
-        get
-        {
-            return Chunks.Count;
-        }
+        get => Chunks.Count;
     }
 
     /// <summary>
@@ -350,10 +342,7 @@ public sealed partial class Archetype
     ///     The total capacity.
     /// </summary>
     public int ChunkCapacity {
-        get
-        {
-            return Chunks.Capacity;
-        }
+        get => Chunks.Capacity;
     }
 
     /// <summary>
@@ -436,7 +425,7 @@ public sealed partial class Archetype
         ref var currentChunk = ref GetChunk(count);
 
         // Fill chunk
-        if (currentChunk.IsEmpty)
+        if (!currentChunk.IsFull)
         {
             slot = new Slot(currentChunk.Add(entity), count);
             chunk = currentChunk;
@@ -968,3 +957,67 @@ public sealed partial class Archetype
         Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref sourceSignature, ref newChunk, toSlot.Index, 1);
     }
 }
+
+
+#if CHANGED_FLAGS
+
+public sealed partial class Archetype
+{
+    /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> has been flagged changed.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be checked.</param>
+    /// <param name="componentType">The component type.</param>
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    public bool IsChanged(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        return chunk.IsChanged(slot.Index, componentType);
+    }
+
+    /// <summary>
+    /// Flags the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/> as changed.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be marked changed.</param>
+    /// <param name="componentType">The component type.</param>
+    internal void MarkChanged(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.MarkChanged(slot.Index, componentType);
+    }
+
+    /// <summary>
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The <see cref="Slot"/> at which the component of an <see cref="Arch.Core.Entity"/> is to be cleared.</param>
+    /// <param name="componentType">The component type.</param>
+    internal void ClearChanged(ref Slot slot, ComponentType componentType)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.ClearChanged(slot.Index, componentType);
+    }
+
+    /// <summary>
+    /// Clears the changed flag for all components of an <see cref="Arch.Core.Entity"/> at a given <see cref="Slot"/>.
+    /// </summary>
+    /// <param name="slot">The slot.</param>
+    internal void ClearChanged(ref Slot slot)
+    {
+        ref var chunk = ref GetChunk(slot.ChunkIndex);
+        chunk.ClearChanged(slot.Index);
+    }
+
+    /// <summary>
+    /// Clears all the changed flags in this Archetype.
+    /// </summary>
+    internal void ClearAllChanged()
+    {
+        for (var i = 0; i < Chunks.Count; i++)
+        {
+            ref var chunk = ref Chunks[i];
+            chunk.ClearAllChanged();
+        }
+    }
+}
+
+#endif

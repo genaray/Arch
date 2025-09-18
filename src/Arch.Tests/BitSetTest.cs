@@ -51,7 +51,7 @@ public sealed class BitSetTest
     [Test]
     public void BitsetSetAll()
     {
-        var bitSet = new BitSet();
+        var bitSet = new BitSet(5);
         bitSet.SetAll();
 
         var count = 0;

@@ -1,7 +1,5 @@
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
-using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 
 namespace Arch.Core;
@@ -356,6 +354,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         _hashCode = -1;
     }
 
+#if !CHANGED_FLAGS
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
     /// </summary>
@@ -373,6 +373,8 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
         _hashCode = -1;
         _hashCode = GetHashCode();
     }
+
+#endif
 
     /// <summary>
     ///     Builds this instance by calculating a new <see cref="_hashCode"/>.
@@ -487,6 +489,9 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
             hash = (hash * 23) + Any.GetHashCode();
             hash = (hash * 23) + None.GetHashCode();
             hash = (hash * 23) + Exclusive.GetHashCode();
+#if CHANGED_FLAGS
+            hash = (hash * 23) + Changed.GetHashCode();
+#endif
             _hashCode = hash;
             return hash;
         }
@@ -535,6 +540,11 @@ public partial class Query : IEquatable<Query>
     private readonly BitSet _none;
     private readonly BitSet _exclusive;
 
+#if CHANGED_FLAGS
+    public readonly bool HasChangedFilter;
+    public readonly BitSet Changed;
+#endif
+
     private readonly bool _isExclusive;
 
     /// <summary>
@@ -558,9 +568,25 @@ public partial class Query : IEquatable<Query>
 
         // Convert to `BitSet`s.
         _all = description.All;
-        _any = description.Any;
         _none = description.None;
         _exclusive = description.Exclusive;
+
+#if CHANGED_FLAGS
+        if (description.Changed.Count > 0)
+        {
+            Changed = description.Changed;
+            _any = Signature.Add(description.Any, description.Changed);
+            HasChangedFilter = true;
+        }
+        else
+        {
+            Changed = new BitSet();
+            _any = description.Any;
+            HasChangedFilter = false;
+        }
+#else
+        _any = description.Any;
+#endif
 
         // Handle exclusive.
         if (description.Exclusive.Count != 0)
@@ -578,7 +604,9 @@ public partial class Query : IEquatable<Query>
     /// <returns>True if it matches, otherwise false.</returns>
     public bool Matches(BitSet bitset)
     {
-        return _isExclusive ? _exclusive.Exclusive(bitset) : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
+        return _isExclusive
+            ? _exclusive.Exclusive(bitset)
+            : _all.All(bitset) && _any.Any(bitset) && _none.None(bitset);
     }
 
     /// <summary>
@@ -599,8 +627,7 @@ public partial class Query : IEquatable<Query>
         _matchingArchetypes.Clear();
         foreach (var archetype in allArchetypes)
         {
-            var matches = Matches(archetype.BitSet);
-            if (matches)
+            if (Matches(archetype.BitSet))
             {
                 _matchingArchetypes.Add(archetype);
             }
@@ -639,6 +666,18 @@ public partial class Query : IEquatable<Query>
         return new QueryChunkEnumerator(_matchingArchetypes.AsSpan());
     }
 
+    public QueryEntityEnumerator GetEntityEnumerator()
+    {
+        Match();
+        return new QueryEntityEnumerator(this);
+    }
+
+    public QueryComponentEnumerator<T> GetComponentEnumerator<T>()
+    {
+        Match();
+        return new QueryComponentEnumerator<T>(this);
+    }
+
     /// <summary>
     ///     Checks this <see cref="Query"/> for equality with another.
     /// </summary>
@@ -646,7 +685,14 @@ public partial class Query : IEquatable<Query>
     /// <returns>True if they are equal, false if not.</returns>
     public bool Equals(Query other)
     {
-        return Equals(_any, other._any) && Equals(_all, other._all) && Equals(_none, other._none) && Equals(_exclusive, other._exclusive) && _queryDescription.Equals(other._queryDescription);
+        return Equals(_any, other._any) &&
+               Equals(_all, other._all) &&
+               Equals(_none, other._none) &&
+#if CHANGED_FLAGS
+               Equals(Changed, other.Changed) &&
+#endif
+               Equals(_exclusive, other._exclusive) &&
+               _queryDescription.Equals(other._queryDescription);
     }
 
     /// <summary>
@@ -667,10 +713,13 @@ public partial class Query : IEquatable<Query>
     {
         unchecked
         {
-            var hashCode = _any is not null ? _any.GetHashCode() : 0;
-            hashCode = (hashCode * 397) ^ (_all is not null ? _all.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (_none is not null ? _none.GetHashCode() : 0);
+            var hashCode = _any?.GetHashCode() ?? 0;
+            hashCode = (hashCode * 397) ^ (_all?.GetHashCode() ?? 0);
+            hashCode = (hashCode * 397) ^ (_none?.GetHashCode() ?? 0);
             hashCode = (hashCode * 397) ^ (_exclusive?.GetHashCode() ?? 0);
+#if CHANGED_FLAGS
+            hashCode = (hashCode * 397) ^ (Changed?.GetHashCode() ?? 0);
+#endif
             hashCode = (hashCode * 397) ^ _queryDescription.GetHashCode();
 
             return hashCode;
@@ -699,3 +748,57 @@ public partial class Query : IEquatable<Query>
         return !left.Equals(right);
     }
 }
+
+
+// Changed flags support
+#if CHANGED_FLAGS
+
+public partial struct QueryDescription
+{
+    /// <summary>
+    ///  A <see cref="Signature"/> of all components that an <see cref="Entity"/> should have and which should be flagged as changed.
+    /// <remarks>If the content of the array is subsequently changed, a <see cref="Build"/> should be carried out.</remarks>
+    /// </summary>
+    public Signature Changed { get; private set; } = Signature.Null;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="QueryDescription"/> struct.
+    /// </summary>
+    /// <param name="all">An array of all components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="any">An array of all components of which an <see cref="Entity"/> should have at least one.</param>
+    /// <param name="none">An array of all components of which an <see cref="Entity"/> should not have any.</param>
+    /// <param name="exclusive">All components that an <see cref="Entity"/> should have mandatory.</param>
+    /// <param name="changed">All components that an <see cref="Entity"/> should have and which should be flagged as changed.</param>
+
+    public QueryDescription(Signature? all = null, Signature? any = null, Signature? none = null, Signature? exclusive = null, Signature? changed = null)
+    {
+        All = all ?? All;
+        Any = any ?? Any;
+        None = none ?? None;
+        Exclusive = exclusive ?? Exclusive;
+
+        if (changed != null)
+        {
+            Changed = changed.Value;
+            Any = Signature.Add(Any, Changed);
+        }
+
+        _hashCode = -1;
+        _hashCode = GetHashCode();
+    }
+
+    /// <summary>
+    ///  All components that an <see cref="Entity"/> should have and which should be flagged as changed.
+    /// </summary>
+    /// <typeparam name="T">The generic type.</typeparam>
+    /// <returns>The same <see cref="QueryDescription"/> instance for chained operations.</returns>
+    [UnscopedRef]
+    public ref QueryDescription WithChanged<T>()
+    {
+        Changed = Component<T>.Signature;
+        Build();
+        return ref this;
+    }
+}
+
+#endif

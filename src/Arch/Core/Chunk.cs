@@ -1,12 +1,9 @@
 using System.Buffers;
 using System.Diagnostics.Contracts;
-using System.Drawing;
 using Arch.Core.Events;
-using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
 using Arch.LowLevel;
-using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Array = System.Array;
 
@@ -175,6 +172,15 @@ public partial struct Chunk
             var type = types[index];
             Components[index] = ArrayRegistry.GetArray(type, Capacity);
         }
+
+#if CHANGED_FLAGS
+        _changedFlags = new BitSet[Capacity + 1]; // Last index contains the "any" bitset
+        var typeCapacity = ComponentTypeExtensions.GetMaxValue(types);
+        for (var i = 0; i <= Capacity; i++)
+        {
+            _changedFlags[i] = new BitSet(typeCapacity);
+        }
+#endif
     }
 
 
@@ -215,11 +221,6 @@ public partial struct Chunk
     ///     Checks whether this instance is full or not.
     /// </summary>
     public readonly bool IsFull { [Pure] get => Count >= Capacity; }
-
-    /// <summary>
-    ///     Checks whether this instance is full or not.
-    /// </summary>
-    public readonly bool IsEmpty { [Pure] get => Count < Capacity; }
 
     /// <summary>
     ///     Inserts an entity into the <see cref="Chunk"/>.
@@ -666,3 +667,102 @@ public partial struct Chunk
         return lastEntity.Id;
     }
 }
+
+#if CHANGED_FLAGS
+
+public partial struct Chunk
+{
+    private readonly BitSet[] _changedFlags;
+
+    /// <summary>
+    /// Checks whether any component of the given type has been flagged changed.
+    /// </summary>
+    /// <param name="type">The component type.</param>
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
+    public bool IsAnyChanged(ComponentType type)
+    {
+        return _changedFlags.DangerousGetReferenceAt(Capacity).IsSet(type.Id);
+    }
+
+    /// <summary>
+    /// Checks whether any component of the given types has been flagged changed.
+    /// </summary>
+    /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
+    /// <returns>True if any of the components have changed, false otherwise.</returns>
+    [Pure]
+    public bool IsAnyChanged(BitSet types)
+    {
+        var changed = _changedFlags.DangerousGetReferenceAt(Capacity);
+        return types.Any(changed);
+    }
+
+    /// <summary>
+    /// Checks whether the component at the given index has been flagged changed.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="type">The component type.</param>
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
+    public bool IsChanged(int index, ComponentType type)
+    {
+        return _changedFlags.DangerousGetReferenceAt(index).IsSet(type.Id);
+    }
+
+    /// <summary>
+    /// Checks whether any of the components at the given index has been flagged changed.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="types">A <see cref="BitSet"/> representing the component types.</param>
+    /// <returns>True if the component is changed, false otherwise.</returns>
+    [Pure]
+    public bool IsChanged(int index, BitSet types)
+    {
+        var changed = _changedFlags.DangerousGetReferenceAt(index);
+        return types.Any(changed);
+    }
+
+    /// <summary>
+    /// Flags the component at the given index as changed.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="type">The component type.</param>
+    public void MarkChanged(int index, ComponentType type)
+    {
+        _changedFlags.DangerousGetReferenceAt(index).SetBit(type.Id);
+        _changedFlags.DangerousGetReferenceAt(Capacity).SetBit(type.Id);
+    }
+
+    /// <summary>
+    /// Clears all the changed flags in this Chunk.
+    /// </summary>
+    public void ClearAllChanged()
+    {
+        for (var i = 0; i < _changedFlags.Length; i++)
+        {
+            var flags = _changedFlags.DangerousGetReferenceAt(i);
+            flags.ClearAll();
+        }
+    }
+
+    /// <summary>
+    /// Clears the changed flag for the specified component type at the specified index.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    /// <param name="index">The index.</param>
+    public void ClearChanged(int index, ComponentType type)
+    {
+        _changedFlags.DangerousGetReferenceAt(index).ClearBit(type.Id);
+    }
+
+    /// <summary>
+    /// Clears the changed flag for all components at the specified index.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    public void ClearChanged(int index)
+    {
+        _changedFlags.DangerousGetReferenceAt(index).ClearAll();
+    }
+}
+
+#endif

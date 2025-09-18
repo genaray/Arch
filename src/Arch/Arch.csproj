@@ -41,29 +41,29 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;</DefineConstants>
+    <DefineConstants>TRACE;CHANGED_FLAGS;</DefineConstants>
     <Optimize>false</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug-PureECS'">
-    <DefineConstants>TRACE;PURE_ECS;</DefineConstants>
+    <DefineConstants>TRACE;PURE_ECS;CHANGED_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug-Events'">
-    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+    <DefineConstants>TRACE;EVENTS;CHANGED_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;CHANGED_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release-Events'">
-    <DefineConstants>TRACE;EVENTS;</DefineConstants>
+    <DefineConstants>TRACE;EVENTS;CHANGED_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release-PureECS'">
-    <DefineConstants>TRACE;PURE_ECS</DefineConstants>
+    <DefineConstants>TRACE;PURE_ECS;CHANGED_FLAGS;</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -589,6 +589,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.CreateBulk.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\QueryDescription.WithChanged.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueryDescription.WithChanged.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

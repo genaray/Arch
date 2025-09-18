@@ -407,6 +407,8 @@ public partial class World : IDisposable
     [Pure]
     public int CountEntities(in QueryDescription queryDescription)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         var counter = 0;
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
@@ -424,20 +426,19 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the components or <see cref="Entity"/>s for which to search.</param>
     /// <param name="list">The <see cref="Span{T}"/> receiving the found <see cref="Entity"/>s.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
-    public void GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
+    /// <returns>The amount of entities matched by the query.</returns>
+    public int GetEntities(in QueryDescription queryDescription, Span<Entity> list, int start = 0)
     {
         var index = 0;
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query)
+
+        foreach (ref var entity in query.GetEntityEnumerator())
         {
-            ref var entityFirstElement = ref chunk.Entity(0);
-            foreach (var entityIndex in chunk)
-            {
-                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-                list[start + index] = entity;
-                index++;
-            }
+            list[start + index] = entity;
+            index++;
         }
+
+        return index;
     }
 
     /// <summary>
@@ -446,8 +447,10 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the components for which to search.</param>
     /// <param name="archetypes">The <see cref="Span{T}"/> receiving <see cref="Archetype"/>s containing <see cref="Entity"/>s with the matching components.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
-    public void GetArchetypes(in QueryDescription queryDescription, Span<Archetype> archetypes, int start = 0)
+    public int GetArchetypes(in QueryDescription queryDescription, Span<Archetype> archetypes, int start = 0)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         var index = 0;
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
@@ -455,6 +458,8 @@ public partial class World : IDisposable
             archetypes[start + index] = archetype;
             index++;
         }
+
+        return index;
     }
 
     /// <summary>
@@ -463,15 +468,37 @@ public partial class World : IDisposable
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which components are searched for.</param>
     /// <param name="chunks">The <see cref="Span{T}"/> receiving <see cref="Chunk"/>s containing <see cref="Entity"/>s with the matching components.</param>
     /// <param name="start">The start index inside the <see cref="Span{T}"/>. Default is 0.</param>
-    public void GetChunks(in QueryDescription queryDescription, Span<Chunk> chunks, int start = 0)
+    public int GetChunks(in QueryDescription queryDescription, Span<Chunk> chunks, int start = 0)
     {
         var index = 0;
         var query = Query(in queryDescription);
+
+#if CHANGED_FLAGS
+        if (query.HasChangedFilter)
+        {
+            var changedMask = query.Changed;
+            foreach (ref var chunk in query)
+            {
+                if (!chunk.IsAnyChanged(changedMask))
+                {
+                    continue;
+                }
+
+                chunks[start + index] = chunk;
+                index++;
+            }
+
+            return index;
+        }
+#endif
+
         foreach (ref var chunk in query)
         {
             chunks[start + index] = chunk;
             index++;
         }
+
+        return index;
     }
 
     /// <summary>
@@ -735,14 +762,9 @@ public partial class World
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query)
+        foreach (ref var entity in query.GetEntityEnumerator())
         {
-            ref var entityLastElement = ref chunk.Entity(0);
-            foreach (var entityIndex in chunk)
-            {
-                var entity = Unsafe.Add(ref entityLastElement, entityIndex);
-                forEntity(entity);
-            }
+            forEntity(entity);
         }
     }
 
@@ -755,16 +777,10 @@ public partial class World
     public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
         var t = new T();
-
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query)
+        foreach (ref var entity in query.GetEntityEnumerator())
         {
-            ref var entityFirstElement = ref chunk.Entity(0);
-            foreach (var entityIndex in chunk)
-            {
-                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-                t.Update(entity);
-            }
+            t.Update(entity);
         }
     }
 
@@ -778,14 +794,9 @@ public partial class World
     public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
         var query = Query(in queryDescription);
-        foreach (ref var chunk in query)
+        foreach (ref var entity in query.GetEntityEnumerator())
         {
-            ref var entityFirstElement = ref chunk.Entity(0);
-            foreach (var entityIndex in chunk)
-            {
-                var entity = Unsafe.Add(ref entityFirstElement, entityIndex);
-                iForEach.Update(entity);
-            }
+            iForEach.Update(entity);
         }
     }
 }
@@ -808,6 +819,8 @@ public partial class World
     [StructuralChange]
     public void Destroy(in QueryDescription queryDescription)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
@@ -847,6 +860,8 @@ public partial class World
     /// <param name="value">The value of the component to set.</param>
     public void Set<T>(in QueryDescription queryDescription, in T? value = default)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
@@ -876,13 +891,15 @@ public partial class World
     [StructuralChange]
     public void Add<T>(in QueryDescription queryDescription, in T? component = default)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            // Archetype with T shouldnt be skipped to prevent undefined behaviour.
+            // Archetype with T shouldn't be skipped to prevent undefined behaviour.
             if (archetype.EntityCount == 0 || archetype.Has<T>())
             {
                 continue;
@@ -933,6 +950,8 @@ public partial class World
     [StructuralChange]
     public void Remove<T>(in QueryDescription queryDescription)
     {
+        AssertionUtils.AssertNoChangedFilter(queryDescription);
+
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
@@ -1772,3 +1791,90 @@ public partial class World
 }
 
 #endregion
+
+#if CHANGED_FLAGS
+
+public partial class World
+{
+
+    /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged changed.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public bool IsChanged<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        return  entityData.Archetype.IsChanged(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Checks whether the component of an <see cref="Arch.Core.Entity"/> has been flagged changed.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public bool IsChanged(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        return entityData.Archetype.IsChanged(ref entityData.Slot, type);
+    }
+
+    /// <summary>
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as changed.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void MarkChanged<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.MarkChanged(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Flags the component of type an <see cref="Arch.Core.Entity"/> as changed.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public void MarkChanged(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.MarkChanged(ref entityData.Slot, type);
+    }
+
+    /// <summary>
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void ClearChanged<T>(Entity entity)
+    {
+        var componentType = Component<T>.ComponentType;
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearChanged(ref entityData.Slot, componentType);
+    }
+
+    /// <summary>
+    /// Clears the changed flag of the component of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="type">The component <see cref="ComponentType"/>.</param>
+    public void ClearChanged(Entity entity, ComponentType type)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearChanged(ref entityData.Slot, type);
+    }
+
+    /// <summary>
+    /// Clears the changed flag for all components of an <see cref="Arch.Core.Entity"/>.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    public void ClearChanged(Entity entity)
+    {
+        var entityData = EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.ClearChanged(ref entityData.Slot);
+    }
+}
+
+#endif
