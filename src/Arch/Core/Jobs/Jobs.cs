@@ -1,6 +1,7 @@
 using CommunityToolkit.HighPerformance;
 using Microsoft.Extensions.ObjectPool;
 using Schedulers;
+using Schedulers.Utils;
 
 namespace Arch.Core;
 
@@ -103,6 +104,11 @@ public readonly ref struct Range
 public interface IChunkJob
 {
     public void Execute(ref Chunk chunk);
+}
+
+public interface IParallelChunkJobProducer : IParallelJobProducer
+{
+    public void SetChunk(Chunk chunk);
 }
 
 /// <summary>

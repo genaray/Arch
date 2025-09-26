@@ -180,7 +180,6 @@ public partial class World : IDisposable
         QueryCache = new Dictionary<QueryDescription, Query>(archetypeCapacity);
 
         // Multithreading/Jobs.
-        JobHandles = new NetStandardList<JobHandle>(Environment.ProcessorCount);
         JobsCache = new List<IJob>(Environment.ProcessorCount);
 
         // Config
@@ -499,7 +498,6 @@ public partial class World : IDisposable
 
         // Clear
         RecycledIds.Clear();
-        JobHandles.Clear();
         GroupToArchetype.Clear();
         EntityInfo.Clear();
         QueryCache.Clear();
@@ -545,7 +543,6 @@ public partial class World : IDisposable
         world.Size = 0;
 
         // Dispose
-        world.JobHandles.Clear();
         world.GroupToArchetype.Clear();
         world.RecycledIds.Clear();
         world.QueryCache.Clear();

@@ -228,13 +228,7 @@ public partial class CommandBufferTest
     [OneTimeSetUp]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler(
-            new JobScheduler.Config{
-            ThreadPrefixName = "CommandBuffer",
-            ThreadCount = 0,
-            MaxExpectedConcurrentJobs = 64,
-            StrictAllocationMode = false,
-        });
+        _jobScheduler = new();
     }
 
     [OneTimeTearDown]
