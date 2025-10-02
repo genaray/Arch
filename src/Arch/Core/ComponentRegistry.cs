@@ -126,10 +126,9 @@ public static class ComponentRegistry
         }
 
         // Register and assign component id
-        var id = Size + 1;
-        meta = new ComponentType(id, typeSize);
+        meta = new ComponentType(Size, typeSize);
         _typeToComponentType.Add(type, meta);
-        _types = _types.Add(id, type);
+        _types = _types.Add(Size, type);
 
         Size++;
         return meta;
