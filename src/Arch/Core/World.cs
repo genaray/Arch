@@ -289,21 +289,9 @@ public partial class World : IDisposable
     [StructuralChange]
     public Entity Create(in Signature types)
     {
-        // Create new entity and put it to the back of the array
-        GetOrCreateEntityInternal(out var entity);
 
-        // Add to archetype & mapping
-        var archetype = GetOrCreate(in types);
-        var allocatedEntities = archetype.Add(entity, out _, out var slot);
-
-        // Resize map & Array to fit all potential new entities
-        Capacity += allocatedEntities;
-        EntityInfo.EnsureCapacity(Capacity);
-
-        // Add entity to info storage
-        EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
+        var entity = CreateNoEvent(types);
         OnEntityCreated(entity);
-
 #if EVENTS
         foreach (ref var type in types)
         {
@@ -313,6 +301,7 @@ public partial class World : IDisposable
 
         return entity;
     }
+
 
     /// <summary>
     ///     Moves an <see cref="Entity"/> from one <see cref="Archetype"/> <see cref="Slot"/> to another.
@@ -566,6 +555,62 @@ public partial class World : IDisposable
     public override string ToString()
     {
         return $"{GetType().Name} {{ {nameof(Id)} = {Id}, {nameof(Capacity)} = {Capacity}, {nameof(Size)} = {Size} }}";
+    }
+
+    /// <summary>
+    ///     Create a copy of the given entity.
+    /// </summary>
+    public Entity Duplicate(Entity sourceEntity)
+    {
+        Debug.Assert(IsAlive(sourceEntity));
+        Archetype archetype = GetArchetype(sourceEntity);
+        Entity destinationEntity = CreateNoEvent(archetype.Signature);
+        EntitySlot fromIndex = EntityInfo.GetEntitySlot(sourceEntity.Id);
+        EntitySlot destinationIndex = EntityInfo.GetEntitySlot(destinationEntity.Id);
+        ref Chunk fromChunk = ref archetype.GetChunk(fromIndex.Slot.ChunkIndex);
+        ref Chunk toChunk = ref archetype.GetChunk(destinationIndex.Slot.ChunkIndex);
+        for (int i = 0; i < fromChunk.Components.Length; ++i)
+        {
+            Array fromArray = fromChunk.Components[i];
+            Array toArray = toChunk.Components[i];
+            Array.Copy(fromArray, fromIndex.Slot.Index, toArray, destinationIndex.Slot.Index, 1);
+        }
+
+        OnEntityCreated(sourceEntity);
+#if EVENTS
+        foreach (var type in archetype.Types)
+        {
+            OnComponentAdded(sourceEntity, type);
+        }
+#endif
+
+        return destinationEntity;
+    }
+
+    /// <summary>
+    ///     Create n copies of the given entity.
+    /// </summary>
+    public void DuplicateN(Entity sourceEntity, int n, Span<Entity> outputSpan)
+    {
+        Debug.Assert(IsAlive(sourceEntity));
+        Debug.Assert(n > 0);
+        Debug.Assert(n <= outputSpan.Length);
+        // Note: this could be optimised by getting the chunks and using
+        // Array.Fill(), assuming we could guarantee writing to the end of the
+        // chunk.
+        for (int i = 0; i < n; ++i)
+        {
+            outputSpan[i] = Duplicate(sourceEntity);
+        }
+    }
+
+    /// <summary>
+    ///     Create n copies of the given entity, where n is outputSpan.Length.
+    /// </summary>
+    public void DuplicateN(Entity sourceEntity, Span<Entity> outputSpan)
+    {
+        Debug.Assert(IsAlive(sourceEntity));
+        DuplicateN(sourceEntity, outputSpan.Length, outputSpan);
     }
 }
 

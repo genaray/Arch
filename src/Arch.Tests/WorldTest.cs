@@ -932,3 +932,48 @@ public partial class WorldTest
         }
     }
 }
+
+
+/// <summary>
+/// Testing clone/duplicate methods
+/// </summary>
+public partial class WorldTest
+{
+
+   [Test]
+   public void Duplicate()
+   {
+        var transform = new Transform { X = 111, Y = 222 };
+        var entity = _world.Create(_entityGroup);
+        _world.Set(entity, transform);
+        var entity2 = _world.Duplicate(entity);
+        That(entity2.Id != entity.Id);
+        That(_world.IsAlive(entity2));
+        That(_world.GetArchetype(entity), Is.EqualTo(_world.GetArchetype(entity2)));
+        That(_world.Get<Transform>(entity).X, Is.EqualTo(_world.Get<Transform>(entity2).X));
+        That(_world.Get<Transform>(entity).Y, Is.EqualTo(_world.Get<Transform>(entity2).Y));
+    }
+
+    [Test]
+    public void DuplicateN()
+    {
+        var transform = new Transform { X = 111, Y = 222 };
+        var entity = _world.Create(_entityGroup);
+        _world.Set(entity, transform);
+        var entities = new Entity[2];
+        _world.DuplicateN(entity, entities.AsSpan());
+        var entity2 = entities[0];
+        var entity3 = entities[1];
+        That(entity2.Id != entity.Id);
+        That(_world.IsAlive(entity2));
+        That(_world.GetArchetype(entity), Is.EqualTo(_world.GetArchetype(entity2)));
+        That(_world.Get<Transform>(entity).X, Is.EqualTo(_world.Get<Transform>(entity2).X));
+        That(_world.Get<Transform>(entity).Y, Is.EqualTo(_world.Get<Transform>(entity2).Y));
+        That(entity3.Id != entity.Id);
+        That(_world.IsAlive(entity3));
+        That(_world.GetArchetype(entity), Is.EqualTo(_world.GetArchetype(entity3)));
+        That(_world.Get<Transform>(entity).X, Is.EqualTo(_world.Get<Transform>(entity3).X));
+        That(_world.Get<Transform>(entity).Y, Is.EqualTo(_world.Get<Transform>(entity3).Y));
+    } 
+}
+   
