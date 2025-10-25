@@ -145,7 +145,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
 public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>
 {
     /// <summary>
-    ///      It's Id, unique in its <see cref="World"/>.
+    ///      Its Id, unique in its <see cref="World"/>.
     /// </summary>
     public readonly int Id;
 
