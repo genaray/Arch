@@ -325,12 +325,12 @@ public partial class World
     ///     Calls all handlers subscribed to component setting of this type.
     /// </summary>
     /// <param name="entity">The entity that the component was set on.</param>
-    /// <param name="comp">The component instance that got set.</param>
+    /// <param name="compType">The type of component that got set.</param>
 
-    public void OnComponentSet(Entity entity, object comp)
+    public void OnComponentSet(Entity entity, ComponentType compType)
     {
 #if EVENTS
-        var events = GetEvents(comp.GetType());
+        var events = GetEvents(compType);
         if (events == null)
         {
             return;

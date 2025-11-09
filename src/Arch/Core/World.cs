@@ -1296,7 +1296,7 @@ public partial class World
     {
         var entitySlot = EntityInfo.GetEntityData(entity.Id);
         entitySlot.Archetype.Set(ref entitySlot.Slot, component);
-        OnComponentSet(entity, component);
+        OnComponentSet(entity, (ComponentType)component.GetType());
     }
 
     /// <summary>
@@ -1311,7 +1311,7 @@ public partial class World
         foreach (var cmp in components)
         {
             entitySlot.Archetype.Set(ref entitySlot.Slot, cmp);
-            OnComponentSet(entity, cmp);
+            OnComponentSet(entity, (ComponentType)cmp.GetType());
         }
     }
 
