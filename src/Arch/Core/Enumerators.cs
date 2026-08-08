@@ -171,7 +171,7 @@ public readonly ref struct QueryArchetypeIterator
 ///     represents an enumerator with which one can iterate over all non empty <see cref="Chunk"/>'s that matches the given <see cref="Query"/>.
 /// </summary>
 [SkipLocalsInit]
-public ref struct QueryChunkEnumerator
+public ref partial struct QueryChunkEnumerator
 {
     private QueryArchetypeEnumerator _archetypeEnumerator;
     private int _index;
@@ -538,4 +538,3 @@ public readonly ref struct RangePartitioner
         return new RangeEnumerator(_threads, _size);
     }
 }
-

@@ -38,15 +38,7 @@ internal static class ComponentTypeExtensions
     internal static int[] ToLookupArray(this Span<ComponentType> types)
     {
         // Get maximum component ID.
-        var max = 0;
-        foreach (var type in types)
-        {
-            var componentId = type.Id;
-            if (componentId >= max)
-            {
-                max = componentId;
-            }
-        }
+        var max = GetMaxValue(types);
 
         // Create lookup table where the component ID points to the component index.
         var array = new int[max + 1];
@@ -60,5 +52,21 @@ internal static class ComponentTypeExtensions
         }
 
         return array;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int GetMaxValue(Span<ComponentType> types)
+    {
+        var max = 0;
+        foreach (var type in types)
+        {
+            var componentId = type.Id;
+            if (componentId >= max)
+            {
+                max = componentId;
+            }
+        }
+
+        return max;
     }
 }

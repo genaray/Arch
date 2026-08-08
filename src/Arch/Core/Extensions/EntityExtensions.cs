@@ -359,3 +359,60 @@ public static partial class EntityExtensions
 
 #endif
 }
+
+public static partial class EntityExtensions
+{
+
+#if CHANGED_FLAGS && !PURE_ECS
+
+    /// <inheritdoc cref="World.IsChanged&lt;T&gt;(Entity)"/>
+    public static bool IsChanged<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        return world.IsChanged<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.IsChanged(Entity, ComponentType)"/>
+    public static bool IsChanged(this Entity entity, ComponentType type)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        return world.IsChanged(entity, type);
+    }
+
+    /// <inheritdoc cref="World.Markchanged&lt;T&gt;(Entity)"/>
+    public static void Markchanged<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.Markchanged<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.Markchanged(Entity, ComponentType)"/>
+    public static void Markchanged(this Entity entity, ComponentType componentType)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.Markchanged(entity, componentType);
+    }
+
+    /// <inheritdoc cref="World.ClearChanged&lt;T&gt;(Entity)"/>
+    public static void ClearChanged<T>(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearChanged<T>(entity);
+    }
+
+    /// <inheritdoc cref="World.ClearChanged(Entity, ComponentType)"/>
+    public static void ClearChanged(this Entity entity, ComponentType componentType)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearChanged(entity, componentType);
+    }
+
+    /// <inheritdoc cref="World.ClearChanged(Entity)"/>
+    public static void ClearChanged(this Entity entity)
+    {
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
+        world.ClearChanged(entity);
+    }
+
+#endif
+}
