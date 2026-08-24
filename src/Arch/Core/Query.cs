@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
@@ -569,6 +570,22 @@ public partial class Query : IEquatable<Query>
         }
 
         _queryDescription = description;
+    }
+
+    /// <summary>
+    ///     Counts all <see cref="Entity"/>s that match this query.
+    /// </summary>
+    [Pure]
+    public int CountEntities()
+    {
+        var counter = 0;
+        foreach (var archetype in GetArchetypeIterator())
+        {
+            var entities = archetype.EntityCount;
+            counter += entities;
+        }
+
+        return counter;
     }
 
     /// <summary>

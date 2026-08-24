@@ -410,17 +410,30 @@ public partial class World : IDisposable
     [Pure]
     public Query Query(in QueryDescription queryDescription)
     {
-        // Looping over all archetypes, their chunks and their entities.
-        var queryCache = QueryCache; // Storing locally to only access the QueryCache once
+        var queryCache = QueryCache; // Store locally to only access the field once
+
+        #if NET6_0_OR_GREATER
+        ref var queryRef = ref CollectionsMarshal.GetValueRefOrAddDefault(queryCache, queryDescription, out bool exists);
+        if (exists)
+        {
+            return queryRef!;
+        }
+        else
+        {
+            var newQuery = new Query(Archetypes, queryDescription);
+            queryRef = newQuery;
+            return newQuery;
+        }
+        #else
         if (queryCache.TryGetValue(queryDescription, out var query))
         {
             return query;
         }
 
         query = new Query(Archetypes, queryDescription);
-        queryCache[queryDescription] = query;
-
+        queryCache.Add(queryDescription, query);
         return query;
+        #endif
     }
 
     /// <summary>
