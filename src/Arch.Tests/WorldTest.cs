@@ -952,3 +952,191 @@ public partial class WorldTest
         }
     }
 }
+
+
+// Structural safety checks: adding a component an entity already has, or removing one it
+// does not, keeps the source archetype. Such an operation must not move the entity within
+// the same archetype — that duplicated it into a second slot and silently corrupted its
+// siblings. It now throws instead, and the world is left untouched.
+public partial class WorldTest
+{
+    /// <summary>
+    ///     Removing a component an <see cref="Entity"/> does not have throws instead of
+    ///     silently corrupting sibling data, and leaves every entity untouched.
+    /// </summary>
+    [Test]
+    public void RemoveNonExistentComponentThrows()
+    {
+        var world = World.Create();
+
+        var first = world.Create(_entityGroup);
+        var second = world.Create(_entityGroup);
+        world.Set(first, new Transform { X = 1, Y = 1 });
+        world.Set(second, new Transform { X = 2, Y = 2 });
+
+        // Ai is present on neither entity.
+        Throws<InvalidOperationException>(() => world.Remove<Ai>(first));
+
+        // The world is untouched: no entity was moved and no sibling data was corrupted.
+        True(world.Has<Transform>(first));
+        True(world.Has<Transform>(second));
+        That(world.Get<Transform>(first).X, Is.EqualTo(1));
+        That(world.Get<Transform>(second).X, Is.EqualTo(2));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     Adding a component an <see cref="Entity"/> already has throws instead of silently
+    ///     corrupting sibling data. Same corruption path as
+    ///     <see cref="RemoveNonExistentComponentThrows"/>.
+    /// </summary>
+    [Test]
+    public void AddExistingComponentThrows()
+    {
+        var world = World.Create();
+
+        var first = world.Create(_entityGroup);
+        var second = world.Create(_entityGroup);
+        world.Set(first, new Transform { X = 1, Y = 1 });
+        world.Set(second, new Transform { X = 2, Y = 2 });
+
+        // Transform is already present on both entities.
+        Throws<InvalidOperationException>(() => world.Add<Transform>(first));
+
+        That(world.Get<Transform>(first).X, Is.EqualTo(1));
+        That(world.Get<Transform>(second).X, Is.EqualTo(2));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     The non-generic <see cref="World.Remove(Entity, ComponentType)"/> also throws when
+    ///     the component is absent.
+    /// </summary>
+    [Test]
+    public void RemoveNonExistentComponentNonGenericThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);
+        Throws<InvalidOperationException>(() => world.Remove(entity, typeof(Ai)));
+
+        True(world.Has<Transform>(entity));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     Removing an empty span of components is a legitimate no-op and must not throw or
+    ///     move the entity within its archetype (see genaray/Arch#253).
+    /// </summary>
+    [Test]
+    public void RemoveRangeEmptyIsNoOp()
+    {
+        var world = World.Create();
+
+        var first = world.Create(_entityGroup);
+        var second = world.Create(_entityGroup);
+        world.Set(first, new Transform { X = 1, Y = 1 });
+        world.Set(second, new Transform { X = 2, Y = 2 });
+
+        DoesNotThrow(() => world.RemoveRange(first, Span<ComponentType>.Empty));
+
+        That(world.Get<Transform>(first).X, Is.EqualTo(1));
+        That(world.Get<Transform>(second).X, Is.EqualTo(2));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     The non-generic <see cref="World.Add(Entity, in object)"/> also throws when the
+    ///     component is already present.
+    /// </summary>
+    [Test]
+    public void AddExistingComponentNonGenericThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);   // already has Transform
+        Throws<InvalidOperationException>(() => world.Add(entity, (object)new Transform()));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     The source-generated variadic <c>Add&lt;T0, T1&gt;</c> throws when every component is
+    ///     already present (it funnels through the same guarded move).
+    /// </summary>
+    [Test]
+    public void AddExistingComponentsGeneratedThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);   // already has Transform and Rotation
+        Throws<InvalidOperationException>(() => world.Add<Transform, Rotation>(entity));
+
+        World.Destroy(world);
+    }
+
+#if !EVENTS
+    /// <summary>
+    ///     The source-generated variadic <c>Remove&lt;T0, T1&gt;</c> throws when none of the
+    ///     components are present.
+    ///
+    ///     Excluded under EVENTS: the generated remove fires
+    ///     <c>OnComponentRemoved&lt;T&gt;(entity)</c> before <c>Move</c>, and that hook reads
+    ///     the removed value via <c>Get&lt;T&gt;(entity)</c> unconditionally — on an entity
+    ///     that does not have the component this is the pre-existing Get-of-absent hazard
+    ///     (the other half of #216) and crashes with an AccessViolation before this guard
+    ///     is ever reached. Reproducible on master without this change.
+    /// </summary>
+    [Test]
+    public void RemoveNonExistentComponentsGeneratedThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);   // has neither Ai nor int
+        Throws<InvalidOperationException>(() => world.Remove<Ai, int>(entity));
+
+        True(world.Has<Transform>(entity));
+
+        World.Destroy(world);
+    }
+#endif
+
+    /// <summary>
+    ///     <see cref="World.AddRange(Entity, Span{object})"/> throws when the components are
+    ///     already present.
+    /// </summary>
+    [Test]
+    public void AddRangeExistingComponentsThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);   // already has Transform
+        var components = new object[] { new Transform() };
+        Throws<InvalidOperationException>(() => world.AddRange(entity, components));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     Adding an empty span of components is a legitimate no-op and must not throw, for
+    ///     both the object and <see cref="ComponentType"/> overloads.
+    /// </summary>
+    [Test]
+    public void AddRangeEmptyIsNoOp()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_entityGroup);
+        DoesNotThrow(() => world.AddRange(entity, Span<object>.Empty));
+        DoesNotThrow(() => world.AddRange(entity, Span<ComponentType>.Empty));
+
+        True(world.Has<Transform>(entity));
+        True(world.Has<Rotation>(entity));
+
+        World.Destroy(world);
+    }
+}

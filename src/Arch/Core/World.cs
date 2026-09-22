@@ -350,8 +350,15 @@ public partial class World : IDisposable
         // Entity should match the supplied EntityData.
         Debug.Assert(entity == data.Archetype.Entity(ref data.Slot));
 
-        // A common mistake, happening in many cases.
-        Debug.Assert(source != destination, "From-Archetype is the same as the To-Archetype. Entities cannot move within the same archetype using this function. Probably an attempt was made to attach already existing components to the entity or to remove non-existing ones.");
+        // A same-archetype move duplicates the entity into a second slot and corrupts a
+        // sibling's data. Guarded at runtime because the old Debug.Assert vanished in Release.
+        if (source == destination)
+        {
+            throw new InvalidOperationException(
+                "The operation would move the entity within the same archetype, which is not allowed. " +
+                "This happens when a component is added to an entity that already has it, or removed from " +
+                "one that does not. Check with Has<T>() before adding or removing the component.");
+        }
 
         // Copy entity to other archetype
         var slot = data.Slot;
@@ -1502,6 +1509,12 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<object> components)
     {
+        // Adding no components changes nothing and must not attempt a same-archetype move.
+        if (components.Length == 0)
+        {
+            return;
+        }
+
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
@@ -1552,6 +1565,12 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<ComponentType> components)
     {
+        // Adding no components changes nothing and must not attempt a same-archetype move.
+        if (components.Length == 0)
+        {
+            return;
+        }
+
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
@@ -1627,6 +1646,12 @@ public partial class World
     [StructuralChange]
     public void RemoveRange(Entity entity, Span<ComponentType> types)
     {
+        // Removing no components changes nothing and must not attempt a same-archetype move.
+        if (types.Length == 0)
+        {
+            return;
+        }
+
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
