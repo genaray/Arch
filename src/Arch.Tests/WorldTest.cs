@@ -352,6 +352,7 @@ public sealed partial class WorldTest
         });
 
         // Trim
+        var recycledIds = world.RecycledIds.ToArray();
         world.TrimExcess();
 
         var archetype = world.Archetypes[0];
@@ -360,9 +361,12 @@ public sealed partial class WorldTest
         That(archetype.ChunkCount, Is.EqualTo(1));
         That(archetype.ChunkCapacity, Is.EqualTo(1));
 
-        // Recycled ids must be trimmed too so that the newest created entity is not out of bounds!
-        world.RecycledIds.TryPeek(out var entityId);
-        That(entityId.Id, Is.EqualTo(world.Capacity - 1));
+        // Preserve recycled IDs and safely restore metadata for a high ID on reuse.
+        That(world.RecycledIds, Is.EqualTo(recycledIds));
+        var created = world.Create<HeavyComponent>();
+        That(created.Id, Is.EqualTo(recycledIds[0].Id));
+        That(created.Version, Is.EqualTo(recycledIds[0].Version));
+        That(world.IsAlive(created), Is.True);
     }
 
     /// <summary>
