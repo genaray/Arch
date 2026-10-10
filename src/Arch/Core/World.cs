@@ -267,6 +267,13 @@ public partial class World : IDisposable
     {
         var recycle = RecycledIds.TryDequeue(out var recycledId);
         var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
+
+        // Recycled IDs can exceed the metadata capacity after TrimExcess.
+        if (recycled.Id >= EntityInfo.EntityData.Capacity)
+        {
+            EntityInfo.EnsureCapacity(recycled.Id + 1);
+        }
+
         entity = new Entity(recycled.Id, Id, recycled.Version);
         Size++;
     }
@@ -748,11 +755,8 @@ public partial class World
             Capacity += archetype.EntityCapacity;
         }
 
-        // Traverse recycled ids and remove all that are higher than the current capacity.
-        // If we do not do this, a new entity might get a id higher than the entityinfo array which causes it to go out of bounds.
-        RecycledIds = new Queue<RecycledEntity>(
-            RecycledIds.Where(entity => entity.Id < Capacity)
-        );
+        // Keep every recycled ID and version so that fresh IDs cannot collide with live entities.
+        RecycledIds.TrimExcess();
     }
 }
 
