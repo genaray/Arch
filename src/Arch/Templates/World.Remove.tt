@@ -38,7 +38,7 @@ public partial class World
         var spanBitSet = new SpanBitSet(stack);
 <#= removes.ToString() #>
 
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype)){
+        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
             var newSignature = Signature.Remove(oldArchetype.Signature, Component<<#= generics #>>.Signature);
             newArchetype = GetOrCreate(newSignature);
         }

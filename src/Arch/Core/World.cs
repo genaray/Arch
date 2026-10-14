@@ -655,8 +655,7 @@ public partial class World
     /// <returns>An existing or new <see cref="Archetype"/>.</returns>
     internal Archetype GetOrCreate(in Signature signature)
     {
-        var hashCode = signature.GetHashCode();
-        if (TryGetArchetype(hashCode, out var archetype))
+        if (TryGetArchetype(signature, out var archetype))
         {
             return archetype;
         }
@@ -664,7 +663,7 @@ public partial class World
         // Create archetype
         archetype = new Archetype(signature, BaseChunkSize, BaseChunkEntityCount);
 
-        GroupToArchetype[hashCode] = archetype;
+        AddToHashGroup(signature.GetHashCode(), archetype);
         Archetypes.Add(archetype);
 
         // Archetypes always allocate one single chunk upon construction
@@ -675,15 +674,41 @@ public partial class World
     }
 
     /// <summary>
-    ///     Tries to find an <see cref="Archetype"/> by the hash of its components.
+    ///     Tries to find an <see cref="Archetype"/> by its hash, then by its exact bits among those sharing the hash.
     /// </summary>
     /// <param name="hash">Its hash.</param>
+    /// <param name="bits">Its component bits.</param>
     /// <param name="archetype">The found <see cref="Archetype"/>.</param>
     /// <returns>True if found, otherwise false.</returns>
     [Pure]
-    internal bool TryGetArchetype(int hash, [MaybeNullWhen(false)] out Archetype archetype)
+    private bool TryGetArchetype(int hash, Span<uint> bits, [MaybeNullWhen(false)] out Archetype archetype)
     {
-        return GroupToArchetype.TryGetValue(hash, out archetype);
+        GroupToArchetype.TryGetValue(hash, out var candidate);
+        while (candidate != null)
+        {
+            if (BitSet.SameBits(candidate.BitSet.AsSpan(), bits))
+            {
+                archetype = candidate;
+                return true;
+            }
+
+            candidate = candidate.NextWithSameHash;
+        }
+
+        archetype = null;
+        return false;
+    }
+
+    /// <summary>
+    ///     Tries to find an <see cref="Archetype"/> by its component bits.
+    /// </summary>
+    /// <param name="spanBitSet">Its component bits.</param>
+    /// <param name="archetype">The found <see cref="Archetype"/>.</param>
+    /// <returns>True if found, otherwise false.</returns>
+    [Pure]
+    internal bool TryGetArchetype(SpanBitSet spanBitSet, [MaybeNullWhen(false)] out Archetype archetype)
+    {
+        return TryGetArchetype(spanBitSet.GetHashCode(), spanBitSet.AsSpan(), out archetype);
     }
 
     /// <summary>
@@ -695,7 +720,66 @@ public partial class World
     [Pure]
     public bool TryGetArchetype(in Signature signature, [MaybeNullWhen(false)] out Archetype archetype)
     {
-        return TryGetArchetype(signature.GetHashCode(), out archetype);
+        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        stack.Clear();
+        var spanBitSet = new SpanBitSet(stack);
+        foreach (var type in signature)
+        {
+            spanBitSet.SetBit(type.Id);
+        }
+
+        return TryGetArchetype(signature.GetHashCode(), stack, out archetype);
+    }
+
+    /// <summary>
+    ///     Registers an <see cref="Archetype"/> under its hash, keeping others with the same hash reachable.
+    /// </summary>
+    /// <param name="hash">The hash of its <see cref="Signature"/>.</param>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    internal void AddToHashGroup(int hash, Archetype archetype)
+    {
+        GroupToArchetype.TryGetValue(hash, out var head);
+        archetype.NextWithSameHash = head;
+        GroupToArchetype[hash] = archetype;
+    }
+
+    /// <summary>
+    ///     Unregisters an <see cref="Archetype"/> from its hash, keeping others with the same hash reachable.
+    /// </summary>
+    /// <param name="hash">The hash of its <see cref="Signature"/>.</param>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    private void RemoveFromHashGroup(int hash, Archetype archetype)
+    {
+        if (!GroupToArchetype.TryGetValue(hash, out var current))
+        {
+            return;
+        }
+
+        if (current == archetype)
+        {
+            if (archetype.NextWithSameHash is { } next)
+            {
+                GroupToArchetype[hash] = next;
+            }
+            else
+            {
+                GroupToArchetype.Remove(hash);
+            }
+        }
+        else
+        {
+            while (current.NextWithSameHash is { } next && next != archetype)
+            {
+                current = next;
+            }
+
+            if (current.NextWithSameHash == archetype)
+            {
+                current.NextWithSameHash = archetype.NextWithSameHash;
+            }
+        }
+
+        archetype.NextWithSameHash = null;
     }
 
     /// <summary>
@@ -706,7 +790,7 @@ public partial class World
     {
         var hash = Component.GetHashCode(archetype.Signature);
         Archetypes.Remove(archetype);
-        GroupToArchetype.Remove(hash);
+        RemoveFromHashGroup(hash, archetype);
 
         // Remove archetype from other archetypes edges.
         foreach (var otherArchetype in this)
@@ -930,7 +1014,7 @@ public partial class World
             spanBitSet.SetBit(Component<T>.ComponentType.Id);
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -987,7 +1071,7 @@ public partial class World
             spanBitSet.ClearBit(Component<T>.ComponentType.Id);
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Remove(archetype.Signature, Component<T>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1518,7 +1602,7 @@ public partial class World
         }
 
         // Get existing or new archetype
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        if (!TryGetArchetype(spanBitSet, out var newArchetype))
         {
             var newComponents = new ComponentType[components.Length];
             for (var index = 0; index < components.Length; index++)
@@ -1567,7 +1651,7 @@ public partial class World
             spanBitSet.SetBit(type.Id);
         }
 
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        if (!TryGetArchetype(spanBitSet, out var newArchetype))
         {
             var newSignature = Signature.Add(oldArchetype.Signature, components.ToArray());
             newArchetype = GetOrCreate(newSignature);
@@ -1605,7 +1689,7 @@ public partial class World
         var spanBitSet = new SpanBitSet(stack);
         spanBitSet.ClearBit(type.Id);
 
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        if (!TryGetArchetype(spanBitSet, out var newArchetype))
         {
             var newSignature = Signature.Remove(oldArchetype.Signature,type);
             newArchetype = GetOrCreate(newSignature);
@@ -1643,7 +1727,7 @@ public partial class World
         }
 
         // Get or Create new archetype
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        if (!TryGetArchetype(spanBitSet, out var newArchetype))
         {
             var newSignature = Signature.Remove(oldArchetype.Signature, types);
             newArchetype = GetOrCreate(newSignature);

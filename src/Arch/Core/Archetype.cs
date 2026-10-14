@@ -322,6 +322,11 @@ public sealed partial class Archetype
     public BitSet BitSet {  get; }
 
     /// <summary>
+    ///     The next <see cref="Archetype"/> in the <see cref="World"/> whose <see cref="Signature"/> has the same hash.
+    /// </summary>
+    internal Archetype? NextWithSameHash { get; set; }
+
+    /// <summary>
     ///     The lookup array used by this <see cref="Archetype"/>, is being passed to all its <see cref="Chunks"/> to save memory.
     /// </summary>
     internal int[] LookupArray

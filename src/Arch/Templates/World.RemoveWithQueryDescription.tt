@@ -46,7 +46,7 @@ public partial class World
             <#= Indent(clearIds, 12) #>
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Remove(archetype.Signature, Component<<#= generics #>>.Signature);
                 newArchetype = GetOrCreate(newSignature);

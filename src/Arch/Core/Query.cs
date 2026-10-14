@@ -108,7 +108,28 @@ public struct Signature : IEquatable<Signature>
     /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public bool Equals(Signature other)
     {
-        return GetHashCode() == other.GetHashCode();
+        if (GetHashCode() != other.GetHashCode())
+        {
+            return false;
+        }
+
+        Span<uint> bits = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
+        Span<uint> otherBits = stackalloc uint[bits.Length];
+        bits.Clear();
+        otherBits.Clear();
+        var spanBitSet = new SpanBitSet(bits);
+        var otherSpanBitSet = new SpanBitSet(otherBits);
+        foreach (var type in Components)
+        {
+            spanBitSet.SetBit(type.Id);
+        }
+
+        foreach (var type in other.Components)
+        {
+            otherSpanBitSet.SetBit(type.Id);
+        }
+
+        return bits.SequenceEqual(otherBits);
     }
 
     /// <summary>
@@ -451,7 +472,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 
     public bool Equals(QueryDescription other)
     {
-        return GetHashCode() == other.GetHashCode();
+        return GetHashCode() == other.GetHashCode() && All.Equals(other.All) && Any.Equals(other.Any) && None.Equals(other.None) && Exclusive.Equals(other.Exclusive);
     }
 
     /// <summary>
