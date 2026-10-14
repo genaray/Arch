@@ -832,11 +832,8 @@ public partial class World
             Capacity += archetype.EntityCapacity;
         }
 
-        // Traverse recycled ids and remove all that are higher than the current capacity.
-        // If we do not do this, a new entity might get a id higher than the entityinfo array which causes it to go out of bounds.
-        RecycledIds = new Queue<RecycledEntity>(
-            RecycledIds.Where(entity => entity.Id < Capacity)
-        );
+        // Keep every recycled id, since a new id comes from Size and a dropped one would reuse a live id
+        EntityInfo.EnsureCapacity(Size + RecycledIds.Count);
     }
 }
 
