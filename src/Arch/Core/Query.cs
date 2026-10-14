@@ -108,28 +108,40 @@ public struct Signature : IEquatable<Signature>
     /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public bool Equals(Signature other)
     {
+        if (ReferenceEquals(ComponentsArray, other.ComponentsArray))
+        {
+            return true;
+        }
+
         if (GetHashCode() != other.GetHashCode())
         {
             return false;
         }
 
-        Span<uint> bits = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        Span<uint> otherBits = stackalloc uint[bits.Length];
-        bits.Clear();
-        otherBits.Clear();
-        var spanBitSet = new SpanBitSet(bits);
-        var otherSpanBitSet = new SpanBitSet(otherBits);
-        foreach (var type in Components)
+        return ContainsAll(Components, other.Components) && ContainsAll(other.Components, Components);
+    }
+
+    private static bool ContainsAll(Span<ComponentType> set, Span<ComponentType> items)
+    {
+        foreach (var item in items)
         {
-            spanBitSet.SetBit(type.Id);
+            var found = false;
+            foreach (var type in set)
+            {
+                if (type.Id == item.Id)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
         }
 
-        foreach (var type in other.Components)
-        {
-            otherSpanBitSet.SetBit(type.Id);
-        }
-
-        return bits.SequenceEqual(otherBits);
+        return true;
     }
 
     /// <summary>

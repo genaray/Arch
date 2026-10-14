@@ -720,15 +720,20 @@ public partial class World
     [Pure]
     public bool TryGetArchetype(in Signature signature, [MaybeNullWhen(false)] out Archetype archetype)
     {
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        stack.Clear();
-        var spanBitSet = new SpanBitSet(stack);
-        foreach (var type in signature)
+        GroupToArchetype.TryGetValue(signature.GetHashCode(), out var candidate);
+        while (candidate != null)
         {
-            spanBitSet.SetBit(type.Id);
+            if (candidate.Signature.Equals(signature))
+            {
+                archetype = candidate;
+                return true;
+            }
+
+            candidate = candidate.NextWithSameHash;
         }
 
-        return TryGetArchetype(signature.GetHashCode(), stack, out archetype);
+        archetype = null;
+        return false;
     }
 
     /// <summary>
