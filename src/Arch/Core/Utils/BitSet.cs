@@ -441,6 +441,37 @@ public sealed class BitSet
     }
 
     /// <summary>
+    ///     Checks whether two bit spans have the same bits set, ignoring trailing zero words.
+    /// </summary>
+    /// <param name="first">The first span.</param>
+    /// <param name="second">The second span.</param>
+    /// <returns>True if both have exactly the same bits set, otherwise false.</returns>
+    public static bool SameBits(Span<uint> first, Span<uint> second)
+    {
+        if (first.Length > second.Length)
+        {
+            var swap = first;
+            first = second;
+            second = swap;
+        }
+
+        if (!first.SequenceEqual(second[..first.Length]))
+        {
+            return false;
+        }
+
+        for (var index = first.Length; index < second.Length; index++)
+        {
+            if (second[index] != 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     ///     Prints the content of this instance.
     /// </summary>
     /// <returns>The string.</returns>

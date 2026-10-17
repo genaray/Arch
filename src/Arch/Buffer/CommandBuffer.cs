@@ -480,7 +480,7 @@ public sealed partial class CommandBuffer
             spanBitSet.SetBit(type.Id);
         }
 
-        if (!world.TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+        if (!world.TryGetArchetype(spanBitSet, out var newArchetype))
         {
             var newSignature = Signature.Add(oldArchetype.Signature, components);
             newArchetype = world.GetOrCreate(newSignature);

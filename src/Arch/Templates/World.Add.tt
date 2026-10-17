@@ -46,7 +46,7 @@ public partial class World
         var spanBitSet = new SpanBitSet(stack);
         <#= Indent(setIds, 8) #>
 
-        if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype)){
+        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
             var newSignature = Signature.Add(oldArchetype.Signature, Component<<#= generics #>>.Signature);
             newArchetype = GetOrCreate(newSignature);
         }

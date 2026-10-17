@@ -33,7 +33,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -86,7 +86,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -141,7 +141,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -198,7 +198,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -257,7 +257,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -318,7 +318,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -381,7 +381,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -446,7 +446,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -513,7 +513,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -582,7 +582,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -653,7 +653,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -726,7 +726,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -801,7 +801,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -878,7 +878,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -957,7 +957,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1038,7 +1038,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1121,7 +1121,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1206,7 +1206,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1293,7 +1293,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1382,7 +1382,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1473,7 +1473,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1566,7 +1566,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1661,7 +1661,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature);
                 newArchetype = GetOrCreate(newSignature);
@@ -1758,7 +1758,7 @@ public partial class World
 
 
             // Get or create new archetype.
-            if (!TryGetArchetype(spanBitSet.GetHashCode(), out var newArchetype))
+            if (!TryGetArchetype(spanBitSet, out var newArchetype))
             {
                 var newSignature = Signature.Add(archetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>.Signature);
                 newArchetype = GetOrCreate(newSignature);

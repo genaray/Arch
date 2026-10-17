@@ -360,9 +360,45 @@ public sealed partial class WorldTest
         That(archetype.ChunkCount, Is.EqualTo(1));
         That(archetype.ChunkCapacity, Is.EqualTo(1));
 
-        // Recycled ids must be trimmed too so that the newest created entity is not out of bounds!
-        world.RecycledIds.TryPeek(out var entityId);
-        That(entityId.Id, Is.EqualTo(world.Capacity - 1));
+        That(world.RecycledIds.Count, Is.EqualTo(amount - 1));
+    }
+
+    /// <summary>
+    ///     Checks that entities created after <see cref="World.TrimExcess"/> never reuse the id of a live <see cref="Entity"/>.
+    /// </summary>
+    [Test]
+    public void TrimExcessKeepsLiveIds()
+    {
+        using var world = World.Create();
+        var entities = new List<Entity>();
+        for (var index = 0; index < 10_000; index++)
+        {
+            entities.Add(world.Create(index));
+        }
+
+        var survivors = entities.Skip(9_990).ToList();
+        foreach (var entity in entities.Take(9_990))
+        {
+            world.Destroy(entity);
+        }
+
+        world.TrimExcess();
+
+        var created = new List<Entity>();
+        for (var index = 0; index < 10_000; index++)
+        {
+            created.Add(world.Create(-1));
+        }
+
+        for (var index = 0; index < survivors.Count; index++)
+        {
+            That(world.IsAlive(survivors[index]), Is.True);
+            That(world.Get<int>(survivors[index]), Is.EqualTo(9_990 + index));
+        }
+
+        That(created.Select(entity => entity.Id).Distinct().Count(), Is.EqualTo(created.Count));
+        That(created.Select(entity => entity.Id).Intersect(survivors.Select(entity => entity.Id)), Is.Empty);
+        That(created.All(entity => world.Get<int>(entity) == -1), Is.True);
     }
 
     /// <summary>

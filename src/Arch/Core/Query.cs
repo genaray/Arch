@@ -108,7 +108,40 @@ public struct Signature : IEquatable<Signature>
     /// <returns>True if elements of the arrays are equal, otherwise false.</returns>
     public bool Equals(Signature other)
     {
-        return GetHashCode() == other.GetHashCode();
+        if (ReferenceEquals(ComponentsArray, other.ComponentsArray))
+        {
+            return true;
+        }
+
+        if (GetHashCode() != other.GetHashCode())
+        {
+            return false;
+        }
+
+        return ContainsAll(Components, other.Components) && ContainsAll(other.Components, Components);
+    }
+
+    private static bool ContainsAll(Span<ComponentType> set, Span<ComponentType> items)
+    {
+        foreach (var item in items)
+        {
+            var found = false;
+            foreach (var type in set)
+            {
+                if (type.Id == item.Id)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -451,7 +484,7 @@ public partial struct QueryDescription : IEquatable<QueryDescription>
 
     public bool Equals(QueryDescription other)
     {
-        return GetHashCode() == other.GetHashCode();
+        return GetHashCode() == other.GetHashCode() && All.Equals(other.All) && Any.Equals(other.Any) && None.Equals(other.None) && Exclusive.Equals(other.Exclusive);
     }
 
     /// <summary>
