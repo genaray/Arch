@@ -276,6 +276,10 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <remarks>
     ///     This operation should only happen on the main thread.
+    ///     Playback is not atomic: commands are applied in phases with no rollback, so an
+    ///     invalid command (e.g. adding a component an entity already has or removing one it
+    ///     does not) throws mid-playback and leaves earlier phases applied. Do not reuse a
+    ///     buffer whose playback threw.
     /// </remarks>
     /// <param name="world">The <see cref="World"/> where the commands will be playbacked too.</param>
     /// <param name="dispose">If true it will clear the recorded operations after they were playbacked, if not they will stay.</param>
