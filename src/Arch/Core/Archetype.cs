@@ -274,7 +274,7 @@ public sealed partial class Archetype
     /// <param name="baseChunkEntityCount">The minimum amount of entities per <see cref="Chunk"/>.</param>
     internal Archetype(Signature signature, int baseChunkSize, int baseChunkEntityCount)
     {
-        Signature = signature;
+
         BaseChunkSize = baseChunkSize;
 
         // Calculations
@@ -294,7 +294,6 @@ public sealed partial class Archetype
     }
 
     /// <summary>
-    ///     The component types that the <see cref="Arch.Core.Entity"/>'s stored here have.
     ///     The base size of a <see cref="Chunk"/> within the <see cref="Chunks"/> in KB.
     ///     All <see cref="Chunk"/>s will have a minimum of this size. The actual size is <see cref="ChunkSize"/>.
     /// </summary>
