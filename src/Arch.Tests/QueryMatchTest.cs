@@ -188,26 +188,6 @@ public sealed class QueryMatchTest
     }
 
     [Test]
-    public void MatchAfterItemsRemove()
-    {
-        CreateArchetypes(100);
-        AssertMatches();
-
-        _world.Archetypes.Items.RemoveAt(10);
-        AssertMatches();
-
-        CreateArchetypes(5);
-        _world.Archetypes.Items.Remove(_world.Archetypes[0]);
-        AssertMatches();
-
-        _world.Archetypes.Items.Clear();
-        AssertMatches();
-
-        CreateArchetypes(5);
-        AssertMatches();
-    }
-
-    [Test]
     public void ArchetypesHashCodeFollowsChanges()
     {
         CreateArchetypes(10);

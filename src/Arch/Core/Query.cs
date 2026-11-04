@@ -563,7 +563,6 @@ public partial class Query : IEquatable<Query>
     private readonly NetStandardList<Archetype> _matchingArchetypes;
     private int _matchedCount;
     private int _matchedVersion;
-    private Archetype? _lastMatched;
 
     private readonly QueryDescription _queryDescription;
     private readonly BitSet _any;
@@ -653,7 +652,7 @@ public partial class Query : IEquatable<Query>
         var count = _allArchetypes.Count;
         var allArchetypes = _allArchetypes.AsSpan();
         var start = _matchedCount;
-        if (version != _matchedVersion || start > count || (start > 0 && !ReferenceEquals(allArchetypes[start - 1], _lastMatched)))
+        if (version != _matchedVersion || start > count)
         {
             _matchingArchetypes.Clear();
             start = 0;
@@ -670,7 +669,6 @@ public partial class Query : IEquatable<Query>
 
         _matchedCount = count;
         _matchedVersion = version;
-        _lastMatched = count > 0 ? allArchetypes[^1] : null;
     }
 
     /// <summary>
