@@ -116,8 +116,8 @@ public record struct Slot
 
 /// <summary>
 ///     The <see cref="Archetypes"/> struct
-///     Contains a list of archetypes with a cached hash that only changes when a new one is added or removed.
-///     This means that others can use the hash to determine whether there has been a change.
+///     Contains a list of archetypes and a <see cref="Version"/> that changes on any mutation other than an append.
+///     This means that others can test only the archetypes appended since they last looked.
 /// </summary>
 public class Archetypes : IDisposable
 {
@@ -153,25 +153,28 @@ public class Archetypes : IDisposable
     }
 
     /// <summary>
-    ///     Adds a new <see cref="Archetype"/> to the list and updates the <see cref="_hashCode"/>.
+    ///     Changes on any mutation of this instance other than an append.
+    /// </summary>
+    internal int Version { get; private set; }
+
+    /// <summary>
+    ///     Adds a new <see cref="Archetype"/> to the list and invalidates the <see cref="_hashCode"/>.
     /// </summary>
     /// <param name="archetype">The new <see cref="Archetype"/>.</param>
     public void Add(Archetype archetype)
     {
         Items.Add(archetype);
         _hashCode = -1;
-        GetHashCode();
     }
 
     /// <summary>
-    ///     Removed an existing <see cref="Archetype"/> from the list and updates the <see cref="_hashCode"/>.
+    ///     Removed an existing <see cref="Archetype"/> from the list and invalidates the <see cref="_hashCode"/>.
     /// </summary>
     /// <param name="archetype">The new <see cref="Archetype"/>.</param>
     public void Remove(Archetype archetype)
     {
         Items.Remove(archetype);
-        _hashCode = -1;
-        GetHashCode();
+        OnChanged();
     }
 
     /// <summary>
@@ -190,7 +193,11 @@ public class Archetypes : IDisposable
     public Archetype this[int index]
     {
         get => Items[index];
-        set => Items[index] = value;
+        set
+        {
+            Items[index] = value;
+            OnChanged();
+        }
     }
 
     /// <summary>
@@ -242,6 +249,7 @@ public class Archetypes : IDisposable
     public void Clear()
     {
         Items.Clear();
+        OnChanged();
     }
 
     /// <summary>
@@ -250,6 +258,13 @@ public class Archetypes : IDisposable
     public void Dispose()
     {
         Items.Clear();
+        OnChanged();
+    }
+
+    private void OnChanged()
+    {
+        _hashCode = -1;
+        Version++;
     }
 }
 
