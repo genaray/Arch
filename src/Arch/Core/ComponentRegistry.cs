@@ -72,12 +72,14 @@ public readonly record struct ComponentType
 ///     Those are represented by <see cref="ComponentType"/>'s.
 /// </summary>
 /// <remarks>
-///     Simultaneous readers are supported, but simultaneous readers and writers are not.
-///     Ensure that modification happens on an isolated thread.
-///     In <see cref="World"/> this is implemented via marked structural-change methods.
+///     Concurrent component registration and lookup through <see cref="Add(Type)"/> and
+///     <see cref="TryGet(Type, out ComponentType)"/> are supported. Calls that remove or replace
+///     registrations, and direct access to the exposed collection views, must be isolated from
+///     other registry access.
 /// </remarks>
 public static class ComponentRegistry
 {
+    private static readonly object _registrationLock = new();
     private static readonly Dictionary<Type, ComponentType> _typeToComponentType = new(64);
     private static Type?[] _types = new Type[64];
 
@@ -120,18 +122,21 @@ public static class ComponentRegistry
 
     private static ComponentType Add(Type type, int typeSize)
     {
-        if (TryGet(type, out var meta))
+        lock (_registrationLock)
         {
+            if (_typeToComponentType.TryGetValue(type, out var meta))
+            {
+                return meta;
+            }
+
+            // Register and assign component id
+            meta = new ComponentType(Size, typeSize);
+            _typeToComponentType.Add(type, meta);
+            _types = _types.Add(Size, type);
+
+            Size++;
             return meta;
         }
-
-        // Register and assign component id
-        meta = new ComponentType(Size, typeSize);
-        _typeToComponentType.Add(type, meta);
-        _types = _types.Add(Size, type);
-
-        Size++;
-        return meta;
     }
 
     /// <summary>
@@ -144,12 +149,15 @@ public static class ComponentRegistry
 
     public static ComponentType Add(Type type, ComponentType componentType)
     {
-        // Register and assign component id
-        _typeToComponentType.TryAdd(type, componentType);
-        _types = _types.Add(componentType.Id, type);
+        lock (_registrationLock)
+        {
+            // Register and assign component id
+            _typeToComponentType.TryAdd(type, componentType);
+            _types = _types.Add(componentType.Id, type);
 
-        Size++;
-        return componentType;
+            Size++;
+            return componentType;
+        }
     }
 
     /// <summary>
@@ -195,7 +203,7 @@ public static class ComponentRegistry
 
     public static bool Has(Type type)
     {
-        return TypeToComponentType.ContainsKey(type);
+        return TryGet(type, out _);
     }
 
     /// <summary>
@@ -302,7 +310,10 @@ public static class ComponentRegistry
 
     public static bool TryGet(Type type, out ComponentType componentType)
     {
-        return TypeToComponentType.TryGetValue(type, out componentType);
+        lock (_registrationLock)
+        {
+            return _typeToComponentType.TryGetValue(type, out componentType);
+        }
     }
 
     /// <summary>
@@ -389,9 +400,7 @@ public static class Component
     /// <summary>
     ///     Searches a <see cref="ComponentType"/> by its <see cref="Type"/>. If it does not exist, it will be added.
     /// </summary>
-    /// <remarks>
-    ///     Not thread-safe; ensure no other threads are accessing or modifying the <see cref="ComponentRegistry"/>.
-    /// </remarks>
+    /// <remarks>Concurrent calls are safe, including when the type is registered for the first time.</remarks>
     /// <param name="type">The <see cref="Type"/>.</param>
     /// <returns>The <see cref="ComponentType"/>.</returns>
 
