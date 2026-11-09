@@ -561,7 +561,8 @@ public partial class Query : IEquatable<Query>
 {
     private readonly Archetypes _allArchetypes;
     private readonly NetStandardList<Archetype> _matchingArchetypes;
-    private int _allArchetypesHashCode;
+    private int _matchedCount;
+    private int _matchedVersion;
 
     private readonly QueryDescription _queryDescription;
     private readonly BitSet _any;
@@ -580,7 +581,6 @@ public partial class Query : IEquatable<Query>
     {
         _allArchetypes = allArchetypes;
         _matchingArchetypes = new NetStandardList<Archetype>();
-        _allArchetypesHashCode = -1;
 
         Debug.Assert(
             !((description.Any.Count != 0 ||
@@ -632,22 +632,33 @@ public partial class Query : IEquatable<Query>
     }
 
     /// <summary>
-    ///     If the list of <see cref="_allArchetypes"/> has been changed, the entire list is scanned again to create a new list of <see cref="_matchingArchetypes"/> that match the query.
-    ///     This means that there is no need to constantly recheck.
+    ///     Updates <see cref="_matchingArchetypes"/> if <see cref="_allArchetypes"/> changed since the last match.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Match()
     {
-        // Hashcode changed, list was modified?
-        var newArchetypesHashCode = _allArchetypes.GetHashCode();
-        if (_allArchetypesHashCode == newArchetypesHashCode)
+        if (_allArchetypes.Version != _matchedVersion || _allArchetypes.Count != _matchedCount)
         {
-            return;
+            MatchChanged();
+        }
+    }
+
+    /// <summary>
+    ///     Tests the archetypes appended to <see cref="_allArchetypes"/> since the last match, or all of them after any other change.
+    /// </summary>
+    private void MatchChanged()
+    {
+        var version = _allArchetypes.Version;
+        var count = _allArchetypes.Count;
+        var allArchetypes = _allArchetypes.AsSpan();
+        var start = _matchedCount;
+        if (version != _matchedVersion || start > count)
+        {
+            _matchingArchetypes.Clear();
+            start = 0;
         }
 
-        // Check all archetypes and update list
-        var allArchetypes = _allArchetypes.AsSpan();
-        _matchingArchetypes.Clear();
-        foreach (var archetype in allArchetypes)
+        foreach (var archetype in allArchetypes[start..])
         {
             var matches = Matches(archetype.BitSet);
             if (matches)
@@ -656,7 +667,8 @@ public partial class Query : IEquatable<Query>
             }
         }
 
-        _allArchetypesHashCode = newArchetypesHashCode;
+        _matchedCount = count;
+        _matchedVersion = version;
     }
 
     /// <summary>
