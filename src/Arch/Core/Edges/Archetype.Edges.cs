@@ -10,7 +10,7 @@ public partial class Archetype
     /// <summary>
     ///     The bucket size of each bucket inside the <see cref="_addEdges"/>.
     /// </summary>
-    private const int BucketSize = 16;
+    private const int BucketSize = 64;
 
     /// <summary>
     ///     Caches other <see cref="Archetype"/>s indexed by the
@@ -58,6 +58,10 @@ public partial class Archetype
 
     internal bool HasAddEdge(int index)
     {
+        // Bounds check to prevent SparseJaggedArray capacity overflow crashes
+        if (index < 0) return false;
+        var bucketIndex = index / BucketSize;
+        if (bucketIndex >= _addEdges.Buckets) return false;
         return _addEdges.ContainsKey(index);
     }
 
@@ -69,6 +73,10 @@ public partial class Archetype
 
     internal bool HasRemoveEdge(int index)
     {
+        // Bounds check to prevent SparseJaggedArray capacity overflow crashes
+        if (index < 0) return false;
+        var bucketIndex = index / BucketSize;
+        if (bucketIndex >= _removeEdges.Buckets) return false;
         return _removeEdges.ContainsKey(index);
     }
 
@@ -83,6 +91,10 @@ public partial class Archetype
 
     internal Archetype GetAddEdge(int index)
     {
+        // Bounds check to prevent SparseJaggedArray access violations
+        if (index < 0) return null!;
+        var bucketIndex = index / BucketSize;
+        if (bucketIndex >= _addEdges.Buckets) return null!;
         return _addEdges[index];
     }
 
@@ -97,6 +109,10 @@ public partial class Archetype
 
     internal Archetype GetRemoveEdge(int index)
     {
+        // Bounds check to prevent SparseJaggedArray access violations
+        if (index < 0) return null!;
+        var bucketIndex = index / BucketSize;
+        if (bucketIndex >= _removeEdges.Buckets) return null!;
         return _removeEdges[index];
     }
 
