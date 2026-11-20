@@ -101,18 +101,33 @@ Click here for the [documentation](https://arch-ecs.gitbook.io/arch)!
 # 💻 Projects using Arch
 Arch is already used in some projects, for a more detailed look, take a look at the [wiki](https://github.com/genaray/Arch/wiki/Projects-using-Arch)!
 
-## [Space Station 14](https://spacestation14.io/)
-Space Station 14 is inspired by the cult classic Space Station 13 and tells the extraordinary story of everything that can go wrong on a shift at a space station. You take on a role and complete your tasks so that the space station doesn't go to the dogs... or do the exact opposite. Prepare yourself for chaos and the finest roleplay. Best of all, SS14 is open-source and anyone can play!
-![Ingame screenshot](https://spacestation14.com/images/home/gallery-medbay.jpg)
-
-## [Roguelite-Survivor](https://github.com/proc-gen/roguelite-survivor)
-An action-packed c# clone of the hit "vampire survivor" based on monogame and arch!
-Fight your way through hordes of different enemies, level up your character, collect permanent items and explore various maps!
+## [Cubetory](https://store.steampowered.com/app/3027060/Cubetory/?l=english)
+Build a huge factory on a tiny island! Resources are scarce and unique - tweak and optimize everything for peak efficiency. Start with simple painted cubes, unlock tons of upgrades, and scale up to complex production chains. No enemies, just satisfying spaghetti.
 Try it out!
-![Ingame screenshot](https://user-images.githubusercontent.com/65076703/232624411-6a9e8a29-3118-41a6-a8f3-dd8d9c8f0edf.png)
+
+![Ingame screenshot](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/3027060/f77d8037940b2bbac31045222880a008d48b845e/header.jpg?t=1776101330)
+
+## [Trailblazers](https://store.steampowered.com/app/2671300/Trailblazers_Into_the_March/)
+Embark on a thrilling adventure in this roguelite colony-sim strategy game. Command your Landship in tactical battles, care for a crew composed of all sorts of characters, shape your home, manage resources, and lead expeditions into the March. Discover what lies at its heart... and in yours.
+Try it out!
+
+![Ingame screenshot](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2671300/2511db054028da06b49304c148ef51f851646d44/header.jpg?t=1793875077)
+
+## [Hivetide](https://store.steampowered.com/app/5201750/Hivetide/)
+Build your defenses and face the tide. Hivetide is a mix of tower defense and real-time strategy where each bullet counts.
+Try it out!
+
+![Ingame screenshot](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/5201750/f1f29b89c9d0dc597e48bef3d327fd64ac8ae6f9/header.jpg?t=1793866094)
+
+## [Decentraland Unity Client](https://github.com/decentraland/unity-explorer)
+Unity Explorer is the official desktop client implementation for Decentraland 2.0, allowing users to explore and interact with the Decentraland metaverse using Unity. This desktop client delivers a smoother, more immersive experience compared to the previous web-based version, setting the foundation for Decentraland's future expansion!
+Try it out!
+
+![Ingame screenshot](https://blog.thisiselevation.com/hubfs/Decentraland-Hero.jpg)
 
 ## [EquilibriumEngine-CSharp](https://github.com/clibequilibrium/EquilibriumEngine-CSharp)
 Equilibrium Engine is a data-oriented C# game engine that takes advantage of ECS pattern followed by Hot-Reloading of your libraries which allows you to quickly iterate on different aspects of your projects.
+
 ![Equilibrium Engine screenshot](https://raw.githubusercontent.com/clibequilibrium/EquilibriumEngine-CSharp/master/docs/home.png)
 
 # Contributors
