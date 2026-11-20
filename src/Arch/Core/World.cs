@@ -1197,7 +1197,7 @@ public partial class World
         // Fill entities
         var firstSlot = entityData[0].Slot;
         var lastSlot = entityData[amount - 1].Slot;
-        archetype.SetRange(in firstSlot, in lastSlot, cmp);
+        archetype.SetRange(in lastSlot, in firstSlot, cmp);
 
         // Add entities to entityinfo
         AddEntityData(entities, entityData, amount);

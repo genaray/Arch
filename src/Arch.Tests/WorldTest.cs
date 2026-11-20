@@ -42,6 +42,16 @@ public sealed partial class WorldTest
         World.Destroy(_world);
     }
 
+    [Test]
+    public void CreateSingleComponentBatchOnFreshWorld()
+    {
+        using var world = World.Create();
+
+        world.Create(10, 42);
+
+        That(world.Size, Is.EqualTo(10));
+    }
+
     /// <summary>
     ///     Checks if the <see cref="World"/> is being recycled correctly.
     /// </summary>
