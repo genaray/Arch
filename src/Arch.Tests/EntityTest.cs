@@ -51,6 +51,22 @@ public sealed partial class EntityTest
     }
 
     /// <summary>
+    ///     Checks if <see cref="Entity.CompareTo"/> is antisymmetric and orders by world, id, then version.
+    /// </summary>
+    [Test]
+    public void CompareTo()
+    {
+        var recycled = new Entity(5, 0, 2);
+        var fresh = new Entity(7, 0, 1);
+
+        That(recycled.CompareTo(fresh), Is.Negative);
+        That(fresh.CompareTo(recycled), Is.Positive);
+        That(new Entity(5, 0, 1).CompareTo(recycled), Is.Negative);
+        That(new Entity(9, 0, 1).CompareTo(new Entity(1, 1, 1)), Is.Negative);
+        That(recycled.CompareTo(new Entity(5, 0, 2)), Is.Zero);
+    }
+
+    /// <summary>
     ///     Checks if the has extension works correctly for the <see cref="Entity"/>.
     /// </summary>
     [Test]
