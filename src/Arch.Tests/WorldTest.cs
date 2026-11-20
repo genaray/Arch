@@ -733,6 +733,19 @@ public partial class WorldTest
         That(_world.TryGet(entity, out Rotation _), Is.EqualTo(false));
     }
 
+    /// <summary>
+    ///     Checks if the non-generic TryGet returns the stored component value.
+    /// </summary>
+    [Test]
+    public void TryGetByComponentType()
+    {
+        var entity = _world.Create(new Transform { X = 1, Y = 2 });
+
+        That(_world.TryGet(entity, (ComponentType)typeof(Transform), out var component), Is.EqualTo(true));
+        That(component, Is.EqualTo(new Transform { X = 1, Y = 2 }));
+        That(_world.TryGet(entity, (ComponentType)typeof(Rotation), out _), Is.EqualTo(false));
+    }
+
     [Test]
     public void TryGetRefSuccess()
     {
