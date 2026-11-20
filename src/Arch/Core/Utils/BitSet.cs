@@ -246,14 +246,6 @@ public sealed class BitSet
                 }
             }
 
-            // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < _max; i++)
-            {
-                if (bits[i] > 0)
-                {
-                    return false;
-                }
-            }
         }
         else
         {
@@ -270,15 +262,6 @@ public sealed class BitSet
                 }
             }
 
-            // Handle extra bits on our side that might just be all zero.
-            for (var i = min; i < _max; i += _padding)
-            {
-                var vector = new Vector<uint>(_bits, i);
-                if (!Vector.EqualsAll(vector, Vector<uint>.Zero)) // Vectors are not zero bits[0] != 0 basically
-                {
-                    return false;
-                }
-            }
         }
 
         return _highestBit <= 0;
