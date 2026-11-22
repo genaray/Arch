@@ -123,6 +123,38 @@ public sealed partial class QueryTest
         That(count, Is.EqualTo(100));
     }
 
+    private struct HighIdComponent<T> { }
+
+    [Test]
+    public void ExclusiveQueryWithComponentInHigherBitSetWord()
+    {
+        var exclusiveGroup = new ComponentType[] { typeof(Transform), typeof(Rotation) };
+        var query = new QueryDescription(exclusive: exclusiveGroup);
+        var highestExclusiveWord = Math.Max(exclusiveGroup[0].Id, exclusiveGroup[1].Id) / 32;
+
+        // Register components until one lands in a higher bitset word than the exclusive ones.
+        var type = typeof(HighIdComponent<Transform>);
+        ComponentType extra = type;
+        while (extra.Id / 32 <= highestExclusiveWord)
+        {
+            type = typeof(HighIdComponent<>).MakeGenericType(type);
+            extra = type;
+        }
+
+        _world = World.Create();
+        _world.Create(new ComponentType[] { typeof(Transform), typeof(Rotation), extra });
+
+        var count = 0;
+        _world.Query(query, (Entity entity) => count++);
+        That(count, Is.EqualTo(0));
+
+        _world.Create(exclusiveGroup);
+
+        count = 0;
+        _world.Query(query, (Entity entity) => count++);
+        That(count, Is.EqualTo(1));
+    }
+
     [Test]
     public void ComplexQuery()
     {

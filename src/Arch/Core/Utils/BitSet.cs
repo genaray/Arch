@@ -385,6 +385,15 @@ public sealed class BitSet
             }
         }
 
+        // Handle extra bits on the other side, they are not part of this set.
+        for (var i = min; i < other.Length; i++)
+        {
+            if (other._bits[i] != 0)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 

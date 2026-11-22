@@ -231,6 +231,26 @@ public sealed class BitSetTest
     }
 
     /// <summary>
+    ///     Checks that <see cref="BitSet.Exclusive"/> fails when only the other <see cref="BitSet"/> has bits above this instance's highest bit.
+    /// <param name="values">The values being set.</param>
+    /// <param name="multiplier">The multiplier for the passed values. Mainly for vectorization-testing to increase the set bits.</param>
+    /// </summary>
+    [Test]
+    [TestCase(new[] { 5, 40 }, 1)]
+    [TestCase(new[] { 5, 40 }, 100)]
+    public void ExclusiveWithExtraBitsOnOtherSide(int[] values, int multiplier)
+    {
+        var exclusive = new BitSet();
+        exclusive.SetBit(values[0] * multiplier);
+
+        var other = new BitSet();
+        other.SetBit(values[0] * multiplier);
+        other.SetBit(values[1] * multiplier);
+
+        That(exclusive.Exclusive(other), Is.EqualTo(false));
+    }
+
+    /// <summary>
     ///     Checks if <see cref="ComponentType"/> Id borders a bitset size correctly.
     /// <param name="borderComponentId">The component Id bordering a bitset size</param>
     /// </summary>
