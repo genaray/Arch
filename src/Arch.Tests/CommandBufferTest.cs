@@ -32,6 +32,45 @@ public sealed partial class CommandBufferTest
         That(rotation.X, Is.EqualTo(10));
     }
 
+    /// <summary>
+    ///     A deferred remove of a component the <see cref="Entity"/> does not have throws on
+    ///     <see cref="CommandBuffer.Playback"/> instead of silently corrupting a sibling's data
+    ///     via a move within the same archetype (see genaray/Arch#224).
+    /// </summary>
+    [Test]
+    public void CommandBufferRemoveNonExistentComponentThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_group);   // Ai is not present on this archetype
+
+        var commandBuffer = new CommandBuffer();
+        commandBuffer.Remove<Ai>(in entity);
+
+        Throws<InvalidOperationException>(() => commandBuffer.Playback(world));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     A deferred add of a component the <see cref="Entity"/> already has throws on
+    ///     <see cref="CommandBuffer.Playback"/> rather than silently moving within the archetype.
+    /// </summary>
+    [Test]
+    public void CommandBufferAddExistingComponentThrows()
+    {
+        var world = World.Create();
+
+        var entity = world.Create(_group);   // already has Transform
+
+        var commandBuffer = new CommandBuffer();
+        commandBuffer.Add(in entity, new Transform());
+
+        Throws<InvalidOperationException>(() => commandBuffer.Playback(world));
+
+        World.Destroy(world);
+    }
+
     [Test]
     public void CommandBufferForExistingEntity()
     {
