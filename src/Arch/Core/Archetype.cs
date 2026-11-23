@@ -74,8 +74,8 @@ public record struct Slot
         }
 
         // Index outside of its chunk, so we calculate how many times a chunk fit into the index for adjusting the chunkindex to that position.
-        // Floor since we do not neet a rounded value since the index is within that chunk and not the next one.
-        ChunkIndex += (int)Math.Floor(Index / (float)capacity);
+        // Integer division rounds down, since the index is within that chunk and not the next one.
+        ChunkIndex += Index / capacity;
 
         // After moving the chunk index we can simply take the rest and assign it as a index.
         Index %= capacity;
@@ -303,9 +303,6 @@ public sealed partial class Archetype
         // Setup arrays and mappings
         Chunks = new Chunks(1);
         AddChunk();
-
-        _addEdges = new SparseJaggedArray<Archetype>(BucketSize);
-        _removeEdges = new SparseJaggedArray<Archetype>(BucketSize);
     }
 
     /// <summary>
@@ -806,7 +803,7 @@ public sealed partial class Archetype
     internal void EnsureEntityCapacity(int newCapacity)
     {
         // Calculate amount of required chunks.
-        var neededChunks = (int)Math.Ceiling((float)newCapacity / EntitiesPerChunk);
+        var neededChunks = GetChunkCapacityFor(EntitiesPerChunk, newCapacity);
         if (ChunkCount >= neededChunks)
         {
             return;
@@ -847,7 +844,7 @@ public sealed partial class Archetype
     public unsafe static int GetChunkSizeInBytesFor(int baseChunkSize, int entityAmount, Span<ComponentType> types)
     {
         var entityBytes = (sizeof(Entity) + types.ToByteSize()) * entityAmount;
-        return (int)Math.Ceiling((float)entityBytes / baseChunkSize ) * baseChunkSize;  // Calculates and rounds to a multiple of BaseSize to store the number of entities
+        return (entityBytes + baseChunkSize - 1) / baseChunkSize * baseChunkSize;  // Calculates and rounds to a multiple of BaseSize to store the number of entities
     }
 
     /// <summary>
@@ -869,7 +866,7 @@ public sealed partial class Archetype
     /// <returns>The amount of <see cref="Chunks"/>s required to store the entities.</returns>
     public static int GetChunkCapacityFor(int entitiesPerChunk, int entityAmount)
     {
-        return (int)Math.Ceiling((float)entityAmount / entitiesPerChunk);
+        return (entityAmount + entitiesPerChunk - 1) / entitiesPerChunk;
     }
 
     /// <summary>
@@ -1007,5 +1004,19 @@ public sealed partial class Archetype
         ref var oldChunk = ref source.GetChunk(fromSlot.ChunkIndex);
         ref var newChunk = ref to.GetChunk(toSlot.ChunkIndex);
         Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref sourceSignature, ref newChunk, toSlot.Index, 1);
+    }
+
+    /// <summary>
+    ///     Copies an <see cref="Arch.Core.Entity"/> and all its components from a <see cref="Slot"/> within this <see cref="Archetype"/> to a <see cref="Slot"/> within the target of an <see cref="ArchetypeTransition"/>.
+    /// </summary>
+    /// <param name="source">The <see cref="Archetype"/> from which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="fromSlot">The <see cref="Slot"/> that targets the <see cref="Arch.Core.Entity"/> that should move.</param>
+    /// <param name="transition">The <see cref="ArchetypeTransition"/> from the source to the <see cref="Archetype"/> into which the <see cref="Arch.Core.Entity"/> should move.</param>
+    /// <param name="toSlot">The <see cref="Slot"/> to which the <see cref="Arch.Core.Entity"/> should move.</param>
+    internal static void CopyComponents(Archetype source, ref Slot fromSlot, ArchetypeTransition transition, ref Slot toSlot)
+    {
+        ref var oldChunk = ref source.GetChunk(fromSlot.ChunkIndex);
+        ref var newChunk = ref transition.Target.GetChunk(toSlot.ChunkIndex);
+        Chunk.CopyComponents(ref oldChunk, fromSlot.Index, ref newChunk, toSlot.Index, transition);
     }
 }

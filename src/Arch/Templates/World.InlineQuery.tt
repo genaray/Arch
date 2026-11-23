@@ -18,7 +18,11 @@ public partial class World
 #>
     public void InlineQuery<T, <#= generics #>>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<<#= generics #>>
     {
-        var query = Query(in description);
+        InlineQuery<T, <#= generics #>>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, <#= generics #>>(Query query, ref T iForEach) where T : struct, IForEach<<#= generics #>>
+    {
         foreach (ref var chunk in query)
         {
             <#= Indent(getFirstElement, 12) #>

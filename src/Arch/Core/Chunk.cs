@@ -66,6 +66,13 @@ public class Chunks
             return;
         }
 
+        // Pooled arrays are rented in power of two sizes, so most of the time the spare room is already there.
+        if (newCapacity <= Items.Length)
+        {
+            Capacity = newCapacity;
+            return;
+        }
+
         var sourceArray = Items;
         var destinationArray = (Array<Chunk>)ArrayPool<Chunk>.Shared.Rent(newCapacity);
         Arch.LowLevel.Array.Copy(ref sourceArray, 0, ref destinationArray, 0, Capacity );
@@ -167,16 +174,21 @@ public partial struct Chunk
 
         Entities = new Entity[Capacity];
         Components = new Array[types.Length];
+        _ops = new ComponentOps[types.Length];
 
         // Init mapping.
         ComponentIdToArrayIndex = componentIdToArrayIndex;
         for (var index = 0; index < types.Length; index++)
         {
-            var type = types[index];
-            Components[index] = ArrayRegistry.GetArray(type, Capacity);
+            _ops[index] = ComponentOps.Get(types[index]);
+            Components[index] = _ops[index].Create(Capacity);
         }
     }
 
+    /// <summary>
+    ///     The operations to create and move the elements of each of the <see cref="Components"/> arrays, at the same index as the array.
+    /// </summary>
+    private readonly ComponentOps[] _ops;
 
     /// <summary>
     ///     The <see cref="Arch.Core.Entity"/>'s that are stored in this chunk.
@@ -332,7 +344,7 @@ public partial struct Chunk
         for (var i = 0; i < components.Length; i++)
         {
             var array = components[i];
-            Array.Copy(array, lastIndex, array, index, 1);
+            _ops[i].Move(array, lastIndex, array, index);
         }
 
         // Update the mapping.
@@ -417,6 +429,7 @@ public partial struct Chunk
 
     /// <summary>
     ///     Returns the component array <see cref="Span{T}"/> for a given component in an unsafe manner.
+    ///     The span has <see cref="Capacity"/> elements, use <see cref="GetUsedSpan{T}"/> to only get the ones of the existing entities.
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <returns>The array <see cref="Span{T}"/>.</returns>
@@ -426,6 +439,19 @@ public partial struct Chunk
     {
         ref var item = ref GetFirst<T>();
         return MemoryMarshal.CreateSpan(ref item, Capacity);
+    }
+
+    /// <summary>
+    ///     Returns a <see cref="Span{T}"/> over the components of a given type of all <see cref="Count"/> entities in this chunk in an unsafe manner.
+    /// </summary>
+    /// <typeparam name="T">The component type.</typeparam>
+    /// <returns>The used part of the array as <see cref="Span{T}"/>.</returns>
+    [SkipLocalsInit]
+    [Pure]
+    public Span<T> GetUsedSpan<T>()
+    {
+        ref var item = ref GetFirst<T>();
+        return MemoryMarshal.CreateSpan(ref item, Count);
     }
 
     /// <summary>
@@ -636,7 +662,33 @@ public partial struct Chunk
             }
 
             var destinationArray = destination.Components.DangerousGetReferenceAt(arrayIndex);
+
+            // A single entity is the hot path of every structural change, where typed ops are a lot cheaper than Array.Copy.
+            if (length == 1)
+            {
+                source._ops[i].Copy(sourceArray, index, destinationArray, destinationIndex);
+                continue;
+            }
+
             Array.Copy(sourceArray, index, destinationArray, destinationIndex, length);
+        }
+    }
+
+    /// <summary>
+    ///     Copies the components of a single <see cref="Arch.Core.Entity"/> to another <see cref="Chunk"/> as planned by an <see cref="ArchetypeTransition"/>.
+    /// </summary>
+    /// <param name="source">The source <see cref="Chunk"/>.</param>
+    /// <param name="index">The index in the source <see cref="Chunk"/>.</param>
+    /// <param name="destination">The destination <see cref="Chunk"/>.</param>
+    /// <param name="destinationIndex">The index in the destination <see cref="Chunk"/>.</param>
+    /// <param name="transition">The <see cref="ArchetypeTransition"/> from the source to the destination archetype.</param>
+    internal static void CopyComponents(ref Chunk source, int index, ref Chunk destination, int destinationIndex, ArchetypeTransition transition)
+    {
+        foreach (var copy in transition.Copies)
+        {
+            var sourceArray = source.Components.DangerousGetReferenceAt(copy.Source);
+            var destinationArray = destination.Components.DangerousGetReferenceAt(copy.Destination);
+            source._ops.DangerousGetReferenceAt(copy.Source).Copy(sourceArray, index, destinationArray, destinationIndex);
         }
     }
 
@@ -659,7 +711,7 @@ public partial struct Chunk
         {
             var sourceArray = chunk.Components[i];
             var desArray = Components[i];
-            Array.Copy(sourceArray, lastIndex, desArray, index, 1);
+            _ops[i].Move(sourceArray, lastIndex, desArray, index);
         }
 
         chunk.Count--;

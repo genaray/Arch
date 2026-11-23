@@ -12,3 +12,16 @@ public struct Rotation
 
 public struct Ai { }
 
+/// <summary>
+///     A component holding a reference, used to cover managed component arrays.
+/// </summary>
+public struct Label
+{
+    public string Value;
+}
+
+public struct Health
+{
+    public int Value;
+}
+

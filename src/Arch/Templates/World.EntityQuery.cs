@@ -10,7 +10,11 @@ public partial class World
 {
     public void Query<T0>(in QueryDescription description, ForEachWithEntity<T0> forEach)
     {
-        var query = Query(in description);
+        Query<T0>(Query(in description), forEach);
+    }
+
+    public void Query<T0>(Query query, ForEachWithEntity<T0> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -28,7 +32,11 @@ public partial class World
 
     public void Query<T0, T1>(in QueryDescription description, ForEachWithEntity<T0, T1> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1>(Query query, ForEachWithEntity<T0, T1> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -48,7 +56,11 @@ public partial class World
 
     public void Query<T0, T1, T2>(in QueryDescription description, ForEachWithEntity<T0, T1, T2> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2>(Query query, ForEachWithEntity<T0, T1, T2> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -70,7 +82,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3>(Query query, ForEachWithEntity<T0, T1, T2, T3> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -94,7 +110,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -120,7 +140,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -148,7 +172,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -178,7 +206,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -210,7 +242,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -244,7 +280,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -280,7 +320,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -318,7 +362,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -358,7 +406,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -400,7 +452,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -444,7 +500,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -490,7 +550,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -538,7 +602,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -588,7 +656,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -640,7 +712,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -694,7 +770,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -750,7 +830,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -808,7 +892,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -868,7 +956,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -930,7 +1022,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -994,7 +1090,11 @@ public partial class World
 
     public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(in QueryDescription description, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> forEach)
     {
-        var query = Query(in description);
+        Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(Query(in description), forEach);
+    }
+
+    public void Query<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(Query query, ForEachWithEntity<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24> forEach)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);

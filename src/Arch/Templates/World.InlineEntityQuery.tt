@@ -18,7 +18,11 @@ public partial class World
 #>
     public void InlineEntityQuery<T, <#= generics #>>(in QueryDescription description, ref T iForEach) where T : struct, IForEachWithEntity<<#= generics #>>
     {
-        var query = Query(in description);
+        InlineEntityQuery<T, <#= generics #>>(Query(in description), ref iForEach);
+    }
+
+    public void InlineEntityQuery<T, <#= generics #>>(Query query, ref T iForEach) where T : struct, IForEachWithEntity<<#= generics #>>
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);

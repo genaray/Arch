@@ -28,24 +28,8 @@ for (var index = 2; index < Amount; index++)
     public void Create<<#= generics #>>(int amount, <#= parameters #>)
     {
         var archetype = EnsureCapacity<<#= generics #>>(amount);
-
-        // Prepare entities, slots and data
-        using var entityArray =  Pool<Entity>.Rent(amount);
-        using var entityDataArray =  Pool<EntityData>.Rent(amount);
-        var entities = entityArray.AsSpan();
-        var entityData = entityDataArray.AsSpan();
-
-        // Create entities
-        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
-        archetype.AddAll(entities, amount);
-
-        // Fill entities
-        var firstSlot = entityData[0].Slot;
-        var lastSlot = entityData[amount - 1].Slot;
+        GetOrCreateEntitiesInternal(archetype, amount, default, out var firstSlot, out var lastSlot);
         archetype.SetRange<<#= generics #>>(in lastSlot, in firstSlot, <#= inParameters #>);
-
-        // Add entities to entityinfo
-        AddEntityData(entities, entityData, amount);
     }
 <#
 }
