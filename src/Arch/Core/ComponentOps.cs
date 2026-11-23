@@ -82,7 +82,10 @@ internal sealed class ComponentOps<T> : ComponentOps
 {
     internal static readonly ComponentOps<T> Instance = new();
 
-    internal override Type ElementType => typeof(T);
+    internal override Type ElementType
+    {
+        get { return typeof(T); }
+    }
 
     internal override Array Create(int capacity)
     {
@@ -119,7 +122,10 @@ internal sealed class UntypedComponentOps : ComponentOps
         _type = type;
     }
 
-    internal override Type ElementType => _type;
+    internal override Type ElementType
+    {
+        get { return _type; }
+    }
 
     internal override Array Create(int capacity)
     {

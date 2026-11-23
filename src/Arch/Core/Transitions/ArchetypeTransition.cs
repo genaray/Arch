@@ -44,7 +44,7 @@ internal sealed class ArchetypeTransition
 }
 
 /// <summary>
-///     Caches the <see cref="ArchetypeTransition"/>s of an <see cref="Archetype"/>, indexed by the id of the added or removed <see cref="Utils.ComponentType"/>.
+///     Caches the <see cref="ArchetypeTransition"/>s of an <see cref="Archetype"/>, indexed by the id of the added or removed <see cref="ComponentType"/>.
 /// </summary>
 internal sealed class TransitionCache
 {
@@ -53,7 +53,7 @@ internal sealed class TransitionCache
     /// <summary>
     ///     Returns the cached transition of a component, or null if there is none yet.
     /// </summary>
-    /// <param name="id">The id of the <see cref="Utils.ComponentType"/>.</param>
+    /// <param name="id">The id of the <see cref="ComponentType"/>.</param>
     /// <returns>The <see cref="ArchetypeTransition"/> or null.</returns>
     internal ArchetypeTransition? Get(int id)
     {
@@ -63,7 +63,7 @@ internal sealed class TransitionCache
     /// <summary>
     ///     Caches the transition of a component.
     /// </summary>
-    /// <param name="id">The id of the <see cref="Utils.ComponentType"/>.</param>
+    /// <param name="id">The id of the <see cref="ComponentType"/>.</param>
     /// <param name="transition">The <see cref="ArchetypeTransition"/>.</param>
     internal void Set(int id, ArchetypeTransition transition)
     {

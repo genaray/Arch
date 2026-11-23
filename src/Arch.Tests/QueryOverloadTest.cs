@@ -89,20 +89,29 @@ public sealed class QueryOverloadTest
     {
         public static double Total;
 
-        public void Update(ref Transform transform) => Total += transform.X;
+        public void Update(ref Transform transform)
+        {
+            Total += transform.X;
+        }
     }
 
     private struct SumXWithEntity : IForEachWithEntity<Transform>
     {
         public static double Total;
 
-        public void Update(Entity entity, ref Transform transform) => Total += transform.X;
+        public void Update(Entity entity, ref Transform transform)
+        {
+            Total += transform.X;
+        }
     }
 
     private struct CountEntitiesVisited : IForEach
     {
         public static int Total;
 
-        public void Update(Entity entity) => Total++;
+        public void Update(Entity entity)
+        {
+            Total++;
+        }
     }
 }

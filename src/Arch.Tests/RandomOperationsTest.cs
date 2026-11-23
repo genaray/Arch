@@ -77,16 +77,19 @@ public sealed class RandomOperationsTest
     }
 
     // The chances in percent: create 30, destroy 10, add 15, remove 15, set 10, add pair 10, remove pair 10
-    private static Operation ToOperation(int percent) => percent switch
+    private static Operation ToOperation(int percent)
     {
-        < 30 => Operation.Create,
-        < 40 => Operation.Destroy,
-        < 55 => Operation.AddComponent,
-        < 70 => Operation.RemoveComponent,
-        < 80 => Operation.SetTransform,
-        < 90 => Operation.AddPair,
-        _ => Operation.RemovePair
-    };
+        return percent switch
+        {
+            < 30 => Operation.Create,
+            < 40 => Operation.Destroy,
+            < 55 => Operation.AddComponent,
+            < 70 => Operation.RemoveComponent,
+            < 80 => Operation.SetTransform,
+            < 90 => Operation.AddPair,
+            _ => Operation.RemovePair
+        };
+    }
 
     private void ApplyRandomOperation(int step)
     {

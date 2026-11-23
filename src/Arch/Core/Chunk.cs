@@ -684,11 +684,11 @@ public partial struct Chunk
     /// <param name="transition">The <see cref="ArchetypeTransition"/> from the source to the destination archetype.</param>
     internal static void CopyComponents(ref Chunk source, int index, ref Chunk destination, int destinationIndex, ArchetypeTransition transition)
     {
-        foreach (var copy in transition.Copies)
+        foreach (var (sourceArrayIndex, destinationArrayIndex) in transition.Copies)
         {
-            var sourceArray = source.Components.DangerousGetReferenceAt(copy.Source);
-            var destinationArray = destination.Components.DangerousGetReferenceAt(copy.Destination);
-            source._ops.DangerousGetReferenceAt(copy.Source).Copy(sourceArray, index, destinationArray, destinationIndex);
+            var sourceArray = source.Components.DangerousGetReferenceAt(sourceArrayIndex);
+            var destinationArray = destination.Components.DangerousGetReferenceAt(destinationArrayIndex);
+            source._ops.DangerousGetReferenceAt(sourceArrayIndex).Copy(sourceArray, index, destinationArray, destinationIndex);
         }
     }
 

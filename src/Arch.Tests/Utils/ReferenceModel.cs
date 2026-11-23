@@ -28,15 +28,30 @@ internal static class ReferenceModel
 
     public static readonly QueryDescription AllTransforms = new QueryDescription().WithAll<Transform>();
 
-    public static World CreateWorldWithSmallChunks() => World.Create(ChunkSizeInBytes, MinimumEntitiesPerChunk);
+    public static World CreateWorldWithSmallChunks()
+    {
+        return World.Create(ChunkSizeInBytes, MinimumEntitiesPerChunk);
+    }
 
-    public static Transform NewTransform(int seed) => new() { X = seed, Y = -seed };
+    public static Transform NewTransform(int seed)
+    {
+        return new Transform { X = seed, Y = -seed };
+    }
 
-    public static Rotation NewRotation(int seed) => new() { X = seed, Y = seed + 1, Z = seed + 2, W = seed + 3 };
+    public static Rotation NewRotation(int seed)
+    {
+        return new Rotation { X = seed, Y = seed + 1, Z = seed + 2, W = seed + 3 };
+    }
 
-    public static Label NewLabel(int seed) => new() { Value = "label" + seed };
+    public static Label NewLabel(int seed)
+    {
+        return new Label { Value = "label" + seed };
+    }
 
-    public static Health NewHealth(int seed) => new() { Value = seed * 3 };
+    public static Health NewHealth(int seed)
+    {
+        return new Health { Value = seed * 3 };
+    }
 
     public static void AssertEqual(Transform expected, Transform actual)
     {
