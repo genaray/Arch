@@ -1,0 +1,55 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+
+namespace Arch.Core;
+public partial class World
+{
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+
+        var spans = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            spans.Append($"chunk.GetUsedSpan<T{i}>(), ");
+        spans.Length -= 2;
+#>
+    /// <summary>
+    ///     Searches all matching <see cref="Chunk"/>s by a <see cref="QueryDescription"/> and calls the <see cref="IChunkForEach{<#= generics #>}"/> struct once for each,
+    ///     with the components of its entities as <see cref="Span{T}"/>s. Inlines the call and allows to process whole chunks, for example with SIMD.
+    /// </summary>
+    /// <param name="description">The <see cref="QueryDescription"/> which specifies the <see cref="Entity"/>s for which to search.</param>
+    /// <param name="iChunkForEach">The struct instance of the generic type being invoked.</param>
+    public void InlineChunkQuery<T, <#= generics #>>(in QueryDescription description, ref T iChunkForEach) where T : struct, IChunkForEach<<#= generics #>>
+    {
+        InlineChunkQuery<T, <#= generics #>>(Query(in description), ref iChunkForEach);
+    }
+
+    /// <summary>
+    ///     Searches all matching <see cref="Chunk"/>s of a <see cref="Core.Query"/> and calls the <see cref="IChunkForEach{<#= generics #>}"/> struct once for each,
+    ///     with the components of its entities as <see cref="Span{T}"/>s. Inlines the call and allows to process whole chunks, for example with SIMD.
+    /// </summary>
+    /// <param name="query">The <see cref="Core.Query"/> from <see cref="Query(in QueryDescription)"/> which specifies the <see cref="Entity"/>s for which to search.</param>
+    /// <param name="iChunkForEach">The struct instance of the generic type being invoked.</param>
+    public void InlineChunkQuery<T, <#= generics #>>(Query query, ref T iChunkForEach) where T : struct, IChunkForEach<<#= generics #>>
+    {
+        foreach (ref var chunk in query)
+        {
+            if (chunk.Count == 0)
+            {
+                continue;
+            }
+
+            iChunkForEach.Update(<#= spans #>);
+        }
+    }
+
+<#
+    }
+#>
+}
