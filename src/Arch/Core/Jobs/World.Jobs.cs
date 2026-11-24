@@ -23,6 +23,23 @@ public partial class World
     internal List<IJob> JobsCache { get; set; }
 
     /// <summary>
+    ///     The minimum amount of <see cref="Entity"/>'s a job should process, since scheduling a job costs more than processing fewer.
+    /// </summary>
+    private const int MinEntitiesPerJob = 2048;
+
+    /// <summary>
+    ///     Splits the used <see cref="Chunk"/>'s of an <see cref="Archetype"/> into ranges, one per job.
+    ///     Allocated but unused trailing chunks are skipped, and small archetypes get fewer jobs.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    /// <returns>The <see cref="RangePartitioner"/> of its used chunks.</returns>
+    private static RangePartitioner PartitionChunks(Archetype archetype)
+    {
+        var jobCount = Math.Clamp(archetype.EntityCount / MinEntitiesPerJob, 1, Environment.ProcessorCount);
+        return new RangePartitioner(jobCount, archetype.Count + 1);
+    }
+
+    /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
     ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
@@ -104,9 +121,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            var archetypeSize = archetype.ChunkCount;
-            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-            foreach (var range in part)
+            foreach (var range in PartitionChunks(archetype))
             {
                 var job = pool.Get();
                 job.Start = range.Start;
@@ -118,21 +133,21 @@ public partial class World
                 JobsCache.Add(job);
                 JobHandles.Add(jobHandle);
             }
-
-            // Schedule, flush, wait, return.
-            var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-            SharedJobScheduler.Flush();
-            handle.Complete();
-
-            for (var index = 0; index < JobsCache.Count; index++)
-            {
-                var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]);
-                pool.Return(job);
-            }
-
-            JobHandles.Clear();
-            JobsCache.Clear();
         }
+
+        // Schedule, flush, wait once for all archetypes, return.
+        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
+        SharedJobScheduler.Flush();
+        handle.Complete();
+
+        for (var index = 0; index < JobsCache.Count; index++)
+        {
+            var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]);
+            pool.Return(job);
+        }
+
+        JobHandles.Clear();
+        JobsCache.Clear();
     }
 
     /// <summary>
@@ -158,9 +173,7 @@ public partial class World
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
-            var archetypeSize = archetype.ChunkCount;
-            var part = new RangePartitioner(Environment.ProcessorCount, archetypeSize);
-            foreach (var range in part)
+            foreach (var range in PartitionChunks(archetype))
             {
                 var job = new ChunkIterationJob<T>
                 {

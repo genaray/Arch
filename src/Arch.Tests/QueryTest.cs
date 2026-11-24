@@ -213,6 +213,27 @@ public partial class QueryTest
         That(otherQueryCount, Is.EqualTo(1000));
     }
 
+    [Test]
+    public void ParallelQueryVisitsEachEntityOnceWithSpareCapacityAndMultipleArchetypes()
+    {
+        _world = World.Create();
+        _world.EnsureCapacity(_entityGroup, 20_000);
+
+        const int amount = 5_000;
+        _world.Create(new Span<Entity>(new Entity[amount]), _entityGroup, amount);
+        _world.Create(new Span<Entity>(new Entity[amount]), _entityAiGroup, amount);
+
+        var queryCount = 0;
+        _world.ParallelQuery(in _allQuery, (ref Rotation rot) => Interlocked.Increment(ref queryCount));
+
+        That(queryCount, Is.EqualTo(amount));
+
+        var transformCount = 0;
+        _world.ParallelQuery(new QueryDescription(all: [typeof(Transform)]), (ref Transform t) => Interlocked.Increment(ref transformCount));
+
+        That(transformCount, Is.EqualTo(2 * amount));
+    }
+
     public struct RotCounter : IForEach<Rotation>
     {
         public int Counter;

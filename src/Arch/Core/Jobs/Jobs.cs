@@ -15,13 +15,19 @@ namespace Arch.Core;
 public static class JobMeta<T> where T : class, new()
 {
     /// <summary>
+    ///     How many jobs the <see cref="Pool"/> keeps. A parallel query schedules the jobs of all its archetypes at once,
+    ///     the default of twice the processor count would drop and reallocate jobs on every query with many archetypes.
+    /// </summary>
+    private const int MaximumRetainedJobs = 1024;
+
+    /// <summary>
     ///     Creates a compiletime static instance of this job.
     /// </summary>
     static JobMeta()
     {
         Id = JobMeta.Id++;
         Policy = new DefaultObjectPolicy<T>();
-        Pool = new DefaultObjectPool<T>(Policy);
+        Pool = new DefaultObjectPool<T>(Policy, MaximumRetainedJobs);
     }
 
     /// <summary>
