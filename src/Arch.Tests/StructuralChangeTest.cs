@@ -181,6 +181,35 @@ public sealed class StructuralChangeTest
     }
 
     /// <summary>
+    ///     Checks that adding and removing several <see cref="ComponentType"/>s reuses the cached transition, no matter in which order the types are passed.
+    /// </summary>
+    [Test]
+    public void RangeChangesReuseTransitionsRegardlessOfTheOrderOfTheTypes()
+    {
+        ComponentType[] types = [typeof(Label), typeof(Health)];
+        ComponentType[] reversed = [typeof(Health), typeof(Label)];
+
+        var entity = _world.Create(NewTransform(0));
+        var source = _world.GetArchetype(entity);
+
+        _world.AddRange(entity, types);
+        var addTransition = source.AddTransitions.ByTypes.Get(types);
+        var target = _world.GetArchetype(entity);
+        That(addTransition, Is.Not.Null);
+        That(addTransition!.Target, Is.SameAs(target));
+
+        _world.RemoveRange(entity, reversed);
+        var removeTransition = target.RemoveTransitions.ByTypes.Get(types);
+        That(removeTransition, Is.Not.Null);
+        That(_world.GetArchetype(entity), Is.SameAs(source));
+
+        _world.AddRange(entity, reversed);
+        That(source.AddTransitions.ByTypes.Get(types), Is.SameAs(addTransition));
+        That(_world.GetArchetype(entity), Is.SameAs(target));
+        That(_world.Has<Label>(entity) && _world.Has<Health>(entity), Is.True);
+    }
+
+    /// <summary>
     ///     Checks that destroyed entities do not keep their managed components alive.
     /// </summary>
     [Test]

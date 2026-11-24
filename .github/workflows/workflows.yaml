@@ -55,6 +55,8 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
 
     # Create config (Release-Events, Debug, ...)
     - name: Create CONFIG for build
@@ -69,11 +71,12 @@ jobs:
     - name: Build project
       run: |
         dotnet build src/Arch/Arch.csproj --configuration $CONFIG
+        dotnet build src/Arch.Tests/Arch.Tests.csproj --configuration $CONFIG
 
     # Run tests
     - name: Run tests
       run: |
-        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration $CONFIG --logger trx --results-directory "TestResults"
+        dotnet test src/Arch.Tests/Arch.Tests.csproj --configuration $CONFIG --no-build --logger trx --results-directory "TestResults"
 
     # Upload test results
     - name: Upload dotnet test results
@@ -93,9 +96,11 @@ jobs:
           src/Arch/bin/${{ env.CONFIG }}/
 
   # Benchmarking, compared to the last successful run on the default branch (a report only, it never fails the build)
+  # Runs on the default branch, on manual runs and on pull requests with the label "benchmark", since a run takes a while
   benchmark:
     name: Benchmark Arch
     needs: build
+    if: github.event_name == 'workflow_dispatch' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || contains(github.event.pull_request.labels.*.name, 'benchmark')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -117,13 +122,15 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+        cache: true
+        cache-dependency-path: '**/*.csproj'
 
     # Only the benchmarks without hardware counters, since those are not supported on linux
     - name: Run benchmarks
       run: |
         dotnet run --project src/Arch.Benchmarks/Arch.Benchmarks.csproj --configuration Release -- \
           --job short --exporters json --artifacts benchmark-results \
-          --filter '*AddRemoveBenchmark*' '*BulkCreateBenchmark*' '*QueryMatchBenchmark*' '*QueryOverloadBenchmark*' '*StructuralChangeBenchmark*' '*TryGetBenchmark*'
+          --filter '*AddRemoveBenchmark*' '*BulkCreateBenchmark*' '*CommandBufferBenchmark*' '*ParallelQueryBenchmark*' '*QueryMatchBenchmark*' '*QueryOverloadBenchmark*' '*StructuralChangeBenchmark*' '*TryGetBenchmark*' '*UntypedStructuralChangeBenchmark*'
 
     # Download the results of the last successful run on the default branch, there are none before the first one
     - name: Download baseline benchmark results

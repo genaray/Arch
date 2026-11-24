@@ -61,8 +61,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
+    <!-- Only needed for the hardware counters, which are available on windows. -->
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.2" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
   </ItemGroup>

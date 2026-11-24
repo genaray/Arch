@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Extensions.Internal;
@@ -49,15 +50,39 @@ public readonly record struct BufferedEntityInfo
     ///      Initializes a new instance of the <see cref="CreateCommand"/> struct.
     /// </summary>
     /// <param name="index">Its <see cref="CommandBuffer"/> index.</param>
-    /// <param name="setIndex">Its <see cref="CommandBuffer.Sets"/> index.</param>
-    /// <param name="addIndex">Its <see cref="CommandBuffer.Adds"/> index.</param>
-    /// <param name="removeIndex">Its <see cref="CommandBuffer.Removes"/> index.</param>
+    /// <param name="setIndex">Its <see cref="CommandBuffer.Sets"/> index, -1 as long as no set was recorded.</param>
+    /// <param name="addIndex">Its <see cref="CommandBuffer.Adds"/> index, -1 as long as no add was recorded.</param>
+    /// <param name="removeIndex">Its <see cref="CommandBuffer.Removes"/> index, -1 as long as no remove was recorded.</param>
     public BufferedEntityInfo(int index, int setIndex, int addIndex, int removeIndex)
     {
         Index = index;
         SetIndex = setIndex;
         AddIndex = addIndex;
         RemoveIndex = removeIndex;
+    }
+
+    /// <summary>
+    ///     Returns a copy of this instance with another <see cref="SetIndex"/>.
+    /// </summary>
+    internal BufferedEntityInfo WithSetIndex(int setIndex)
+    {
+        return new BufferedEntityInfo(Index, setIndex, AddIndex, RemoveIndex);
+    }
+
+    /// <summary>
+    ///     Returns a copy of this instance with another <see cref="AddIndex"/>.
+    /// </summary>
+    internal BufferedEntityInfo WithAddIndex(int addIndex)
+    {
+        return new BufferedEntityInfo(Index, SetIndex, addIndex, RemoveIndex);
+    }
+
+    /// <summary>
+    ///     Returns a copy of this instance with another <see cref="RemoveIndex"/>.
+    /// </summary>
+    internal BufferedEntityInfo WithRemoveIndex(int removeIndex)
+    {
+        return new BufferedEntityInfo(Index, SetIndex, AddIndex, removeIndex);
     }
 }
 
@@ -67,16 +92,40 @@ public readonly record struct BufferedEntityInfo
 /// </summary>
 public sealed partial class CommandBuffer : IDisposable
 {
+    /// <summary>
+    ///     The <see cref="ComponentType"/>s that are added to one <see cref="Entity"/> during <see cref="Playback"/>, reused for every <see cref="Entity"/>.
+    /// </summary>
     private readonly PooledList<ComponentType> _addTypes;
+
+    /// <summary>
+    ///     The <see cref="ComponentType"/>s that are removed from one <see cref="Entity"/> during <see cref="Playback"/>, reused for every <see cref="Entity"/>.
+    /// </summary>
     private readonly PooledList<ComponentType> _removeTypes;
+
+    /// <summary>
+    ///     Guards the recording of commands if the <see cref="CommandBuffer"/> is thread-safe.
+    ///     A spin lock, since the critical sections are tiny and it is cheaper than a monitor as long as nobody waits.
+    ///     Not readonly, since it is a mutable struct.
+    /// </summary>
+    private SpinLock _lock = new(false);
+
+    /// <summary>
+    ///     Whether commands can be recorded from several threads at once, see <see cref="CommandBuffer(int, bool)"/>.
+    /// </summary>
+    private readonly bool _threadSafe;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CommandBuffer"/> class
     ///     with the specified <see cref="Core.World"/> and an optional <paramref name="initialCapacity"/> (default: 128).
     /// </summary>
     /// <param name="initialCapacity">The initial capacity.</param>
-    public CommandBuffer(int initialCapacity = 128)
+    /// <param name="threadSafe">
+    ///     If true (default) the commands can be recorded from several threads at once, for example from a parallel query.
+    ///     If false recording is a bit faster, but must only happen from one thread at a time.
+    /// </param>
+    public CommandBuffer(int initialCapacity = 128, bool threadSafe = true)
     {
+        _threadSafe = threadSafe;
         Entities = new PooledList<Entity>(initialCapacity);
         BufferedEntityInfo = new Dictionary<int, BufferedEntityInfo>(initialCapacity);
         Creates = new PooledList<CreateCommand>(initialCapacity);
@@ -137,11 +186,8 @@ public sealed partial class CommandBuffer : IDisposable
 
     internal void Register(in Entity entity, out BufferedEntityInfo info)
     {
-        var setIndex = Sets.Create(in entity);
-        var addIndex = Adds.Create(in entity);
-        var removeIndex = Removes.Create(in entity);
-
-        info = new BufferedEntityInfo(Size, setIndex, addIndex, removeIndex);
+        // The indexes in the sets are created once the first operation of their kind is recorded.
+        info = new BufferedEntityInfo(Size, -1, -1, -1);
 
         Entities.Add(entity);
         BufferedEntityInfo.Add(entity.Id, info);
@@ -162,6 +208,114 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         return info;
+    }
+
+    /// <summary>
+    ///     Returns the index of an <see cref="Entity"/> in the <see cref="Sets"/> and creates it if it has none yet.
+    ///     The caller has to hold the lock of this <see cref="CommandBuffer"/>.
+    /// </summary>
+    private int GetSetIndex(in Entity entity)
+    {
+        var info = GetOrRegister(entity);
+        if (info.SetIndex >= 0)
+        {
+            return info.SetIndex;
+        }
+
+        var setIndex = Sets.Create(in entity);
+        BufferedEntityInfo[entity.Id] = info.WithSetIndex(setIndex);
+        return setIndex;
+    }
+
+    /// <summary>
+    ///     Returns the index of an <see cref="Entity"/> in the <see cref="Adds"/> and creates it if it has none yet.
+    ///     The caller has to hold the lock of this <see cref="CommandBuffer"/>.
+    /// </summary>
+    private int GetAddIndex(in Entity entity)
+    {
+        var info = GetOrRegister(entity);
+        if (info.AddIndex >= 0)
+        {
+            return info.AddIndex;
+        }
+
+        var addIndex = Adds.Create(in entity);
+        BufferedEntityInfo[entity.Id] = info.WithAddIndex(addIndex);
+        return addIndex;
+    }
+
+    /// <summary>
+    ///     Returns the index of an <see cref="Entity"/> in the <see cref="Removes"/> and creates it if it has none yet.
+    ///     The caller has to hold the lock of this <see cref="CommandBuffer"/>.
+    /// </summary>
+    private int GetRemoveIndex(in Entity entity)
+    {
+        var info = GetOrRegister(entity);
+        if (info.RemoveIndex >= 0)
+        {
+            return info.RemoveIndex;
+        }
+
+        var removeIndex = Removes.Create(in entity);
+        BufferedEntityInfo[entity.Id] = info.WithRemoveIndex(removeIndex);
+        return removeIndex;
+    }
+
+#if EVENTS
+    /// <summary>
+    ///     Checks whether the component of a certain type was recorded to be added to an <see cref="Entity"/>, and not only to be set.
+    /// </summary>
+    private bool IsAdded(Entity wrappedEntity, ComponentType type)
+    {
+        var addIndex = BufferedEntityInfo[wrappedEntity.Id].AddIndex;
+        return addIndex >= 0 && type.Id < Adds.Components.Length && Adds.Components[type.Id]?.Contains(addIndex) == true;
+    }
+#endif
+
+    /// <summary>
+    ///     Takes the lock of this <see cref="CommandBuffer"/> until the returned scope is disposed, if it is thread-safe.
+    /// </summary>
+    private LockScope Lock()
+    {
+        var taken = false;
+        if (_threadSafe)
+        {
+            _lock.Enter(ref taken);
+        }
+
+        return new LockScope(this, taken);
+    }
+
+    /// <summary>
+    ///     The <see cref="LockScope"/> struct
+    ///     releases the lock of a <see cref="CommandBuffer"/> once it is disposed, if it was taken. Meant for a <c>using</c> declaration.
+    /// </summary>
+    private readonly struct LockScope : IDisposable
+    {
+        private readonly CommandBuffer _buffer;
+        private readonly bool _taken;
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="LockScope"/> struct.
+        /// </summary>
+        /// <param name="buffer">The <see cref="CommandBuffer"/> whose lock is released.</param>
+        /// <param name="taken">Whether the lock was taken, it is not for a <see cref="CommandBuffer"/> that is not thread-safe.</param>
+        public LockScope(CommandBuffer buffer, bool taken)
+        {
+            _buffer = buffer;
+            _taken = taken;
+        }
+
+        /// <summary>
+        ///     Releases the lock if it was taken.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_taken)
+            {
+                _buffer._lock.Exit(false);
+            }
+        }
     }
 
     /// <summary>
@@ -193,16 +347,15 @@ public sealed partial class CommandBuffer : IDisposable
 
     public Entity Create(ComponentType[] types)
     {
-        lock (this)
-        {
-            var entity = new Entity(-(Size + 1), -1);
-            Register(entity, out _);
+        using var scope = Lock();
 
-            var command = new CreateCommand(Size - 1, types);
-            Creates.Add(command);
+        var entity = new Entity(-(Size + 1), -1);
+        Register(entity, out _);
 
-            return entity;
-        }
+        var command = new CreateCommand(Size - 1, types);
+        Creates.Add(command);
+
+        return entity;
     }
 
     /// <summary>
@@ -213,10 +366,8 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Destroy(in Entity entity)
     {
-        lock (this)
-        {
-            Destroys.Add(GetOrRegister(entity).Index);
-        }
+        using var scope = Lock();
+        Destroys.Add(GetOrRegister(entity).Index);
     }
 
     /// <summary>
@@ -230,11 +381,8 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Set<T>(in Entity entity, in T? component = default)
     {
-        lock (this)
-        {
-            var info = GetOrRegister(entity);
-            Sets.Set(info.SetIndex, in component);
-        }
+        using var scope = Lock();
+        Sets.Set(GetSetIndex(entity), in component);
     }
 
     /// <summary>
@@ -248,12 +396,9 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Add<T>(in Entity entity, in T? component = default)
     {
-        lock (this)
-        {
-            var info = GetOrRegister(entity);
-            Adds.Set<T>(info.AddIndex);
-            Sets.Set(info.SetIndex, in component);
-        }
+        using var scope = Lock();
+        Adds.Set<T>(GetAddIndex(entity));
+        Sets.Set(GetSetIndex(entity), in component);
     }
 
     /// <summary>
@@ -265,11 +410,8 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Remove<T>(in Entity entity)
     {
-        lock (this)
-        {
-            var info = GetOrRegister(entity);
-            Removes.Set<T>(info.RemoveIndex);
-        }
+        using var scope = Lock();
+        Removes.Set<T>(GetRemoveIndex(entity));
     }
 
     /// <summary>
@@ -318,7 +460,7 @@ public sealed partial class CommandBuffer : IDisposable
             var entity = Resolve(wrappedEntity.Entity);
             Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
 
-            AddRange(world, entity, _addTypes.Span);
+            world.AddRangeWithoutEvents(entity, _addTypes.Span);
             _addTypes.Clear();
         }
 
@@ -355,7 +497,7 @@ public sealed partial class CommandBuffer : IDisposable
 
 #if EVENTS
                 // Entity also exists in add and the set component was added recently
-                if (Adds.Used.Length > i && Adds.Components[Adds.Used[i]].Contains(id))
+                if (IsAdded(wrappedEntity.Entity, sparseArray.Type))
                 {
                     world.OnComponentAdded(entity, sparseArray.Type);
                 }
@@ -451,42 +593,5 @@ public sealed partial class CommandBuffer : IDisposable
         _addTypes.Dispose();
         _removeTypes.Dispose();
         GC.SuppressFinalize(this);
-    }
-}
-
-public sealed partial class CommandBuffer
-{
-    /// <summary>
-    ///     Adds a list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
-    /// </summary>
-    /// <param name="world">The world to operate on.</param>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
-    [SkipLocalsInit]
-    internal static void AddRange(World world, Entity entity, Span<ComponentType> components)
-    {
-        ref var data = ref world.EntityInfo.EntityData[entity.Id];
-        var oldArchetype = data.Archetype;
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-
-        for (var index = 0; index < components.Length; index++)
-        {
-            var type = components[index];
-            spanBitSet.SetBit(type.Id);
-        }
-
-        if (!world.TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Add(oldArchetype.Signature, components);
-            newArchetype = world.GetOrCreate(newSignature);
-        }
-
-        world.Move(entity, ref data, oldArchetype, newArchetype, out _);
     }
 }

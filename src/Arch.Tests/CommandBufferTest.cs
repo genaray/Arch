@@ -263,6 +263,56 @@ public sealed partial class CommandBufferTest
     }
 
     [Test]
+    public void CommandBufferRecordsOnlyForOneThread()
+    {
+        var world = World.Create();
+        var entity = world.Create<Transform>();
+        var other = world.Create<Transform>();
+
+        using var commandBuffer = new CommandBuffer(threadSafe: false);
+        commandBuffer.Set(entity, new Transform { X = 1 });
+        commandBuffer.Add(entity, new Rotation { X = 2 });
+        commandBuffer.Remove<Transform>(other);
+        commandBuffer.Playback(world);
+
+        That(world.Get<Transform>(entity).X, Is.EqualTo(1));
+        That(world.Get<Rotation>(entity).X, Is.EqualTo(2));
+        That(world.Has<Transform>(other), Is.False);
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
+    ///     Checks that entities with different kinds of operations are played back correctly, since they are registered in the sets only when one is recorded.
+    /// </summary>
+    [Test]
+    public void CommandBufferMixesOperationsOfDifferentEntities()
+    {
+        var world = World.Create();
+        var setOnly = world.Create<Transform>();
+        var addOnly = world.Create<Transform>();
+        var removeOnly = world.Create(new Transform(), new Rotation());
+        var all = world.Create(new Transform(), new Rotation());
+
+        using var commandBuffer = new CommandBuffer();
+        commandBuffer.Remove<Rotation>(removeOnly);
+        commandBuffer.Set(setOnly, new Transform { X = 3 });
+        commandBuffer.Add(addOnly, new Ai());
+        commandBuffer.Add(all, new Ai());
+        commandBuffer.Set(all, new Transform { X = 4 });
+        commandBuffer.Remove<Rotation>(all);
+        commandBuffer.Playback(world);
+
+        That(world.Get<Transform>(setOnly).X, Is.EqualTo(3));
+        That(world.Has<Ai>(addOnly), Is.True);
+        That(world.Has<Rotation>(removeOnly), Is.False);
+        That(world.Has<Ai>(all) && !world.Has<Rotation>(all), Is.True);
+        That(world.Get<Transform>(all).X, Is.EqualTo(4));
+
+        World.Destroy(world);
+    }
+
+    [Test]
     public void CommandBufferCombined()
     {
         var world = World.Create();

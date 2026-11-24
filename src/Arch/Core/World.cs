@@ -1655,28 +1655,7 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<ComponentType> components)
     {
-        ref var data = ref EntityInfo.EntityData[entity.Id];
-        var oldArchetype = data.Archetype;
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        for (var index = 0; index < components.Length; index++)
-        {
-            var type = components[index];
-            spanBitSet.SetBit(type.Id);
-        }
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Add(oldArchetype.Signature, components.ToArray());
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        AddRangeWithoutEvents(entity, components);
 
 #if EVENTS
         for (var i = 0; i < components.Length; i++)
@@ -1684,6 +1663,20 @@ public partial class World
             OnComponentAdded(entity, components[i]);
         }
 #endif
+    }
+
+    /// <summary>
+    ///     Moves an <see cref="Entity"/> to the <see cref="Archetype"/> with several additional components, without firing events.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    internal void AddRangeWithoutEvents(Entity entity, Span<ComponentType> components)
+    {
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
+
+        var transition = GetOrCreateAddTransition(components, oldArchetype);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     /// <summary>
@@ -1720,24 +1713,7 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        for (var index = 0; index < types.Length; index++)
-        {
-            ref var cmp = ref types[index];
-            spanBitSet.ClearBit(cmp.Id);
-        }
-
-        // Get or Create new archetype
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Remove(oldArchetype.Signature, types);
-            newArchetype = GetOrCreate(newSignature);
-        }
+        var transition = GetOrCreateRemoveTransition(types, oldArchetype);
 
         // Fire events and move
         foreach (var type in types)
@@ -1745,7 +1721,7 @@ public partial class World
             OnComponentRemoved(entity, type);
         }
 
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 }
 
