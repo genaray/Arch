@@ -15,12 +15,10 @@ public partial class World
     for (var index = 2; index <= Amount; index++)
     {
         var generics = AppendGenerics(index);
-        var removes = new StringBuilder();
         var events = new StringBuilder();
         for (var i = 0; i < index; i++)
         {
-            removes.AppendLine($"            spanBitSet.ClearBit(Component<T{i}>.ComponentType.Id);");
-            events.AppendLine($"            OnComponentRemoved<T{i}>(entity);");
+            events.AppendLine($"        OnComponentRemoved<T{i}>(entity);");
         }
     #>
 
@@ -28,23 +26,13 @@ public partial class World
     [StructuralChange]
     public void Remove<<#= generics #>>(Entity entity)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-<#= removes.ToString() #>
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<<#= generics #>>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
+        var transition = GetOrCreateRemoveTransition(Component<<#= generics #>>.Signature, oldArchetype);
 
 <#= events.ToString() #>
-        Move(entity, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
     <#
     }

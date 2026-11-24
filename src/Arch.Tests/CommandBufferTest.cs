@@ -185,6 +185,50 @@ public sealed partial class CommandBufferTest
     }
 
     [Test]
+    public void CommandBufferAddAndRemoveForManyEntities()
+    {
+        const int amount = 100_000;
+        var world = World.Create();
+        var entities = new Entity[amount];
+        for (var index = 0; index < amount; index++)
+        {
+            entities[index] = world.Create<Transform>();
+        }
+
+        using (var commandBuffer = new CommandBuffer())
+        {
+            for (var index = 0; index < amount; index++)
+            {
+                commandBuffer.Add(in entities[index], new Rotation { X = index });
+            }
+
+            commandBuffer.Playback(world);
+        }
+
+        using (var commandBuffer = new CommandBuffer())
+        {
+            for (var index = 0; index < amount; index += 2)
+            {
+                commandBuffer.Remove<Rotation>(in entities[index]);
+            }
+
+            commandBuffer.Playback(world);
+        }
+
+        for (var index = 0; index < amount; index++)
+        {
+            var hasRotation = index % 2 == 1;
+            That(world.Has<Rotation>(entities[index]), Is.EqualTo(hasRotation));
+            if (hasRotation)
+            {
+                That(world.Get<Rotation>(entities[index]).X, Is.EqualTo(index));
+            }
+        }
+
+        World.Destroy(world);
+    }
+
+    [Test]
     public void CommandBufferCombined()
     {
         var world = World.Create();

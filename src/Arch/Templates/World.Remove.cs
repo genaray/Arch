@@ -16,25 +16,12 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -44,27 +31,13 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -74,29 +47,14 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -106,31 +64,15 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -140,33 +82,16 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -176,35 +101,17 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -214,37 +121,18 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -254,39 +142,19 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -296,41 +164,20 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -340,43 +187,21 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -386,45 +211,22 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -434,47 +236,23 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -484,49 +262,24 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -536,51 +289,25 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -590,53 +317,26 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -646,55 +346,27 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -704,57 +376,28 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -764,59 +407,29 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -826,61 +439,30 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -890,63 +472,31 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T20>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
+        OnComponentRemoved<T20>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-            OnComponentRemoved<T20>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -956,65 +506,32 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T20>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T21>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
+        OnComponentRemoved<T20>(entity);
+        OnComponentRemoved<T21>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-            OnComponentRemoved<T20>(entity);
-            OnComponentRemoved<T21>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -1024,67 +541,33 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T20>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T21>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T22>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
+        OnComponentRemoved<T20>(entity);
+        OnComponentRemoved<T21>(entity);
+        OnComponentRemoved<T22>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-            OnComponentRemoved<T20>(entity);
-            OnComponentRemoved<T21>(entity);
-            OnComponentRemoved<T22>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -1094,69 +577,34 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T20>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T21>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T22>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T23>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
+        OnComponentRemoved<T20>(entity);
+        OnComponentRemoved<T21>(entity);
+        OnComponentRemoved<T22>(entity);
+        OnComponentRemoved<T23>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-            OnComponentRemoved<T20>(entity);
-            OnComponentRemoved<T21>(entity);
-            OnComponentRemoved<T22>(entity);
-            OnComponentRemoved<T23>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     [SkipLocalsInit]
@@ -1166,70 +614,34 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
+        var transition = GetOrCreateRemoveTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>.Signature, oldArchetype);
 
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-            spanBitSet.ClearBit(Component<T0>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T1>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T2>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T3>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T4>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T5>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T6>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T7>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T8>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T9>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T10>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T11>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T12>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T13>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T14>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T15>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T16>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T17>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T18>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T19>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T20>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T21>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T22>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T23>.ComponentType.Id);
-            spanBitSet.ClearBit(Component<T24>.ComponentType.Id);
+        OnComponentRemoved<T0>(entity);
+        OnComponentRemoved<T1>(entity);
+        OnComponentRemoved<T2>(entity);
+        OnComponentRemoved<T3>(entity);
+        OnComponentRemoved<T4>(entity);
+        OnComponentRemoved<T5>(entity);
+        OnComponentRemoved<T6>(entity);
+        OnComponentRemoved<T7>(entity);
+        OnComponentRemoved<T8>(entity);
+        OnComponentRemoved<T9>(entity);
+        OnComponentRemoved<T10>(entity);
+        OnComponentRemoved<T11>(entity);
+        OnComponentRemoved<T12>(entity);
+        OnComponentRemoved<T13>(entity);
+        OnComponentRemoved<T14>(entity);
+        OnComponentRemoved<T15>(entity);
+        OnComponentRemoved<T16>(entity);
+        OnComponentRemoved<T17>(entity);
+        OnComponentRemoved<T18>(entity);
+        OnComponentRemoved<T19>(entity);
+        OnComponentRemoved<T20>(entity);
+        OnComponentRemoved<T21>(entity);
+        OnComponentRemoved<T22>(entity);
+        OnComponentRemoved<T23>(entity);
+        OnComponentRemoved<T24>(entity);
 
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Remove(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-            OnComponentRemoved<T0>(entity);
-            OnComponentRemoved<T1>(entity);
-            OnComponentRemoved<T2>(entity);
-            OnComponentRemoved<T3>(entity);
-            OnComponentRemoved<T4>(entity);
-            OnComponentRemoved<T5>(entity);
-            OnComponentRemoved<T6>(entity);
-            OnComponentRemoved<T7>(entity);
-            OnComponentRemoved<T8>(entity);
-            OnComponentRemoved<T9>(entity);
-            OnComponentRemoved<T10>(entity);
-            OnComponentRemoved<T11>(entity);
-            OnComponentRemoved<T12>(entity);
-            OnComponentRemoved<T13>(entity);
-            OnComponentRemoved<T14>(entity);
-            OnComponentRemoved<T15>(entity);
-            OnComponentRemoved<T16>(entity);
-            OnComponentRemoved<T17>(entity);
-            OnComponentRemoved<T18>(entity);
-            OnComponentRemoved<T19>(entity);
-            OnComponentRemoved<T20>(entity);
-            OnComponentRemoved<T21>(entity);
-            OnComponentRemoved<T22>(entity);
-            OnComponentRemoved<T23>(entity);
-            OnComponentRemoved<T24>(entity);
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
     }

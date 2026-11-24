@@ -1,7 +1,7 @@
 ﻿namespace Arch.Core;
 
 /// <summary>
-///     The cached result of adding or removing a single component to an <see cref="Archetype"/>:
+///     The cached result of adding or removing components to an <see cref="Archetype"/>:
 ///     The <see cref="Target"/> archetype and how the components of an entity are copied into it.
 /// </summary>
 internal sealed class ArchetypeTransition
@@ -10,7 +10,7 @@ internal sealed class ArchetypeTransition
     ///     Initializes a new instance of the <see cref="ArchetypeTransition"/> class.
     /// </summary>
     /// <param name="source">The <see cref="Archetype"/> the entities come from.</param>
-    /// <param name="target">The <see cref="Archetype"/> the entities move to, it differs from the source by one component.</param>
+    /// <param name="target">The <see cref="Archetype"/> the entities move to, it differs from the source by the added or removed components.</param>
     internal ArchetypeTransition(Archetype source, Archetype target)
     {
         Target = target;

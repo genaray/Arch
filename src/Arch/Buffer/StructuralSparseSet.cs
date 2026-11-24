@@ -73,12 +73,12 @@ internal class StructuralSparseArray
     {
         lock (this)
         {
-            // Resize entities
+            // Resize entities, growing geometrically to keep adding amortized O(1).
             if (index >= Entities.Length)
             {
                 var lenght = Entities.Length;
-                Array.Resize(ref Entities, index + 1);
-                Array.Fill(Entities, -1, lenght, index - lenght);
+                Array.Resize(ref Entities, Math.Max(index + 1, lenght * 2));
+                Array.Fill(Entities, -1, lenght, Entities.Length - lenght);
             }
 
             Entities[index] = Size;

@@ -18,13 +18,9 @@ public partial class World
         var parameters = AppendGenericInDefaultParams(index);
         var inParameters = InsertGenericInParams(index);
 
-        var getIds = new StringBuilder();
-        var setIds = new StringBuilder();
         var addEvents = new StringBuilder();
         for (var i = 0; i < index; i++)
         {
-            getIds.AppendLine($"var id{i} = Component<T{i}>.ComponentType.Id;");
-            setIds.AppendLine($"spanBitSet.SetBit(id{i});");
             addEvents.AppendLine($"OnComponentAdded<T{i}>(entity);");
         }
     #>
@@ -33,25 +29,13 @@ public partial class World
     [StructuralChange]
     public void Add<<#= generics #>>(Entity entity, <#= parameters #>)
     {
-        var oldArchetype = EntityInfo.GetArchetype(entity.Id);
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        <#= Indent(getIds, 8) #>
+        var transition = GetOrCreateAddTransition(Component<<#= generics #>>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        <#= Indent(setIds, 8) #>
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<<#= generics #>>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<<#= generics #>>(ref newSlot, <#= inParameters #>);
         <#= Indent(addEvents, 8) #>
     }
