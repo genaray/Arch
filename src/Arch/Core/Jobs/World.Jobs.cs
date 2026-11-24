@@ -25,7 +25,12 @@ public partial class World
     /// <summary>
     ///     The minimum amount of <see cref="Entity"/>'s a job should process, since scheduling a job costs more than processing fewer.
     /// </summary>
-    private const int MinEntitiesPerJob = 2048;
+    private const int MinEntitiesPerJob = 4096;
+
+    /// <summary>
+    ///     The maximum amount of jobs per thread. More jobs than threads balance the load if some <see cref="Chunk"/>s take longer than others.
+    /// </summary>
+    private const int MaxJobsPerThread = 4;
 
     /// <summary>
     ///     Splits the used <see cref="Chunk"/>'s of an <see cref="Archetype"/> into ranges, one per job.
@@ -35,7 +40,7 @@ public partial class World
     /// <returns>The <see cref="RangePartitioner"/> of its used chunks.</returns>
     private static RangePartitioner PartitionChunks(Archetype archetype)
     {
-        var jobCount = Math.Clamp(archetype.EntityCount / MinEntitiesPerJob, 1, Environment.ProcessorCount);
+        var jobCount = Math.Clamp(archetype.EntityCount / MinEntitiesPerJob, 1, Environment.ProcessorCount * MaxJobsPerThread);
         return new RangePartitioner(jobCount, archetype.Count + 1);
     }
 

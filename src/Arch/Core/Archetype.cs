@@ -282,6 +282,11 @@ public sealed partial class Archetype
     private readonly int[] _componentIdToArrayIndex;
 
     /// <summary>
+    ///     The operations of the component arrays, at the same index as the arrays. Is being stored here since all <see cref="Chunks"/> share the same instance to reduce allocations.
+    /// </summary>
+    private readonly ComponentOps[] _ops;
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="Archetype"/> class by a group of components.
     /// </summary>
     /// <param name="signature">The component structure of the <see cref="Arch.Core.Entity"/>'s that can be stored in this <see cref="Archetype"/>.</param>
@@ -299,6 +304,7 @@ public sealed partial class Archetype
         // The bitmask/set
         BitSet = signature;
         _componentIdToArrayIndex = signature.Components.ToLookupArray();
+        _ops = ComponentOps.Get(signature.Components);
 
         // Setup arrays and mappings
         Chunks = new Chunks(1);
@@ -443,7 +449,7 @@ public sealed partial class Archetype
 
         // Insert chunk
         var count = Chunks.Count;
-        Chunks.Add(new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Signature));
+        Chunks.Add(new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, _ops));
         return ref Chunks[count];
     }
 
@@ -452,6 +458,7 @@ public sealed partial class Archetype
     /// </summary>
     /// <param name="index"></param>
     /// <returns>A reference to the <see cref="Chunk"/> at the given index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Chunk GetChunk(int index)
     {
         return ref Chunks[index];
@@ -815,7 +822,7 @@ public sealed partial class Archetype
 
         for (var index = previousCapacity; index < neededChunks; index++)
         {
-            Chunks.Add(new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, Signature));
+            Chunks.Add(new Chunk(EntitiesPerChunk, _componentIdToArrayIndex, _ops));
         }
     }
 

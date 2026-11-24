@@ -143,6 +143,44 @@ public sealed class StructuralChangeTest
     }
 
     /// <summary>
+    ///     Checks that adding and removing by <see cref="ComponentType"/>s finds the existing archetypes,
+    ///     also if many more components are registered than the entity has, which makes the bitset buffers larger than the ones of the archetypes.
+    /// </summary>
+    [Test]
+    public void UntypedAndRangeChangesReuseArchetypesWithManyRegisteredComponents()
+    {
+        ComponentType[] types = [typeof(Label), typeof(Health)];
+        var entity = _world.Create(NewTransform(0));
+
+        // Components registered after the ones above, so their ids are higher.
+        var filler = typeof(int);
+        for (var index = 0; index < 100; index++)
+        {
+            filler = filler.MakeArrayType();
+            Component.GetComponentType(filler);
+        }
+
+        AddAndRemoveByTypes(entity, types);
+        var archetypeCount = _world.Archetypes.Count;
+
+        AddAndRemoveByTypes(entity, types);
+        That(_world.Archetypes.Count, Is.EqualTo(archetypeCount));
+    }
+
+    private void AddAndRemoveByTypes(Entity entity, ComponentType[] types)
+    {
+        _world.AddRange(entity, types);
+        That(_world.Has<Label>(entity) && _world.Has<Health>(entity), Is.True);
+
+        _world.Remove(entity, typeof(Health));
+        That(_world.Has<Health>(entity), Is.False);
+        That(_world.Has<Label>(entity), Is.True);
+
+        _world.RemoveRange(entity, types);
+        That(_world.Has<Label>(entity), Is.False);
+    }
+
+    /// <summary>
     ///     Checks that destroyed entities do not keep their managed components alive.
     /// </summary>
     [Test]

@@ -109,24 +109,40 @@ public partial class World
     private bool _isDisposed;
 
     /// <summary>
+    ///     The base/minimum <see cref="Chunk"/> size in bytes of all <see cref="World"/>s that are created without passing one.
+    ///     Set it once at startup, <see cref="World"/>s that already exist keep theirs.
+    ///     Larger <see cref="Chunk"/>s iterate large <see cref="World"/>s faster, but every <see cref="Archetype"/> allocates at least one.
+    /// </summary>
+    public static int DefaultChunkSizeInBytes { get; set; } = 16_384;
+
+    /// <summary>
+    ///     The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/> of all <see cref="World"/>s that are created without passing one.
+    ///     Set it once at startup, <see cref="World"/>s that already exist keep theirs.
+    /// </summary>
+    public static int DefaultMinimumAmountOfEntitiesPerChunk { get; set; } = 100;
+
+    /// <summary>
     ///     Creates a <see cref="World"/> instance.
     /// </summary>
-    /// <param name="chunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes.</param>
-    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
+    /// <param name="chunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes, <see cref="DefaultChunkSizeInBytes"/> if null.</param>
+    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>, <see cref="DefaultMinimumAmountOfEntitiesPerChunk"/> if null.</param>
     /// <param name="archetypeCapacity">The initial <see cref="Archetypes"/> capacity.</param>
     /// <param name="entityCapacity">The initial <see cref="Entity"/> capacity.</param>
     /// <returns>The created <see cref="World"/> instance.</returns>
-    public static World Create(int chunkSizeInBytes = 16_384, int minimumAmountOfEntitiesPerChunk = 100, int archetypeCapacity = 2, int entityCapacity = 64)
+    public static World Create(int? chunkSizeInBytes = null, int? minimumAmountOfEntitiesPerChunk = null, int archetypeCapacity = 2, int entityCapacity = 64)
     {
+        var chunkSize = chunkSizeInBytes ?? DefaultChunkSizeInBytes;
+        var minimumEntitiesPerChunk = minimumAmountOfEntitiesPerChunk ?? DefaultMinimumAmountOfEntitiesPerChunk;
+
 #if PURE_ECS
-        return new World(-1, chunkSizeInBytes, minimumAmountOfEntitiesPerChunk, archetypeCapacity, entityCapacity);
+        return new World(-1, chunkSize, minimumEntitiesPerChunk, archetypeCapacity, entityCapacity);
 #else
         lock (WorldsLock)
         {
             var recycle = RecycledWorldIds.TryDequeue(out var id);
             var recycledId = recycle ? id : WorldSize;
 
-            var world = new World(recycledId, chunkSizeInBytes, minimumAmountOfEntitiesPerChunk, archetypeCapacity, entityCapacity);
+            var world = new World(recycledId, chunkSize, minimumEntitiesPerChunk, archetypeCapacity, entityCapacity);
 
             var worlds = _worlds;
             if (recycledId >= worlds.Length)
@@ -1548,8 +1564,7 @@ public partial class World
 
         ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
         Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {type} with id {compIndex} does not exist in this archetype.");
-        var array = chunk.Components.DangerousGetReferenceAt(compIndex);
-        component = array.GetValue(slot.Slot.Index);
+        component = chunk.GetBoxed(compIndex, slot.Slot.Index);
         return true;
     }
 
@@ -1684,23 +1699,10 @@ public partial class World
     {
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.ClearBit(type.Id);
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Remove(oldArchetype.Signature,type);
-            newArchetype = GetOrCreate(newSignature);
-        }
+        var transition = GetOrCreateRemoveTransition(in type, oldArchetype);
 
         OnComponentRemoved(entity, type);
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     /// <summary>
@@ -1859,9 +1861,7 @@ public partial class World
 
         for (var index = 0; index < components.Length; index++)
         {
-            var componentArray = components[index];
-            var component = componentArray.GetValue(entityIndex);
-            cmps[index] = component;
+            cmps[index] = chunk.GetBoxed(index, entityIndex);
         }
 
         return cmps;

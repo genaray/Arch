@@ -55,6 +55,22 @@ internal abstract class ComponentOps
     }
 
     /// <summary>
+    ///     Returns the <see cref="ComponentOps"/> of several components, at the same index as the component.
+    /// </summary>
+    /// <param name="types">The <see cref="ComponentType"/>s.</param>
+    /// <returns>The <see cref="ComponentOps"/>.</returns>
+    internal static ComponentOps[] Get(Span<ComponentType> types)
+    {
+        var ops = new ComponentOps[types.Length];
+        for (var index = 0; index < types.Length; index++)
+        {
+            ops[index] = Get(types[index]);
+        }
+
+        return ops;
+    }
+
+    /// <summary>
     ///     Creates a component array.
     /// </summary>
     /// <param name="capacity">Its length.</param>
@@ -71,6 +87,16 @@ internal abstract class ComponentOps
     ///     The source and the destination may be the same slot.
     /// </summary>
     internal abstract void Move(Array source, int sourceIndex, Array destination, int destinationIndex);
+
+    /// <summary>
+    ///     Returns one component as an <see cref="object"/>, instead of <see cref="Array.GetValue(int)"/>.
+    /// </summary>
+    internal abstract object? GetBoxed(Array array, int index);
+
+    /// <summary>
+    ///     Sets one component from an <see cref="object"/>, instead of <see cref="Array.SetValue(object, int)"/>.
+    /// </summary>
+    internal abstract void SetBoxed(Array array, int index, object value);
 }
 
 /// <summary>
@@ -107,6 +133,16 @@ internal sealed class ComponentOps<T> : ComponentOps
             item = default!;
         }
     }
+
+    internal override object? GetBoxed(Array array, int index)
+    {
+        return Unsafe.As<T[]>(array).DangerousGetReferenceAt(index);
+    }
+
+    internal override void SetBoxed(Array array, int index, object value)
+    {
+        Unsafe.As<T[]>(array).DangerousGetReferenceAt(index) = (T)value;
+    }
 }
 
 /// <summary>
@@ -141,5 +177,15 @@ internal sealed class UntypedComponentOps : ComponentOps
     {
         Array.Copy(source, sourceIndex, destination, destinationIndex, 1);
         Array.Clear(source, sourceIndex, 1);
+    }
+
+    internal override object? GetBoxed(Array array, int index)
+    {
+        return array.GetValue(index);
+    }
+
+    internal override void SetBoxed(Array array, int index, object value)
+    {
+        array.SetValue(value, index);
     }
 }

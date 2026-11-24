@@ -71,19 +71,16 @@ internal class StructuralSparseArray
 
     public void Add(int index)
     {
-        lock (this)
+        // Resize entities, growing geometrically to keep adding amortized O(1).
+        if (index >= Entities.Length)
         {
-            // Resize entities, growing geometrically to keep adding amortized O(1).
-            if (index >= Entities.Length)
-            {
-                var lenght = Entities.Length;
-                Array.Resize(ref Entities, Math.Max(index + 1, lenght * 2));
-                Array.Fill(Entities, -1, lenght, Entities.Length - lenght);
-            }
-
-            Entities[index] = Size;
-            Size++;
+            var lenght = Entities.Length;
+            Array.Resize(ref Entities, Math.Max(index + 1, lenght * 2));
+            Array.Fill(Entities, -1, lenght, Entities.Length - lenght);
         }
+
+        Entities[index] = Size;
+        Size++;
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
@@ -113,12 +110,10 @@ internal class StructuralSparseArray
 /// <summary>
 ///     The <see cref="StructuralSparseSet"/> class
 ///     stores a series of <see cref="StructuralSparseArray"/>'s and their associated components.
+///     Not thread-safe, the <see cref="CommandBuffer"/> synchronizes the access.
 /// </summary>
 internal class StructuralSparseSet
 {
-    private readonly object _createLock = new();
-    private readonly object _setLock = new();
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="StructuralSparseSet"/> class
     ///     with an optional initial <paramref name="capacity"/> (default: 64).
@@ -236,14 +231,11 @@ internal class StructuralSparseSet
 
     public int Create(in Entity entity)
     {
-        lock (_createLock)
-        {
-            var id = Count;
-            Entities.Add(new StructuralEntity(entity, id));
+        var id = Count;
+        Entities.Add(new StructuralEntity(entity, id));
 
-            Count++;
-            return id;
-        }
+        Count++;
+        return id;
     }
 
     // NOTE: If `StructuralSparseSet` were generic, this could perhaps be an indexer (T this[int index]).
@@ -256,25 +248,20 @@ internal class StructuralSparseSet
     public void Set<T>(int index)
     {
         var componentType = Component<T>.ComponentType;
-        lock (_setLock)
+
+        // Ensure that enough space for the additional component type array exists and add it if it does not exist yet.
+        EnsureTypeCapacity(componentType.Id);
+        if (!HasStructuralSparseArray(componentType))
         {
-            // Ensure that enough space for the additional component type array exists and add it if it does not exist yet.
-            EnsureTypeCapacity(componentType.Id);
-            if (!HasStructuralSparseArray(componentType))
-            {
-                EnsureUsedCapacity(UsedSize+1);
-                AddStructuralSparseArray(componentType);
-            }
+            EnsureUsedCapacity(UsedSize+1);
+            AddStructuralSparseArray(componentType);
         }
 
         // Add to array.
         var array = GetStructuralSparseArray(componentType);
-        lock (array)
+        if (!array.Contains(index))
         {
-            if (!array.Contains(index))
-            {
-                array.Add(index);
-            }
+            array.Add(index);
         }
     }
 

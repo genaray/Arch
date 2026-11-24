@@ -78,7 +78,7 @@ public sealed partial class CommandBuffer : IDisposable
     public CommandBuffer(int initialCapacity = 128)
     {
         Entities = new PooledList<Entity>(initialCapacity);
-        BufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
+        BufferedEntityInfo = new Dictionary<int, BufferedEntityInfo>(initialCapacity);
         Creates = new PooledList<CreateCommand>(initialCapacity);
         Sets = new SparseSet(initialCapacity);
         Adds = new StructuralSparseSet(initialCapacity);
@@ -101,7 +101,7 @@ public sealed partial class CommandBuffer : IDisposable
     /// <summary>
     ///     A map that stores some additional information for each <see cref="Entity"/>, which is needed for the internal <see cref="CommandBuffer"/> operations.
     /// </summary>
-    internal PooledDictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
+    internal Dictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
 
     /// <summary>
     ///     All create commands recorded in this <see cref="CommandBuffer"/>. Used to create <see cref="Entity"/>'s during <see cref="Playback"/>.
@@ -148,7 +148,22 @@ public sealed partial class CommandBuffer : IDisposable
         Size++;
     }
 
-    /// TODO : Probably just run this if the wrapped entity is negative? To save some overhead?
+    /// <summary>
+    ///     Returns the <see cref="Arch.Buffer.BufferedEntityInfo"/> of an <see cref="Entity"/> and registers the <see cref="Entity"/> if it is not buffered yet.
+    ///     The caller has to hold the lock of this <see cref="CommandBuffer"/>, since it is the only synchronization for all its sets.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <returns>Its <see cref="Arch.Buffer.BufferedEntityInfo"/>.</returns>
+    private BufferedEntityInfo GetOrRegister(in Entity entity)
+    {
+        if (!BufferedEntityInfo.TryGetValue(entity.Id, out var info))
+        {
+            Register(entity, out info);
+        }
+
+        return info;
+    }
+
     /// <summary>
     ///     Resolves an <see cref="Entity"/> originally either from a <see cref="StructuralSparseArray"/> or <see cref="SparseArray"/> to its real <see cref="Entity"/>.
     ///     This is required since we can also create new entities via this buffer and buffer operations for it. So sometimes there negative entities stored in the arrays and those must then be resolved to its newly created real entity.
@@ -159,6 +174,12 @@ public sealed partial class CommandBuffer : IDisposable
 
     internal Entity Resolve(Entity entity)
     {
+        // Only the entities created by this buffer have a negative id, all others are real already.
+        if (entity.Id >= 0)
+        {
+            return entity;
+        }
+
         var entityIndex = BufferedEntityInfo[entity.Id].Index;
         return Entities[entityIndex];
     }
@@ -194,12 +215,7 @@ public sealed partial class CommandBuffer : IDisposable
     {
         lock (this)
         {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            {
-                Register(entity, out info);
-            }
-
-            Destroys.Add(info.Index);
+            Destroys.Add(GetOrRegister(entity).Index);
         }
     }
 
@@ -214,16 +230,11 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Set<T>(in Entity entity, in T? component = default)
     {
-        BufferedEntityInfo info;
         lock (this)
         {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
+            var info = GetOrRegister(entity);
+            Sets.Set(info.SetIndex, in component);
         }
-
-        Sets.Set(info.SetIndex, in component);
     }
 
     /// <summary>
@@ -237,17 +248,12 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Add<T>(in Entity entity, in T? component = default)
     {
-        BufferedEntityInfo info;
         lock (this)
         {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
+            var info = GetOrRegister(entity);
+            Adds.Set<T>(info.AddIndex);
+            Sets.Set(info.SetIndex, in component);
         }
-
-        Adds.Set<T>(info.AddIndex);
-        Sets.Set(info.SetIndex, in component);
     }
 
     /// <summary>
@@ -259,16 +265,11 @@ public sealed partial class CommandBuffer : IDisposable
 
     public void Remove<T>(in Entity entity)
     {
-        BufferedEntityInfo info;
         lock (this)
         {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
+            var info = GetOrRegister(entity);
+            Removes.Set<T>(info.RemoveIndex);
         }
-
-        Removes.Set<T>(info.RemoveIndex);
     }
 
     /// <summary>
@@ -350,7 +351,7 @@ public sealed partial class CommandBuffer : IDisposable
                 }
 
                 var chunkArray = chunk.GetArray(sparseArray.Type);
-                Array.Copy(sparseArray.Components, sparseArray.Entities[id], chunkArray, chunkIndex, 1);
+                sparseArray.Ops.Copy(sparseArray.Components, sparseArray.Entities[id], chunkArray, chunkIndex);
 
 #if EVENTS
                 // Entity also exists in add and the set component was added recently
@@ -441,7 +442,7 @@ public sealed partial class CommandBuffer : IDisposable
     public void Dispose()
     {
         Entities.Dispose();
-        BufferedEntityInfo.Dispose();
+        BufferedEntityInfo.Clear();
         Creates.Clear();
         Sets.Clear();
         Adds.Clear();

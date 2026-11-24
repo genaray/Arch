@@ -105,6 +105,7 @@ public class Chunks
     /// <param name="index">The index.</param>
     public ref Chunk this[int index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref Items[index];
     }
 
@@ -166,22 +167,29 @@ public partial struct Chunk
     /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
     /// <param name="componentIdToArrayIndex">A lookup array which maps the component id to the array index of the component array.</param>
     /// <param name="types">The respective component structure of all entities in this <see cref="Chunk"/>.</param>
-    internal Chunk(int capacity, int[] componentIdToArrayIndex, Span<ComponentType> types)
+    internal Chunk(int capacity, int[] componentIdToArrayIndex, Span<ComponentType> types) : this(capacity, componentIdToArrayIndex, ComponentOps.Get(types)) { }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Chunk"/> struct
+    /// </summary>
+    /// <param name="capacity">How many entities of the respective component structure fit into this <see cref="Chunk"/>.</param>
+    /// <param name="componentIdToArrayIndex">A lookup array which maps the component id to the array index of the component array.</param>
+    /// <param name="ops">The <see cref="ComponentOps"/> of the respective component structure of all entities in this <see cref="Chunk"/>, shared by all chunks of an <see cref="Archetype"/>.</param>
+    internal Chunk(int capacity, int[] componentIdToArrayIndex, ComponentOps[] ops)
     {
         // Calculate capacity and init arrays.
         Count = 0;
         Capacity = capacity;
 
         Entities = new Entity[Capacity];
-        Components = new Array[types.Length];
-        _ops = new ComponentOps[types.Length];
+        Components = new Array[ops.Length];
+        _ops = ops;
 
         // Init mapping.
         ComponentIdToArrayIndex = componentIdToArrayIndex;
-        for (var index = 0; index < types.Length; index++)
+        for (var index = 0; index < ops.Length; index++)
         {
-            _ops[index] = ComponentOps.Get(types[index]);
-            Components[index] = _ops[index].Create(Capacity);
+            Components[index] = ops[index].Create(Capacity);
         }
     }
 
@@ -319,6 +327,7 @@ public partial struct Chunk
     /// <param name="index">The index.</param>
     /// <returns>A reference to the <see cref="Arch.Core.Entity"/>.</returns>
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Entity Entity(int index)
     {
         return ref Entities.DangerousGetReferenceAt(index);
@@ -355,6 +364,7 @@ public partial struct Chunk
     ///     Creates and returns a new <see cref="EntityEnumerator"/> instance to iterate over all used rows representing <see cref="Arch.Core.Entity"/>'s.
     /// </summary>
     /// <returns>A new <see cref="EntityEnumerator"/> instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public EntityEnumerator GetEnumerator()
     {
         return new EntityEnumerator(Count);
@@ -403,6 +413,7 @@ public partial struct Chunk
     /// <returns>The index in the <see cref="Components"/> array.</returns>
     [SkipLocalsInit]
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int Index<T>()
     {
         var id = Component<T>.ComponentType.Id;
@@ -417,6 +428,7 @@ public partial struct Chunk
     /// <returns>The array.</returns>
     [SkipLocalsInit]
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] GetArray<T>()
     {
         var index = Index<T>();
@@ -435,6 +447,7 @@ public partial struct Chunk
     /// <returns>The array <see cref="Span{T}"/>.</returns>
     [SkipLocalsInit]
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> GetSpan<T>()
     {
         ref var item = ref GetFirst<T>();
@@ -448,6 +461,7 @@ public partial struct Chunk
     /// <returns>The used part of the array as <see cref="Span{T}"/>.</returns>
     [SkipLocalsInit]
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> GetUsedSpan<T>()
     {
         ref var item = ref GetFirst<T>();
@@ -461,6 +475,7 @@ public partial struct Chunk
     /// <returns>A reference to the first element.</returns>
     [SkipLocalsInit]
     [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T GetFirst<T>()
     {
         return ref GetArray<T>().DangerousGetReference();
@@ -477,8 +492,8 @@ public partial struct Chunk
     /// <param name="cmp">The component value.</param>
     public void Copy(int index, object cmp)
     {
-        var array = GetArray(cmp.GetType());
-        array.SetValue(cmp, index);
+        var arrayIndex = Index(cmp.GetType());
+        _ops.DangerousGetReferenceAt(arrayIndex).SetBoxed(Components.DangerousGetReferenceAt(arrayIndex), index, cmp);
     }
 
     /// <summary>
@@ -514,8 +529,19 @@ public partial struct Chunk
     [Pure]
     public object? Get(int index, ComponentType type)
     {
-        var array = GetArray(type);
-        return array.GetValue(index);
+        return GetBoxed(Index(type), index);
+    }
+
+    /// <summary>
+    ///     Returns a component from an index within the <see cref="Chunk"/> as an <see cref="object"/>.
+    /// </summary>
+    /// <param name="arrayIndex">The index of the component array in the <see cref="Components"/>.</param>
+    /// <param name="index">The index of the <see cref="Arch.Core.Entity"/>.</param>
+    /// <returns>A component casted to an <see cref="object"/>.</returns>
+    [Pure]
+    internal object? GetBoxed(int arrayIndex, int index)
+    {
+        return _ops.DangerousGetReferenceAt(arrayIndex).GetBoxed(Components.DangerousGetReferenceAt(arrayIndex), index);
     }
 
     /// <summary>

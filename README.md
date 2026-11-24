@@ -62,7 +62,7 @@ There's more to explore, for example...
 - [x] Grateful for every contribution 
 
 ## 🚀 Features
-- [x] Archetypes with 16KB large chunks for your massive worlds
+- [x] Archetypes with configurable chunks (16KB by default) for your massive worlds
 - [x] Incredibly small Entity size
 - [x] Optional `Pure-ECS` for maximum performance and efficiency
 - [x] Bulk/Batch Entity operations 
@@ -76,6 +76,53 @@ There's more to explore, for example...
 - [x] Several extensions with systems, tools, source generators and more
 - [x] Monogame, Unity, Godot Integration guides
 - And much more... 
+
+## ⚡ Iterating fast
+Pick the query style that fits, from simplest to fastest:
+```cs
+var description = new QueryDescription().WithAll<Position, Velocity>();
+
+// 1. Lambda, the simplest.
+world.Query(in description, (ref Position pos, ref Velocity vel) => pos.X += vel.Dx);
+
+// 2. Struct, the call is inlined. Keep the Query to skip looking it up on every call.
+var query = world.Query(in description);
+var move = new Move();
+world.InlineQuery<Move, Position, Velocity>(query, ref move);
+
+// 3. Chunk, gets all components of a chunk as spans, which allows SIMD.
+var moveChunks = new MoveChunks();
+world.InlineChunkQuery<MoveChunks, Position, Velocity>(query, ref moveChunks);
+
+public struct Move : IForEach<Position, Velocity>
+{
+    public void Update(ref Position pos, ref Velocity vel) => pos.X += vel.Dx;
+}
+
+public struct MoveChunks : IChunkForEach<Position, Velocity>
+{
+    public void Update(Span<Position> positions, Span<Velocity> velocities)
+    {
+        var x = MemoryMarshal.Cast<Position, float>(positions);
+        var dx = MemoryMarshal.Cast<Velocity, float>(velocities);
+
+        var index = 0;
+        for (; index <= x.Length - Vector<float>.Count; index += Vector<float>.Count)
+        {
+            (new Vector<float>(x.Slice(index)) + new Vector<float>(dx.Slice(index))).CopyTo(x.Slice(index));
+        }
+
+        for (; index < x.Length; index++)
+        {
+            x[index] += dx[index];
+        }
+    }
+}
+```
+> [!NOTE]
+> Chunk queries pay off if the data fits into the CPU cache, about 2.5x faster in our benchmarks. Iterating millions of entities is limited by memory bandwidth, there larger chunks help, which is the only thing that does.
+> Set `World.DefaultChunkSizeInBytes = 65_536;` once at startup, or pass `World.Create(chunkSizeInBytes: 65_536)`. In our benchmarks 64KB chunks iterated 1M entities about 20% faster than the default 16KB, but every archetype allocates at least one chunk.
+> Parallel queries (`ParallelQuery`, `InlineParallelQuery`) split the chunks over all threads of the `World.SharedJobScheduler`, they pay off for a few thousand entities per thread or expensive updates.
 
 # 🧩 Extensions
 

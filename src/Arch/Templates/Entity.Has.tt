@@ -21,7 +21,7 @@ public static partial class EntityExtensions
     [Pure]
     public static bool Has<<#= generics #>>(this Entity entity)
     {
-        var world = World.Worlds[entity.WorldId];
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         return world.Has<<#= generics #>>(entity);
     }
 

@@ -24,11 +24,7 @@ public sealed class BitSet
 
     public static int RequiredLength(int id)
     {
-#if NET7_0
-        return (id >> 5) + int.Sign(id & BitSize);
-#else
-        return (int)Math.Ceiling((float)id / BitSize);
-#endif
+        return (id + BitSize) >> IndexSize;
     }
 
     /// <summary>

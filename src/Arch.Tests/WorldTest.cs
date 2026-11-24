@@ -43,6 +43,43 @@ public sealed partial class WorldTest
     }
 
     [Test]
+    public void CreateUsesDefaultChunkSizeUnlessOneIsPassed()
+    {
+        var defaultChunkSize = World.DefaultChunkSizeInBytes;
+        var defaultMinimumEntities = World.DefaultMinimumAmountOfEntitiesPerChunk;
+        try
+        {
+            World.DefaultChunkSizeInBytes = 65_536;
+            World.DefaultMinimumAmountOfEntitiesPerChunk = 7;
+
+            using var defaultWorld = World.Create();
+            using var explicitWorld = World.Create(chunkSizeInBytes: 4_096);
+
+            That(defaultWorld.BaseChunkSize, Is.EqualTo(65_536));
+            That(defaultWorld.BaseChunkEntityCount, Is.EqualTo(7));
+            That(explicitWorld.BaseChunkSize, Is.EqualTo(4_096));
+            That(explicitWorld.BaseChunkEntityCount, Is.EqualTo(7));
+        }
+        finally
+        {
+            World.DefaultChunkSizeInBytes = defaultChunkSize;
+            World.DefaultMinimumAmountOfEntitiesPerChunk = defaultMinimumEntities;
+        }
+    }
+
+    [Test]
+    public void TryGetArchetypeFindsArchetypeByBitSetInLargerBuffer()
+    {
+        var archetype = _world.GetArchetype(_world.Create(_entityGroup));
+
+        Span<uint> padded = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size) + 8];
+        archetype.BitSet.AsSpan(padded);
+
+        That(_world.TryGetArchetype(new SpanBitSet(padded), out var found), Is.True);
+        That(found, Is.SameAs(archetype));
+    }
+
+    [Test]
     public void CreateSingleComponentBatchOnFreshWorld()
     {
         using var world = World.Create();

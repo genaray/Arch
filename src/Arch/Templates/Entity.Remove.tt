@@ -18,7 +18,7 @@ public static partial class EntityExtensions
 #>
     public static void Remove<<#= generics #>>(this Entity entity)
     {
-        var world = World.Worlds[entity.WorldId];
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         world.Remove<<#= generics #>>(entity);
     }
 

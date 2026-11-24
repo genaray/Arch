@@ -433,13 +433,20 @@ public static class Component
 
     /// <summary>
     ///     Calculates the hash code of a <see cref="uint"/> array, which is unique for the elements contained in the array.
+    ///     Trailing zero words are ignored, so the same bits hash equally no matter how large the buffer holding them is.
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/>.</param>
     /// <returns>A unique hashcode for the contained elements.</returns>
     public static int GetHashCode(Span<uint> span)
     {
+        var length = span.Length;
+        while (length > 0 && span[length - 1] == 0)
+        {
+            length--;
+        }
+
         var hashCode = new HashCode();
-        hashCode.AddSpan(span);
+        hashCode.AddSpan(span[..length]);
         return hashCode.ToHashCode();
     }
 }

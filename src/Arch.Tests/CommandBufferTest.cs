@@ -229,6 +229,40 @@ public sealed partial class CommandBufferTest
     }
 
     [Test]
+    public void CommandBufferRecordsFromMultipleThreads()
+    {
+        const int amount = 20_000;
+        var world = World.Create();
+        var entities = new Entity[amount];
+        for (var index = 0; index < amount; index++)
+        {
+            entities[index] = world.Create<Transform>();
+        }
+
+        using var commandBuffer = new CommandBuffer();
+        System.Threading.Tasks.Parallel.For(0, amount, index =>
+        {
+            commandBuffer.Add(in entities[index], new Rotation { X = index });
+            commandBuffer.Set(in entities[index], new Transform { X = -index });
+            if (index % 2 == 0)
+            {
+                commandBuffer.Add(in entities[index], new Ai());
+            }
+        });
+
+        commandBuffer.Playback(world);
+
+        for (var index = 0; index < amount; index++)
+        {
+            That(world.Get<Rotation>(entities[index]).X, Is.EqualTo(index));
+            That(world.Get<Transform>(entities[index]).X, Is.EqualTo(-index));
+            That(world.Has<Ai>(entities[index]), Is.EqualTo(index % 2 == 0));
+        }
+
+        World.Destroy(world);
+    }
+
+    [Test]
     public void CommandBufferCombined()
     {
         var world = World.Create();

@@ -41,18 +41,24 @@ internal class SparseArray
     public SparseArray(ComponentType type, int capacity = 64)
     {
         Type = type;
+        Ops = ComponentOps.Get(type);
 
         Capacity = capacity;
         Size = 0;
         Entities = new int[Capacity];
         Array.Fill(Entities, -1);
-        Components = ArrayRegistry.GetArray(type, Capacity);
+        Components = Ops.Create(Capacity);
     }
 
     /// <summary>
     ///     Gets the <see cref="ComponentType"/> the <see cref="SparseArray"/> stores.
     /// </summary>
     public ComponentType Type { get; }
+
+    /// <summary>
+    ///     Gets the <see cref="ComponentOps"/> to create and copy the components of this <see cref="SparseArray"/>.
+    /// </summary>
+    public ComponentOps Ops { get; }
 
     /// <summary>
     ///     Gets the total number of elements the <see cref="SparseArray"/> can hold without resizing.
@@ -82,29 +88,26 @@ internal class SparseArray
 
     public void Add(int index)
     {
-        lock (this)
+        // Skip since entity fits into array
+        if (index >= Capacity)
         {
-            // Skip since entity fits into array
-            if (index >= Capacity)
-            {
-                // Calculate new array size that fits the passed index
-                var newCapacity = MathExtensions.NextPowerOfTwo(index + 1);
-                var newLength = Math.Max(Capacity, newCapacity); // keep existing capacity if already larger
+            // Calculate new array size that fits the passed index
+            var newCapacity = MathExtensions.NextPowerOfTwo(index + 1);
+            var newLength = Math.Max(Capacity, newCapacity); // keep existing capacity if already larger
 
-                // Resize entities array
-                Array.Resize(ref Entities, newLength);
-                Array.Fill(Entities, -1, Capacity, newLength-Capacity);
+            // Resize entities array
+            Array.Resize(ref Entities, newLength);
+            Array.Fill(Entities, -1, Capacity, newLength-Capacity);
 
-                // Resize component array
-                var array = ArrayRegistry.GetArray(Type, newLength);
-                Components.CopyTo(array, 0);
-                Components = array;
-                Capacity = newLength;
-            }
-
-            Entities[index] = Size;
-            Size++;
+            // Resize component array
+            var array = Ops.Create(newLength);
+            Components.CopyTo(array, 0);
+            Components = array;
+            Capacity = newLength;
         }
+
+        Entities[index] = Size;
+        Size++;
     }
 
     // NOTE: Should this be `Contains` to follow other existing .NET APIs (ICollection<T>.Contains(T))?
@@ -140,10 +143,7 @@ internal class SparseArray
     /// <param name="component">The component instance.</param>
     public void Set<T>(int index, in T component)
     {
-        lock (this)
-        {
-            GetArray<T>()[Entities[index]] = component;
-        }
+        GetArray<T>()[Entities[index]] = component;
     }
 
     // NOTE: Should this be `ElementAt` to follow other existing .NET APIs (Enumerable.ElementAt)?
@@ -175,12 +175,10 @@ internal class SparseArray
 /// <summary>
 ///     The <see cref="SparseSet"/> class
 ///     Stores a series of <see cref="SparseArray"/>'s and their associated components.
+///     Not thread-safe, the <see cref="CommandBuffer"/> synchronizes the access.
 /// </summary>
 internal class SparseSet
 {
-    private readonly object _createLock = new(); // Lock for create operations
-    private readonly object _setLock = new();    // Lock for set operations
-
     /// <summary>
     ///     Initializes a new instance of the <see cref="SparseSet"/> class
     ///     with an optional initial <paramref name="capacity"/> (default: 64).
@@ -267,15 +265,12 @@ internal class SparseSet
 
     public int Create(in Entity entity)
     {
-        lock (_createLock)
-        {
-            var id = Count;
-            Entities.Add(new SparseEntity(entity, id));
+        var id = Count;
+        Entities.Add(new SparseEntity(entity, id));
 
-            Count++;
+        Count++;
 
-            return id;
-        }
+        return id;
     }
 
     /// <summary>
@@ -324,25 +319,20 @@ internal class SparseSet
     public void Set<T>(int index, in T component)
     {
         var componentType = Component<T>.ComponentType;
-        lock (_setLock)
+
+        // Ensure that enough capacity for the component array exists and add it
+        EnsureTypeCapacity(componentType.Id);
+        if (!HasSparseArray(componentType))
         {
-            // Ensure that enough capacity for the component array exists and add it
-            EnsureTypeCapacity(componentType.Id);
-            if (!HasSparseArray(componentType))
-            {
-                EnsureUsedCapacity(UsedSize+1);
-                AddSparseArray(componentType);
-            }
+            EnsureUsedCapacity(UsedSize+1);
+            AddSparseArray(componentType);
         }
 
         // Add and set to `SparseArray`.
         var array = GetSparseArray(componentType);
-        lock (array)
+        if (!array.Contains(index))
         {
-            if (!array.Contains(index))
-            {
-                array.Add(index);
-            }
+            array.Add(index);
         }
 
         array.Set(index, in component);

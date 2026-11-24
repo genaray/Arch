@@ -20,7 +20,7 @@ public static partial class EntityExtensions
 #>
     public static void Set<<#= generics #>>(this Entity entity, <#= parameters #>)
     {
-        var world = World.Worlds[entity.WorldId];
+        var world = World.Worlds.DangerousGetReferenceAt(entity.WorldId);
         world.Set<<#= generics #>>(entity, <#= insertParams #>);
     }
 

@@ -46,6 +46,50 @@ public sealed class BitSetTest
     }
 
     /// <summary>
+    ///     Checks if the hash ignores trailing zero words, so a bitset in a larger buffer hashes like its <see cref="Signature"/>.
+    /// </summary>
+    [Test]
+    public void HashIgnoresTrailingZeroWords()
+    {
+        var signature = new Signature(new ComponentType(1, 0), new ComponentType(5, 0));
+
+        Span<uint> padded = stackalloc uint[8];
+        var spanBitSet = new SpanBitSet(padded);
+        spanBitSet.SetBit(1);
+        spanBitSet.SetBit(5);
+
+        That(spanBitSet.GetHashCode(), Is.EqualTo(signature.GetHashCode()));
+    }
+
+    /// <summary>
+    ///     Checks if <see cref="Signature"/>s with the same <see cref="ComponentType"/>s in a different order are equal, and others are not.
+    /// </summary>
+    [Test]
+    public void SignatureEqualityIgnoresOrder()
+    {
+        var signature = new Signature(new ComponentType(1, 0), new ComponentType(36, 0), new ComponentType(65, 0));
+        var reordered = new Signature(new ComponentType(65, 0), new ComponentType(1, 0), new ComponentType(36, 0));
+        var other = new Signature(new ComponentType(1, 0), new ComponentType(36, 0), new ComponentType(66, 0));
+
+        That(signature.Equals(reordered), Is.True);
+        That(signature.Equals(other), Is.False);
+    }
+
+    /// <summary>
+    ///     Checks the required amount of <see cref="uint"/>s to hold the bits of all ids below the passed one.
+    /// </summary>
+    [TestCase(0, 0)]
+    [TestCase(1, 1)]
+    [TestCase(32, 1)]
+    [TestCase(33, 2)]
+    [TestCase(64, 2)]
+    [TestCase(65, 3)]
+    public void RequiredLength(int ids, int expected)
+    {
+        That(BitSet.RequiredLength(ids), Is.EqualTo(expected));
+    }
+
+    /// <summary>
     ///     Checks <see cref="BitSet"/> set all.
     /// </summary>
     [Test]
