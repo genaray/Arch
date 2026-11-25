@@ -23,28 +23,6 @@ public partial class World
     internal List<IJob> JobsCache { get; set; }
 
     /// <summary>
-    ///     The minimum amount of <see cref="Entity"/>'s a job should process, since scheduling a job costs more than processing fewer.
-    /// </summary>
-    private const int MinEntitiesPerJob = 4096;
-
-    /// <summary>
-    ///     The maximum amount of jobs per thread. More jobs than threads balance the load if some <see cref="Chunk"/>s take longer than others.
-    /// </summary>
-    private const int MaxJobsPerThread = 4;
-
-    /// <summary>
-    ///     Splits the used <see cref="Chunk"/>'s of an <see cref="Archetype"/> into ranges, one per job.
-    ///     Allocated but unused trailing chunks are skipped, and small archetypes get fewer jobs.
-    /// </summary>
-    /// <param name="archetype">The <see cref="Archetype"/>.</param>
-    /// <returns>The <see cref="RangePartitioner"/> of its used chunks.</returns>
-    private static RangePartitioner PartitionChunks(Archetype archetype)
-    {
-        var jobCount = Math.Clamp(archetype.EntityCount / MinEntitiesPerJob, 1, Environment.ProcessorCount * MaxJobsPerThread);
-        return new RangePartitioner(jobCount, archetype.Count + 1);
-    }
-
-    /// <summary>
     ///     Searches all matching <see cref="Entity"/>'s by a <see cref="QueryDescription"/> and calls the passed <see cref="ForEach"/> delegate.
     ///     Runs multithreaded and will process the matching <see cref="Entity"/>'s in parallel.
     /// </summary>
@@ -104,9 +82,11 @@ public partial class World
     /// </remarks>
     /// <remarks>
     ///     Processes <see cref="Chunk"/>s parallel, but blocks the thread until all <see cref="Chunk"/>s are processed.
+    ///     The calling thread processes <see cref="Chunk"/>s too, so a small query runs on it alone and is not slower than a serial one.
+    ///     Every <see cref="Chunk"/> is processed with its own copy of <paramref name="innerJob"/>, and the <see cref="Chunk"/>s are handed out dynamically to the threads, so the work balances itself.
     /// </remarks>
     ///  <remarks>
-    ///     Pools generated <see cref="ChunkIterationJob{T}"/>s internally to avoid garbage.
+    ///     Pools its jobs internally to avoid garbage.
     /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
@@ -121,38 +101,26 @@ public partial class World
             throw new Exception($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
         }
 
-        // Cast pool in an unsafe fast way and run the query.
-        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
-        var query = Query(in queryDescription);
-        foreach (var archetype in query.GetArchetypeIterator())
+        var dispatcher = JobMeta<JobChunkDispatcher>.Pool.Get();
+        foreach (var archetype in Query(in queryDescription).GetArchetypeIterator())
         {
-            foreach (var range in PartitionChunks(archetype))
-            {
-                var job = pool.Get();
-                job.Start = range.Start;
-                job.Size = range.Length;
-                job.Chunks = archetype.Chunks;
-                job.Instance = innerJob;
-
-                var jobHandle = SharedJobScheduler.Schedule(job);
-                JobsCache.Add(job);
-                JobHandles.Add(jobHandle);
-            }
+            dispatcher.Add(archetype);
         }
 
-        // Schedule, flush, wait once for all archetypes, return.
-        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
-        SharedJobScheduler.Flush();
-        handle.Complete();
+        // The calling thread works too, so small queries need no helpers at all and never wait for a thread to wake up.
+        var helperCount = dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount);
+        dispatcher.Start(helperCount + 1);
+        var handle = ScheduleHelpers(dispatcher, innerJob, helperCount);
 
-        for (var index = 0; index < JobsCache.Count; index++)
+        dispatcher.Run(innerJob);
+        if (helperCount > 0)
         {
-            var job = Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]);
-            pool.Return(job);
+            handle.Complete();
         }
 
-        JobHandles.Clear();
-        JobsCache.Clear();
+        ReleaseHelpers<T>();
+        dispatcher.Clear();
+        JobMeta<JobChunkDispatcher>.Pool.Return(dispatcher);
     }
 
     /// <summary>
@@ -160,6 +128,9 @@ public partial class World
     /// </summary>
     /// <remarks>
     ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
+    /// </remarks>
+    /// <remarks>
+    ///     Does not wait, complete the returned <see cref="JobHandle"/> before the <see cref="Chunk"/>s are used or changed. Allocates its jobs, since nobody knows when they are done.
     /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
@@ -174,30 +145,68 @@ public partial class World
             throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
         }
 
-        // Cast pool in an unsafe fast way and run the query.
-        var query = Query(in queryDescription);
-        foreach (var archetype in query.GetArchetypeIterator())
+        var dispatcher = new JobChunkDispatcher();
+        foreach (var archetype in Query(in queryDescription).GetArchetypeIterator())
         {
-            foreach (var range in PartitionChunks(archetype))
-            {
-                var job = new ChunkIterationJob<T>
-                {
-                    Start = range.Start,
-                    Size = range.Length,
-                    Chunks = archetype.Chunks,
-                    Instance = innerJob
-                };
-
-                var jobHandle = SharedJobScheduler.Schedule(job);
-                JobHandles.Add(jobHandle);
-            }
+            dispatcher.Add(archetype);
         }
 
-        // Schedule, flush, wait, return.
-        var handle = SharedJobScheduler.CombineDependencies(JobHandles.AsSpan());
+        // Nobody else works on the chunks, so at least one helper is needed.
+        var helperCount = Math.Max(1, dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount));
+        dispatcher.Start(helperCount);
+        var handle = ScheduleHelpers(dispatcher, innerJob, helperCount);
+
+        // The jobs are not returned to their pool, since nobody knows when they are done.
+        JobsCache.Clear();
+        return handle;
+    }
+
+    /// <summary>
+    ///     Schedules jobs which help processing the <see cref="Chunk"/>s of a <see cref="JobChunkDispatcher"/> and flushes them to the worker threads.
+    ///     The jobs are taken from a pool and put into the <see cref="JobsCache"/>, return them with <see cref="ReleaseHelpers{T}"/> after they are completed.
+    /// </summary>
+    /// <param name="dispatcher">The <see cref="JobChunkDispatcher"/> which hands out the <see cref="Chunk"/>s.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked on each <see cref="Chunk"/>.</param>
+    /// <param name="helperCount">The amount of jobs to schedule.</param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface.</typeparam>
+    /// <returns>A <see cref="JobHandle"/> that completes once all jobs are done, or a default one if there are no jobs.</returns>
+    private JobHandle ScheduleHelpers<T>(JobChunkDispatcher dispatcher, in T innerJob, int helperCount) where T : struct, IChunkJob
+    {
+        if (helperCount == 0)
+        {
+            return default;
+        }
+
+        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
+        for (var index = 0; index < helperCount; index++)
+        {
+            var job = pool.Get();
+            job.Dispatcher = dispatcher;
+            job.Instance = innerJob;
+
+            JobsCache.Add(job);
+            JobHandles.Add(SharedJobScheduler!.Schedule(job));
+        }
+
+        var handle = SharedJobScheduler!.CombineDependencies(JobHandles.AsSpan());
         SharedJobScheduler.Flush();
         JobHandles.Clear();
 
         return handle;
+    }
+
+    /// <summary>
+    ///     Returns the jobs scheduled by <see cref="ScheduleHelpers{T}"/> to their pool, they must be completed.
+    /// </summary>
+    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface.</typeparam>
+    private void ReleaseHelpers<T>() where T : struct, IChunkJob
+    {
+        var pool = JobMeta<ChunkIterationJob<T>>.Pool;
+        for (var index = 0; index < JobsCache.Count; index++)
+        {
+            pool.Return(Unsafe.As<ChunkIterationJob<T>>(JobsCache[index]));
+        }
+
+        JobsCache.Clear();
     }
 }

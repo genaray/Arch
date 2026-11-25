@@ -5,7 +5,7 @@ namespace Arch.Benchmarks;
 
 /// <summary>
 ///     Measures parallel queries against the serial ones for different layouts of a world:
-///     one large archetype, a large archetype with many unused chunks, and many small archetypes.
+///     one large archetype, a large archetype with many unused chunks, many small archetypes, and a world too small to be worth the threads.
 /// </summary>
 [HtmlExporter]
 [MemoryDiagnoser]
@@ -19,6 +19,7 @@ public class ParallelQueryBenchmark
 
     private JobScheduler _jobScheduler;
     private World _large;
+    private World _small;
     private World _withUnusedChunks;
     private World _manyArchetypes;
 
@@ -36,6 +37,9 @@ public class ParallelQueryBenchmark
 
         _large = World.Create();
         _large.Create<Transform, Velocity>(1_000_000);
+
+        _small = World.Create();
+        _small.Create<Transform, Velocity>(2_000);
 
         // Capacity for ten times the entities that exist, so most chunks are empty.
         _withUnusedChunks = World.Create();
@@ -65,6 +69,7 @@ public class ParallelQueryBenchmark
         World.SharedJobScheduler = null;
         _jobScheduler.Dispose();
         World.Destroy(_large);
+        World.Destroy(_small);
         World.Destroy(_withUnusedChunks);
         World.Destroy(_manyArchetypes);
     }
@@ -74,6 +79,12 @@ public class ParallelQueryBenchmark
 
     [Benchmark]
     public void LargeParallel() => RunParallel(_large);
+
+    [Benchmark]
+    public void SmallSerial() => Run(_small);
+
+    [Benchmark]
+    public void SmallParallel() => RunParallel(_small);
 
     [Benchmark]
     public void UnusedChunksSerial() => Run(_withUnusedChunks);

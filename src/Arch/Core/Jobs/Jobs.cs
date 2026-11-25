@@ -1,3 +1,4 @@
+using System.Threading;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Extensions.ObjectPool;
 using Schedulers;
@@ -15,8 +16,8 @@ namespace Arch.Core;
 public static class JobMeta<T> where T : class, new()
 {
     /// <summary>
-    ///     How many jobs the <see cref="Pool"/> keeps. A parallel query schedules the jobs of all its archetypes at once,
-    ///     the default of twice the processor count would drop and reallocate jobs on every query with many archetypes.
+    ///     How many jobs the <see cref="Pool"/> keeps. A parallel query takes one job per helper thread at once,
+    ///     the default of twice the processor count would drop and reallocate jobs if the scheduler runs more threads than that.
     /// </summary>
     private const int MaximumRetainedJobs = 1024;
 
@@ -171,65 +172,165 @@ public struct IForEachJob<T> : IChunkJob where T : IForEach
 }
 
 /// <summary>
+///     The <see cref="JobChunkDispatcher"/> class
+///     hands out the used <see cref="Chunk"/>s of several <see cref="Archetype"/>s to several threads, in small batches.
+///     Every thread asks for its next batch once it is done with the previous one, so threads that are faster or have cheaper <see cref="Chunk"/>s simply process more of them
+///     and the work balances itself, no matter how it is distributed.
+/// </summary>
+/// <remarks>
+///     Fill it with <see cref="Add"/>, then call <see cref="Start"/> once and <see cref="Run{T}"/> on every thread that takes part.
+///     <see cref="Chunk"/>s of all <see cref="Archetype"/>s share one index space, so many small <see cref="Archetype"/>s need no more jobs than one large one.
+/// </remarks>
+internal sealed class JobChunkDispatcher
+{
+    /// <summary>
+    ///     The minimum amount of <see cref="Entity"/>s a helper thread should have, since scheduling a job costs more than processing fewer.
+    /// </summary>
+    private const int MinEntitiesPerHelper = 4096;
+
+    /// <summary>
+    ///     How many batches each thread should get on average. More batches than threads balance the load if some <see cref="Chunk"/>s take longer than others.
+    /// </summary>
+    private const int BatchesPerThread = 8;
+
+    /// <summary>
+    ///     The <see cref="Chunk"/> arrays of the added <see cref="Archetype"/>s.
+    /// </summary>
+    private Chunk[][] _chunkArrays = new Chunk[8][];
+
+    /// <summary>
+    ///     For every <see cref="Chunk"/> array the index behind its last used <see cref="Chunk"/> in the shared index space, which is the same as the first index of the next one.
+    /// </summary>
+    private int[] _endIndexes = new int[8];
+
+    private int _arrayCount;
+    private int _nextBatch;
+    private int _batchSize = 1;
+
+    /// <summary>
+    ///     The amount of <see cref="Entity"/>s in all added <see cref="Archetype"/>s.
+    /// </summary>
+    internal int EntityCount { get; private set; }
+
+    /// <summary>
+    ///     The amount of used <see cref="Chunk"/>s in all added <see cref="Archetype"/>s.
+    /// </summary>
+    internal int ChunkCount
+    {
+        get => _arrayCount == 0 ? 0 : _endIndexes[_arrayCount - 1];
+    }
+
+    /// <summary>
+    ///     Adds the used <see cref="Chunk"/>s of an <see cref="Archetype"/>, the allocated but unused ones at its end are skipped.
+    /// </summary>
+    /// <param name="archetype">The <see cref="Archetype"/>.</param>
+    internal void Add(Archetype archetype)
+    {
+        if (_arrayCount == _chunkArrays.Length)
+        {
+            Array.Resize(ref _chunkArrays, _arrayCount * 2);
+            Array.Resize(ref _endIndexes, _arrayCount * 2);
+        }
+
+        _chunkArrays[_arrayCount] = archetype.Chunks;
+        _endIndexes[_arrayCount] = ChunkCount + archetype.Count + 1;
+        _arrayCount++;
+
+        EntityCount += archetype.EntityCount;
+    }
+
+    /// <summary>
+    ///     Calculates how many helper threads are worth to wake up for the added <see cref="Chunk"/>s, from none to all available ones.
+    /// </summary>
+    /// <param name="availableThreads">The amount of threads that can help.</param>
+    /// <returns>The amount of helper threads.</returns>
+    internal int GetHelperCount(int availableThreads)
+    {
+        return Math.Clamp(EntityCount / MinEntitiesPerHelper, 0, availableThreads);
+    }
+
+    /// <summary>
+    ///     Prepares handing out the added <see cref="Chunk"/>s to a number of threads.
+    /// </summary>
+    /// <param name="threadCount">The amount of threads that call <see cref="Run{T}"/>.</param>
+    internal void Start(int threadCount)
+    {
+        _batchSize = Math.Max(1, ChunkCount / (threadCount * BatchesPerThread));
+        _nextBatch = 0;
+    }
+
+    /// <summary>
+    ///     Removes all added <see cref="Archetype"/>s, so the instance can be used again.
+    /// </summary>
+    internal void Clear()
+    {
+        Array.Clear(_chunkArrays, 0, _arrayCount);
+        _arrayCount = 0;
+        EntityCount = 0;
+    }
+
+    /// <summary>
+    ///     Processes <see cref="Chunk"/>s with an <see cref="IChunkJob"/> until all of them are taken, by this and by all other threads running this method.
+    ///     Every <see cref="Chunk"/> gets its own copy of the job.
+    /// </summary>
+    /// <param name="job">The <see cref="IChunkJob"/> that is called on each <see cref="Chunk"/>.</param>
+    /// <typeparam name="T">The type of the <see cref="IChunkJob"/>.</typeparam>
+    internal void Run<T>(in T job) where T : struct, IChunkJob
+    {
+        // Batches are taken in ascending order, so the array of the next chunk is never before the one of the last.
+        var arrayIndex = 0;
+        while (TryTakeBatch(out var chunkIndex, out var endIndex))
+        {
+            for (; chunkIndex < endIndex; chunkIndex++)
+            {
+                while (_endIndexes[arrayIndex] <= chunkIndex)
+                {
+                    arrayIndex++;
+                }
+
+                var firstIndex = arrayIndex == 0 ? 0 : _endIndexes[arrayIndex - 1];
+                var jobCopy = job;
+                jobCopy.Execute(ref _chunkArrays[arrayIndex][chunkIndex - firstIndex]);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Takes the next batch of <see cref="Chunk"/>s, no other thread gets the same.
+    /// </summary>
+    /// <param name="startIndex">The index of the first <see cref="Chunk"/> of the batch.</param>
+    /// <param name="endIndex">The index behind the last <see cref="Chunk"/> of the batch.</param>
+    /// <returns>True if there was a batch left, false if all <see cref="Chunk"/>s are taken.</returns>
+    private bool TryTakeBatch(out int startIndex, out int endIndex)
+    {
+        startIndex = Interlocked.Add(ref _nextBatch, _batchSize) - _batchSize;
+        endIndex = Math.Min(startIndex + _batchSize, ChunkCount);
+        return startIndex < ChunkCount;
+    }
+}
+
+/// <summary>
 ///     The <see cref="ChunkIterationJob{T}"/> class
-///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> and the <see cref="World"/> to iterate multithreaded over chunks.
+///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> to help processing the <see cref="Chunk"/>s of a <see cref="JobChunkDispatcher"/> on another thread.
 /// </summary>
 /// <typeparam name="T">The generic type that implements the <see cref="IChunkJob"/> interface.</typeparam>
-public sealed class ChunkIterationJob<T> : IJob where T : IChunkJob
+public sealed class ChunkIterationJob<T> : IJob where T : struct, IChunkJob
 {
-
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
+    ///     The <see cref="JobChunkDispatcher"/> which hands out the <see cref="Chunk"/>s.
     /// </summary>
-    public ChunkIterationJob()
-    {
-        Chunks = Array.Empty<Chunk>();
-    }
+    internal JobChunkDispatcher Dispatcher { get; set; } = null!;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ChunkIterationJob{T}"/> class.
+    ///     An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
     /// </summary>
-    /// <param name="start">The start at which this job begins to process the <see cref="Chunks"/>.</param>
-    /// <param name="size">The size or lengths, how man <see cref="Chunks"/> this job will process.</param>
-    /// <param name="chunks">The <see cref="Chunk"/> array being processed.</param>
-    public ChunkIterationJob(int start, int size, Chunk[] chunks)
-    {
-        Start = start;
-        Size = size;
-        Chunks = chunks;
-    }
+    public T Instance { get; set; }
 
     /// <summary>
-    /// A <see cref="Chunk"/> array, this will be processed.
-    /// </summary>
-    public Chunk[] Chunks { get; set; }
-
-    /// <summary>
-    /// An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
-    /// </summary>
-    public T? Instance { get; set; }
-
-    /// <summary>
-    /// From the start how many chunks are processed.
-    /// </summary>
-    public int Size { get; set; }
-
-    /// <summary>
-    /// The start index.
-    /// </summary>
-    public int Start;
-
-    /// <summary>
-    ///     Iterates over all <see cref="Chunks"/> between <see cref="Start"/> and <see cref="Size"/> and calls <see cref="Instance"/>.
+    ///     Processes <see cref="Chunk"/>s until the <see cref="Dispatcher"/> has none left.
     /// </summary>
     public void Execute()
     {
-        ref var chunk = ref Chunks.DangerousGetReferenceAt(Start);
-
-        for (var chunkIndex = 0; chunkIndex < Size; chunkIndex++)
-        {
-            ref var currentChunk = ref Unsafe.Add(ref chunk, chunkIndex);
-            Instance?.Execute(ref currentChunk);
-        }
+        Dispatcher.Run(Instance);
     }
 }
