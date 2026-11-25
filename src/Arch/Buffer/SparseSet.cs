@@ -161,9 +161,11 @@ internal class SparseArray
 
     /// <summary>
     ///     Clears this <see cref="SparseArray"/> instance and sets its <see cref="Size"/> to 0.
+    ///     The components are cleared too, since they might hold references that must not outlive the recorded commands.
     /// </summary>
     public void Clear()
     {
+        Array.Clear(Components, 0, Size);
         Array.Fill(Entities, -1, 0, Entities.Length);
         Size = 0;
     }

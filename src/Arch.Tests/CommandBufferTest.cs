@@ -312,6 +312,40 @@ public sealed partial class CommandBufferTest
         World.Destroy(world);
     }
 
+    /// <summary>
+    ///     Checks that a <see cref="CommandBuffer"/> does not keep managed components alive after they were played back.
+    /// </summary>
+    [Test]
+    public void CommandBufferDoesNotKeepPlayedBackManagedComponentsAlive()
+    {
+        var world = World.Create();
+        var entity = world.Create(new Label { Value = "initial" });
+
+        using var commandBuffer = new CommandBuffer();
+        var reference = RecordAndPlaybackLabel(world, commandBuffer, entity);
+
+        // The world replaces the label, so only the command buffer could still reference the recorded one.
+        world.Set(entity, new Label { Value = "replaced" });
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        That(reference.IsAlive, Is.False);
+        World.Destroy(world);
+    }
+
+    // Separate method, so no local of the test keeps the object alive.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference RecordAndPlaybackLabel(World world, CommandBuffer commandBuffer, Entity entity)
+    {
+        var value = new string('x', 100);
+        commandBuffer.Set(entity, new Label { Value = value });
+        commandBuffer.Playback(world);
+
+        return new WeakReference(value);
+    }
+
     [Test]
     public void CommandBufferCombined()
     {
