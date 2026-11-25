@@ -187,6 +187,24 @@ public sealed class EventTest
     }
 
     [Test]
+    public void CommandBufferFiresNoEventsForCancelledAddAndRemove()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
+        world.SubscribeComponentRemoved((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoRemoved.Add(entity));
+
+        var entity = world.Create(new EventTestComponentOne());
+        _asserter.Clear();
+
+        using var commandBuffer = new CommandBuffer();
+        commandBuffer.Add(entity, new EventTestComponentTwo());
+        commandBuffer.Remove<EventTestComponentTwo>(entity);
+        commandBuffer.Playback(world);
+
+        _asserter.AssertEvents();
+    }
+
+    [Test]
     public void SetSingleObject()
     {
         using var world = World.Create();
