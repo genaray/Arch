@@ -124,6 +124,25 @@ public struct MoveChunks : IChunkForEach<Position, Velocity>
 > Set `World.DefaultChunkSizeInBytes = 65_536;` once at startup, or pass `World.Create(chunkSizeInBytes: 65_536)`. In our benchmarks 64KB chunks iterated 1M entities about 20% faster than the default 16KB, but every archetype allocates at least one chunk.
 > Parallel queries (`ParallelQuery`, `InlineParallelQuery`) split the chunks over all threads of the `World.SharedJobScheduler`, they pay off for a few thousand entities per thread or expensive updates.
 
+Parallel queries use `ZeroAllocJobScheduler` 2.0.0. Create a scheduler once and assign it before running parallel queries:
+
+```csharp
+using Schedulers;
+
+using var scheduler = new JobScheduler(); // Pass a worker count to limit worker threads.
+World.SharedJobScheduler = scheduler;
+
+// Scheduled chunk queries return immediately. Wait before accessing or changing their chunks.
+var handle = world.ScheduleInlineParallelChunkQuery(in queryDescription, chunkJob);
+scheduler.Wait(handle);
+```
+
+When migrating from scheduler 1.1.2, replace `new JobScheduler(config)` with `new JobScheduler(threads)`
+and `handle.Complete()` with `scheduler.Wait(handle)`. Synchronous parallel queries still wait internally.
+The scheduler no longer exposes its worker count; Arch bounds the number of helper jobs by
+`Environment.ProcessorCount`. An explicitly smaller scheduler runs those jobs on its configured workers.
+See the [scheduler 2.0.0 benchmark comparison](docs/benchmarks/zeroallocjobscheduler-2.0.0/README.md) for measurements and migration details.
+
 # 🧩 Extensions
 
 Arch has some extensions that add more features and tools. Among them for example : 

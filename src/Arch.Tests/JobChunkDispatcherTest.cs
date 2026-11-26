@@ -9,25 +9,26 @@ namespace Arch.Tests;
 ///     The <see cref="JobChunkDispatcherTest"/> class
 ///     checks that the <see cref="JobChunkDispatcher"/> hands out every used <see cref="Chunk"/> exactly once, also to several threads, and that the parallel queries which use it see all entities.
 /// </summary>
-[TestFixture]
+[TestFixture(1)]
+[TestFixture(4)]
 public sealed class JobChunkDispatcherTest
 {
     private static readonly ComponentType[] _group = [typeof(Transform), typeof(Rotation)];
     private static readonly ComponentType[] _otherGroup = [typeof(Transform), typeof(Rotation), typeof(Ai)];
 
+    private readonly int _workerCount;
     private JobScheduler _jobScheduler;
+
+    public JobChunkDispatcherTest(int workerCount)
+    {
+        _workerCount = workerCount;
+    }
     private World _world;
 
     [OneTimeSetUp]
     public void SetupScheduler()
     {
-        _jobScheduler = new JobScheduler(new JobScheduler.Config
-        {
-            ThreadPrefixName = "Arch.Tests.JobChunkDispatcher",
-            ThreadCount = 0,
-            MaxExpectedConcurrentJobs = 64,
-            StrictAllocationMode = false,
-        });
+        _jobScheduler = new JobScheduler(_workerCount);
 
         World.SharedJobScheduler = _jobScheduler;
     }
@@ -128,7 +129,7 @@ public sealed class JobChunkDispatcherTest
         var counter = new Counter();
 
         var handle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = counter });
-        handle.Complete();
+        _jobScheduler.Wait(handle);
 
         That(counter.Entities, Is.EqualTo(1_200));
     }
@@ -142,6 +143,63 @@ public sealed class JobChunkDispatcherTest
         _world.InlineParallelChunkQuery(in query, new CountJob { Counter = counter });
 
         That(counter.Entities, Is.EqualTo(1_200));
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void RepeatedQueriesWaitForEveryHelper(bool scheduled)
+    {
+        // Enough entities to use several helpers and exercise handle and job reuse.
+        _world.Create(new Span<Entity>(new Entity[40_000]), _group, 40_000);
+        var query = new QueryDescription(all: [typeof(Transform)]);
+        var counter = new Counter();
+        var job = new CountJob { Counter = counter };
+
+        for (var iteration = 0; iteration < 100; iteration++)
+        {
+            counter.Entities = 0;
+            if (scheduled)
+            {
+                var handle = _world.ScheduleInlineParallelChunkQuery(in query, job);
+                _jobScheduler.Wait(handle);
+            }
+            else
+            {
+                _world.InlineParallelChunkQuery(in query, job);
+            }
+
+            That(counter.Entities, Is.EqualTo(41_200));
+        }
+    }
+
+    [Test]
+    public void ScheduledEmptyQueryCompletes()
+    {
+        var query = new QueryDescription(all: [typeof(string)]);
+        var counter = new Counter();
+
+        var handle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = counter });
+        _jobScheduler.Wait(handle);
+
+        That(counter.Entities, Is.Zero);
+    }
+
+    [Test]
+    public void ParallelQueryCanBeReusedAfterAJobThrows()
+    {
+        _world.Create(new Span<Entity>(new Entity[40_000]), _group, 40_000);
+        var query = new QueryDescription(all: [typeof(Transform)]);
+
+        Catch<Exception>(() => _world.InlineParallelChunkQuery(in query, new ThrowingJob()));
+
+        var counter = new Counter();
+        _world.InlineParallelChunkQuery(in query, new CountJob { Counter = counter });
+        That(counter.Entities, Is.EqualTo(41_200));
+    }
+
+    private struct ThrowingJob : IChunkJob
+    {
+        public void Execute(ref Chunk chunk) => throw new InvalidOperationException("Query failed.");
     }
 
     /// <summary>

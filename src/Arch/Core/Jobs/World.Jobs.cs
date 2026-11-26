@@ -3,6 +3,7 @@ using Arch.LowLevel;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
 using Schedulers;
+using Schedulers.Utils;
 
 // ReSharper disable once CheckNamespace
 namespace Arch.Core;
@@ -108,19 +109,31 @@ public partial class World
         }
 
         // The calling thread works too, so small queries need no helpers at all and never wait for a thread to wake up.
-        var helperCount = dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount);
+        var helperCount = dispatcher.GetHelperCount(Environment.ProcessorCount);
         dispatcher.Start(helperCount + 1);
         var handle = ScheduleHelpers(dispatcher, innerJob, helperCount);
 
-        dispatcher.Run(innerJob);
-        if (helperCount > 0)
+        try
         {
-            handle.Complete();
+            try
+            {
+                dispatcher.Run(innerJob);
+            }
+            finally
+            {
+                // Wait also helps execute queued jobs and finishes all helpers before they are reused.
+                if (helperCount > 0)
+                {
+                    SharedJobScheduler.Wait(handle);
+                }
+            }
         }
-
-        ReleaseHelpers<T>();
-        dispatcher.Clear();
-        JobMeta<JobChunkDispatcher>.Pool.Return(dispatcher);
+        finally
+        {
+            ReleaseHelpers<T>();
+            dispatcher.Clear();
+            JobMeta<JobChunkDispatcher>.Pool.Return(dispatcher);
+        }
     }
 
     /// <summary>
@@ -130,7 +143,7 @@ public partial class World
     ///     NOT thread-safe! Do not call a parallel query from anything but the main thread!
     /// </remarks>
     /// <remarks>
-    ///     Does not wait, complete the returned <see cref="JobHandle"/> before the <see cref="Chunk"/>s are used or changed. Allocates its jobs, since nobody knows when they are done.
+    ///     Does not wait. Pass the returned <see cref="JobHandle"/> to <see cref="JobScheduler.Wait(JobHandle)"/> before the <see cref="Chunk"/>s are used or changed. Allocates its jobs, since nobody knows when they are done.
     /// </remarks>
     /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface which is called on each <see cref="Chunk"/> found.</typeparam>
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
@@ -152,7 +165,7 @@ public partial class World
         }
 
         // Nobody else works on the chunks, so at least one helper is needed.
-        var helperCount = Math.Max(1, dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount));
+        var helperCount = Math.Max(1, dispatcher.GetHelperCount(Environment.ProcessorCount));
         dispatcher.Start(helperCount);
         var handle = ScheduleHelpers(dispatcher, innerJob, helperCount);
 
@@ -177,6 +190,8 @@ public partial class World
             return default;
         }
 
+        // Keep the parent unflushed until every child is attached, so it cannot finish early.
+        var handle = SharedJobScheduler!.Schedule(new QueryCompletionJob());
         var pool = JobMeta<ChunkIterationJob<T>>.Pool;
         for (var index = 0; index < helperCount; index++)
         {
@@ -185,14 +200,22 @@ public partial class World
             job.Instance = innerJob;
 
             JobsCache.Add(job);
-            JobHandles.Add(SharedJobScheduler!.Schedule(job));
+            JobHandles.Add(SharedJobScheduler.Schedule((IJob)job, handle));
         }
 
-        var handle = SharedJobScheduler!.CombineDependencies(JobHandles.AsSpan());
-        SharedJobScheduler.Flush();
+        SharedJobScheduler.Flush(JobHandles.AsSpan());
+        SharedJobScheduler.Flush(handle);
         JobHandles.Clear();
 
         return handle;
+    }
+
+    /// <summary>
+    ///     A parent job whose handle completes only after all query helpers have finished.
+    /// </summary>
+    private struct QueryCompletionJob : IJob
+    {
+        public void Execute() { }
     }
 
     /// <summary>

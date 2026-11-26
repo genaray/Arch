@@ -1,0 +1,2410 @@
+[
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeSerial",
+    "Parameters": "",
+    "MeanNs": 9599536.542857142,
+    "StandardDeviationNs": 110519.80198971665,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 20,
+        "Nanoseconds": 188351523
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 194506143
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 213014600
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 193048532
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 192043363
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 193524240
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 189631410
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 192829905
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeParallel",
+    "Parameters": "",
+    "MeanNs": 2238562.0625,
+    "StandardDeviationNs": 75821.69301210511,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 96,
+        "Nanoseconds": 213982760
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 216314093
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 221254384
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 224211211
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 209318661
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 212053928
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 201769087
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 220311540
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallSerial",
+    "Parameters": "",
+    "MeanNs": 18419.34350801991,
+    "StandardDeviationNs": 199.59403998942074,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10848,
+        "Nanoseconds": 198152213
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 198128445
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 197844520
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 200819150
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 201295700
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 199110355
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 204191402
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 199124446
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallParallel",
+    "Parameters": "",
+    "MeanNs": 18497.351286764704,
+    "StandardDeviationNs": 111.87340742722945,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10880,
+        "Nanoseconds": 201348161
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 200449829
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 204491133
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 203932124
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 200726508
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 200446463
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 201000155
+      },
+      {
+        "Operations": 10880,
+        "Nanoseconds": 200992332
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksSerial",
+    "Parameters": "",
+    "MeanNs": 924798.0656887755,
+    "StandardDeviationNs": 4422.867486642584,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 224,
+        "Nanoseconds": 205427176
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 208449236
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 207779510
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 207872487
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 207043007
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 206771626
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 217206511
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 206749474
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksParallel",
+    "Parameters": "",
+    "MeanNs": 176840.57393084624,
+    "StandardDeviationNs": 8032.8742531078815,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1099,
+        "Nanoseconds": 203243008
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 190467312
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 209757830
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 194609945
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 196298236
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 189413123
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 189303129
+      },
+      {
+        "Operations": 1099,
+        "Nanoseconds": 181689743
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesSerial",
+    "Parameters": "",
+    "MeanNs": 972106.3853021979,
+    "StandardDeviationNs": 5858.867640855531,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 208,
+        "Nanoseconds": 208232991
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 203240647
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 199851850
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 202464914
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 203537860
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 202477413
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 201587330
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 202237957
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesParallel",
+    "Parameters": "",
+    "MeanNs": 190571.6202023001,
+    "StandardDeviationNs": 4702.437594956907,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1031,
+        "Nanoseconds": 198902567
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 196283333
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 213943678
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 187986657
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 204076791
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 194433153
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 196191566
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 197481316
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=100000",
+    "MeanNs": 186362.5885416667,
+    "StandardDeviationNs": 15484.815642698963,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 96,
+        "Nanoseconds": 19501563
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 19569414
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 18957723
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 18475495
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 17935780
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 16551578
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 15794891
+      },
+      {
+        "Operations": 96,
+        "Nanoseconds": 16345552
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=100000",
+    "MeanNs": 964033.9844497609,
+    "StandardDeviationNs": 51083.19021665393,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 209,
+        "Nanoseconds": 197803737
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 190503842
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 217651767
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 212187345
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 202484520
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 188077021
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 194261730
+      },
+      {
+        "Operations": 209,
+        "Nanoseconds": 208894860
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 2033882.2087765958,
+    "StandardDeviationNs": 82812.52496226656,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 94,
+        "Nanoseconds": 196371950
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 196058311
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 183448628
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 179195341
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 199252067
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 184933575
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 199290273
+      },
+      {
+        "Operations": 94,
+        "Nanoseconds": 190929276
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 9988950.964285715,
+    "StandardDeviationNs": 507723.0345067457,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 4,
+        "Nanoseconds": 41410818
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 40053218
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 49090170
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 41465550
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 41649929
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 37329433
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 40928616
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 36853063
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=10000",
+    "MeanNs": 58324.59939630682,
+    "StandardDeviationNs": 4051.6428122829147,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 3520,
+        "Nanoseconds": 211246447
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 196083093
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 186785901
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 197907805
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 195503215
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 232327097
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 213232162
+      },
+      {
+        "Operations": 3520,
+        "Nanoseconds": 209386759
+      }
+    ]
+  },
+  {
+    "Run": "baseline-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=10000",
+    "MeanNs": 296261.81640625,
+    "StandardDeviationNs": 11599.564248667843,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 192,
+        "Nanoseconds": 58404537
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 61264036
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 57893837
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 56435603
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 56255496
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 54648562
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 55317197
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 54845450
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeSerial",
+    "Parameters": "",
+    "MeanNs": 9368976.507142857,
+    "StandardDeviationNs": 28753.510642201236,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 20,
+        "Nanoseconds": 187790464
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 186778236
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 218519258
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 186856442
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 187659338
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 188321055
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 186917673
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 187333503
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeParallel",
+    "Parameters": "",
+    "MeanNs": 1772789.5976890759,
+    "StandardDeviationNs": 144228.29337505632,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 119,
+        "Nanoseconds": 189220887
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 202688531
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 244258508
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 197110988
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 221970661
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 208268113
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 205403277
+      },
+      {
+        "Operations": 119,
+        "Nanoseconds": 218774732
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallSerial",
+    "Parameters": "",
+    "MeanNs": 18421.302089831566,
+    "StandardDeviationNs": 166.19922281776536,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10992,
+        "Nanoseconds": 201623854
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 212615888
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 200868398
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 200793085
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 201811754
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 204574796
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 205482009
+      },
+      {
+        "Operations": 10992,
+        "Nanoseconds": 202396312
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallParallel",
+    "Parameters": "",
+    "MeanNs": 18423.048813784877,
+    "StandardDeviationNs": 178.3192357111013,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10896,
+        "Nanoseconds": 199311216
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 199866243
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 200948416
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 199513077
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 199127022
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 203716078
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 199739504
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 203840803
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksSerial",
+    "Parameters": "",
+    "MeanNs": 959049.0658482143,
+    "StandardDeviationNs": 18362.35468032037,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 224,
+        "Nanoseconds": 217333203
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 210754306
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 222021046
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 211650750
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 213544307
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 218972702
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 212822983
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 211530325
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksParallel",
+    "Parameters": "",
+    "MeanNs": 185388.94073275864,
+    "StandardDeviationNs": 11860.952557336686,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 928,
+        "Nanoseconds": 185727637
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 173228232
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 164587677
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 168059750
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 184685444
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 181506247
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 156765420
+      },
+      {
+        "Operations": 928,
+        "Nanoseconds": 161788161
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesSerial",
+    "Parameters": "",
+    "MeanNs": 970411.6160714285,
+    "StandardDeviationNs": 16361.72702615424,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 224,
+        "Nanoseconds": 218093880
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 215235791
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 213124606
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 223411483
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 213454017
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 216581717
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 221667285
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 217418333
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesParallel",
+    "Parameters": "",
+    "MeanNs": 200767.14535714284,
+    "StandardDeviationNs": 6567.232030408332,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1050,
+        "Nanoseconds": 214156247
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 216468671
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 200368318
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 205424120
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 216623773
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 202312129
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 214941707
+      },
+      {
+        "Operations": 1050,
+        "Nanoseconds": 216149056
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=100000",
+    "MeanNs": 174248.12816455698,
+    "StandardDeviationNs": 12099.899499947478,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1264,
+        "Nanoseconds": 216614083
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 243496915
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 206318604
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 237207875
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 214121249
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 208976785
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 232200305
+      },
+      {
+        "Operations": 1264,
+        "Nanoseconds": 203084496
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=100000",
+    "MeanNs": 929233.3419913419,
+    "StandardDeviationNs": 40507.546799534735,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 231,
+        "Nanoseconds": 215914741
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 207087779
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 209906544
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 219602125
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 222966256
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 230194566
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 201371519
+      },
+      {
+        "Operations": 231,
+        "Nanoseconds": 210179686
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 2241685.8891752576,
+    "StandardDeviationNs": 83733.80513619239,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 97,
+        "Nanoseconds": 227048879
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 222527483
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 221727502
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 222350290
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 210710908
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 220728983
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 211491921
+      },
+      {
+        "Operations": 97,
+        "Nanoseconds": 202962284
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 9338176.208333334,
+    "StandardDeviationNs": 191752.6806507159,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 4,
+        "Nanoseconds": 36422243
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 36761940
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 36823932
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 47454310
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 37862109
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 48466478
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38101155
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38144850
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=10000",
+    "MeanNs": 40711.929415545885,
+    "StandardDeviationNs": 3312.36421738175,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 5056,
+        "Nanoseconds": 231873354
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 189117875
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 191817457
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 189154219
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 225941942
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 213178962
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 197603707
+      },
+      {
+        "Operations": 5056,
+        "Nanoseconds": 208100797
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-1",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=10000",
+    "MeanNs": 259269.58327259478,
+    "StandardDeviationNs": 2487.58580526468,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 784,
+        "Nanoseconds": 200403379
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 204308140
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 205631514
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 200876391
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 203089662
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 204529109
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 204045899
+      },
+      {
+        "Operations": 784,
+        "Nanoseconds": 208800270
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeSerial",
+    "Parameters": "",
+    "MeanNs": 9666283.285714285,
+    "StandardDeviationNs": 104935.85618041795,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 20,
+        "Nanoseconds": 192857185
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 195162546
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 194923318
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 193056993
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 189557704
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 203396474
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 192211898
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 195510016
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeParallel",
+    "Parameters": "",
+    "MeanNs": 2152557.912087912,
+    "StandardDeviationNs": 364088.44947430893,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 13,
+        "Nanoseconds": 29305496
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 19083362
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 29881029
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 32886141
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 24164863
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 29697345
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 30864534
+      },
+      {
+        "Operations": 13,
+        "Nanoseconds": 36697065
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallSerial",
+    "Parameters": "",
+    "MeanNs": 18195.045573736104,
+    "StandardDeviationNs": 23.12349368600013,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198297170
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198784842
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198358773
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 202961838
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198193996
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198015969
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198081617
+      },
+      {
+        "Operations": 10896,
+        "Nanoseconds": 198224732
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallParallel",
+    "Parameters": "",
+    "MeanNs": 18806.103555718477,
+    "StandardDeviationNs": 481.1176584081979,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10912,
+        "Nanoseconds": 211572588
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 212544376
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 207817923
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 206369024
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 201106842
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 204054194
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 199112641
+      },
+      {
+        "Operations": 10912,
+        "Nanoseconds": 199279704
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksSerial",
+    "Parameters": "",
+    "MeanNs": 942102.3911401099,
+    "StandardDeviationNs": 9100.217131984356,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 208,
+        "Nanoseconds": 194188430
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 196534750
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 198906888
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 204227494
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 193274847
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 196374951
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 195259407
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 197172921
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksParallel",
+    "Parameters": "",
+    "MeanNs": 202513.72647914648,
+    "StandardDeviationNs": 9216.959857907603,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1031,
+        "Nanoseconds": 207140596
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 202106914
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 221432076
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 212832948
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 196464862
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 210778650
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 220984510
+      },
+      {
+        "Operations": 1031,
+        "Nanoseconds": 198592660
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesSerial",
+    "Parameters": "",
+    "MeanNs": 944801.5841836734,
+    "StandardDeviationNs": 3348.067493388756,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 224,
+        "Nanoseconds": 212228826
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 215204513
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 211219680
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 211262033
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 212541051
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 212444194
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 211106845
+      },
+      {
+        "Operations": 224,
+        "Nanoseconds": 210657329
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesParallel",
+    "Parameters": "",
+    "MeanNs": 177341.20762310608,
+    "StandardDeviationNs": 7656.755438474345,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1056,
+        "Nanoseconds": 199721107
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 181993904
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 184698855
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 181210356
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 180781622
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 180252608
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 191025760
+      },
+      {
+        "Operations": 1056,
+        "Nanoseconds": 198494310
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=100000",
+    "MeanNs": 186700.79931640628,
+    "StandardDeviationNs": 8150.359945559159,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 768,
+        "Nanoseconds": 149718552
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 144095978
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 142769747
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 149921810
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 136257186
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 150482434
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 135196741
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 138661367
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=100000",
+    "MeanNs": 1035211.428485577,
+    "StandardDeviationNs": 40863.98925032393,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 208,
+        "Nanoseconds": 213093935
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 221725653
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 214660254
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 210307990
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 211490790
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 202216700
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 230772872
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 218323623
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 1971269.7881578947,
+    "StandardDeviationNs": 64267.84551551391,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 95,
+        "Nanoseconds": 179745551
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 186138514
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 181179247
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 186803124
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 188106836
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 184380621
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 193965553
+      },
+      {
+        "Operations": 95,
+        "Nanoseconds": 197845593
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 9801446.57142857,
+    "StandardDeviationNs": 597848.446041611,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 4,
+        "Nanoseconds": 36974555
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38146341
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 56715251
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 36872143
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 41034383
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 39219920
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 43573646
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38619516
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=10000",
+    "MeanNs": 55622.3338339368,
+    "StandardDeviationNs": 3527.363048154893,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 3472,
+        "Nanoseconds": 176806105
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 180152441
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 206740146
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 185673387
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 205329864
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 201392557
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 195795428
+      },
+      {
+        "Operations": 3472,
+        "Nanoseconds": 251266915
+      }
+    ]
+  },
+  {
+    "Run": "baseline-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=10000",
+    "MeanNs": 276000.3279551631,
+    "StandardDeviationNs": 7521.811687475824,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 736,
+        "Nanoseconds": 205557318
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 205451731
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 206964214
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 205894931
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 198012673
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 194877267
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 197674669
+      },
+      {
+        "Operations": 736,
+        "Nanoseconds": 210670032
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeSerial",
+    "Parameters": "",
+    "MeanNs": 9651333.885714287,
+    "StandardDeviationNs": 258343.49360920576,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 20,
+        "Nanoseconds": 190112506
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 191380501
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 222300070
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 188592037
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 195970528
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 189294103
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 203343110
+      },
+      {
+        "Operations": 20,
+        "Nanoseconds": 192493959
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "LargeParallel",
+    "Parameters": "",
+    "MeanNs": 1643089.8690476192,
+    "StandardDeviationNs": 70323.75143564212,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 108,
+        "Nanoseconds": 233895173
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 193276475
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 174856651
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 180243406
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 172352310
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 176746086
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 173491466
+      },
+      {
+        "Operations": 108,
+        "Nanoseconds": 171209547
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallSerial",
+    "Parameters": "",
+    "MeanNs": 18598.37600658858,
+    "StandardDeviationNs": 473.4474608509803,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10928,
+        "Nanoseconds": 199925080
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 202024416
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 200370990
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 209257228
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 199570328
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 233401215
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 199655984
+      },
+      {
+        "Operations": 10928,
+        "Nanoseconds": 212037660
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "SmallParallel",
+    "Parameters": "",
+    "MeanNs": 18494.936933733672,
+    "StandardDeviationNs": 111.42037383180866,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 10848,
+        "Nanoseconds": 198295165
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 201433772
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 206437868
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 201308415
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 200782201
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 201150721
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 201772597
+      },
+      {
+        "Operations": 10848,
+        "Nanoseconds": 199847308
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksSerial",
+    "Parameters": "",
+    "MeanNs": 932138.6559065933,
+    "StandardDeviationNs": 6277.541145804555,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 208,
+        "Nanoseconds": 203557643
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 193339600
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 193248364
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 193003609
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 192776410
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 196565189
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 193810623
+      },
+      {
+        "Operations": 208,
+        "Nanoseconds": 194461232
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "UnusedChunksParallel",
+    "Parameters": "",
+    "MeanNs": 198845.49778368793,
+    "StandardDeviationNs": 18769.473704679884,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 846,
+        "Nanoseconds": 150726615
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 196998282
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 172817577
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 176621665
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 159065739
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 147333931
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 172186457
+      },
+      {
+        "Operations": 846,
+        "Nanoseconds": 170036063
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesSerial",
+    "Parameters": "",
+    "MeanNs": 939431.0851934524,
+    "StandardDeviationNs": 1544.5546694064446,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 192,
+        "Nanoseconds": 180258358
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 180534260
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 180305077
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 179853234
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 180271899
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 180686145
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 182092933
+      },
+      {
+        "Operations": 192,
+        "Nanoseconds": 180697763
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "ParallelQueryBenchmark",
+    "Method": "ManyArchetypesParallel",
+    "Parameters": "",
+    "MeanNs": 196743.1456745111,
+    "StandardDeviationNs": 5365.373872229538,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 862,
+        "Nanoseconds": 162725883
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 198010162
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 170289301
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 165286768
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 174788223
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 174867772
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 171511052
+      },
+      {
+        "Operations": 862,
+        "Nanoseconds": 167679142
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=100000",
+    "MeanNs": 192710.99200262927,
+    "StandardDeviationNs": 15114.009438481362,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 1141,
+        "Nanoseconds": 213260071
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 213509695
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 240503791
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 200356825
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 211803763
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 202230567
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 231431071
+      },
+      {
+        "Operations": 1141,
+        "Nanoseconds": 245970152
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=100000",
+    "MeanNs": 917194.550660793,
+    "StandardDeviationNs": 48421.33688575916,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 227,
+        "Nanoseconds": 209456986
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 230579142
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 200206191
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 256582952
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 211847678
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 198466588
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 205028516
+      },
+      {
+        "Operations": 227,
+        "Nanoseconds": 201837040
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 1791639.632843792,
+    "StandardDeviationNs": 131626.53206276323,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 107,
+        "Nanoseconds": 198178138
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 204831395
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 222945885
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 180449444
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 197021803
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 196536699
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 200162380
+      },
+      {
+        "Operations": 107,
+        "Nanoseconds": 164758226
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=1000000",
+    "MeanNs": 10349515.8125,
+    "StandardDeviationNs": 789661.3582689684,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 4,
+        "Nanoseconds": 40949097
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 40681207
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 46507049
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 39087973
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 45948286
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38589331
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 38407279
+      },
+      {
+        "Operations": 4,
+        "Nanoseconds": 41014284
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uniform",
+    "Parameters": "Amount=10000",
+    "MeanNs": 39841.05723608994,
+    "StandardDeviationNs": 2302.179229980871,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 5248,
+        "Nanoseconds": 203304232
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 222287060
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 227252520
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 217407357
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 193927487
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 201738241
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 197638414
+      },
+      {
+        "Operations": 5248,
+        "Nanoseconds": 209206628
+      }
+    ]
+  },
+  {
+    "Run": "scheduler-2-2",
+    "Type": "SchedulerWorkloadBenchmark",
+    "Method": "Uneven",
+    "Parameters": "Amount=10000",
+    "MeanNs": 266782.7933407738,
+    "StandardDeviationNs": 3622.714502170079,
+    "BytesAllocatedPerOperation": 0,
+    "WorkloadActual": [
+      {
+        "Operations": 768,
+        "Nanoseconds": 237217332
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 208094303
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 205562109
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 208677541
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 201829889
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 204891852
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 203438015
+      },
+      {
+        "Operations": 768,
+        "Nanoseconds": 201742299
+      }
+    ]
+  }
+]
