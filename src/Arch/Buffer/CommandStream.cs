@@ -1,7 +1,111 @@
+using System.Runtime.CompilerServices;
 using Arch.Core;
 using Arch.Core.Utils;
 
 namespace Arch.Buffer;
+
+/// <summary>
+///     The <see cref="CommandKind"/> enum
+///     describes what a <see cref="Command"/> does to its <see cref="Entity"/>.
+/// </summary>
+internal enum CommandKind : byte
+{
+    /// <summary>
+    ///     Overwrites the value of a component the <see cref="Entity"/> has.
+    /// </summary>
+    Set,
+
+    /// <summary>
+    ///     Adds a component with a value to the <see cref="Entity"/>.
+    /// </summary>
+    Add,
+
+    /// <summary>
+    ///     Removes a component from the <see cref="Entity"/>.
+    /// </summary>
+    Remove,
+
+    /// <summary>
+    ///     Destroys the <see cref="Entity"/>.
+    /// </summary>
+    Destroy
+}
+
+/// <summary>
+///     The <see cref="Command"/> struct
+///     is one recorded operation on an <see cref="Entity"/>.
+/// </summary>
+internal struct Command
+{
+    /// <summary>
+    ///     What the command does.
+    /// </summary>
+    public readonly CommandKind Kind;
+
+    /// <summary>
+    ///     The <see cref="Entity"/> it targets, a negative id if it was created by the same <see cref="CommandBuffer"/>.
+    /// </summary>
+    public readonly Entity Entity;
+
+    /// <summary>
+    ///     The component it adds, sets or removes, not used by <see cref="CommandKind.Destroy"/>.
+    /// </summary>
+    public readonly ComponentType Type;
+
+    /// <summary>
+    ///     The index of its value in the <see cref="ComponentValues"/> of the <see cref="Type"/>, only used by <see cref="CommandKind.Set"/> and <see cref="CommandKind.Add"/>.
+    /// </summary>
+    public readonly int ValueIndex;
+
+    /// <summary>
+    ///     The index of the next command for the same <see cref="Entity"/>, or <c>-1</c>. Linked by <see cref="EntityGroups.Build"/> during <see cref="CommandBuffer.Playback"/>.
+    /// </summary>
+    public int Next;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="Command"/> struct.
+    /// </summary>
+    /// <param name="kind">What the command does.</param>
+    /// <param name="entity">The <see cref="Entity"/> it targets.</param>
+    /// <param name="type">The component it adds, sets or removes.</param>
+    /// <param name="valueIndex">The index of its value in the <see cref="ComponentValues"/>.</param>
+    public Command(CommandKind kind, in Entity entity, in ComponentType type, int valueIndex)
+    {
+        Kind = kind;
+        Entity = entity;
+        Type = type;
+        ValueIndex = valueIndex;
+        Next = -1;
+    }
+}
+
+/// <summary>
+///     The <see cref="CreateCommand"/> struct
+///     is the recorded creation of an <see cref="Entity"/>.
+/// </summary>
+internal readonly struct CreateCommand
+{
+    /// <summary>
+    ///     The buffered <see cref="Entity"/> returned to the caller, it has a negative id.
+    /// </summary>
+    public readonly Entity Entity;
+
+    /// <summary>
+    ///     The component structure of the <see cref="Entity"/> to create.
+    /// </summary>
+    public readonly ComponentType[] Types;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="CreateCommand"/> struct.
+    /// </summary>
+    /// <param name="entity">The buffered <see cref="Entity"/>.</param>
+    /// <param name="types">Its component structure.</param>
+    public CreateCommand(in Entity entity, ComponentType[] types)
+    {
+        Entity = entity;
+        Types = types;
+    }
+}
 
 /// <summary>
 ///     The <see cref="CommandStream"/> class
@@ -12,9 +116,17 @@ namespace Arch.Buffer;
 internal sealed class CommandStream
 {
     private readonly int _initialCapacity;
+
+    /// <summary>
+    ///     The recorded commands, only the first <see cref="_commandCount"/> are in use.
+    /// </summary>
     private Command[] _commands;
     private int _commandCount;
     private bool _containsOnlySets = true;
+
+    /// <summary>
+    ///     The values of the recorded commands, at the id of their component type, null as long as nothing of that type was recorded.
+    /// </summary>
     private ComponentValues?[] _values = [];
 
     /// <summary>
@@ -121,6 +233,9 @@ internal sealed class CommandStream
         }
     }
 
+    /// <summary>
+    ///     Appends a command and grows the array if it is full.
+    /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Record(in Command command)
     {
@@ -133,6 +248,9 @@ internal sealed class CommandStream
         _containsOnlySets &= command.Kind == CommandKind.Set;
     }
 
+    /// <summary>
+    ///     Creates the <see cref="ComponentValues"/> of a component type and makes room for its id.
+    /// </summary>
     private ComponentValues AddValues(in ComponentType type)
     {
         if (type.Id >= _values.Length)
@@ -153,5 +271,81 @@ internal sealed class CommandStream
         _values = [];
         Creates.Clear();
         Creates.TrimExcess();
+    }
+}
+
+/// <summary>
+///     The <see cref="ComponentValues"/> class
+///     stores the values of all recorded commands for one component type, one after another.
+/// </summary>
+internal sealed class ComponentValues
+{
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentValues"/> class.
+    /// </summary>
+    /// <param name="type">The <see cref="ComponentType"/> of the stored values.</param>
+    /// <param name="capacity">The amount of values it can hold without growing.</param>
+    public ComponentValues(ComponentType type, int capacity)
+    {
+        Type = type;
+        Ops = ComponentOps.Get(type);
+        Items = Ops.Create(Math.Max(capacity, 1));
+    }
+
+    /// <summary>
+    ///     The <see cref="ComponentType"/> of the stored values.
+    /// </summary>
+    public ComponentType Type { get; }
+
+    /// <summary>
+    ///     The <see cref="ComponentOps"/> to copy the values into a <see cref="Chunk"/>.
+    /// </summary>
+    public ComponentOps Ops { get; }
+
+    /// <summary>
+    ///     The array of values, its first <see cref="Count"/> items are in use.
+    /// </summary>
+    public Array Items { get; private set; }
+
+    /// <summary>
+    ///     The amount of stored values.
+    /// </summary>
+    public int Count { get; private set; }
+
+    /// <summary>
+    ///     Stores a value.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <typeparam name="T">The component type, must be the type this instance was created for.</typeparam>
+    /// <returns>Its index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Add<T>(in T value)
+    {
+        if (Count == Items.Length)
+        {
+            Grow();
+        }
+
+        Unsafe.As<T[]>(Items)[Count] = value;
+        return Count++;
+    }
+
+    /// <summary>
+    ///     Removes all values and clears them, since they might hold references that must not outlive the recorded commands.
+    /// </summary>
+    public void Clear()
+    {
+        Array.Clear(Items, 0, Count);
+        Count = 0;
+    }
+
+    /// <summary>
+    ///     Doubles the capacity and keeps the stored values.
+    /// </summary>
+    private void Grow()
+    {
+        var larger = Ops.Create(Items.Length * 2);
+        Array.Copy(Items, larger, Count);
+        Items = larger;
     }
 }

@@ -415,6 +415,41 @@ public sealed partial class CommandBufferTest
     }
 
     /// <summary>
+    ///     Checks that entities created with the same structure, which are created in one batch, still get the values recorded for them.
+    /// </summary>
+    [Test]
+    public void CommandBufferCreatesBatchesOfEntities()
+    {
+        var world = World.Create();
+        using var commandBuffer = new CommandBuffer();
+
+        for (var index = 0; index < 100; index++)
+        {
+            // Batches of the same array alternate with single creates of another one.
+            var types = index % 25 == 24 ? _secondGroup : _group;
+            var entity = commandBuffer.Create(types);
+            commandBuffer.Set(entity, new Transform { X = index });
+        }
+
+        commandBuffer.Playback(world);
+
+        That(world.Size, Is.EqualTo(100));
+        var values = new HashSet<float>();
+        var withAi = 0;
+        var query = new QueryDescription(all: _group);
+        world.Query(in query, (Entity entity, ref Transform transform) =>
+        {
+            values.Add(transform.X);
+            withAi += world.Has<Ai>(entity) ? 1 : 0;
+        });
+
+        That(values, Has.Count.EqualTo(100));
+        That(withAi, Is.EqualTo(4));
+
+        World.Destroy(world);
+    }
+
+    /// <summary>
     ///     Checks that a thread which records into several command buffers alternately keeps their commands apart.
     /// </summary>
     [Test]

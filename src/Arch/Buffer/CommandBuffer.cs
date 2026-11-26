@@ -16,9 +16,16 @@ namespace Arch.Buffer;
 ///     The commands one thread recorded for the same <see cref="Entity"/> are applied together, as a single structural change.
 ///     A component that is added and removed again in the same <see cref="CommandBuffer"/> does not change the <see cref="Entity"/> and raises no events.
 /// </remarks>
-public sealed partial class CommandBuffer : IDisposable
+public sealed class CommandBuffer : IDisposable
 {
+    /// <summary>
+    ///     Whether commands can be recorded from several threads at once, see <see cref="CommandBuffer(int, bool)"/>.
+    /// </summary>
     private readonly bool _threadSafe;
+
+    /// <summary>
+    ///     The capacity every <see cref="CommandStream"/> starts with.
+    /// </summary>
     private readonly int _initialCapacity;
 
     /// <summary>
@@ -35,6 +42,16 @@ public sealed partial class CommandBuffer : IDisposable
     ///     The only stream if the <see cref="CommandBuffer"/> is not thread-safe, which saves looking it up per thread.
     /// </summary>
     private readonly CommandStream? _singleStream;
+
+    /// <summary>
+    ///     Creates the recorded <see cref="Entity"/>s and resolves the buffered ones.
+    /// </summary>
+    private readonly EntityCreator _creator = new();
+
+    /// <summary>
+    ///     Applies the recorded commands during <see cref="Playback"/>.
+    /// </summary>
+    private readonly CommandPlayer _player;
 
     /// <summary>
     ///     Identifies this <see cref="CommandBuffer"/> in <see cref="_lastStream"/>, without keeping the whole <see cref="CommandBuffer"/> alive.
@@ -66,6 +83,7 @@ public sealed partial class CommandBuffer : IDisposable
     {
         _threadSafe = threadSafe;
         _initialCapacity = initialCapacity;
+        _player = new CommandPlayer(_creator);
 
         if (threadSafe)
         {
@@ -124,7 +142,7 @@ public sealed partial class CommandBuffer : IDisposable
     public Entity Create(ComponentType[] types)
     {
         var index = _threadSafe ? Interlocked.Increment(ref _createdCount) - 1 : _createdCount++;
-        var entity = new Entity(-(index + 1), -1);
+        var entity = EntityCreator.BufferedEntity(index);
 
         CurrentStream.RecordCreate(entity, types);
         return entity;
@@ -178,6 +196,32 @@ public sealed partial class CommandBuffer : IDisposable
     }
 
     /// <summary>
+    ///     Plays back all recorded commands, modifying the world.
+    /// </summary>
+    /// <remarks>
+    ///     This operation should only happen on the main thread, while no other thread records.
+    /// </remarks>
+    /// <param name="world">The <see cref="World"/> where the commands will be playbacked too.</param>
+    /// <param name="dispose">If true it will clear the recorded operations after they were playbacked, if not they will stay.</param>
+    public void Playback(World world, bool dispose = true)
+    {
+        // Any thread can record commands for the created entities, so they exist before anything else is played back.
+        _creator.Create(world, _streams, _createdCount);
+
+        foreach (var stream in _streams)
+        {
+            _player.Play(world, stream);
+        }
+
+        _player.DestroyCollected(world);
+
+        if (dispose)
+        {
+            Clear();
+        }
+    }
+
+    /// <summary>
     ///     Disposes the <see cref="CommandBuffer"/>.
     /// </summary>
     public void Dispose()
@@ -193,11 +237,13 @@ public sealed partial class CommandBuffer : IDisposable
             _streams.Clear();
         }
 
-        _structuralChanges.Dispose();
-        _destroyed.Dispose();
+        _player.Dispose();
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    ///     Finds the stream of the calling thread the slow way and remembers it in <see cref="_lastStream"/>.
+    /// </summary>
     private CommandStream FindThreadStream()
     {
         var stream = _threadStreams!.Value!;
@@ -217,5 +263,18 @@ public sealed partial class CommandBuffer : IDisposable
         }
 
         return stream;
+    }
+
+    /// <summary>
+    ///     Removes all recorded commands.
+    /// </summary>
+    private void Clear()
+    {
+        foreach (var stream in _streams)
+        {
+            stream.Clear();
+        }
+
+        _createdCount = 0;
     }
 }

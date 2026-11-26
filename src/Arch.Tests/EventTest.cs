@@ -205,6 +205,25 @@ public sealed class EventTest
     }
 
     [Test]
+    public void CommandBufferFiresEventsForBatchedCreates()
+    {
+        using var world = World.Create();
+        world.SubscribeEntityCreated((in Entity entity) => _asserter.Created.Add(entity));
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentOne _) => _asserter.CompOneAdded.Add(entity));
+
+        using var commandBuffer = new CommandBuffer();
+        var types = new ComponentType[] { typeof(EventTestComponentOne) };
+        for (var index = 0; index < 5; index++)
+        {
+            commandBuffer.Create(types);
+        }
+
+        commandBuffer.Playback(world);
+
+        _asserter.AssertEvents(created: 5, compOneAdded: 5);
+    }
+
+    [Test]
     public void SetSingleObject()
     {
         using var world = World.Create();
