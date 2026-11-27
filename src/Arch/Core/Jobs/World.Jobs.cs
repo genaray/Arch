@@ -92,40 +92,15 @@ public partial class World
 
     public void InlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
-        // Job scheduler needs to be initialized.
-        if (SharedJobScheduler is null)
-        {
-            throw new Exception($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
-        }
-
-        var dispatcher = JobMeta<JobChunkDispatcher>.Pool.Get();
-        foreach (var archetype in Query(in queryDescription).GetArchetypeIterator())
-        {
-            dispatcher.Add(archetype);
-        }
+        var scheduler = GetSharedJobScheduler();
+        var dispatcher = CreateDispatcher(in queryDescription);
 
         // The calling thread works too, so small queries need no helpers at all and never wait for a thread to wake up.
-        var helperCount = dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount);
+        var helperCount = dispatcher.GetHelperCount(scheduler.ThreadCount);
         dispatcher.Start(helperCount + 1);
-        var handle = ScheduleHelpers(dispatcher, innerJob, helperCount);
+        var helpers = ScheduleHelpers(dispatcher, innerJob, helperCount);
 
-        // The helpers must be done before leaving, even if the job throws, as they work on chunks the caller is about to use again.
-        try
-        {
-            dispatcher.Run(innerJob);
-        }
-        finally
-        {
-            try
-            {
-                SharedJobScheduler.Wait(handle);
-            }
-            finally
-            {
-                // This thread is the last one done, the helpers are finished after waiting. The dispatcher goes back to its pool.
-                dispatcher.ThreadDone();
-            }
-        }
+        RunAndWaitForHelpers(scheduler, dispatcher, innerJob, helpers);
     }
 
     /// <summary>
@@ -145,22 +120,69 @@ public partial class World
 
     public JobHandle ScheduleInlineParallelChunkQuery<T>(in QueryDescription queryDescription, in T innerJob) where T : struct, IChunkJob
     {
-        // Job scheduler needs to be initialized.
-        if (SharedJobScheduler is null)
-        {
-            throw new Exception("JobScheduler was not initialized, create one instance of JobScheduler. This creates a singleton used for parallel iterations.");
-        }
+        var scheduler = GetSharedJobScheduler();
+        var dispatcher = CreateDispatcher(in queryDescription);
 
+        // Nobody else works on the chunks, so at least one helper is needed.
+        var helperCount = Math.Max(1, dispatcher.GetHelperCount(scheduler.ThreadCount));
+        dispatcher.Start(helperCount);
+        return ScheduleHelpers(dispatcher, innerJob, helperCount);
+    }
+
+    /// <summary>
+    ///     Returns the <see cref="SharedJobScheduler"/>, which needs to be assigned before a parallel query is used.
+    /// </summary>
+    /// <exception cref="Exception">An <see cref="Exception"/> if the <see cref="JobScheduler"/> was not initialized before.</exception>
+    private static JobScheduler GetSharedJobScheduler()
+    {
+        return SharedJobScheduler ?? throw new Exception($"SharedJobScheduler is missing, assign an instance to {nameof(World)}.{nameof(SharedJobScheduler)}. This singleton used for parallel iterations.");
+    }
+
+    /// <summary>
+    ///     Takes a <see cref="JobChunkDispatcher"/> from its pool and fills it with the <see cref="Chunk"/>s of all <see cref="Archetype"/>s that match a <see cref="QueryDescription"/>.
+    /// </summary>
+    /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies which <see cref="Chunk"/>'s are searched for.</param>
+    /// <returns>The <see cref="JobChunkDispatcher"/>, which gives itself back to its pool when all threads are done with it.</returns>
+    private JobChunkDispatcher CreateDispatcher(in QueryDescription queryDescription)
+    {
         var dispatcher = JobMeta<JobChunkDispatcher>.Pool.Get();
         foreach (var archetype in Query(in queryDescription).GetArchetypeIterator())
         {
             dispatcher.Add(archetype);
         }
 
-        // Nobody else works on the chunks, so at least one helper is needed.
-        var helperCount = Math.Max(1, dispatcher.GetHelperCount(SharedJobScheduler.ThreadCount));
-        dispatcher.Start(helperCount);
-        return ScheduleHelpers(dispatcher, innerJob, helperCount);
+        return dispatcher;
+    }
+
+    /// <summary>
+    ///     Processes <see cref="Chunk"/>s on the calling thread and then waits until the helper jobs are done as well.
+    /// </summary>
+    /// <remarks>
+    ///     The helpers are waited for even if the job throws, since they work on <see cref="Chunk"/>s the caller is about to use again.
+    /// </remarks>
+    /// <param name="scheduler">The <see cref="JobScheduler"/> which runs the helpers.</param>
+    /// <param name="dispatcher">The <see cref="JobChunkDispatcher"/> which hands out the <see cref="Chunk"/>s, started for the helpers and this thread.</param>
+    /// <param name="innerJob">The struct instance of the generic type being invoked on each <see cref="Chunk"/>.</param>
+    /// <param name="helpers">The <see cref="JobHandle"/> of the helper jobs.</param>
+    /// <typeparam name="T">A struct implementation of the <see cref="IChunkJob"/> interface.</typeparam>
+    private static void RunAndWaitForHelpers<T>(JobScheduler scheduler, JobChunkDispatcher dispatcher, in T innerJob, JobHandle helpers) where T : struct, IChunkJob
+    {
+        try
+        {
+            dispatcher.Run(innerJob);
+        }
+        finally
+        {
+            try
+            {
+                scheduler.Wait(helpers);
+            }
+            finally
+            {
+                // This thread is the last one done, the helpers are finished after waiting. The dispatcher goes back to its pool.
+                dispatcher.ThreadDone();
+            }
+        }
     }
 
     /// <summary>
@@ -178,16 +200,15 @@ public partial class World
             return default;
         }
 
-        // The first job is the parent of all others, so waiting for its handle means waiting for all helpers.
-        var scheduler = SharedJobScheduler!;
-        var parent = default(JobHandle);
-        for (var index = 0; index < helperCount; index++)
-        {
-            var job = new ChunkHelperJob<T> { Dispatcher = dispatcher, Instance = innerJob };
+        var scheduler = GetSharedJobScheduler();
+        var job = new ChunkHelperJob<T> { Dispatcher = dispatcher, Instance = innerJob };
 
-            var handle = index == 0 ? scheduler.Schedule(job) : scheduler.Schedule(job, parent);
-            parent = index == 0 ? handle : parent;
-            JobHandles.Add(handle);
+        // The first job is the parent of all others, so waiting for its handle means waiting for all helpers.
+        var parent = scheduler.Schedule(job);
+        JobHandles.Add(parent);
+        for (var index = 1; index < helperCount; index++)
+        {
+            JobHandles.Add(scheduler.Schedule(job, parent));
         }
 
         scheduler.Flush(JobHandles.AsSpan());
