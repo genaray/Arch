@@ -83,7 +83,7 @@ internal abstract class ComponentOps
     internal abstract void Copy(Array source, int sourceIndex, Array destination, int destinationIndex);
 
     /// <summary>
-    ///     Copies one component and clears the source if it holds references, so it does not keep them alive.
+    ///     Copies one component and clears the source, so it does not keep references alive and the next entity in that slot starts with a default component.
     ///     The source and the destination may be the same slot.
     /// </summary>
     internal abstract void Move(Array source, int sourceIndex, Array destination, int destinationIndex);
@@ -127,11 +127,7 @@ internal sealed class ComponentOps<T> : ComponentOps
     {
         ref var item = ref Unsafe.As<T[]>(source).DangerousGetReferenceAt(sourceIndex);
         Unsafe.As<T[]>(destination).DangerousGetReferenceAt(destinationIndex) = item;
-
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-        {
-            item = default!;
-        }
+        item = default!;
     }
 
     internal override object? GetBoxed(Array array, int index)
