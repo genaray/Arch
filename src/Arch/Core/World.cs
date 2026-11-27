@@ -109,24 +109,40 @@ public partial class World
     private bool _isDisposed;
 
     /// <summary>
+    ///     The base/minimum <see cref="Chunk"/> size in bytes of all <see cref="World"/>s that are created without passing one.
+    ///     Set it once at startup, <see cref="World"/>s that already exist keep theirs.
+    ///     Larger <see cref="Chunk"/>s iterate large <see cref="World"/>s faster, but every <see cref="Archetype"/> allocates at least one.
+    /// </summary>
+    public static int DefaultChunkSizeInBytes { get; set; } = 16_384;
+
+    /// <summary>
+    ///     The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/> of all <see cref="World"/>s that are created without passing one.
+    ///     Set it once at startup, <see cref="World"/>s that already exist keep theirs.
+    /// </summary>
+    public static int DefaultMinimumAmountOfEntitiesPerChunk { get; set; } = 100;
+
+    /// <summary>
     ///     Creates a <see cref="World"/> instance.
     /// </summary>
-    /// <param name="chunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes.</param>
-    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>.</param>
+    /// <param name="chunkSizeInBytes">The base/minimum <see cref="Chunk"/> size in bytes, <see cref="DefaultChunkSizeInBytes"/> if null.</param>
+    /// <param name="minimumAmountOfEntitiesPerChunk">The minimum amount of <see cref="Entity"/>s per <see cref="Chunk"/>, <see cref="DefaultMinimumAmountOfEntitiesPerChunk"/> if null.</param>
     /// <param name="archetypeCapacity">The initial <see cref="Archetypes"/> capacity.</param>
     /// <param name="entityCapacity">The initial <see cref="Entity"/> capacity.</param>
     /// <returns>The created <see cref="World"/> instance.</returns>
-    public static World Create(int chunkSizeInBytes = 16_384, int minimumAmountOfEntitiesPerChunk = 100, int archetypeCapacity = 2, int entityCapacity = 64)
+    public static World Create(int? chunkSizeInBytes = null, int? minimumAmountOfEntitiesPerChunk = null, int archetypeCapacity = 2, int entityCapacity = 64)
     {
+        var chunkSize = chunkSizeInBytes ?? DefaultChunkSizeInBytes;
+        var minimumEntitiesPerChunk = minimumAmountOfEntitiesPerChunk ?? DefaultMinimumAmountOfEntitiesPerChunk;
+
 #if PURE_ECS
-        return new World(-1, chunkSizeInBytes, minimumAmountOfEntitiesPerChunk, archetypeCapacity, entityCapacity);
+        return new World(-1, chunkSize, minimumEntitiesPerChunk, archetypeCapacity, entityCapacity);
 #else
         lock (WorldsLock)
         {
             var recycle = RecycledWorldIds.TryDequeue(out var id);
             var recycledId = recycle ? id : WorldSize;
 
-            var world = new World(recycledId, chunkSizeInBytes, minimumAmountOfEntitiesPerChunk, archetypeCapacity, entityCapacity);
+            var world = new World(recycledId, chunkSize, minimumEntitiesPerChunk, archetypeCapacity, entityCapacity);
 
             var worlds = _worlds;
             if (recycledId >= worlds.Length)
@@ -197,14 +213,13 @@ public partial class World : IDisposable
         // Entity stuff.
         Archetypes = new Archetypes(archetypeCapacity);
         EntityInfo = new EntityInfoStorage(baseChunkSize, entityCapacity);
-        RecycledIds = new Queue<RecycledEntity>(entityCapacity);
+        RecycledIds = new Stack<RecycledEntity>(entityCapacity);
 
         // Query.
         QueryCache = new Dictionary<QueryDescription, Query>(archetypeCapacity);
 
         // Multithreading/Jobs.
         JobHandles = new NetStandardList<JobHandle>(Environment.ProcessorCount);
-        JobsCache = new List<IJob>(Environment.ProcessorCount);
 
         // Config
         BaseChunkSize = baseChunkSize;
@@ -238,8 +253,9 @@ public partial class World : IDisposable
 
     /// <summary>
     ///     Stores recycled <see cref="Entity"/> IDs and their last version.
+    ///     The most recently destroyed id is reused first, since its memory is the most likely to be still cached.
     /// </summary>
-    internal Queue<RecycledEntity> RecycledIds {  get; set; }
+    internal Stack<RecycledEntity> RecycledIds {  get; set; }
 
     /// <summary>
     ///     A cache to map <see cref="QueryDescription"/> to their <see cref="Core.Query"/>, to avoid allocs.
@@ -265,7 +281,7 @@ public partial class World : IDisposable
     /// <remarks>Does not add it to the <see cref="EntityInfo"/> yet.</remarks>
     private void GetOrCreateEntityInternal(out Entity entity)
     {
-        var recycle = RecycledIds.TryDequeue(out var recycledId);
+        var recycle = RecycledIds.TryPop(out var recycledId);
         var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
         entity = new Entity(recycled.Id, Id, recycled.Version);
         Size++;
@@ -279,7 +295,7 @@ public partial class World : IDisposable
     private void DestroyEntityInternal(Entity entity)
     {
         var recycledEntity = new RecycledEntity(entity.Id, unchecked(entity.Version + 1));
-        RecycledIds.Enqueue(recycledEntity);
+        RecycledIds.Push(recycledEntity);
         EntityInfo.Remove(entity.Id);
         Size--;
     }
@@ -345,7 +361,8 @@ public partial class World : IDisposable
     /// <param name="source">Its <see cref="Archetype"/>.</param>
     /// <param name="destination">The new <see cref="Archetype"/>.</param>
     /// <param name="destinationSlot">The new <see cref="Slot"/> in which the moved <see cref="Entity"/> will land.</param>
-    internal void Move(Entity entity, ref EntityData data, Archetype source, Archetype destination, out Slot destinationSlot)
+    /// <param name="transition">The cached <see cref="ArchetypeTransition"/> from source to destination, if there is one.</param>
+    internal void Move(Entity entity, ref EntityData data, Archetype source, Archetype destination, out Slot destinationSlot, ArchetypeTransition? transition = null)
     {
         // Entity should match the supplied EntityData.
         Debug.Assert(entity == data.Archetype.Entity(ref data.Slot));
@@ -356,7 +373,15 @@ public partial class World : IDisposable
         // Copy entity to other archetype
         var slot = data.Slot;
         var allocatedEntities = destination.Add(entity, out _, out destinationSlot);
-        Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
+        if (transition is null)
+        {
+            Archetype.CopyComponents(source, ref slot, destination, ref destinationSlot);
+        }
+        else
+        {
+            Archetype.CopyComponents(source, ref slot, transition, ref destinationSlot);
+        }
+
         source.Remove(slot, out var movedEntity);
 
         // Update moved entity from the remove
@@ -797,10 +822,10 @@ public partial class World
         Archetypes.Remove(archetype);
         RemoveFromHashGroup(hash, archetype);
 
-        // Remove archetype from other archetypes edges.
+        // Remove archetype from the transitions of other archetypes.
         foreach (var otherArchetype in this)
         {
-            otherArchetype.RemoveEdge(archetype);
+            otherArchetype.RemoveTransitionsTo(archetype);
         }
 
         archetype.Clear();
@@ -856,7 +881,17 @@ public partial class World
     /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
     public void Query(in QueryDescription queryDescription, ForEach forEntity)
     {
-        var query = Query(in queryDescription);
+        Query(Query(in queryDescription), forEntity);
+    }
+
+    /// <summary>
+    ///     Searches all matching <see cref="Entity"/>s of a <see cref="Core.Query"/> and calls the passed <see cref="ForEach"/>.
+    ///     Skips the lookup of the <see cref="Core.Query"/>, which is useful if it is used often and kept.
+    /// </summary>
+    /// <param name="query">The <see cref="Core.Query"/> from <see cref="Query(in QueryDescription)"/> which specifies which <see cref="Entity"/>s are searched for.</param>
+    /// <param name="forEntity">The <see cref="ForEach"/> delegate.</param>
+    public void Query(Query query, ForEach forEntity)
+    {
         foreach (ref var chunk in query)
         {
             ref var entityLastElement = ref chunk.Entity(0);
@@ -876,9 +911,19 @@ public partial class World
     /// <param name="queryDescription">The <see cref="QueryDescription"/> which specifies the <see cref="Entity"/>s for which to search.</param>
     public void InlineQuery<T>(in QueryDescription queryDescription) where T : struct, IForEach
     {
+        InlineQuery<T>(Query(in queryDescription));
+    }
+
+    /// <summary>
+    ///     Searches all matching <see cref="Entity"/>s of a <see cref="Core.Query"/> and calls the <see cref="IForEach"/> struct.
+    ///     Inlines the call and skips the lookup of the <see cref="Core.Query"/>, which is useful if it is used often and kept.
+    /// </summary>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="query">The <see cref="Core.Query"/> from <see cref="Query(in QueryDescription)"/> which specifies the <see cref="Entity"/>s for which to search.</param>
+    public void InlineQuery<T>(Query query) where T : struct, IForEach
+    {
         var t = new T();
 
-        var query = Query(in queryDescription);
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -899,7 +944,18 @@ public partial class World
     /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
     public void InlineQuery<T>(in QueryDescription queryDescription, ref T iForEach) where T : struct, IForEach
     {
-        var query = Query(in queryDescription);
+        InlineQuery(Query(in queryDescription), ref iForEach);
+    }
+
+    /// <summary>
+    ///     Searches all matching <see cref="Entity"/>s of a <see cref="Core.Query"/> and calls the passed <see cref="IForEach"/> struct.
+    ///     Inlines the call and skips the lookup of the <see cref="Core.Query"/>, which is useful if it is used often and kept.
+    /// </summary>
+    /// <typeparam name="T">A struct implementation of the <see cref="IForEach"/> interface which is called on each <see cref="Entity"/> found.</typeparam>
+    /// <param name="query">The <see cref="Core.Query"/> from <see cref="Query(in QueryDescription)"/> which specifies the <see cref="Entity"/>s for which to search.</param>
+    /// <param name="iForEach">The struct instance of the generic type being invoked.</param>
+    public void InlineQuery<T>(Query query, ref T iForEach) where T : struct, IForEach
+    {
         foreach (ref var chunk in query)
         {
             ref var entityFirstElement = ref chunk.Entity(0);
@@ -1108,45 +1164,34 @@ public partial class World
 public partial class World
 {
     /// <summary>
-    ///     Creates <see cref="Entity"/>s with <see cref="EntityData"/> in the given  <see cref="Archetype"/> without them already being added to the  <see cref="Archetype"/>.
-    ///     They effectively point to slots in the  <see cref="Archetype"/>, but are not yet part of it.
+    ///     Creates <see cref="Entity"/>s in an <see cref="Archetype"/> in a single pass, from their ids over their <see cref="Slot"/>s to their <see cref="EntityData"/>.
+    ///     The capacity of the <see cref="Archetype"/> and the <see cref="EntityInfo"/> must have been ensured before.
     /// </summary>
     /// <param name="archetype">The <see cref="Archetype"/>.</param>
-    /// <param name="entities">The <see cref="Span{T}"/> of <see cref="Entity"/>s where the entities will be written to.</param>
-    /// <param name="entityData">The <see cref="Span{T}"/> of <see cref="EntityData"/> where the <see cref="EntityData"/>s will be written to.</param>
-    /// <param name="amount">The amount of <see cref="Entity"/> to create.</param>
-    internal void GetOrCreateEntitiesInternal(Archetype archetype, Span<Entity> entities, Span<EntityData> entityData, int amount)
+    /// <param name="amount">The amount of <see cref="Entity"/>s to create.</param>
+    /// <param name="entities">The <see cref="Span{T}"/> where the created <see cref="Entity"/>s will be written to, empty if they are not needed.</param>
+    /// <param name="first">The <see cref="Slot"/> of the first created <see cref="Entity"/>.</param>
+    /// <param name="last">The <see cref="Slot"/> of the last created <see cref="Entity"/>, directly before <paramref name="first"/> if nothing is created.</param>
+    internal void GetOrCreateEntitiesInternal(Archetype archetype, int amount, Span<Entity> entities, out Slot first, out Slot last)
     {
-        // Rent array
-        using var slotArray = Pool<Slot>.Rent(amount);
-        var slots = slotArray.AsSpan();
+        // The first new entity lands behind the current slot, the last one is the current slot afterwards.
+        first = archetype.CurrentSlot;
+        first++;
+        first.Wrap(archetype.EntitiesPerChunk);
 
-        // Get slots for entities and put them into the lists
-        Archetype.GetNextSlots(archetype, slots, amount);
-        for(var index = 0; index < amount; index++)
-        {
-            GetOrCreateEntityInternal(out var entity);
-            entities[index] = entity;
-            entityData[index] = new EntityData(archetype, slots[index], entity.Version);
-        }
-    }
-
-    /// <summary>
-    ///     Adds <see cref="Entity"/> with their <see cref="EntityData"/> to the <see cref="EntityInfo"/>.
-    /// </summary>
-    /// <param name="entities">The <see cref="Entity"/>s.</param>
-    /// <param name="entityData">The <see cref="EntityData"/>.</param>
-    /// <param name="amount">The amount.</param>
-    internal void AddEntityData(Span<Entity> entities, Span<EntityData> entityData, int amount)
-    {
-        // Transfer entity and data into the EntityInfo
-        var existingEntityData = EntityInfo.EntityData;
         for (var index = 0; index < amount; index++)
         {
-            var entity = entities[index];
-            ref var data = ref entityData[index];
-            existingEntityData.Add(entity.Id, in data);
+            GetOrCreateEntityInternal(out var entity);
+            archetype.Add(entity, out _, out var slot);
+            EntityInfo.Add(entity.Id, archetype, slot, entity.Version);
+
+            if (!entities.IsEmpty)
+            {
+                entities[index] = entity;
+            }
         }
+
+        last = archetype.CurrentSlot;
     }
 
     // TODO: Add entity creation event
@@ -1160,17 +1205,7 @@ public partial class World
     public void Create(Span<Entity> createdEntities, in Signature signature, int amount)
     {
         var archetype = EnsureCapacity(in signature, amount);
-
-        // Rent arrays
-        using var entityDataArray = Pool<EntityData>.Rent(amount);
-        var entityData = entityDataArray.AsSpan();
-
-        // Create entities
-        GetOrCreateEntitiesInternal(archetype, createdEntities, entityData, amount);
-        archetype.AddAll(createdEntities, amount);
-
-        // Add entities to entityinfo
-        AddEntityData(createdEntities, entityData, amount);
+        GetOrCreateEntitiesInternal(archetype, amount, createdEntities, out _, out _);
     }
 
     /// <summary>
@@ -1183,24 +1218,8 @@ public partial class World
     public void Create<T>(int amount, in T? cmp = default)
     {
         var archetype = EnsureCapacity<T>(amount);
-
-        // Prepare entities, slots and data
-        using var entityArray =  Pool<Entity>.Rent(amount);
-        using var entityDataArray =  Pool<EntityData>.Rent(amount);
-        var entities = entityArray.AsSpan();
-        var entityData = entityDataArray.AsSpan();
-
-        // Create entities
-        GetOrCreateEntitiesInternal(archetype, entities, entityData, amount);
-        archetype.AddAll(entities, amount);
-
-        // Fill entities
-        var firstSlot = entityData[0].Slot;
-        var lastSlot = entityData[amount - 1].Slot;
+        GetOrCreateEntitiesInternal(archetype, amount, default, out var firstSlot, out var lastSlot);
         archetype.SetRange(in lastSlot, in firstSlot, cmp);
-
-        // Add entities to entityinfo
-        AddEntityData(entities, entityData, amount);
     }
 
     /// <summary>
@@ -1211,10 +1230,8 @@ public partial class World
     /// <param name="component">The instance, optional.</param>
     public void Set<T>(Entity entity, in T? component = default)
     {
-        var entitySlot = EntityInfo.GetEntityData(entity.Id);
-        var slot = entitySlot.Slot;
-        var archetype = entitySlot.Archetype;
-        archetype.Set(ref slot, in component);
+        ref var entityData = ref EntityInfo.GetEntityData(entity.Id);
+        entityData.Archetype.Set(ref entityData.Slot, in component);
         OnComponentSet<T>(entity);
     }
 
@@ -1240,10 +1257,8 @@ public partial class World
     [Pure]
     public ref T Get<T>(Entity entity)
     {
-        var entitySlot = EntityInfo.GetEntityData(entity.Id);
-        var slot = entitySlot.Slot;
-        var archetype = entitySlot.Archetype;
-        return ref archetype.Get<T>(ref slot);
+        ref var entityData = ref EntityInfo.GetEntityData(entity.Id);
+        return ref entityData.Archetype.Get<T>(ref entityData.Slot);
     }
 
     /// <summary>
@@ -1257,7 +1272,7 @@ public partial class World
     [Pure]
     public bool TryGet<T>(Entity entity, out T? component)
     {
-        var slot = EntityInfo.GetEntityData(entity.Id);
+        ref var slot = ref EntityInfo.GetEntityData(entity.Id);
         if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
             component = default;
@@ -1282,7 +1297,7 @@ public partial class World
     [Pure]
     public ref T TryGetRef<T>(Entity entity, out bool exists)
     {
-        var slot = EntityInfo.GetEntityData(entity.Id);
+        ref var slot = ref EntityInfo.GetEntityData(entity.Id);
 
         if (!slot.Archetype.TryIndex<T>(out int compIndex))
         {
@@ -1338,9 +1353,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
         var type = Component<T>.ComponentType;
-        newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
+        var transition = GetOrCreateAddTransition(in type, oldArchetype);
+        newArchetype = transition.Target;
 
-        Move(entity, ref data, oldArchetype, newArchetype, out slot);
+        Move(entity, ref data, oldArchetype, newArchetype, out slot, transition);
     }
 
     /// <summary>
@@ -1393,10 +1409,10 @@ public partial class World
         var oldArchetype = data.Archetype;
 
         var type = Component<T>.ComponentType;
-        var newArchetype = GetOrCreateArchetypeByRemoveEdge(in type, oldArchetype);
+        var transition = GetOrCreateRemoveTransition(in type, oldArchetype);
 
         OnComponentRemoved<T>(entity);
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 }
 
@@ -1547,8 +1563,7 @@ public partial class World
 
         ref var chunk = ref slot.Archetype.GetChunk(slot.Slot.ChunkIndex);
         Debug.Assert(compIndex != -1 && compIndex < chunk.Components.Length, $"Index is out of bounds, component {type} with id {compIndex} does not exist in this archetype.");
-        var array = chunk.Components.DangerousGetReferenceAt(compIndex);
-        component = array.GetValue(slot.Slot.Index);
+        component = chunk.GetBoxed(compIndex, slot.Slot.Index);
         return true;
     }
 
@@ -1569,9 +1584,10 @@ public partial class World
 
         var oldArchetype = data.Archetype;
         var type = (ComponentType)cmp.GetType();
-        var newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
+        var transition = GetOrCreateAddTransition(in type, oldArchetype);
+        var newArchetype = transition.Target;
 
-        Move(entity, ref data, oldArchetype, newArchetype, out var slot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var slot, transition);
         newArchetype.Set(ref slot, cmp);
         OnComponentAdded(entity, type);
     }
@@ -1638,28 +1654,7 @@ public partial class World
     [StructuralChange]
     public void AddRange(Entity entity, Span<ComponentType> components)
     {
-        ref var data = ref EntityInfo.EntityData[entity.Id];
-        var oldArchetype = data.Archetype;
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        for (var index = 0; index < components.Length; index++)
-        {
-            var type = components[index];
-            spanBitSet.SetBit(type.Id);
-        }
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Add(oldArchetype.Signature, components.ToArray());
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        AddRangeWithoutEvents(entity, components);
 
 #if EVENTS
         for (var i = 0; i < components.Length; i++)
@@ -1667,6 +1662,20 @@ public partial class World
             OnComponentAdded(entity, components[i]);
         }
 #endif
+    }
+
+    /// <summary>
+    ///     Moves an <see cref="Entity"/> to the <see cref="Archetype"/> with several additional components, without firing events.
+    /// </summary>
+    /// <param name="entity">The <see cref="Entity"/>.</param>
+    /// <param name="components">A <see cref="Span{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
+    internal void AddRangeWithoutEvents(Entity entity, Span<ComponentType> components)
+    {
+        ref var data = ref EntityInfo.EntityData[entity.Id];
+        var oldArchetype = data.Archetype;
+
+        var transition = GetOrCreateAddTransition(components, oldArchetype);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     /// <summary>
@@ -1682,23 +1691,10 @@ public partial class World
     {
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.ClearBit(type.Id);
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Remove(oldArchetype.Signature,type);
-            newArchetype = GetOrCreate(newSignature);
-        }
+        var transition = GetOrCreateRemoveTransition(in type, oldArchetype);
 
         OnComponentRemoved(entity, type);
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 
     /// <summary>
@@ -1716,24 +1712,7 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[oldArchetype.BitSet.Length];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        for (var index = 0; index < types.Length; index++)
-        {
-            ref var cmp = ref types[index];
-            spanBitSet.ClearBit(cmp.Id);
-        }
-
-        // Get or Create new archetype
-        if (!TryGetArchetype(spanBitSet, out var newArchetype))
-        {
-            var newSignature = Signature.Remove(oldArchetype.Signature, types);
-            newArchetype = GetOrCreate(newSignature);
-        }
+        var transition = GetOrCreateRemoveTransition(types, oldArchetype);
 
         // Fire events and move
         foreach (var type in types)
@@ -1741,7 +1720,7 @@ public partial class World
             OnComponentRemoved(entity, type);
         }
 
-        Move(entity, ref data, oldArchetype, newArchetype, out _);
+        Move(entity, ref data, oldArchetype, transition.Target, out _, transition);
     }
 }
 
@@ -1857,9 +1836,7 @@ public partial class World
 
         for (var index = 0; index < components.Length; index++)
         {
-            var componentArray = components[index];
-            var component = componentArray.GetValue(entityIndex);
-            cmps[index] = component;
+            cmps[index] = chunk.GetBoxed(index, entityIndex);
         }
 
         return cmps;

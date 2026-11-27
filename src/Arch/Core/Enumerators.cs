@@ -45,6 +45,7 @@ public ref struct Enumerator<T>
     /// </summary>
     /// <returns>True if there still items, otherwise false.</returns>
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         return unchecked(--_index) >= 0;
@@ -64,7 +65,7 @@ public ref struct Enumerator<T>
     /// </summary>
     public readonly ref T Current
     {
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
 
@@ -103,6 +104,7 @@ public ref struct QueryArchetypeEnumerator
     /// </summary>
     /// <returns>True if theres a next <see cref="Archetype"/>, otherwise false.</returns>
     [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         // Caching query locally for less lookups, improved speed
@@ -133,6 +135,7 @@ public ref struct QueryArchetypeEnumerator
     public readonly Archetype Current
     {
         [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _archetypes.Current;
     }
 }
@@ -197,6 +200,7 @@ public ref struct QueryChunkEnumerator
     /// </summary>
     /// <returns>True if theres a next <see cref="Chunk"/>, otherwise false.</returns>
     [SkipLocalsInit]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         unchecked
@@ -240,6 +244,7 @@ public ref struct QueryChunkEnumerator
     public readonly ref Chunk Current
     {
         [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref _archetypeEnumerator.Current.GetChunk(_index);
     }
 }
@@ -385,6 +390,7 @@ public ref struct EntityEnumerator
     ///     Moves to the next <see cref="Entity"/>.
     /// </summary>
     /// <returns>True if theres a next <see cref="Entity"/>, otherwise false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool MoveNext()
     {
         return unchecked(--_index >= 0);
@@ -403,6 +409,7 @@ public ref struct EntityEnumerator
     /// </summary>
     public int Current
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => _index;
     }
 }
@@ -468,18 +475,8 @@ public ref struct RangeEnumerator
     /// <returns>Its amount.</returns>
     public int AmountForJob(int i)
     {
-        if (i <= 0)
-        {
-            return _perJob;
-        }
-
-        if (i == _jobs - 1)
-        {
-            var amount = (int)Math.Ceiling((float)(_size % _jobs)) + _perJob;
-            return amount > 0 ? amount : 1;
-        }
-
-        return _perJob;
+        // The remainder is spread over the first jobs, so no job has more than one item more than another.
+        return _perJob + (i < _size % _jobs ? 1 : 0);
     }
 
     /// <summary>
@@ -504,7 +501,7 @@ public ref struct RangeEnumerator
     /// </summary>
     public Range Current
     {
-        get => new(_index * _perJob, AmountForJob(_index));
+        get => new((_index * _perJob) + Math.Min(_index, _size % _jobs), AmountForJob(_index));
     }
 }
 

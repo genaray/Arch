@@ -1,0 +1,33 @@
+<#@ template language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ include file="Helpers.ttinclude" #>
+
+using System;
+
+namespace Arch.Core;
+
+<#
+    for (var index = 1; index <= Amount; index++)
+    {
+        var generics = AppendGenerics(index);
+
+        var parameters = new StringBuilder();
+        for (var i = 0; i < index; i++)
+            parameters.Append($"Span<T{i}> t{i}Span, ");
+        parameters.Length -= 2;
+#>
+/// <summary>
+///     A struct implementation of this interface is called by <see cref="World"/>.InlineChunkQuery once for each <see cref="Chunk"/> with entities,
+///     with the components of all its entities as <see cref="Span{T}"/>s. Allows to process whole chunks, for example with SIMD.
+/// </summary>
+public interface IChunkForEach<<#= generics #>>
+{
+    /// <summary>
+    ///     Called once for each <see cref="Chunk"/> with the components of its <see cref="Chunk.Count"/> entities, all spans have the same length.
+    /// </summary>
+    void Update(<#= parameters #>);
+}
+<#
+    }
+#>

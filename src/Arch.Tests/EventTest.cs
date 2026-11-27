@@ -1,4 +1,5 @@
-﻿using Arch.Core;
+﻿using Arch.Buffer;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Core.Utils;
 using static NUnit.Framework.Assert;
@@ -160,6 +161,66 @@ public sealed class EventTest
         _asserter.AssertEvents(compOneSet:1);
         That(_asserter.CompOneSet, Does.Contain((entity,cmp)));
         _asserter.Clear();
+    }
+
+    [Test]
+    public void CommandBufferFiresAddedForAddedAndSetForSetComponents()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
+        world.SubscribeComponentSet((in Entity entity, ref EventTestComponentOne cmp) => _asserter.CompOneSet.Add((entity, cmp)));
+        world.SubscribeComponentSet((in Entity entity, ref EventTestComponentTwo cmp) => _asserter.CompTwoSet.Add((entity, cmp)));
+
+        var first = world.Create(new EventTestComponentOne());
+        var second = world.Create(new EventTestComponentOne());
+        _asserter.Clear();
+
+        // The first entity gets a set only, the second a set and an add, so their indexes in the buffer differ.
+        using var commandBuffer = new CommandBuffer();
+        commandBuffer.Set(first, new EventTestComponentOne());
+        commandBuffer.Set(second, new EventTestComponentOne());
+        commandBuffer.Add(second, new EventTestComponentTwo());
+        commandBuffer.Playback(world);
+
+        _asserter.AssertEvents(compOneSet: 2, compTwoAdded: 1);
+        That(_asserter.CompTwoAdded, Does.Contain(second));
+    }
+
+    [Test]
+    public void CommandBufferFiresNoEventsForCancelledAddAndRemove()
+    {
+        using var world = World.Create();
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoAdded.Add(entity));
+        world.SubscribeComponentRemoved((in Entity entity, ref EventTestComponentTwo _) => _asserter.CompTwoRemoved.Add(entity));
+
+        var entity = world.Create(new EventTestComponentOne());
+        _asserter.Clear();
+
+        using var commandBuffer = new CommandBuffer();
+        commandBuffer.Add(entity, new EventTestComponentTwo());
+        commandBuffer.Remove<EventTestComponentTwo>(entity);
+        commandBuffer.Playback(world);
+
+        _asserter.AssertEvents();
+    }
+
+    [Test]
+    public void CommandBufferFiresEventsForBatchedCreates()
+    {
+        using var world = World.Create();
+        world.SubscribeEntityCreated((in Entity entity) => _asserter.Created.Add(entity));
+        world.SubscribeComponentAdded((in Entity entity, ref EventTestComponentOne _) => _asserter.CompOneAdded.Add(entity));
+
+        using var commandBuffer = new CommandBuffer();
+        var types = new ComponentType[] { typeof(EventTestComponentOne) };
+        for (var index = 0; index < 5; index++)
+        {
+            commandBuffer.Create(types);
+        }
+
+        commandBuffer.Playback(world);
+
+        _asserter.AssertEvents(created: 5, compOneAdded: 5);
     }
 
     [Test]

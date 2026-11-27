@@ -1,166 +1,136 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Threading;
 using Arch.Core;
-using Arch.Core.Extensions;
-using Arch.Core.Extensions.Internal;
 using Arch.Core.Utils;
-using Collections.Pooled;
 
 namespace Arch.Buffer;
-
-/// <summary>
-///     The <see cref="CreateCommand"/> struct
-///     contains data for creating a new <see cref="Entity"/>.
-/// </summary>
-public readonly record struct CreateCommand
-{
-    public readonly int Index;
-    public readonly ComponentType[] Types;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="CreateCommand"/> struct.
-    /// </summary>
-    /// <param name="index">The <see cref="Entity"/>'s buffer id.</param>
-    /// <param name="types">Its <see cref="ComponentType"/>'s array.</param>
-    public CreateCommand(int index, ComponentType[] types)
-    {
-        Index = index;
-        Types = types;
-    }
-}
-
-/// <summary>
-///     The <see cref="BufferedEntityInfo"/> struct
-///     contains data about a buffered <see cref="Entity"/>.
-/// </summary>
-/// <remarks>
-///     This struct's purpose is to speed up lookups into an <see cref="Entity"/>'s internal data.
-/// </remarks>
-public readonly record struct BufferedEntityInfo
-{
-    public readonly int Index;
-    public readonly int SetIndex;
-    public readonly int AddIndex;
-    public readonly int RemoveIndex;
-
-    /// <summary>
-    ///      Initializes a new instance of the <see cref="CreateCommand"/> struct.
-    /// </summary>
-    /// <param name="index">Its <see cref="CommandBuffer"/> index.</param>
-    /// <param name="setIndex">Its <see cref="CommandBuffer.Sets"/> index.</param>
-    /// <param name="addIndex">Its <see cref="CommandBuffer.Adds"/> index.</param>
-    /// <param name="removeIndex">Its <see cref="CommandBuffer.Removes"/> index.</param>
-    public BufferedEntityInfo(int index, int setIndex, int addIndex, int removeIndex)
-    {
-        Index = index;
-        SetIndex = setIndex;
-        AddIndex = addIndex;
-        RemoveIndex = removeIndex;
-    }
-}
 
 /// <summary>
 ///     The <see cref="CommandBuffer"/> class
 ///     stores operation to <see cref="Entity"/>'s between to play and implement them at a later time in the <see cref="World"/>.
 /// </summary>
-public sealed partial class CommandBuffer : IDisposable
+/// <remarks>
+///     Every thread records into its own stream of commands without any locking.
+///     During <see cref="Playback"/> the commands are applied in phases: all creates, then for every stream all adds, sets and removes, then all destroys.
+///     The commands one thread recorded for the same <see cref="Entity"/> are applied together, as a single structural change.
+///     A component that is added and removed again in the same <see cref="CommandBuffer"/> does not change the <see cref="Entity"/> and raises no events.
+/// </remarks>
+public sealed class CommandBuffer : IDisposable
 {
-    private readonly PooledList<ComponentType> _addTypes;
-    private readonly PooledList<ComponentType> _removeTypes;
+    /// <summary>
+    ///     Whether commands can be recorded from several threads at once, see <see cref="CommandBuffer(int, bool)"/>.
+    /// </summary>
+    private readonly bool _threadSafe;
+
+    /// <summary>
+    ///     The capacity every <see cref="CommandStream"/> starts with.
+    /// </summary>
+    private readonly int _initialCapacity;
+
+    /// <summary>
+    ///     All streams ever created, so commands of threads that finished are still played back. Guarded by itself.
+    /// </summary>
+    private readonly List<CommandStream> _streams = new();
+
+    /// <summary>
+    ///     The stream of every thread, null if the <see cref="CommandBuffer"/> is not thread-safe.
+    /// </summary>
+    private readonly ThreadLocal<CommandStream>? _threadStreams;
+
+    /// <summary>
+    ///     The only stream if the <see cref="CommandBuffer"/> is not thread-safe, which saves looking it up per thread.
+    /// </summary>
+    private readonly CommandStream? _singleStream;
+
+    /// <summary>
+    ///     Creates the recorded <see cref="Entity"/>s and resolves the buffered ones.
+    /// </summary>
+    private readonly EntityCreator _creator = new();
+
+    /// <summary>
+    ///     Applies the recorded commands during <see cref="Playback"/>.
+    /// </summary>
+    private readonly CommandPlayer _player;
+
+    /// <summary>
+    ///     Identifies this <see cref="CommandBuffer"/> in <see cref="_lastStream"/>, without keeping the whole <see cref="CommandBuffer"/> alive.
+    /// </summary>
+    private readonly object _owner = new();
+
+    /// <summary>
+    ///     The stream the calling thread used last, whichever <see cref="CommandBuffer"/> it belongs to.
+    ///     Finding the stream of a thread this way is faster than <see cref="ThreadLocal{T}.Value"/>, as long as a thread records into one <see cref="CommandBuffer"/> at a time.
+    /// </summary>
+    [ThreadStatic]
+    private static CommandStream? _lastStream;
+
+    /// <summary>
+    ///     The amount of <see cref="Entity"/>s created by this <see cref="CommandBuffer"/> since the last <see cref="Playback"/> that disposed its commands.
+    /// </summary>
+    private int _createdCount;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="CommandBuffer"/> class
     ///     with the specified <see cref="Core.World"/> and an optional <paramref name="initialCapacity"/> (default: 128).
     /// </summary>
-    /// <param name="initialCapacity">The initial capacity.</param>
-    public CommandBuffer(int initialCapacity = 128)
+    /// <param name="initialCapacity">The initial capacity, of every thread that records commands.</param>
+    /// <param name="threadSafe">
+    ///     If true (default) the commands can be recorded from several threads at once, for example from a parallel query.
+    ///     If false recording is a bit faster, but must only happen from one thread at a time.
+    /// </param>
+    public CommandBuffer(int initialCapacity = 128, bool threadSafe = true)
     {
-        Entities = new PooledList<Entity>(initialCapacity);
-        BufferedEntityInfo = new PooledDictionary<int, BufferedEntityInfo>(initialCapacity);
-        Creates = new PooledList<CreateCommand>(initialCapacity);
-        Sets = new SparseSet(initialCapacity);
-        Adds = new StructuralSparseSet(initialCapacity);
-        Removes = new StructuralSparseSet(initialCapacity);
-        Destroys = new PooledList<int>(initialCapacity);
-        _addTypes = new PooledList<ComponentType>(16);
-        _removeTypes = new PooledList<ComponentType>(16);
+        _threadSafe = threadSafe;
+        _initialCapacity = initialCapacity;
+        _player = new CommandPlayer(_creator);
+
+        if (threadSafe)
+        {
+            _threadStreams = new ThreadLocal<CommandStream>(CreateStream);
+        }
+        else
+        {
+            _singleStream = CreateStream();
+        }
     }
 
     /// <summary>
-    ///     Gets the amount of <see cref="Entity"/> instances targeted by this <see cref="CommandBuffer"/>.
+    ///     Gets the amount of commands recorded by all threads, since the last <see cref="Playback"/> that disposed them.
     /// </summary>
-    public int Size { get; private set; }
-
-    /// <summary>
-    ///     All <see cref="Entity"/>'s created or modified in this <see cref="CommandBuffer"/>.
-    /// </summary>
-    internal PooledList<Entity> Entities { get; set; }
-
-    /// <summary>
-    ///     A map that stores some additional information for each <see cref="Entity"/>, which is needed for the internal <see cref="CommandBuffer"/> operations.
-    /// </summary>
-    internal PooledDictionary<int, BufferedEntityInfo> BufferedEntityInfo { get; set; }
-
-    /// <summary>
-    ///     All create commands recorded in this <see cref="CommandBuffer"/>. Used to create <see cref="Entity"/>'s during <see cref="Playback"/>.
-    /// </summary>
-    internal PooledList<CreateCommand> Creates { get; set; }
-
-    /// <summary>
-    ///     Saves set operations for components to play them back later during <see cref="Playback"/>.
-    /// </summary>
-    internal SparseSet Sets { get; set; }
-
-    /// <summary>
-    ///     Saves add operations for components to play them back later during <see cref="Playback"/>.
-    /// </summary>
-    internal StructuralSparseSet Adds { get; set; }
-
-    /// <summary>
-    ///     Saves remove operations for components to play them back later during <see cref="Playback"/>.
-    /// </summary>
-    internal StructuralSparseSet Removes { get; set; }
-
-    /// <summary>
-    ///     Saves remove operations for <see cref="Entity"/>'s to play them back later during <see cref="Playback"/>.
-    /// </summary>
-    internal PooledList<int> Destroys { get; set; }
-
-    /// <summary>
-    ///     Registers a new <see cref="Entity"/> into the <see cref="CommandBuffer"/>.
-    ///     An <see langword="out"/> parameter contains its <see cref="Arch.Buffer.BufferedEntityInfo"/>.
-    /// </summary>
-    /// <param name="entity">The <see cref="Entity"/> to register.</param>
-    /// <param name="info">Its <see cref="BufferedEntityInfo"/> which stores indexes used for <see cref="CommandBuffer"/> operations.</param>
-
-    internal void Register(in Entity entity, out BufferedEntityInfo info)
+    public int Size
     {
-        var setIndex = Sets.Create(in entity);
-        var addIndex = Adds.Create(in entity);
-        var removeIndex = Removes.Create(in entity);
+        get
+        {
+            lock (_streams)
+            {
+                var size = 0;
+                foreach (var stream in _streams)
+                {
+                    size += stream.Count;
+                }
 
-        info = new BufferedEntityInfo(Size, setIndex, addIndex, removeIndex);
-
-        Entities.Add(entity);
-        BufferedEntityInfo.Add(entity.Id, info);
-        Size++;
+                return size;
+            }
+        }
     }
 
-    /// TODO : Probably just run this if the wrapped entity is negative? To save some overhead?
     /// <summary>
-    ///     Resolves an <see cref="Entity"/> originally either from a <see cref="StructuralSparseArray"/> or <see cref="SparseArray"/> to its real <see cref="Entity"/>.
-    ///     This is required since we can also create new entities via this buffer and buffer operations for it. So sometimes there negative entities stored in the arrays and those must then be resolved to its newly created real entity.
-    ///     <remarks>Probably hard to understand, blame genaray for this.</remarks>
+    ///     The stream the calling thread records into.
     /// </summary>
-    /// <param name="entity">The <see cref="Entity"/> with a negative or positive id to resolve.</param>
-    /// <returns>Its real <see cref="Entity"/>.</returns>
-
-    internal Entity Resolve(Entity entity)
+    private CommandStream CurrentStream
     {
-        var entityIndex = BufferedEntityInfo[entity.Id].Index;
-        return Entities[entityIndex];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            if (_singleStream is not null)
+            {
+                return _singleStream;
+            }
+
+            var stream = _lastStream;
+            return stream is not null && ReferenceEquals(stream.Owner, _owner) ? stream : FindThreadStream();
+        }
     }
 
     /// <summary>
@@ -168,20 +138,14 @@ public sealed partial class CommandBuffer : IDisposable
     ///     Will be created during <see cref="Playback"/>.
     /// </summary>
     /// <param name="types">The <see cref="Entity"/>'s component structure/<see cref="Archetype"/>.</param>
-    /// <returns>The buffered <see cref="Entity"/> with an index of <c>-1</c>.</returns>
-
+    /// <returns>The buffered <see cref="Entity"/>, with a negative id. It can be used for further commands of this <see cref="CommandBuffer"/>.</returns>
     public Entity Create(ComponentType[] types)
     {
-        lock (this)
-        {
-            var entity = new Entity(-(Size + 1), -1);
-            Register(entity, out _);
+        var index = _threadSafe ? Interlocked.Increment(ref _createdCount) - 1 : _createdCount++;
+        var entity = EntityCreator.BufferedEntity(index);
 
-            var command = new CreateCommand(Size - 1, types);
-            Creates.Add(command);
-
-            return entity;
-        }
+        CurrentStream.RecordCreate(entity, types);
+        return entity;
     }
 
     /// <summary>
@@ -189,18 +153,9 @@ public sealed partial class CommandBuffer : IDisposable
     ///     Will be destroyed during <see cref="Playback"/>.
     /// </summary>
     /// <param name="entity">The <see cref="Entity"/> to destroy.</param>
-
     public void Destroy(in Entity entity)
     {
-        lock (this)
-        {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out var info))
-            {
-                Register(entity, out info);
-            }
-
-            Destroys.Add(info.Index);
-        }
+        CurrentStream.RecordDestroy(entity);
     }
 
     /// <summary>
@@ -211,19 +166,9 @@ public sealed partial class CommandBuffer : IDisposable
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
-
     public void Set<T>(in Entity entity, in T? component = default)
     {
-        BufferedEntityInfo info;
-        lock (this)
-        {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
-        }
-
-        Sets.Set(info.SetIndex, in component);
+        CurrentStream.RecordValue(CommandKind.Set, entity, in component);
     }
 
     /// <summary>
@@ -234,20 +179,9 @@ public sealed partial class CommandBuffer : IDisposable
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
     /// <param name="component">The component value.</param>
-
     public void Add<T>(in Entity entity, in T? component = default)
     {
-        BufferedEntityInfo info;
-        lock (this)
-        {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
-        }
-
-        Adds.Set<T>(info.AddIndex);
-        Sets.Set(info.SetIndex, in component);
+        CurrentStream.RecordValue(CommandKind.Add, entity, in component);
     }
 
     /// <summary>
@@ -256,183 +190,35 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     /// <typeparam name="T">The component type.</typeparam>
     /// <param name="entity">The <see cref="Entity"/>.</param>
-
     public void Remove<T>(in Entity entity)
     {
-        BufferedEntityInfo info;
-        lock (this)
-        {
-            if (!BufferedEntityInfo.TryGetValue(entity.Id, out info))
-            {
-                Register(entity, out info);
-            }
-        }
-
-        Removes.Set<T>(info.RemoveIndex);
+        CurrentStream.RecordRemove(entity, Component<T>.ComponentType);
     }
 
     /// <summary>
     ///     Plays back all recorded commands, modifying the world.
     /// </summary>
     /// <remarks>
-    ///     This operation should only happen on the main thread.
+    ///     This operation should only happen on the main thread, while no other thread records.
     /// </remarks>
     /// <param name="world">The <see cref="World"/> where the commands will be playbacked too.</param>
     /// <param name="dispose">If true it will clear the recorded operations after they were playbacked, if not they will stay.</param>
-
     public void Playback(World world, bool dispose = true)
     {
-        // Create recorded entities.
-        int createCount = Creates.Count;
-        foreach (var cmd in Creates)
+        // Any thread can record commands for the created entities, so they exist before anything else is played back.
+        _creator.Create(world, _streams, _createdCount);
+
+        foreach (var stream in _streams)
         {
-            var entity = world.Create(cmd.Types);
-            Entities[cmd.Index] = entity;
+            _player.Play(world, stream);
         }
 
-        // Play back additions.
-        int addCount = Adds.Count;
-        for (var index = 0; index < addCount; index++)
+        _player.DestroyCollected(world);
+
+        if (dispose)
         {
-            var wrappedEntity = Adds.Entities[index];
-            for (var i = 0; i < Adds.UsedSize; i++)
-            {
-                var usedIndex = Adds.Used[i];
-                var sparseSet = Adds.Components[usedIndex];
-
-                if (!sparseSet.Contains(wrappedEntity.Index))
-                {
-                    continue;
-                }
-
-                _addTypes.Add(sparseSet.Type);
-            }
-
-            if (_addTypes.Count <= 0)
-            {
-                continue;
-            }
-
-            // Resolves the entity to get the real one (e.g. for newly created negative entities and stuff).
-            var entity = Resolve(wrappedEntity.Entity);
-            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to add components to the dead {wrappedEntity.Entity}");
-
-            AddRange(world, entity, _addTypes.Span);
-            _addTypes.Clear();
+            Clear();
         }
-
-        // Play back sets.
-        int setCount = Sets.Count;
-        for (var index = 0; index < setCount; index++)
-        {
-            // Get wrapped entity
-            var wrappedEntity = Sets.Entities[index];
-            var entity = Resolve(wrappedEntity.Entity);
-            var id = wrappedEntity.Index;
-
-            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to set components to the dead {wrappedEntity.Entity}");
-
-            // Get entity chunk
-            var entityInfo = world.EntityInfo.GetEntityData(entity.Id);
-            var archetype = entityInfo.Archetype;
-            ref readonly var chunk = ref archetype.GetChunk(entityInfo.Slot.ChunkIndex);
-            var chunkIndex = entityInfo.Slot.Index;
-
-            // Loop over all sparset component arrays and if our entity is in one, copy the set component to its chunk
-            for (var i = 0; i < Sets.UsedSize; i++)
-            {
-                var used = Sets.Used[i];
-                var sparseArray = Sets.Components[used];
-
-                if (!sparseArray.Contains(id))
-                {
-                    continue;
-                }
-
-                var chunkArray = chunk.GetArray(sparseArray.Type);
-                Array.Copy(sparseArray.Components, sparseArray.Entities[id], chunkArray, chunkIndex, 1);
-
-#if EVENTS
-                // Entity also exists in add and the set component was added recently
-                if (Adds.Used.Length > i && Adds.Components[Adds.Used[i]].Contains(id))
-                {
-                    world.OnComponentAdded(entity, sparseArray.Type);
-                }
-                else
-                {
-                    world.OnComponentSet(entity, sparseArray.Type);
-                }
-#endif
-            }
-        }
-
-        // Play back removals.
-        int removeCount = Removes.Count;
-        for (var index = 0; index < removeCount; index++)
-        {
-            var wrappedEntity = Removes.Entities[index];
-            for (var i = 0; i < Removes.UsedSize; i++)
-            {
-                var usedIndex = Removes.Used[i];
-                var sparseSet = Removes.Components[usedIndex];
-                if (!sparseSet.Contains(wrappedEntity.Index))
-                {
-                    continue;
-                }
-
-                _removeTypes.Add(sparseSet.Type);
-            }
-
-            if (_removeTypes.Count <= 0)
-            {
-                continue;
-            }
-
-            var entity = Resolve(wrappedEntity.Entity);
-            Debug.Assert(world.IsAlive(entity), $"CommandBuffer can not to remove components from the dead {wrappedEntity.Entity}");
-
-            world.RemoveRange(entity, _removeTypes.Span);
-            _removeTypes.Clear();
-        }
-
-        // Play back destructions.
-        int destroyCount = Destroys.Count;
-        foreach (var cmd in Destroys)
-        {
-            world.Destroy(Entities[cmd]);
-        }
-
-        // Reset values.
-        if (!dispose)
-        {
-            return;
-        }
-
-        Size = 0;
-        Entities.Clear();
-        BufferedEntityInfo.Clear();
-        if (createCount > 0)
-        {
-            Creates.Clear();
-        }
-        if (setCount > 0)
-        {
-            Sets.Clear();
-        }
-        if (addCount > 0)
-        {
-            Adds.Clear();
-        }
-        if (removeCount > 0)
-        {
-            Removes.Clear();
-        }
-        if (destroyCount > 0)
-        {
-            Destroys.Clear();
-        }
-        _addTypes.Clear();
-        _removeTypes.Clear();
     }
 
     /// <summary>
@@ -440,52 +226,55 @@ public sealed partial class CommandBuffer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Entities.Dispose();
-        BufferedEntityInfo.Dispose();
-        Creates.Clear();
-        Sets.Clear();
-        Adds.Clear();
-        Removes.Clear();
-        Destroys.Dispose();
-        _addTypes.Dispose();
-        _removeTypes.Dispose();
+        _threadStreams?.Dispose();
+        lock (_streams)
+        {
+            foreach (var stream in _streams)
+            {
+                stream.Release();
+            }
+
+            _streams.Clear();
+        }
+
+        _player.Dispose();
         GC.SuppressFinalize(this);
     }
-}
 
-public sealed partial class CommandBuffer
-{
     /// <summary>
-    ///     Adds a list of new components to the <see cref="Entity"/> and moves it to the new <see cref="Archetype"/>.
+    ///     Finds the stream of the calling thread the slow way and remembers it in <see cref="_lastStream"/>.
     /// </summary>
-    /// <param name="world">The world to operate on.</param>
-    /// <param name="entity">The <see cref="Entity"/>.</param>
-    /// <param name="components">A <see cref="IList{T}"/> of <see cref="ComponentType"/>'s, those are added to the <see cref="Entity"/>.</param>
-    [SkipLocalsInit]
-    internal static void AddRange(World world, Entity entity, Span<ComponentType> components)
+    private CommandStream FindThreadStream()
     {
-        ref var data = ref world.EntityInfo.EntityData[entity.Id];
-        var oldArchetype = data.Archetype;
+        var stream = _threadStreams!.Value!;
+        _lastStream = stream;
+        return stream;
+    }
 
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-
-        for (var index = 0; index < components.Length; index++)
+    /// <summary>
+    ///     Creates the stream of a thread that records for the first time, and registers it.
+    /// </summary>
+    private CommandStream CreateStream()
+    {
+        var stream = new CommandStream(_owner, _initialCapacity);
+        lock (_streams)
         {
-            var type = components[index];
-            spanBitSet.SetBit(type.Id);
+            _streams.Add(stream);
         }
 
-        if (!world.TryGetArchetype(spanBitSet, out var newArchetype))
+        return stream;
+    }
+
+    /// <summary>
+    ///     Removes all recorded commands.
+    /// </summary>
+    private void Clear()
+    {
+        foreach (var stream in _streams)
         {
-            var newSignature = Signature.Add(oldArchetype.Signature, components);
-            newArchetype = world.GetOrCreate(newSignature);
+            stream.Clear();
         }
 
-        world.Move(entity, ref data, oldArchetype, newArchetype, out _);
+        _createdCount = 0;
     }
 }

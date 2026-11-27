@@ -24,7 +24,7 @@ public static class DangerousWorldExtensions
     /// Gets the recycled entities for the world.
     /// </summary>
     /// <param name="world">The <see cref="World"/> instance.</param>
-    /// /// <returns>a tuple (id, version) list of the recycled entities.</returns>
+    /// /// <returns>a tuple (id, version) list of the recycled entities, the first one is reused next.</returns>
     public static List<(int, int)> GetRecycledEntityIds(this World world)
     {
         List<(int, int)> recycledIdsList = new();
@@ -40,13 +40,14 @@ public static class DangerousWorldExtensions
     /// Sets the recycled entities for the world.
     /// </summary>
     /// <param name="world">The <see cref="World"/> instance.</param>
-    /// <param name="recycledEntities">A tuple (id, version) list of recycled entites.</param>
+    /// <param name="recycledEntities">A tuple (id, version) list of recycled entites, the first one is reused next.</param>
     public static void SetRecycledEntityIds(this World world, List<(int, int)> recycledEntities)
     {
         world.RecycledIds.Clear();
-        foreach ((int, int) recycledEntity in recycledEntities)
+        for (var index = recycledEntities.Count - 1; index >= 0; index--)
         {
-            world.RecycledIds.Enqueue(new RecycledEntity(recycledEntity.Item1, recycledEntity.Item2));
+            var (id, version) = recycledEntities[index];
+            world.RecycledIds.Push(new RecycledEntity(id, version));
         }
     }
 

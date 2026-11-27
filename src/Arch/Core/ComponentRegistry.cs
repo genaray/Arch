@@ -349,42 +349,31 @@ public static class ComponentRegistry
 }
 
 /// <summary>
-///     Tracks all registered arrays in the project. Allows to create arrays of a specific type without reflection at runtime, if they are registered.
+///     Creates arrays of a registered component type without reflection at runtime.
+///     Components are registered automatically as soon as they are used with a generic <see cref="Component{T}"/>.
 /// </summary>
 public static class ArrayRegistry
 {
-    private static readonly JaggedArray<Func<int, Array>> _createFactories = new(128);
-
     /// <summary>
-    ///     Adds a new array type and registers it.
+    ///     Registers the array type of a component.
     /// </summary>
     /// <typeparam name="T">The type of the array.</typeparam>
     public static void Add<T>()
     {
-        _createFactories.Add(Component<T>.ComponentType.Id, ArrayFactory<T>.Create);
+        ComponentOps.Register<T>(Component<T>.ComponentType);
     }
 
     /// <summary>
-    ///     Gets an array of the specified type and capacity. Will use the registered factory if it exists, otherwise it will create a new array using reflection.
+    ///     Gets an array of the specified type and capacity. Will not use reflection if the component is registered.
     /// </summary>
     /// <param name="type">The type of the array.</param>
     /// <param name="capacity">The capacity of the array.</param>
     /// <returns>The created array.</returns>
     public static Array GetArray(ComponentType type, int capacity)
     {
-        return _createFactories.TryGetValue(type.Id, out Func<int, Array> func) ? func(capacity) : Array.CreateInstance(type.Type, capacity);
-    }
-
-    /// <summary>
-    ///     An array factory that creates arrays of the specified type.
-    /// </summary>
-    /// <typeparam name="T">The type of the array.</typeparam>
-    private static class ArrayFactory<T>
-    {
-        public static readonly Func<int, Array> Create = capacity => capacity == 0 ? Array.Empty<T>() : new T[capacity];
+        return ComponentOps.Get(type).Create(capacity);
     }
 }
-
 
 /// <summary>
 ///     The <see cref="Component"/> class provides information about a component during runtime.
@@ -444,13 +433,20 @@ public static class Component
 
     /// <summary>
     ///     Calculates the hash code of a <see cref="uint"/> array, which is unique for the elements contained in the array.
+    ///     Trailing zero words are ignored, so the same bits hash equally no matter how large the buffer holding them is.
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/>.</param>
     /// <returns>A unique hashcode for the contained elements.</returns>
     public static int GetHashCode(Span<uint> span)
     {
+        var length = span.Length;
+        while (length > 0 && span[length - 1] == 0)
+        {
+            length--;
+        }
+
         var hashCode = new HashCode();
-        hashCode.AddSpan(span);
+        hashCode.AddSpan(span[..length]);
         return hashCode.ToHashCode();
     }
 }
@@ -484,6 +480,7 @@ public static class Component<T>
     {
         ComponentType = ComponentRegistry.Add<T>();
         Signature = new Signature(ComponentType);
+        ComponentOps.Register<T>(ComponentType);
     }
 }
 

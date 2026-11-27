@@ -16,27 +16,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1>(ref newSlot, in t0Component,in t1Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -50,29 +33,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2>(ref newSlot, in t0Component,in t1Component,in t2Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -87,31 +51,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -127,33 +70,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -170,35 +90,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -216,37 +111,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -265,39 +133,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -317,41 +156,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -372,43 +180,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -430,45 +205,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -491,47 +231,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -555,49 +258,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -622,51 +286,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -692,53 +315,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -765,55 +345,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -841,57 +376,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -920,59 +408,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1002,61 +441,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1087,63 +475,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1175,65 +510,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
-        var id20 = Component<T20>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-        spanBitSet.SetBit(id20);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1266,67 +546,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
-        var id20 = Component<T20>.ComponentType.Id;
-        var id21 = Component<T21>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-        spanBitSet.SetBit(id20);
-        spanBitSet.SetBit(id21);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1360,69 +583,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
-        var id20 = Component<T20>.ComponentType.Id;
-        var id21 = Component<T21>.ComponentType.Id;
-        var id22 = Component<T22>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-        spanBitSet.SetBit(id20);
-        spanBitSet.SetBit(id21);
-        spanBitSet.SetBit(id22);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1457,71 +621,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
-        var id20 = Component<T20>.ComponentType.Id;
-        var id21 = Component<T21>.ComponentType.Id;
-        var id22 = Component<T22>.ComponentType.Id;
-        var id23 = Component<T23>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-        spanBitSet.SetBit(id20);
-        spanBitSet.SetBit(id21);
-        spanBitSet.SetBit(id22);
-        spanBitSet.SetBit(id23);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component,in t23Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);
@@ -1557,73 +660,10 @@ public partial class World
         ref var data = ref EntityInfo.EntityData[entity.Id];
         var oldArchetype = data.Archetype;
 
-        // Get all the ids here just in case we are adding a new component as this will grow the ComponentRegistry.Size
-        var id0 = Component<T0>.ComponentType.Id;
-        var id1 = Component<T1>.ComponentType.Id;
-        var id2 = Component<T2>.ComponentType.Id;
-        var id3 = Component<T3>.ComponentType.Id;
-        var id4 = Component<T4>.ComponentType.Id;
-        var id5 = Component<T5>.ComponentType.Id;
-        var id6 = Component<T6>.ComponentType.Id;
-        var id7 = Component<T7>.ComponentType.Id;
-        var id8 = Component<T8>.ComponentType.Id;
-        var id9 = Component<T9>.ComponentType.Id;
-        var id10 = Component<T10>.ComponentType.Id;
-        var id11 = Component<T11>.ComponentType.Id;
-        var id12 = Component<T12>.ComponentType.Id;
-        var id13 = Component<T13>.ComponentType.Id;
-        var id14 = Component<T14>.ComponentType.Id;
-        var id15 = Component<T15>.ComponentType.Id;
-        var id16 = Component<T16>.ComponentType.Id;
-        var id17 = Component<T17>.ComponentType.Id;
-        var id18 = Component<T18>.ComponentType.Id;
-        var id19 = Component<T19>.ComponentType.Id;
-        var id20 = Component<T20>.ComponentType.Id;
-        var id21 = Component<T21>.ComponentType.Id;
-        var id22 = Component<T22>.ComponentType.Id;
-        var id23 = Component<T23>.ComponentType.Id;
-        var id24 = Component<T24>.ComponentType.Id;
+        var transition = GetOrCreateAddTransition(Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>.Signature, oldArchetype);
+        var newArchetype = transition.Target;
 
-
-        // BitSet to stack/span bitset, size big enough to contain ALL registered components.
-        Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
-        oldArchetype.BitSet.AsSpan(stack);
-
-        // Create a span bitset, doing it local saves us headache and gargabe
-        var spanBitSet = new SpanBitSet(stack);
-        spanBitSet.SetBit(id0);
-        spanBitSet.SetBit(id1);
-        spanBitSet.SetBit(id2);
-        spanBitSet.SetBit(id3);
-        spanBitSet.SetBit(id4);
-        spanBitSet.SetBit(id5);
-        spanBitSet.SetBit(id6);
-        spanBitSet.SetBit(id7);
-        spanBitSet.SetBit(id8);
-        spanBitSet.SetBit(id9);
-        spanBitSet.SetBit(id10);
-        spanBitSet.SetBit(id11);
-        spanBitSet.SetBit(id12);
-        spanBitSet.SetBit(id13);
-        spanBitSet.SetBit(id14);
-        spanBitSet.SetBit(id15);
-        spanBitSet.SetBit(id16);
-        spanBitSet.SetBit(id17);
-        spanBitSet.SetBit(id18);
-        spanBitSet.SetBit(id19);
-        spanBitSet.SetBit(id20);
-        spanBitSet.SetBit(id21);
-        spanBitSet.SetBit(id22);
-        spanBitSet.SetBit(id23);
-        spanBitSet.SetBit(id24);
-
-
-        if (!TryGetArchetype(spanBitSet, out var newArchetype)){
-            var newSignature = Signature.Add(oldArchetype.Signature, Component<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>.Signature);
-            newArchetype = GetOrCreate(newSignature);
-        }
-
-        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot);
+        Move(entity, ref data, oldArchetype, newArchetype, out var newSlot, transition);
         newArchetype.Set<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(ref newSlot, in t0Component,in t1Component,in t2Component,in t3Component,in t4Component,in t5Component,in t6Component,in t7Component,in t8Component,in t9Component,in t10Component,in t11Component,in t12Component,in t13Component,in t14Component,in t15Component,in t16Component,in t17Component,in t18Component,in t19Component,in t20Component,in t21Component,in t22Component,in t23Component,in t24Component);
         OnComponentAdded<T0>(entity);
         OnComponentAdded<T1>(entity);

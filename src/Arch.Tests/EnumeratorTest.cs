@@ -131,4 +131,29 @@ public sealed class EnumeratorTest
         That(counter, Is.EqualTo(0));
         That(chunkCounter, Is.EqualTo(_world.Archetypes[0].ChunkCount + _world.Archetypes[1].ChunkCount));
     }
+
+    /// <summary>
+    ///     Checks that the <see cref="RangePartitioner"/> covers all items exactly once and splits them evenly.
+    /// </summary>
+    [TestCase(1, 1)]
+    [TestCase(10, 4)]
+    [TestCase(7, 22)]
+    [TestCase(1710, 88)]
+    public void RangePartitionerCoversAllItemsEvenly(int size, int threads)
+    {
+        var next = 0;
+        var smallest = int.MaxValue;
+        var largest = 0;
+
+        foreach (var range in new RangePartitioner(threads, size))
+        {
+            That(range.Start, Is.EqualTo(next));
+            next += range.Length;
+            smallest = Math.Min(smallest, range.Length);
+            largest = Math.Max(largest, range.Length);
+        }
+
+        That(next, Is.EqualTo(size));
+        That(largest - smallest, Is.LessThanOrEqualTo(1));
+    }
 }

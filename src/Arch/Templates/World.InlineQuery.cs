@@ -7,7 +7,11 @@ public partial class World
 {
     public void InlineQuery<T, T0>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0>(Query query, ref T iForEach) where T : struct, IForEach<T0>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -23,7 +27,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -41,7 +49,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -61,7 +73,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -83,7 +99,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -107,7 +127,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -133,7 +157,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -161,7 +189,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -191,7 +223,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -223,7 +259,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -257,7 +297,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -293,7 +337,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -331,7 +379,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -371,7 +423,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -413,7 +469,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -457,7 +517,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -503,7 +567,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -551,7 +619,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -601,7 +673,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -653,7 +729,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -707,7 +787,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -763,7 +847,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -821,7 +909,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -881,7 +973,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();
@@ -943,7 +1039,11 @@ public partial class World
 
     public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(in QueryDescription description, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>
     {
-        var query = Query(in description);
+        InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(Query(in description), ref iForEach);
+    }
+
+    public void InlineQuery<T, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>(Query query, ref T iForEach) where T : struct, IForEach<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24>
+    {
         foreach (ref var chunk in query)
         {
             ref var t0FirstElement = ref chunk.GetFirst<T0>();

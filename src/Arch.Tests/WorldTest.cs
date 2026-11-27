@@ -43,6 +43,43 @@ public sealed partial class WorldTest
     }
 
     [Test]
+    public void CreateUsesDefaultChunkSizeUnlessOneIsPassed()
+    {
+        var defaultChunkSize = World.DefaultChunkSizeInBytes;
+        var defaultMinimumEntities = World.DefaultMinimumAmountOfEntitiesPerChunk;
+        try
+        {
+            World.DefaultChunkSizeInBytes = 65_536;
+            World.DefaultMinimumAmountOfEntitiesPerChunk = 7;
+
+            using var defaultWorld = World.Create();
+            using var explicitWorld = World.Create(chunkSizeInBytes: 4_096);
+
+            That(defaultWorld.BaseChunkSize, Is.EqualTo(65_536));
+            That(defaultWorld.BaseChunkEntityCount, Is.EqualTo(7));
+            That(explicitWorld.BaseChunkSize, Is.EqualTo(4_096));
+            That(explicitWorld.BaseChunkEntityCount, Is.EqualTo(7));
+        }
+        finally
+        {
+            World.DefaultChunkSizeInBytes = defaultChunkSize;
+            World.DefaultMinimumAmountOfEntitiesPerChunk = defaultMinimumEntities;
+        }
+    }
+
+    [Test]
+    public void TryGetArchetypeFindsArchetypeByBitSetInLargerBuffer()
+    {
+        var archetype = _world.GetArchetype(_world.Create(_entityGroup));
+
+        Span<uint> padded = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size) + 8];
+        archetype.BitSet.AsSpan(padded);
+
+        That(_world.TryGetArchetype(new SpanBitSet(padded), out var found), Is.True);
+        That(found, Is.SameAs(archetype));
+    }
+
+    [Test]
     public void CreateSingleComponentBatchOnFreshWorld()
     {
         using var world = World.Create();
@@ -944,6 +981,38 @@ public partial class WorldTest
         _world.TryGetArchetype(_entityAiGroup, out var arch);
         That(_world.GetArchetype(entity2), Is.EqualTo(_world.GetArchetype(entity)));
         That(arch, Is.EqualTo(_world.GetArchetype(entity)));
+    }
+
+    /// <summary>
+    ///     Checks if cached multi-component add and remove operations keep working independent of the order of the generic arguments
+    ///     and after their cached target <see cref="Archetype"/> was removed by <see cref="World.TrimExcess"/>.
+    /// </summary>
+    [Test]
+    public void GeneratedAddAndRemoveWithCachedTransitions()
+    {
+        using var world = World.Create();
+
+        // Keeps the source archetype and therefore its cached transitions alive.
+        world.Create<Transform>();
+
+        for (var round = 0; round < 2; round++)
+        {
+            var entity = world.Create(new Transform { X = round });
+            world.Add(entity, new Rotation { X = 10 + round }, new Ai());
+            That(world.Has<Transform, Rotation, Ai>(entity), Is.True);
+            That(world.Get<Rotation>(entity).X, Is.EqualTo(10 + round));
+            That(world.CountEntities(new QueryDescription().WithAll<Rotation, Ai>()), Is.EqualTo(1));
+
+            // The reversed order resolves to the same transition.
+            world.Remove<Ai, Rotation>(entity);
+            That(world.Has<Transform>(entity), Is.True);
+            That(world.Has<Rotation>(entity), Is.False);
+            That(world.Has<Ai>(entity), Is.False);
+            That(world.Get<Transform>(entity).X, Is.EqualTo(round));
+
+            // Removes the now empty target archetype, cached transitions to it must not be used anymore.
+            world.TrimExcess();
+        }
     }
     
     /// <summary>

@@ -93,7 +93,7 @@
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="ZeroAllocJobScheduler" Version="1.1.2" />
+    <PackageReference Include="ZeroAllocJobScheduler" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -205,6 +205,10 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ForEachWithEntity.cs</LastGenOutput>
     </None>
+    <None Update="Templates\IChunkForEach.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IChunkForEach.cs</LastGenOutput>
+    </None>
     <None Update="Templates\IForEach.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>IForEach.cs</LastGenOutput>
@@ -276,6 +280,10 @@
     <None Update="Templates\World.InlineEntityQueryWithRef.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>World.InlineEntityQueryWithRef.cs</LastGenOutput>
+    </None>
+    <None Update="Templates\World.InlineChunkQuery.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>World.InlineChunkQuery.cs</LastGenOutput>
     </None>
     <None Update="Templates\World.InlineParallelQuery.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -420,6 +428,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ForEachWithEntity.tt</DependentUpon>
     </Compile>
+    <Compile Update="Templates\IChunkForEach.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>IChunkForEach.tt</DependentUpon>
+    </Compile>
     <Compile Update="Templates\IForEach.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -504,6 +517,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>World.InlineParallelEntityQuery.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Templates\World.InlineChunkQuery.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>World.InlineChunkQuery.tt</DependentUpon>
     </Compile>
     <Compile Update="Templates\Entity.Add.cs">
       <AutoGen>True</AutoGen>

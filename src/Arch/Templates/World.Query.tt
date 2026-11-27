@@ -18,7 +18,11 @@ public partial class World
 #>
     public void Query<<#= generics #>>(in QueryDescription description, ForEach<<#= generics #>> forEach)
     {
-        var query = Query(in description);
+        Query<<#= generics #>>(Query(in description), forEach);
+    }
+
+    public void Query<<#= generics #>>(Query query, ForEach<<#= generics #>> forEach)
+    {
         foreach (ref var chunk in query)
         {
             <#= Indent(getFirstElement, 12) #>
