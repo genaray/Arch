@@ -130,7 +130,7 @@ jobs:
       run: |
         dotnet run --project src/Arch.Benchmarks/Arch.Benchmarks.csproj --configuration Release -- \
           --job short --exporters json --artifacts benchmark-results \
-          --filter '*AddRemoveBenchmark*' '*BulkCreateBenchmark*' '*CommandBufferBenchmark*' '*ParallelQueryBenchmark*' '*QueryMatchBenchmark*' '*QueryOverloadBenchmark*' '*StructuralChangeBenchmark*' '*TryGetBenchmark*' '*UntypedStructuralChangeBenchmark*'
+          --filter '*AddRemoveBenchmark*' '*BulkCreateBenchmark*' '*CommandBufferBenchmark*' '*ParallelQueryBenchmark*' '*ParallelQueryScaleBenchmark*' '*ParallelQueryAsyncBenchmark*' '*QueryMatchBenchmark*' '*QueryOverloadBenchmark*' '*StructuralChangeBenchmark*' '*TryGetBenchmark*' '*UntypedStructuralChangeBenchmark*'
 
     # Download the results of the last successful run on the default branch, there are none before the first one
     - name: Download baseline benchmark results

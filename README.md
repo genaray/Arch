@@ -128,6 +128,7 @@ public struct MoveChunks : IChunkForEach<Position, Velocity>
 
 Arch has some extensions that add more features and tools. Among them for example : 
 - 🛠️ **_[Arch.Extended](https://github.com/genaray/Arch.Extended)_** >  Adds a set of tools and features to save boilerplate code!
+- ⚡ **_[Arch.ZeroAllocJobScheduler](https://github.com/genaray/Arch.ZeroAllocJobScheduler)_** >  The allocation-free job scheduler that runs Arch's multithreaded queries, with dependencies, parallel-for, cancellation and idle workers that sleep!
 - 🔎 *_[Godot Entity Debugger](https://github.com/RoadTurtleGames/ArchGodotEntityDebugger)_* > An Arch Entity debugger for the Godot engine!
 - 🔎 *_[Stride Entity Debugger](https://github.com/Doprez/stride-arch-ecs)_* > An example of Arch in the Stride engine, with additional entity and system inspector!
 - 🔎 *_[Arch.Unity](https://github.com/AnnulusGames/Arch.Unity)_* > A library that makes the integration of Arch in Unity much easier, with many cool new features!

@@ -21,13 +21,7 @@ public sealed class JobChunkDispatcherTest
     [OneTimeSetUp]
     public void SetupScheduler()
     {
-        _jobScheduler = new JobScheduler(new JobScheduler.Config
-        {
-            ThreadPrefixName = "Arch.Tests.JobChunkDispatcher",
-            ThreadCount = 0,
-            MaxExpectedConcurrentJobs = 64,
-            StrictAllocationMode = false,
-        });
+        _jobScheduler = new JobScheduler();
 
         World.SharedJobScheduler = _jobScheduler;
     }
@@ -128,7 +122,7 @@ public sealed class JobChunkDispatcherTest
         var counter = new Counter();
 
         var handle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = counter });
-        handle.Complete();
+        World.SharedJobScheduler!.Wait(handle);
 
         That(counter.Entities, Is.EqualTo(1_200));
     }
@@ -144,6 +138,54 @@ public sealed class JobChunkDispatcherTest
         That(counter.Entities, Is.EqualTo(1_200));
     }
 
+    [Test]
+    public void ScheduledQueriesCanRunOneAfterTheOther()
+    {
+        var query = new QueryDescription(all: [typeof(Transform)]);
+
+        // The dispatchers and jobs give themselves back, so they are used again and must not keep anything from the last query.
+        for (var run = 0; run < 100; run++)
+        {
+            var counter = new Counter();
+            var handle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = counter });
+            World.SharedJobScheduler!.Wait(handle);
+
+            That(counter.Entities, Is.EqualTo(1_200), $"run {run}");
+        }
+    }
+
+    [Test]
+    public void ScheduledQueriesCanRunAtTheSameTime()
+    {
+        var query = new QueryDescription(all: [typeof(Transform)]);
+        var first = new Counter();
+        var second = new Counter();
+
+        var firstHandle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = first });
+        var secondHandle = _world.ScheduleInlineParallelChunkQuery(in query, new CountJob { Counter = second });
+        World.SharedJobScheduler!.Wait(firstHandle);
+        World.SharedJobScheduler.Wait(secondHandle);
+
+        That(first.Entities, Is.EqualTo(1_200));
+        That(second.Entities, Is.EqualTo(1_200));
+    }
+
+    [Test]
+    public void ThrowingJobsLeaveNoHelpersRunning()
+    {
+        var query = new QueryDescription(all: [typeof(Transform)]);
+        var counter = new Counter();
+
+        // Whichever thread hits the exception, the query only returns once all helpers are done with the chunks.
+        Catch<Exception>(() => _world.InlineParallelChunkQuery(in query, new ThrowOnceJob { Counter = counter }));
+        That(counter.Active, Is.EqualTo(0));
+
+        // The world and the scheduler are fine afterwards.
+        var recovered = new Counter();
+        _world.InlineParallelChunkQuery(in query, new CountJob { Counter = recovered });
+        That(recovered.Entities, Is.EqualTo(1_200));
+    }
+
     /// <summary>
     ///     Counts what the <see cref="CountJob"/>s see, shared by all copies of the job.
     /// </summary>
@@ -151,6 +193,8 @@ public sealed class JobChunkDispatcherTest
     {
         public int Chunks;
         public int Entities;
+        public int Active;
+        public int Thrown;
     }
 
     private struct CountJob : IChunkJob
@@ -161,6 +205,31 @@ public sealed class JobChunkDispatcherTest
         {
             Interlocked.Increment(ref Counter.Chunks);
             Interlocked.Add(ref Counter.Entities, chunk.Count);
+        }
+    }
+
+    /// <summary>
+    ///     Throws on one chunk, and keeps track of how many threads are inside of it.
+    /// </summary>
+    private struct ThrowOnceJob : IChunkJob
+    {
+        public Counter Counter;
+
+        public void Execute(ref Chunk chunk)
+        {
+            Interlocked.Increment(ref Counter.Active);
+            try
+            {
+                Thread.Sleep(1);
+                if (Interlocked.Exchange(ref Counter.Thrown, 1) == 0)
+                {
+                    throw new InvalidOperationException("expected failure");
+                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref Counter.Active);
+            }
         }
     }
 }

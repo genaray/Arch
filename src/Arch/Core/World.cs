@@ -220,7 +220,6 @@ public partial class World : IDisposable
 
         // Multithreading/Jobs.
         JobHandles = new NetStandardList<JobHandle>(Environment.ProcessorCount);
-        JobsCache = new List<IJob>(Environment.ProcessorCount);
 
         // Config
         BaseChunkSize = baseChunkSize;

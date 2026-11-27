@@ -26,13 +26,7 @@ public class ParallelQueryBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        _jobScheduler = new JobScheduler(new JobScheduler.Config
-        {
-            ThreadPrefixName = "Arch.Benchmarks",
-            ThreadCount = 0,
-            MaxExpectedConcurrentJobs = 64,
-            StrictAllocationMode = false
-        });
+        _jobScheduler = new JobScheduler();
         World.SharedJobScheduler = _jobScheduler;
 
         _large = World.Create();

@@ -208,6 +208,11 @@ internal sealed class JobChunkDispatcher
     private int _batchSize = 1;
 
     /// <summary>
+    ///     How many threads still have to call <see cref="ThreadDone"/> before the dispatcher is given back to its pool.
+    /// </summary>
+    private int _unfinishedThreads;
+
+    /// <summary>
     ///     The amount of <see cref="Entity"/>s in all added <see cref="Archetype"/>s.
     /// </summary>
     internal int EntityCount { get; private set; }
@@ -252,11 +257,27 @@ internal sealed class JobChunkDispatcher
     /// <summary>
     ///     Prepares handing out the added <see cref="Chunk"/>s to a number of threads.
     /// </summary>
-    /// <param name="threadCount">The amount of threads that call <see cref="Run{T}"/>.</param>
+    /// <param name="threadCount">The amount of threads that call <see cref="Run{T}"/> and <see cref="ThreadDone"/>.</param>
     internal void Start(int threadCount)
     {
         _batchSize = Math.Max(1, ChunkCount / (threadCount * BatchesPerThread));
         _nextBatch = 0;
+        _unfinishedThreads = threadCount;
+    }
+
+    /// <summary>
+    ///     Called by every thread that took part, once it is done with the <see cref="Chunk"/>s.
+    ///     The last one gives the dispatcher back to its pool, so nobody has to know when that is.
+    /// </summary>
+    internal void ThreadDone()
+    {
+        if (Interlocked.Decrement(ref _unfinishedThreads) != 0)
+        {
+            return;
+        }
+
+        Clear();
+        JobMeta<JobChunkDispatcher>.Pool.Return(this);
     }
 
     /// <summary>
@@ -310,21 +331,24 @@ internal sealed class JobChunkDispatcher
 }
 
 /// <summary>
-///     The <see cref="ChunkIterationJob{T}"/> class
-///     is an <see cref="IJob"/> that can be scheduled using the <see cref="JobScheduler"/> to help processing the <see cref="Chunk"/>s of a <see cref="JobChunkDispatcher"/> on another thread.
+///     The <see cref="ChunkHelperJob{T}"/> struct
+///     is an <see cref="IJob"/> that helps processing the <see cref="Chunk"/>s of a <see cref="JobChunkDispatcher"/> on another thread.
 /// </summary>
+/// <remarks>
+///     It is a struct, so the <see cref="JobScheduler"/> carries it without boxing and pools the wrapper itself. There is nothing to give back after it ran.
+/// </remarks>
 /// <typeparam name="T">The generic type that implements the <see cref="IChunkJob"/> interface.</typeparam>
-public sealed class ChunkIterationJob<T> : IJob where T : struct, IChunkJob
+internal struct ChunkHelperJob<T> : IJob where T : struct, IChunkJob
 {
     /// <summary>
     ///     The <see cref="JobChunkDispatcher"/> which hands out the <see cref="Chunk"/>s.
     /// </summary>
-    internal JobChunkDispatcher Dispatcher { get; set; } = null!;
+    internal JobChunkDispatcher Dispatcher;
 
     /// <summary>
     ///     An instance of the generic type <typeparamref name="T"/>, being invoked upon each chunk.
     /// </summary>
-    public T Instance { get; set; }
+    internal T Instance;
 
     /// <summary>
     ///     Processes <see cref="Chunk"/>s until the <see cref="Dispatcher"/> has none left.
@@ -332,5 +356,6 @@ public sealed class ChunkIterationJob<T> : IJob where T : struct, IChunkJob
     public void Execute()
     {
         Dispatcher.Run(Instance);
+        Dispatcher.ThreadDone();
     }
 }
