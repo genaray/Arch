@@ -923,6 +923,7 @@ public sealed partial class Archetype
         for (var sourceChunkIndex = 0; sourceChunkIndex <= source.Count; sourceChunkIndex++)
         {
             ref var sourceChunk = ref source.GetChunk(sourceChunkIndex);
+            var sourceCount = sourceChunk.Count;
 
             var amountCopied = 0;
             var chunkIndex = 0;
@@ -948,6 +949,11 @@ public sealed partial class Archetype
                 destinationChunk.Count += amountToCopy;
                 amountCopied += amountToCopy;
                 chunkIndex = destinationChunkIndex;  // Track the last destination chunk we filled, important
+            }
+
+            if (clearSource)
+            {
+                sourceChunk.ClearComponents(0, sourceCount);
             }
 
             destination.Count = chunkIndex;

@@ -376,7 +376,27 @@ public partial struct Chunk
     /// </summary>
     public void Clear()
     {
+        ClearComponents(0, Count);
         Count = 0;
+    }
+
+    /// <summary>
+    ///     Resets the components of a range of rows to their default values,
+    ///     so the <see cref="Arch.Core.Entity"/>s that are created there later do not start with the components of the removed ones.
+    /// </summary>
+    /// <param name="index">The first row.</param>
+    /// <param name="amount">The amount of rows.</param>
+    internal void ClearComponents(int index, int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        foreach (var array in Components)
+        {
+            System.Array.Clear(array, index, amount);
+        }
     }
 
     /// <summary>
